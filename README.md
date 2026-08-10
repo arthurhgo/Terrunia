@@ -1,25 +1,68 @@
-# Terrúnia App — Work Starter v0.4
+# Terrúnia — Resquícios das Ruínas
 
-Starter de repositório para o RPG web de Terrúnia.
+Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com combate em turnos, Vínculos, Essência, Skill Tree e save local-first.
 
-## Leia primeiro
+## O que já é jogável
 
-1. `docs/TERRUNIA_WORK_GITHUB_MASTER_PROMPT_v0.4.md`
-2. `docs/TERRUNIA_GAME_APP_MASTER_SPEC_v0.4.md`
-3. `docs/AUTH_AND_SAVE_FIREBASE_v0.4.md`
-4. `docs/reference/ui-terrunia-main-v0.4.png`
+O fluxo atual cobre:
 
-Este starter não é o jogo final. Ele fornece arquitetura, regras, placeholders e contratos para o Work/Codex implementar a vertical slice sem regredir para regras legacy.
+1. login com Google/Firebase ou convidado de desenvolvimento;
+2. criação de um Terrírian sem Clã e sem Classe;
+3. Vínculo da primeira arma permanente no prólogo;
+4. conversa com Eldamar em Terran;
+5. aceitação da missão técnica `O Primeiro Rastro`;
+6. entrada na trilha de Astravél;
+7. combate por turnos contra um Fungorro;
+8. recebimento de drop sem substituir o item vinculado;
+9. conversão do drop em Essência ou venda por ouro;
+10. obtenção de 1 Ponto de Essência e desbloqueio do primeiro node da arma;
+11. persistência em IndexedDB e sincronização opcional com Firestore.
 
-## Princípios
+## Regras canônicas preservadas
 
-- personagem cru no início;
-- Clã/Classe conquistados;
-- cinco equipamentos vinculados permanentes;
-- drops → Essência ou Ouro;
-- 1 barra de Essência → 1 Ponto de Essência;
-- Skill Tree em rota própria;
-- combate em turnos;
-- sprites manuais via asset registry;
-- Google login + cloud save;
-- conteúdo data-driven.
+- O personagem nasce sem Clã, sem Classe e sem build pronta.
+- Arma, protetor, armadura, colar e pulseira são permanentes depois do Vínculo.
+- Drops não substituem esses cinco itens.
+- Uma barra completa concede exatamente 1 Ponto de Essência; excedente é preservado.
+- Pontos de Essência não são concedidos diretamente por abates ou níveis.
+- A Skill Tree tem domínios separados para Nexo, Clã, Classe e os cinco Vínculos.
+- Itens vinculados usam exatamente sete Graus.
+- O motor de combate é uma máquina de estados pura, fora do React.
+
+## Executar
+
+Requer Node.js 22+ e npm.
+
+```bash
+npm ci
+cp .env.example .env.local
+npm run dev
+```
+
+Sem configuração Firebase, o modo convidado de desenvolvimento permanece disponível e salva localmente. Para autenticação Google e nuvem, preencha as variáveis `VITE_FIREBASE_*` em `.env.local` e publique as regras de [`firestore.rules`](./firestore.rules).
+
+## Validação
+
+```bash
+npm run check       # lint + tipos + testes unitários/integração + build
+npm run e2e         # fluxo completo em navegador (requer Chromium do Playwright)
+```
+
+## Estrutura
+
+```text
+src/content/        catálogos e valores marcados como draft
+src/domain/         regras puras de Vínculo, Essência, inventário, missões e combate
+src/persistence/    schema versionado e IndexedDB
+src/services/       Firebase, autenticação e sincronização
+src/state/          coordenação de sessão e jogo
+src/ui/             telas e componentes
+public/assets/      registro visual substituível e placeholders
+docs/               especificações, decisões e lacunas de conteúdo
+```
+
+## Autoridade documental
+
+Em conflito, a precedência adotada é: `0B > 0A > seções novas > lore > legado`. Consulte [`docs/CANON_DECISIONS.md`](./docs/CANON_DECISIONS.md) antes de alterar regras de jogo e [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) antes de ampliar sistemas.
+
+Valores provisórios estão explicitamente marcados como `BALANCE_DRAFT`, `CONTENT_DRAFT`, `VISUAL_DRAFT` ou `OWNER_DECISION` no código e na documentação.
