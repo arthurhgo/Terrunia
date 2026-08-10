@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getLatestLocalSave } from '../persistence/localSaveRepository'
-import { useGameStore } from '../state/gameStore'
+import { flushPersistence, useGameStore } from '../state/gameStore'
 
 describe('vertical slice integrada', () => {
   it('criação → vínculo → quest → batalha → drop → ponto → node → reload', async () => {
@@ -31,7 +31,7 @@ describe('vertical slice integrada', () => {
     expect(current.boundItems[weaponId].skillTree.unlockedNodeIds).toContain('weapon_bond_core')
     expect(current.essence.essencePoints).toBe(0)
 
-    await new Promise((resolve) => window.setTimeout(resolve, 20))
+    await flushPersistence()
     const reloaded = await getLatestLocalSave(ownerId)
     expect(reloaded?.boundItems[weaponId].skillTree.unlockedNodeIds).toContain('weapon_bond_core')
     expect(reloaded?.inventory).toHaveLength(0)
