@@ -8,7 +8,7 @@ O sistema suporta expansão orientada a dados, mas o slice usa conteúdo técnic
 - descoberta e progressão de Classes;
 - árvores completas de Nexo, Clã, Classe e cinco Vínculos;
 - regras finais de essências, gemas, runas, memórias e cicatrizes;
-- boss, fases e recompensas das Câmaras Fúngicas após a emboscada técnica;
+- fases finais, stats e recompensas canônicas do Colosso Micélio;
 - economia, lojas, crafting e usos não destrutivos de drops;
 - progressão de NPCs, reputação, diálogos ramificados e consequências;
 - condições finais de evolução entre os sete Graus;
@@ -17,7 +17,9 @@ O sistema suporta expansão orientada a dados, mas o slice usa conteúdo técnic
 
 ## Conteúdo técnico v0.2 — não canônico
 
-`Golpe Ressonante`, `Fratura Ressonante`, `Tônico de Campo`, `Aglomerado de Esporos`, o acampamento e a Emboscada de Esporos existem para validar os motores. Nomes, números, textos e posição narrativa continuam `CONTENT_DRAFT`/`BALANCE_DRAFT`.
+`Golpe Ressonante`, `Fratura Ressonante`, `Tônico de Campo`, `Aglomerado de Esporos`, o acampamento, a Emboscada de Esporos, `Fragmento de Essência Micelial` e `Essência Micelial` existem para validar os motores. Nomes, números, textos e posição narrativa continuam `CONTENT_DRAFT`/`BALANCE_DRAFT`.
+
+Colosso Micélio é o boss registrado pela especificação; o encontro atual usa uma única fase técnica. Habilidades, stats e recompensa definitiva ainda não são cânone fechado.
 
 ## Regra de expansão
 
