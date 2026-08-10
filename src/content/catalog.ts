@@ -87,6 +87,18 @@ for (const skill of Object.values(content.combatSkills)) {
   }
 }
 
+for (const item of Object.values(content.items)) {
+  if (item.infusionComponentId) {
+    assertReference(
+      content.essences[item.infusionComponentId],
+      `${item.id} → ${item.infusionComponentId}`,
+    )
+    if (!item.canInfuseBoundItem) {
+      throw new Error(`Item ${item.id} referencia Infusão sem permitir canInfuseBoundItem.`)
+    }
+  }
+}
+
 for (const enemy of Object.values(content.enemies)) {
   for (const skillId of enemy.skillIds) {
     assertReference(content.combatSkills[skillId], `${enemy.id} → ${skillId}`)

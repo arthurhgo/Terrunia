@@ -27,10 +27,11 @@ describe('save versionado', () => {
     )
     const legacy = { ...save, schemaVersion: 0, eventLog: undefined }
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(2)
+    expect(migrated.schemaVersion).toBe(3)
     expect(migrated.character.name).toBe('Aron')
     expect(migrated.eventLog).toContain('SaveMigrated:0->1')
     expect(migrated.eventLog).toContain('SaveMigrated:1->2')
+    expect(migrated.eventLog).toContain('SaveMigrated:2->3')
   })
 
   it('migra schema 1, preserva progresso e libera o acampamento após a primeira vitória', () => {
@@ -59,10 +60,41 @@ describe('save versionado', () => {
       },
     }
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(2)
+    expect(migrated.schemaVersion).toBe(3)
     expect(migrated.wallet.gold).toBe(77)
     expect(migrated.world.trailNodeStates.astravel_camp_03).toBe('current')
     expect(migrated.eventLog).toContain('SaveMigrated:1->2')
+    expect(migrated.eventLog).toContain('SaveMigrated:2->3')
+  })
+
+  it('migra schema 2 e libera o chefe somente após o limiar descoberto', () => {
+    const save = createNewSave(
+      'user_1',
+      'Aron',
+      'character.terririan.default',
+      content,
+      '2026-08-10T12:00:00.000Z',
+      { saveId: 'save_1', characterId: 'char_1' },
+    )
+    const legacy = {
+      ...save,
+      schemaVersion: 2,
+      gameVersion: '0.2.0',
+      world: {
+        ...save.world,
+        trailNodeStates: {
+          ...save.world.trailNodeStates,
+          astravel_ruin_threshold_05: 'completed',
+          astravel_boss_preview: 'boss',
+        },
+        worldFlags: ['fungal_chambers_threshold_discovered'],
+      },
+    }
+    const migrated = migrateAndValidateSave(legacy)
+    expect(migrated.schemaVersion).toBe(3)
+    expect(migrated.gameVersion).toBe('0.3.0')
+    expect(migrated.world.trailNodeStates.astravel_boss_preview).toBe('bossCurrent')
+    expect(migrated.eventLog).toContain('SaveMigrated:2->3')
   })
 
   it('rejeita nome inválido em save importado', () => {

@@ -145,6 +145,35 @@ describe('máquina de estados de combate', () => {
     )
   })
 
+  it('carrega o Colosso Micélio como chefe data-driven com recompensa de Vínculo', () => {
+    const battle = createBattle(
+      makeSave(),
+      content.encounters.encounter_colossus_mycelium_01,
+      content,
+      'battle_boss',
+    )
+    const bossId = 'combatant_enemy_colossus_mycelium_1'
+    expect(battle.combatants[bossId]).toMatchObject({
+      name: 'Colosso Micélio',
+      maxHp: 24,
+    })
+    expect(battle.rewards).toMatchObject({
+      boundResonance: 60,
+      lootDefinitionIds: ['fragment_mycelial_essence'],
+      worldFlags: ['colossus_mycelium_defeated', 'fungal_chambers_first_clear'],
+    })
+
+    battle.combatants.combatant_player.attackPower = 99
+    const result = submitBattleCommand(
+      battle,
+      { type: 'attack', targetId: bossId },
+      content,
+    )
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.phase).toBe('Victory')
+  })
+
   it('ação inválida não altera o estado', () => {
     const battle = createBattle(makeSave(), firstEncounter, content)
     battle.phase = 'ResolvingAction'

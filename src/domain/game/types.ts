@@ -120,7 +120,7 @@ export type NPCRelationshipState = {
   dialogueFlags: string[]
 }
 
-export type TrailNodeStatus = 'completed' | 'current' | 'locked' | 'boss'
+export type TrailNodeStatus = 'completed' | 'current' | 'locked' | 'boss' | 'bossCurrent'
 
 export type WorldProgress = {
   currentLocationId: string
