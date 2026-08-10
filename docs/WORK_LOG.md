@@ -1,5 +1,18 @@
 # Registro de implementação
 
+## v0.2 — trilha e combate tático
+
+- integrada a fundação v0.1 na `main` após CI aprovado;
+- criada progressão sequencial data-driven para seis nós de Astravél;
+- implementados acampamento, recompensa de consumível e limiar da primeira Ruína;
+- ampliado combate para 1–3 inimigos com seleção independente de alvo e timeline;
+- adicionados Mana, habilidade desbloqueada por node, consumível e status temporários;
+- adicionada IA determinística que usa Explosão de Esporos em cadência configurável;
+- criada migração de save v1→v2 sem perda de progresso permanente;
+- ampliadas validações de referências de conteúdo;
+- ampliados testes unitários, integração e E2E até o limiar das Câmaras Fúngicas;
+- revisados Portal e combate em desktop/mobile com placeholders substituíveis.
+
 ## v0.1 — vertical slice fundacional
 
 - auditadas as especificações 0B/0A, documentos auxiliares, lore e referência visual;
