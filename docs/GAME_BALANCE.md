@@ -12,5 +12,13 @@ Todos os números abaixo são `BALANCE_DRAFT`. Eles existem para tornar o fluxo 
 | Recompensa do combate | 15 XP, 8 ouro | Feedback de progressão sem conceder Ponto de Essência direto. |
 | Ressonância da arma | 12 | Demonstra progresso do item separado da moeda da Skill Tree. |
 | Primeiro node | 1 Ponto de Essência | Fecha o loop do vertical slice. |
+| Vida base | 8 + Vigor × 2 | Mantém o combate inicial legível. |
+| Mana base | 5 + Espírito × 1 | Permite três usos da primeira habilidade; multiplicador final é `OWNER_DECISION`. |
+| Golpe Ressonante | 3 MP, +2 poder, Fratura por 2 turnos | Demonstra skill e status vindos do node. |
+| Fratura Ressonante | −1 mitigação | Valida modificador temporário sem fixar fórmula final. |
+| Esporos Nocivos | 1 dano por 2 turnos | Valida efeito no início do turno. |
+| Tônico de Campo | +8 Vida | Consumível técnico da trilha, não item canônico final. |
+| Emboscada de Esporos | 3 inimigos; 55 XP, 20 ouro, 32 Ressonância | Valida alvo, timeline e IA multi-inimigo. |
+| Aglomerado de Esporos | 55 Essência ou 20 ouro | Segundo dilema econômico do protótipo. |
 
-As fontes ficam em `src/content/balance.ts`, `src/content/items.ts`, `src/content/enemies.ts` e `src/content/skillTrees.ts`.
+As fontes ficam em `src/content/balance.ts`, `src/content/combat.ts`, `src/content/items.ts`, `src/content/enemies.ts` e `src/content/skillTrees.ts`.

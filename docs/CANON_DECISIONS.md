@@ -12,11 +12,14 @@ Registro das ambiguidades encontradas durante a implementação do vertical slic
 | Identidade visual | O mockup traz Cael, nível 27 e Planícies de Aurion. | Esses valores são tratados como placeholders visuais, não como identidade ou estado inicial canônico. |
 | Missão inicial | `MAIN-01` pertence ao cânone, mas seus detalhes finais não estão fechados. | O slice usa `vs_astravel_first_contact`, explicitamente `CONTENT_DRAFT`, sem reescrever `MAIN-01`. |
 | Crescimento inicial | Não há valores finais para atributos, barra e recompensas. | Valores ficam centralizados e marcados `BALANCE_DRAFT`; não são apresentados como cânone. |
+| Combate tático v0.2 | A especificação exige skills, consumíveis e status, mas não fecha nomes/custos do primeiro kit. | O motor foi implementado de forma declarativa; `Golpe Ressonante`, Tônico e números são drafts substituíveis, não cânone novo. |
+| Continuação de Astravél | A fonte define Fungorros e Câmaras, mas não fecha a ordem exata dos nós do tutorial. | Acampamento, emboscada e limiar formam uma rota `CONTENT_DRAFT`; o boss permanece bloqueado até conteúdo aprovado. |
 
 ## OWNER_DECISION pendente
 
 - Distribuição inicial dos cinco dados de atributo.
 - Curva final da barra de Essência e recompensas do encontro.
 - Conteúdo definitivo da primeira missão e da rota de Astravél.
+- Kit final da primeira habilidade, consumível e cadência das skills inimigas.
 - Política de resolução e recuperação de conflitos entre saves local e nuvem.
 - Artes finais, tipografia licenciada, áudio e identidade dos retratos.

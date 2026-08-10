@@ -1,6 +1,6 @@
 # Terrúnia — Resquícios das Ruínas
 
-Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com combate em turnos, Vínculos, Essência, Skill Tree e save local-first.
+Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, Vínculos, Essência, Skill Tree e save local-first.
 
 ## O que já é jogável
 
@@ -16,7 +16,11 @@ O fluxo atual cobre:
 8. recebimento de drop sem substituir o item vinculado;
 9. conversão do drop em Essência ou venda por ouro;
 10. obtenção de 1 Ponto de Essência e desbloqueio do primeiro node da arma;
-11. persistência em IndexedDB e sincronização opcional com Firestore.
+11. liberação de `Golpe Ressonante` pelo efeito data-driven do node;
+12. progressão pelo acampamento abandonado e obtenção de um consumível;
+13. combate contra três Fungorros com alvos independentes, Mana e status temporários;
+14. descoberta do limiar das Câmaras Fúngicas;
+15. persistência em IndexedDB e sincronização opcional com Firestore.
 
 ## Regras canônicas preservadas
 
@@ -28,6 +32,7 @@ O fluxo atual cobre:
 - A Skill Tree tem domínios separados para Nexo, Clã, Classe e os cinco Vínculos.
 - Itens vinculados usam exatamente sete Graus.
 - O motor de combate é uma máquina de estados pura, fora do React.
+- Habilidades, consumíveis, status, encontros e nós de trilha são conteúdo, não condicionais de UI.
 
 ## Executar
 
@@ -52,7 +57,7 @@ npm run e2e         # fluxo completo em navegador (requer Chromium do Playwright
 
 ```text
 src/content/        catálogos e valores marcados como draft
-src/domain/         regras puras de Vínculo, Essência, inventário, missões e combate
+src/domain/         regras puras de Vínculo, Essência, trilha, inventário, missões e combate
 src/persistence/    schema versionado e IndexedDB
 src/services/       Firebase, autenticação e sincronização
 src/state/          coordenação de sessão e jogo
