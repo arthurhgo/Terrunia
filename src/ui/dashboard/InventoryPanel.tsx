@@ -25,6 +25,17 @@ export function InventoryPanel({ save }: { save: GameSave }) {
     return true
   })
   const selectedItems = save.inventory.filter((instance) => selected.includes(instance.instanceId))
+  const canConvert = selectedItems.length > 0 && selectedItems.every((instance) => {
+    const definition = content.items[instance.definitionId]
+    return definition?.convertToEssence && !definition.questLocked && !instance.locked && !instance.favorite
+  })
+  const canSell = selectedItems.length > 0 && selectedItems.every((instance) => {
+    const definition = content.items[instance.definitionId]
+    return definition?.sellable && !definition.questLocked && !instance.locked && !instance.favorite
+  })
+  const selectedForInfusion = selectedItems.some(
+    (instance) => content.items[instance.definitionId]?.canInfuseBoundItem,
+  )
   const totals = useMemo(
     () =>
       selectedItems.reduce(
@@ -84,7 +95,9 @@ export function InventoryPanel({ save }: { save: GameSave }) {
                 className={`inventory-slot rarity-${instance.rarity} ${isSelected ? 'selected' : ''}`}
                 onClick={() => toggleSelection(instance.instanceId)}
                 aria-pressed={isSelected}
-                title={`${definition.name} — ${definition.essenceValue} Essência ou ${definition.sellValue} Ouro`}
+                title={definition.canInfuseBoundItem
+                  ? `${definition.name} — reservado para Infusão em item vinculado`
+                  : `${definition.name} — ${definition.essenceValue} Essência ou ${definition.sellValue} Ouro`}
               >
                 <AssetImage assetId={definition.iconAssetId} />
                 <span>{definition.name}</span>
@@ -106,12 +119,12 @@ export function InventoryPanel({ save }: { save: GameSave }) {
         </div>
 
         <div className="inventory-actions">
-          <span>{selected.length ? `${selected.length} selecionado(s)` : 'Selecione um drop'}</span>
+          <span>{selectedForInfusion ? 'Fragmento reservado para Infusão' : selected.length ? `${selected.length} selecionado(s)` : 'Selecione um drop'}</span>
           <div>
-            <GameButton variant="secondary" disabled={!selected.length} onClick={() => setAction('convert')}>
+            <GameButton variant="secondary" disabled={!canConvert} onClick={() => setAction('convert')}>
               <FlaskConical size={16} /> Converter em Essência
             </GameButton>
-            <GameButton variant="ghost" disabled={!selected.length} onClick={() => setAction('sell')}>
+            <GameButton variant="ghost" disabled={!canSell} onClick={() => setAction('sell')}>
               <Coins size={16} /> Vender
             </GameButton>
           </div>

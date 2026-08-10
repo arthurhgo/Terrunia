@@ -1,10 +1,11 @@
 import { create } from 'zustand'
 import { content } from '../content/catalog'
-import { gainBoundResonance } from '../domain/bond/boundItems'
+import { gainBoundResonance, performGradeTwoRite } from '../domain/bond/boundItems'
 import { createBattle, submitBattleCommand } from '../domain/combat/engine'
 import type { BattleCommand } from '../domain/combat/types'
 import {
   completeTrailNode,
+  getActiveTrailNode,
   getCurrentTrailNode,
   getTrailByNodeId,
   resolveTrailInteraction,
@@ -48,6 +49,7 @@ type GameState = {
   convertItems: (instanceIds: string[]) => void
   sellItems: (instanceIds: string[]) => void
   toggleFavorite: (instanceId: string) => void
+  performGradeTwoRite: (boundItemId: string, fragmentInstanceId: string) => void
   unlockNode: (nodeId: string) => void
   clearNotification: () => void
   resetSession: () => void
@@ -218,11 +220,15 @@ export const useGameStore = create<GameState>((set, get) => {
       const trail = content.trails.trail_astravel_entry
       const node = nodeId
         ? trail.nodes.find((candidate) => candidate.id === nodeId)
-        : getCurrentTrailNode(save, trail)
-      if (!node || save.world.trailNodeStates[node.id] !== 'current') {
+        : getActiveTrailNode(save, trail)
+      const nodeStatus = node ? save.world.trailNodeStates[node.id] : undefined
+      const accessible = node?.type === 'boss'
+        ? nodeStatus === 'bossCurrent'
+        : nodeStatus === 'current'
+      if (!node || !accessible) {
         return failAction('Este encontro ainda não está acessível.')
       }
-      if (node.type !== 'battle' || !node.encounterId) {
+      if (!['battle', 'boss'].includes(node.type) || !node.encounterId) {
         return failAction('O nó atual não contém um encontro de combate.')
       }
       const encounter = content.encounters[node.encounterId]
@@ -271,7 +277,7 @@ export const useGameStore = create<GameState>((set, get) => {
       const acquiredAt = nowIso()
       const loot: InventoryItemInstance[] = battle.rewards.lootDefinitionIds.map(
         (definitionId, index) => ({
-          instanceId: `${battle.id}_loot_${index + 1}`,
+          instanceId: `${battle.id}_${battle.encounterId}_loot_${index + 1}`,
           definitionId,
           quantity: 1,
           rarity: content.items[definitionId]?.rarity ?? 'common',
@@ -288,6 +294,22 @@ export const useGameStore = create<GameState>((set, get) => {
           battle.rewards.boundResonance,
           acquiredAt,
         )
+        const memory = battle.rewards.boundMemory
+        if (
+          memory &&
+          !next.boundItems[weaponId].memories.some(
+            (entry) => entry.sourceId === memory.sourceId,
+          )
+        ) {
+          next.boundItems[weaponId].memories.push({
+            id: `${weaponId}_memory_${memory.sourceId}`,
+            ...memory,
+            createdAt: acquiredAt,
+          })
+        }
+      }
+      for (const flag of battle.rewards.worldFlags ?? []) {
+        if (!next.world.worldFlags.includes(flag)) next.world.worldFlags.push(flag)
       }
       next.battle = { ...battle, claimed: true }
       const trail = getTrailByNodeId(content, battle.trailNodeId)
@@ -379,6 +401,25 @@ export const useGameStore = create<GameState>((set, get) => {
       next.updatedAt = nowIso()
       next.revision += 1
       commit(next)
+    },
+
+    performGradeTwoRite: (boundItemId, fragmentInstanceId) => {
+      const save = get().save
+      if (!save) return
+      const result = performGradeTwoRite(
+        save,
+        boundItemId,
+        fragmentInstanceId,
+        content,
+        nowIso(),
+      )
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+      show(
+        'Vínculo elevado ao Grau II',
+        'A primeira Essência foi incorporada e um novo ramo da Skill Tree foi revelado.',
+        'success',
+      )
     },
 
     unlockNode: (nodeId) => {

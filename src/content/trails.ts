@@ -64,6 +64,8 @@ export const trailDefinitions = [
         index: 6,
         type: 'boss',
         label: 'Câmaras Fúngicas',
+        actionLabel: 'Enfrentar Colosso Micélio',
+        encounterId: 'encounter_colossus_mycelium_01',
         position: { x: 72, y: 88 },
       },
     ],

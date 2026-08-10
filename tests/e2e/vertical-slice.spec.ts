@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 
 test('vertical slice: criação, combate, Essência, node e reload', async ({ page }) => {
   test.setTimeout(60_000)
+  const visualQa = process.env.VISUAL_QA === '1'
   await page.goto('/login')
 
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
@@ -54,8 +55,38 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: 'Receber recompensas' }).click()
   await page.getByRole('button', { name: 'Retornar a Terran' }).click()
   await page.getByRole('button', { name: 'Investigar o limiar' }).click()
-  await expect(page.getByRole('button', { name: 'Câmaras Fúngicas bloqueadas' })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Enfrentar Colosso Micélio' })).toBeEnabled()
+  if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v03-portal-desktop.png', fullPage: true })
+
+  await page.getByRole('button', { name: 'Enfrentar Colosso Micélio' }).click()
+  await expect(page.getByText('Câmaras Fúngicas de Astravél')).toBeVisible()
+  if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v03-boss-desktop.png', fullPage: true })
+  await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
+  await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
+  await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
+  await page.getByRole('button', { name: 'Atacar' }).click()
+  await expect(page.getByRole('heading', { name: 'O núcleo da Ruína cedeu' })).toBeVisible()
+  await page.getByRole('button', { name: 'Receber recompensas' }).click()
+  await page.getByRole('button', { name: 'Retornar a Terran' }).click()
+  await expect(page.locator('.inventory-slot').filter({ hasText: 'Fragmento de Essência Micelial' })).toBeVisible()
+
+  await page.getByRole('link', { name: 'Detalhes / Evoluir' }).first().click()
+  await expect(page.getByRole('button', { name: 'Executar Rito G2' })).toBeEnabled()
+  await page.getByRole('button', { name: 'Executar Rito G2' }).click()
+  if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v03-rite-desktop.png', fullPage: true })
+  await page.getByRole('button', { name: 'Confirmar Infusão' }).click()
+  await expect(page.locator('.grade-seal')).toContainText('2')
+  await expect(page.getByText('Essência Micelial', { exact: true })).toBeVisible()
+  if (visualQa) {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.screenshot({ path: '/tmp/terrunia-v03-grade2-mobile.png', fullPage: true })
+    await page.setViewportSize({ width: 1280, height: 720 })
+  }
+
+  await page.getByRole('link', { name: 'Abrir Skill Tree' }).click()
+  await expect(page.getByRole('button', { name: /Memória Micelial: Disponível/ })).toBeVisible()
 
   await page.reload()
-  await expect(page.getByRole('button', { name: 'Câmaras Fúngicas bloqueadas' })).toBeDisabled()
+  await expect(page.getByRole('button', { name: /Memória Micelial: Disponível/ })).toBeVisible()
+  await expect(page.getByText('G2 · 104 R')).toBeVisible()
 })

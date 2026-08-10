@@ -18,6 +18,7 @@ export type ItemDefinition = {
   sellValue: number
   questLocked: boolean
   canInfuseBoundItem: boolean
+  infusionComponentId?: string
   combatEffects: CombatEffectDefinition[]
   affinityTags: string[]
   iconAssetId: string
@@ -38,7 +39,10 @@ export type BoundItemBaseDefinition = {
 export type EssenceComponentDefinition = {
   id: string
   name: string
+  description: string
   affinityTags: string[]
+  skillTreeHooks: string[]
+  visualTags: string[]
   status: DraftStatus
 }
 
@@ -55,6 +59,7 @@ export type EnemyDefinition = {
   lootDefinitionIds: string[]
   skillIds: string[]
   aiSkillEveryRounds?: number
+  boss?: boolean
   weaknessTags: string[]
   assetId: string
   status: DraftStatus
@@ -84,6 +89,9 @@ export type StatusEffectDefinition = {
 export type EncounterDefinition = {
   id: string
   name: string
+  locationLabel: string
+  victoryTitle: string
+  victorySummary: string
   trailNodeId: string
   enemyDefinitionIds: string[]
   canFlee: boolean
@@ -92,6 +100,13 @@ export type EncounterDefinition = {
     gold: number
     boundResonance: number
     lootDefinitionIds: string[]
+    worldFlags?: string[]
+    boundMemory?: {
+      type: 'boss' | 'quest' | 'survival' | 'bond' | 'ruin' | 'special'
+      sourceId: string
+      title: string
+      description: string
+    }
   }
   status: DraftStatus
 }

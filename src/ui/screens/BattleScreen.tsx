@@ -64,6 +64,7 @@ export function BattleScreen() {
 
   const selectedEnemy = enemies.find((enemy) => enemy.id === selectedTargetId) ?? enemies[0]
   const encounter = content.encounters[activeBattle.encounterId]
+  const activeWeapon = save.boundItems[save.character.bondedEquipment.weapon ?? '']
   const playerSkills = player.skillIds
     .map((skillId) => content.combatSkills[skillId])
     .filter((skill) => Boolean(skill))
@@ -104,7 +105,7 @@ export function BattleScreen() {
     <GameShell fluid>
       <div className="battle-screen">
         <header className="battle-topline">
-          <div><span>Local</span><strong>Floresta de Astravél</strong></div>
+          <div><span>Local</span><strong>{encounter?.locationLabel ?? 'Astravél'}</strong></div>
           <div><span>Encontro</span><strong>{encounter?.name ?? activeBattle.encounterId}</strong></div>
           <div><span>Rodada</span><strong>{activeBattle.round}</strong></div>
           <div><span>Estado</span><strong>{activeBattle.phase}</strong></div>
@@ -121,7 +122,7 @@ export function BattleScreen() {
               <div><dt>Iniciativa</dt><dd>{player.initiative}</dd></div>
             </dl>
             <StatusList combatant={player} />
-            <div className="active-bound-mini"><Swords size={19} /><span>Arma vinculada<strong>Grau I · {save.boundItems[save.character.bondedEquipment.weapon ?? '']?.resonance ?? 0} R</strong></span></div>
+            <div className="active-bound-mini"><Swords size={19} /><span>Arma vinculada<strong>Grau {activeWeapon?.grade ?? 1} · {activeWeapon?.resonance ?? 0} R</strong></span></div>
           </ArcanePanel>
 
           <section className="battlefield" aria-label="Campo de batalha">
@@ -135,7 +136,7 @@ export function BattleScreen() {
                 <button
                   key={enemy.id}
                   type="button"
-                  className={`battle-enemy ${!enemy.alive ? 'defeated' : ''} ${selectedEnemy?.id === enemy.id ? 'selected' : ''}`}
+                  className={`battle-enemy ${content.enemies[enemy.definitionId]?.boss ? 'battle-enemy--boss' : ''} ${!enemy.alive ? 'defeated' : ''} ${selectedEnemy?.id === enemy.id ? 'selected' : ''}`}
                   onClick={() => enemy.alive && setSelectedTargetId(enemy.id)}
                   disabled={!enemy.alive}
                   aria-label={`Selecionar alvo ${enemy.name} ${index + 1}`}
@@ -222,7 +223,7 @@ export function BattleScreen() {
         {activeBattle.phase === 'Victory' && (
           <div className="battle-result battle-result--victory">
             <Sparkles size={26} />
-            <div><p className="eyebrow">VITÓRIA</p><h2>A rota foi preservada</h2><p>+{activeBattle.rewards.characterXp} XP · +{activeBattle.rewards.gold} Ouro · +{activeBattle.rewards.boundResonance} Ressonância · {activeBattle.rewards.lootDefinitionIds.length} drop</p></div>
+            <div><p className="eyebrow">VITÓRIA</p><h2>{encounter?.victoryTitle ?? 'A rota foi preservada'}</h2><p>{encounter?.victorySummary}</p><p>+{activeBattle.rewards.characterXp} XP · +{activeBattle.rewards.gold} Ouro · +{activeBattle.rewards.boundResonance} Ressonância · {activeBattle.rewards.lootDefinitionIds.length} drop</p></div>
             {!activeBattle.claimed ? (
               <GameButton variant="primary" onClick={claim}>Receber recompensas</GameButton>
             ) : (

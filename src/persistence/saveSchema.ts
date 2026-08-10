@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { GameSave } from '../domain/game/types'
 
-export const CURRENT_SAVE_SCHEMA = 2
+export const CURRENT_SAVE_SCHEMA = 3
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -153,7 +153,7 @@ const worldSchema = z.object({
   unlockedLocationIds: z.array(idSchema),
   trailNodeStates: z.record(
     z.string(),
-    z.enum(['completed', 'current', 'locked', 'boss']),
+    z.enum(['completed', 'current', 'locked', 'boss', 'bossCurrent']),
   ),
   completedEncounterIds: z.array(idSchema),
   worldFlags: z.array(z.string()),
@@ -218,6 +218,13 @@ const battleSchema = z.object({
     gold: nonnegativeNumber,
     lootDefinitionIds: z.array(idSchema),
     boundResonance: nonnegativeNumber,
+    worldFlags: z.array(idSchema).optional(),
+    boundMemory: z.object({
+      type: z.enum(['boss', 'quest', 'survival', 'bond', 'ruin', 'special']),
+      sourceId: idSchema,
+      title: z.string(),
+      description: z.string(),
+    }).optional(),
   }),
   claimed: z.boolean(),
   canFlee: z.boolean(),
@@ -358,6 +365,39 @@ const migrateV1ToV2 = (legacy: Record<string, unknown>): unknown => {
   }
 }
 
+const migrateV2ToV3 = (legacy: Record<string, unknown>): unknown => {
+  const world = (legacy.world ?? {}) as Partial<GameSave['world']>
+  const trailNodeStates = { ...(world.trailNodeStates ?? {}) }
+  const completedEncounterIds = world.completedEncounterIds ?? []
+  const worldFlags = world.worldFlags ?? []
+  const thresholdCompleted =
+    trailNodeStates.astravel_ruin_threshold_05 === 'completed' ||
+    worldFlags.includes('fungal_chambers_threshold_discovered')
+  const bossCompleted =
+    trailNodeStates.astravel_boss_preview === 'completed' ||
+    completedEncounterIds.includes('encounter_colossus_mycelium_01')
+
+  trailNodeStates.astravel_boss_preview = bossCompleted
+    ? 'completed'
+    : thresholdCompleted
+      ? 'bossCurrent'
+      : 'boss'
+
+  return {
+    ...legacy,
+    schemaVersion: 3,
+    gameVersion: '0.3.0',
+    world: {
+      ...world,
+      trailNodeStates,
+    },
+    eventLog: [
+      ...(((legacy.eventLog as string[] | undefined) ?? [])),
+      'SaveMigrated:2->3',
+    ],
+  }
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -372,6 +412,10 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 1) {
     candidate = migrateV1ToV2(candidate as Record<string, unknown>)
     version = 2
+  }
+  if (version === 2) {
+    candidate = migrateV2ToV3(candidate as Record<string, unknown>)
+    version = 3
   }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)

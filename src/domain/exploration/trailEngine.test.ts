@@ -60,4 +60,35 @@ describe('trilha sequencial', () => {
     )
     expect(result.ok).toBe(false)
   })
+
+  it('libera o chefe apenas após concluir o limiar e permite concluir o nó de boss', () => {
+    const save = makeSaveAtEntry()
+    save.world.trailNodeStates.astravel_entry = 'completed'
+    save.world.trailNodeStates.astravel_fungorro_01 = 'completed'
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
+    save.world.trailNodeStates.astravel_spore_ambush_04 = 'completed'
+    save.world.trailNodeStates.astravel_ruin_threshold_05 = 'current'
+
+    const threshold = completeTrailNode(
+      save,
+      content.trails.trail_astravel_entry,
+      'astravel_ruin_threshold_05',
+      '2026-08-10T12:04:00.000Z',
+    )
+    expect(threshold.ok).toBe(true)
+    if (!threshold.ok) return
+    expect(threshold.value.save.world.trailNodeStates.astravel_boss_preview).toBe(
+      'bossCurrent',
+    )
+
+    const boss = completeTrailNode(
+      threshold.value.save,
+      content.trails.trail_astravel_entry,
+      'astravel_boss_preview',
+      '2026-08-10T12:05:00.000Z',
+    )
+    expect(boss.ok).toBe(true)
+    if (!boss.ok) return
+    expect(boss.value.save.world.trailNodeStates.astravel_boss_preview).toBe('completed')
+  })
 })

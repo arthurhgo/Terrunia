@@ -12,6 +12,12 @@ export type TrailCompletion = {
 export const getCurrentTrailNode = (save: GameSave, trail: TrailDefinition) =>
   trail.nodes.find((node) => save.world.trailNodeStates[node.id] === 'current') ?? null
 
+export const getActiveTrailNode = (save: GameSave, trail: TrailDefinition) =>
+  trail.nodes.find((node) => {
+    const status = save.world.trailNodeStates[node.id]
+    return status === 'current' || status === 'bossCurrent'
+  }) ?? null
+
 export const getTrailByNodeId = (catalog: ContentCatalog, nodeId: string) =>
   Object.values(catalog.trails).find((trail) => trail.nodes.some((node) => node.id === nodeId)) ?? null
 
@@ -24,7 +30,8 @@ export const completeTrailNode = (
   const nodeIndex = trail.nodes.findIndex((node) => node.id === nodeId)
   const node = trail.nodes[nodeIndex]
   if (!node) return fail('UNKNOWN_TRAIL_NODE', 'Nó de trilha desconhecido.')
-  if (save.world.trailNodeStates[node.id] !== 'current') {
+  const expectedStatus = node.type === 'boss' ? 'bossCurrent' : 'current'
+  if (save.world.trailNodeStates[node.id] !== expectedStatus) {
     return fail('TRAIL_NODE_LOCKED', 'Este nó não é o objetivo atual da trilha.')
   }
 
@@ -32,7 +39,8 @@ export const completeTrailNode = (
   next.world.trailNodeStates[node.id] = 'completed'
   const nextNode = trail.nodes[nodeIndex + 1] ?? null
   if (nextNode) {
-    next.world.trailNodeStates[nextNode.id] = nextNode.type === 'boss' ? 'boss' : 'current'
+    next.world.trailNodeStates[nextNode.id] =
+      nextNode.type === 'boss' ? 'bossCurrent' : 'current'
   }
   next.updatedAt = now
   next.revision += 1

@@ -39,10 +39,22 @@ const entries: AssetEntry[] = [
     alt: 'Semeador de Esporos',
   },
   {
+    id: 'enemy.colossus-mycelium',
+    path: '/assets/enemies/bosses/enemy_colossus_mycelium_idle.png',
+    fallback: '/assets/placeholders/enemy.svg',
+    alt: 'Colosso Micélio',
+  },
+  {
     id: 'equipment.weapon.prologue.g1',
     path: '/assets/equipment/weapon/weapon_prologue_g1.png',
     fallback: '/assets/placeholders/weapon.svg',
     alt: 'Arma básica vinculada, Grau I',
+  },
+  {
+    id: 'equipment.weapon.prologue.g2',
+    path: '/assets/equipment/weapon/weapon_prologue_g2.png',
+    fallback: '/assets/placeholders/weapon.svg',
+    alt: 'Arma básica vinculada, Grau II',
   },
   {
     id: 'item.fungal-nucleus',
@@ -61,6 +73,12 @@ const entries: AssetEntry[] = [
     path: '/assets/items/item_minor_tonic.png',
     fallback: '/assets/placeholders/item.svg',
     alt: 'Tônico de Campo',
+  },
+  {
+    id: 'item.mycelial-fragment',
+    path: '/assets/items/item_mycelial_fragment.png',
+    fallback: '/assets/placeholders/item.svg',
+    alt: 'Fragmento de Essência Micelial',
   },
   {
     id: 'item.quest-record',

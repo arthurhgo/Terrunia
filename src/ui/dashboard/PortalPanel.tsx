@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
+import { getActiveTrailNode } from '../../domain/exploration/trailEngine'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
@@ -22,9 +23,7 @@ export function PortalPanel({ save, onTalk }: { save: GameSave; onTalk: () => vo
   const navigate = useNavigate()
   const trail = content.trails.trail_astravel_entry
   const quest = save.quests.vs_astravel_first_contact
-  const currentNode = trail.nodes.find(
-    (node) => save.world.trailNodeStates[node.id] === 'current',
-  )
+  const currentNode = getActiveTrailNode(save, trail)
 
   const enter = () => enterAstravel()
   const fight = (nodeId: string) => {
@@ -42,11 +41,17 @@ export function PortalPanel({ save, onTalk }: { save: GameSave; onTalk: () => vo
     if (currentNode?.type === 'battle') {
       return <GameButton variant="primary" full onClick={() => fight(currentNode.id)}><Swords size={17} /> {currentNode.actionLabel ?? currentNode.label}</GameButton>
     }
+    if (currentNode?.type === 'boss') {
+      return <GameButton variant="primary" full onClick={() => fight(currentNode.id)}><Skull size={17} /> {currentNode.actionLabel ?? currentNode.label}</GameButton>
+    }
     if (currentNode?.type === 'camp') {
       return <GameButton variant="primary" full onClick={resolveCurrentTrailNode}><TentTree size={17} /> {currentNode.interaction?.actionLabel}</GameButton>
     }
     if (currentNode?.type === 'event') {
       return <GameButton variant="primary" full onClick={resolveCurrentTrailNode}><Search size={17} /> {currentNode.interaction?.actionLabel}</GameButton>
+    }
+    if (save.world.trailNodeStates.astravel_boss_preview === 'completed') {
+      return <GameButton variant="ghost" full disabled><Skull size={17} /> Câmaras Fúngicas concluídas</GameButton>
     }
     return <GameButton variant="ghost" full disabled><LockKeyhole size={17} /> Câmaras Fúngicas bloqueadas</GameButton>
   })()

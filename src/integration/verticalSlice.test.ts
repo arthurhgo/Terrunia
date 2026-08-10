@@ -97,14 +97,64 @@ describe('vertical slice integrada', () => {
       'current',
     )
     useGameStore.getState().resolveCurrentTrailNode()
-    expect(useGameStore.getState().save?.world.trailNodeStates.astravel_boss_preview).toBe('boss')
+    expect(useGameStore.getState().save?.world.trailNodeStates.astravel_boss_preview).toBe(
+      'bossCurrent',
+    )
     expect(useGameStore.getState().save?.world.worldFlags).toContain(
       'fungal_chambers_threshold_discovered',
+    )
+
+    useGameStore.getState().startBattle('astravel_boss_preview')
+    expect(useGameStore.getState().save?.battle?.encounterId).toBe(
+      'encounter_colossus_mycelium_01',
+    )
+    const bossTarget = 'combatant_enemy_colossus_mycelium_1'
+    for (let index = 0; index < 3; index += 1) {
+      useGameStore.getState().submitBattleCommand({
+        type: 'skill',
+        skillId: 'skill_resonant_strike',
+        targetId: bossTarget,
+      })
+    }
+    useGameStore.getState().submitBattleCommand({ type: 'attack', targetId: bossTarget })
+    expect(useGameStore.getState().save?.battle?.phase).toBe('Victory')
+    useGameStore.getState().claimBattleRewards()
+    expect(useGameStore.getState().save?.world.worldFlags).toContain(
+      'colossus_mycelium_defeated',
+    )
+    const weaponId = useGameStore.getState().save!.character.bondedEquipment.weapon!
+    expect(useGameStore.getState().save?.boundItems[weaponId].memories).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ sourceId: 'enemy_colossus_mycelium' }),
+      ]),
+    )
+    const fragmentId = useGameStore.getState().save?.inventory.find(
+      (instance) => instance.definitionId === 'fragment_mycelial_essence',
+    )?.instanceId
+    expect(fragmentId).toBeTruthy()
+    useGameStore.getState().returnToTerran()
+    expect(useGameStore.getState().save?.boundItems[weaponId].resonance).toBeGreaterThanOrEqual(
+      useGameStore.getState().save!.boundItems[weaponId].resonanceThreshold,
+    )
+    useGameStore.getState().performGradeTwoRite(weaponId, fragmentId!)
+    expect(useGameStore.getState().notification).toMatchObject({
+      title: 'Vínculo elevado ao Grau II',
+    })
+    expect(useGameStore.getState().save?.boundItems[weaponId]).toMatchObject({
+      grade: 2,
+      components: { essences: ['essence_mycelial'] },
+    })
+    expect(useGameStore.getState().save?.world.trailNodeStates.astravel_boss_preview).toBe(
+      'completed',
     )
 
     await flushPersistence()
     const reloaded = await getLatestLocalSave(ownerId)
     expect(reloaded?.world.worldFlags).toContain('fungal_chambers_threshold_discovered')
     expect(reloaded?.inventory[0]?.definitionId).toBe('drop_spore_cluster')
+    expect(reloaded?.boundItems[weaponId]).toMatchObject({
+      grade: 2,
+      components: { essences: ['essence_mycelial'] },
+    })
   })
 })

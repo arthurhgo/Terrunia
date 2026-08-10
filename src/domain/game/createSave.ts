@@ -33,8 +33,8 @@ export const createNewSave = (
   )
 
   return {
-    schemaVersion: 2,
-    gameVersion: '0.2.0',
+    schemaVersion: 3,
+    gameVersion: '0.3.0',
     saveId: ids.saveId,
     ownerId,
     revision: 1,
