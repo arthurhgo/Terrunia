@@ -1,32 +1,44 @@
 {
   "name": "terrunia-app",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "typecheck": "tsc -b --pretty false",
     "test": "vitest",
-    "test:e2e": "playwright test",
-    "lint": "eslint ."
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "e2e": "playwright test",
+    "check": "npm run lint && npm run typecheck && npm run test:run && npm run build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "firebase": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "react-router-dom": "latest",
-    "zustand": "latest",
-    "zod": "latest",
-    "idb": "latest"
+    "firebase": "^12.17.1",
+    "idb": "^8.0.3",
+    "lucide-react": "^1.31.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@playwright/test": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "@vitejs/plugin-react": "latest",
-    "eslint": "latest",
-    "typescript": "latest",
-    "vite": "latest",
-    "vitest": "latest"
+    "@playwright/test": "^1.62.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.3",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "fake-indexeddb": "^6.2.5",
+    "jsdom": "^29.1.1",
+    "oxlint": "^1.75.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10"
   }
 }
