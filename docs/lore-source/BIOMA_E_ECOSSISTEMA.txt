@@ -1,0 +1,77 @@
+﻿Biomas e Ecossistemas
+1. Floresta de Astravél
+A Floresta de Astravél é um reino de mistério e beleza, onde a energia mágica se entrelaça com a própria essência da natureza. Árvores colossais se erguem em direção ao céu, seus troncos cobertos por runas ancestrais e folhagens luminescentes que brilham em tons suaves durante a noite. Os rios que cortam a floresta não carregam apenas água, mas sim correntes de energia pura que alimentam o ecossistema e concedem propriedades mágicas às criaturas e plantas que aqui residem.
+O solo fértil de Astravél dá vida a uma flora única, onde cada planta possui um propósito mágico e biológico. Criaturas encantadas habitam esse bioma, algumas pacíficas e outras predatórias, tornando a floresta um local de constante descoberta e perigo para aventureiros que ousam explorar seus caminhos ocultos. No entanto, a floresta é um símbolo de equilíbrio e convivência pacífica, sendo lar tanto dos Terrírians, que habitam o norte da floresta e aperfeiçoam a magia rúnica, quanto dos Vyltranos, guardiões da natureza e defensores da harmonia mágica. Os viajantes dizem que os sussurros das árvores antigas revelam segredos para aqueles que sabem escutar, guiando os que respeitam a essência da magia pura e advertindo aqueles que ousam corrompê-la.
+🌱 Flora da Floresta de Astravél
+* Árvore-Sussurro: Suas folhas liberam um gás hipnótico ao entardecer.
+* Orbe-Sanguínea: Fruto vermelho brilhante que aumenta a regeneração.
+* Lótus-Lumina: Flor aquática que brilha à noite, atraindo insetos mágicos.
+* Raiz-Murmurante: Planta cujas raízes emitem sons leves quando pisadas, alertando animais sobre predadores.
+* Cogumelos Luminescentes: Usados em poções e encantamentos.
+* Árvores de Celestáris: Suas resinas possuem propriedades mágicas curativas.
+🦎 Fauna da Floresta de Astravél
+* Sylphs Alados: Insetos gigantes que polinizam as árvores mágicas.
+* Eranthas: Cervos encantados que se alimentam da grama azulada.
+* Falcotron: Falcão com penas bioluminescentes, usado para sinalização.
+* Murmurtirra: Pequena criatura semelhante a um macaco, que se comunica por vibrações nos galhos.
+* Serpente do Vazio: Cobra de escamas escuras que absorvem luz.
+* Rapinas Místicas: Aves mensageiras dos Terrírians.
+* Arágnida Venenária: Aranha gigante de patas finas, cujo veneno pode paralisar um humano por horas.
+A magia da Floresta de Astravél fortalece a vegetação e influencia diretamente os seres que ali vivem, tornando-a um dos lugares mais místicos de Terrúnia.
+2. Cerrado Místico
+O Cerrado Místico é uma terra de contrastes, onde a aridez e a magia coexistem em um equilíbrio instável. Durante o dia, o calor intenso faz com que as plantas fechem suas pétalas e os animais se escondam nas sombras das rochas encantadas. À noite, a magia se intensifica, fazendo com que certas flores brilhem e criaturas noturnas despertem para sua caçada.
+Os ventos que percorrem as planícies carregam murmúrios antigos, ecos de feitiços esquecidos lançados por magos que tentaram dominar as forças selvagens do bioma. Alguns dizem que espíritos ancestrais vagam pelas dunas douradas, guardando o conhecimento perdido de civilizações que um dia floresceram e sucumbiram ao próprio poder.
+Esse bioma abriga uma flora adaptada a condições extremas, cujas propriedades mágicas muitas vezes desafiam as leis naturais. Árvores retorcidas resistem a tempestades elétricas conjuradas pelo próprio ambiente, enquanto raízes encantadas atravessam a terra seca em busca de fontes de mana subterrânea. Criaturas exóticas caçam na penumbra, utilizando sentidos aguçados e habilidades arcanas para sobreviver a um mundo onde a magia e a natureza lutam por supremacia.
+🌱 Flora do Cerrado Místico
+* Grama-Cortante: Suas folhas são tão afiadas que podem cortar carne e couro com facilidade.
+* Flor-Pirômana: Libera faíscas ao menor toque, podendo iniciar incêndios espontâneos.
+* Cacto-Cristal: Armazena água puríssima em seu interior, essencial para viajantes.
+* Erva-Ferro: Planta resistente que cresce em solos áridos e fortalece a estrutura corporal de quem a consome.
+* Orquídea Rúnica: Suas pétalas possuem inscrições mágicas naturais que podem ser usadas em feitiços.
+🦎 Fauna do Cerrado Místico
+* Tatu-Fulgor: Emite luz intensa para desorientar predadores.
+* Lobo-Carcaça: Carniceiro astuto cujo rugido imita sons de presas feridas para atrair caçadores incautos.
+* Lagarto-Sombra: Se camufla com perfeição no solo rachado do cerrado.
+* Corvo-Bruxo: Uma ave inteligente que coleta ossos para enfeitar seus ninhos e cujos cantos podem lançar maldições.
+* Serpente-Tempestade: Pode canalizar eletricidade em seus ataques, tornando-se extremamente perigosa em tempestades mágicas.
+A magia volátil desse bioma pode afetar tanto seus habitantes quanto os aventureiros desavisados que se aventuram por suas vastas paisagens.
+3. Deserto de Elduran
+O Deserto de Elduran é uma terra de extremos, onde o calor implacável do dia cede espaço ao frio cortante da noite. Esse bioma esconde segredos há muito esquecidos sob suas dunas incessantes e cânions erodidos pelo vento. Ruínas de civilizações desaparecidas emergem entre tempestades de areia, e muitos dizem que espíritos ancestrais ainda vagam por seus templos soterrados, guardando artefatos de poder incalculável.
+🌱 Flora do Deserto de Elduran
+* Raiz-Fantasma: Planta translúcida que cresce apenas à noite. Suas sementes são valiosas e podem ser usadas para criar ilusões.
+* Árvore-Oásis: Pequena árvore com galhos retorcidos que exalam um cheiro adocicado, atraindo viajantes. Seu tronco contém água potável.
+* Cogumelo-Seco: Um fungo que cresce na areia e libera um pó que provoca desidratação extrema se inalado.
+* Cacto-Sombra: Um cacto raro que sobrevive absorvendo energia arcana do solo, sendo altamente valorizado por alquimistas.
+🦎 Fauna do Deserto de Elduran
+* Escorpião-Aço: Um escorpião grande de carapaça metálica resistente a armas comuns. Seu ferrão libera uma toxina que induz alucinações.
+* Golem de Areia: Criatura elementar semi-inteligente formada por dunas vivas. Dorme enterrado e acorda quando sente vibrações pesadas no solo.
+* Serpente Solar: Seu corpo esquenta tanto durante o dia que ninguém pode tocá-la. À noite, brilha com um tom avermelhado enquanto esfria.
+* Chacal das Sombras: Um predador astuto que se move na escuridão total e ataca em matilhas, desaparecendo antes do amanhecer.
+Aqueles que ousam cruzar o Deserto de Elduran precisam estar preparados para desafios além da simples sobrevivência física. O passado ecoa por suas vastas planícies, e o futuro pode estar enterrado em suas profundezas misteriosas.
+4. Deserto Glacial
+O Deserto Glacial é uma vastidão de gelo implacável, onde a luz do sol se reflete em planícies cristalinas e montanhas cobertas de neve eterna. Os ventos cortantes sussurram histórias de exploradores perdidos, e as cavernas geladas escondem segredos de eras antigas. Esse bioma é um dos mais inóspitos de Terrúnia, desafiando a sobrevivência com suas temperaturas extremas e criaturas adaptadas ao frio intenso.
+🌱 Flora do Deserto Glacial
+* Erva-Fogo: Pequena planta vermelha que libera calor ao toque, usada para manter viajantes aquecidos.
+* Musgo-Glaciar: Cresce sob o gelo e emite um brilho fraco, sendo fonte de energia para criaturas do bioma.
+* Lírio-Congelado: Planta que só floresce a temperaturas abaixo de -50°C. Suas pétalas podem ser usadas para criar poções de resistência ao frio.
+* Vinhedo-Cristalino: Trepadeira que cresce sobre o gelo, absorvendo umidade do ar para sobreviver.
+🦎 Fauna do Deserto Glacial
+* Ursídrio Branco: Urso massivo de pelo translúcido que o torna quase invisível na neve. Sua mordida pode congelar instantaneamente a carne.
+* Raposa de Cristal: Pequeno canídeo com pelos que refletem a luz da lua, tornando-o uma miragem em meio à neve.
+* Aguaverno: Criatura serpentina que nada sob as geleiras e pode perfurar o gelo para caçar presas na superfície.
+* Garra-Espectral: Felino ágil cujas garras são capazes de atravessar armaduras e congelar tecidos vivos ao menor contato.
+Os habitantes desse bioma desenvolveram formas únicas de se proteger do frio e das ameaças naturais. Apenas os mais preparados ousam atravessar essas terras geladas, onde a própria paisagem parece estar viva, vigiando cada passo dos que desafiam seu território.
+5. Montanhas de Korduun
+As Montanhas de Korduun se erguem como titãs adormecidos no horizonte, seus picos cobertos de neve escondem fortalezas ancestrais e cavernas repletas de segredos esquecidos. Dizem que os ventos que uivam entre os desfiladeiros carregam os ecos de batalhas antigas, e os poucos que ousam explorar suas entranhas encontram vestígios de civilizações que desapareceram sem deixar explicações.
+Entre os picos escarpados, tribos guerreiras e criaturas colossais competem pelo domínio desse território hostil. Korduun é um bioma onde a própria terra parece estar viva, moldando-se constantemente sob o peso das eras e os feitiços antigos que ainda ecoam pelas ruínas esquecidas.
+🌱 Flora das Montanhas de Korduun
+* Videira-Rochedo: Trepadeira resistente que cresce sobre as pedras, podendo suportar toneladas sem se partir.
+* Flor dos Ventos: Pequena flor branca cujos esporos são levados pelas correntes de ar. Dizem que onde essa flor nasce, um espírito protetor vigia a área.
+* Musgo-Cobalto: Planta luminescente que cresce dentro das cavernas, absorvendo umidade e emanando uma luz azulada fraca.
+* Raiz-Titânica: Vegetação de crescimento lento que se enraíza profundamente nas fendas rochosas e pode ser usada para criar fortificações naturais.
+🦎 Fauna das Montanhas de Korduun
+* Roc Errante: Pássaro colossal que raramente desce à terra, com penas que possuem propriedades místicas usadas por artesãos em encantamentos.
+* Golem de Granito: Seres de pedra que patrulham os cânions mais antigos, protegendo relíquias e templos escondidos.
+* Dragão-Escarpado: Criatura alada que se camufla entre as rochas e vigia seus territórios de grandes alturas.
+* Touro-Montanhês: Um animal de grande porte e resistência sobre-humana, capaz de destruir rochas com seus chifres reforçados por minerais mágicos.
+O território das Montanhas de Korduun é perigoso para os despreparados, mas para aqueles que ousam enfrentá-lo, ele reserva riquezas imensuráveis e segredos enterrados sob milênios de poeira e gelo.

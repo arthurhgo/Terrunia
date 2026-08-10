@@ -1,0 +1,355 @@
+﻿Ficha de Personagem - RPG de Terrúnia
+🌟 Informações Básicas
+* Nome:
+
+* Idade:
+
+* Clã: (Escolha entre Dûn'Avar, Rustal, Cebios Esti, Estres do Ét)
+
+* Classe:
+
+ Dûn'Avar: Sentinela da Luz, Gladiador da Barreira, Batedor da Vigília
+
+Rustal: Forjador Arcano, Guardião das Inscrições, Gravador das Sombras
+
+Cebios Esti: Astrólogo Celestial, Profeta do Orbe, Caçador de Constelações
+
+Estres do Ét: Canalizador do Caos, Guardador da Ruptura, Mago da Ruína
+
+
+________________
+
+
+📊 Atributos
+📌 Status de Combate e Cálculo
+   * Defesa: (Vigor ÷ 2) + Equipamento Defensivo.
+   * Poder de Ataque: (Força ÷ 2 para armas físicas) ou (Astúcia ÷ 2 para magias) + Modificadores de Equipamento.
+   * Vida: 10 + (Vigor × 2).
+   * Mana: 5 + (Espírito × 3).
+Cada jogador começa com 3 pontos para distribuir e um dado base de d4.
+📌 Status de Combate
+   * Defesa: Determina a resistência contra ataques físicos e mágicos.
+   * Poder de Ataque: Influencia a força dos golpes físicos e feitiços.
+   * Vida: Representa a resistência do personagem antes de ser incapacitado.
+   * Mana: Usada para conjuração de feitiços e habilidades mágicas.
+Cada jogador começa com 3 pontos para distribuir e um dado base de d4.
+Os atributos podem ser aumentados seguindo a progressão:
+   * -2 pontos: (Atributo + d4)
+   * 2 pontos: (Atributo + d6)
+   * 4 pontos: (Atributo + d8)
+   * 6 pontos: (Atributo + d10)
+   * 8 pontos: (Atributo + d12)
+Atributo
+	Valor
+	Bônus
+	
+
+	Astúcia (Inteligência e percepção)
+	0
+	d4, d6, d8. d10, d12..
+	
+
+	Agilidade (Reflexos e destreza)
+	0
+	d4, d6, d8. d10,d12...
+	
+
+	Força (Potência muscular)
+	0
+	d4, d6, d8. d10,d12...
+	
+
+	Vigor (Saúde e resistência)
+	0
+	d4, d6, d8. d10, 12...
+	
+
+	Espírito (Determinação e mana)
+	0
+	d4, d6, d8. d10, 12...
+	
+
+	________________
+
+
+📜 Perícias
+Cada personagem recebe 3 pontos de perícias para distribuir entre as opções abaixo.
+Perícia
+	Custo
+	Bônus
+	Atletismo
+	1
+	+1 em testes de corrida, salto e escalada
+	Sobrevivência
+	1
+	+1 em rastreamento e caça
+	Persuasão
+	1
+	+1 em testes de influência social
+	Notar
+	1
+	+1 em detecção de detalhes e armadilhas
+	Curar
+	1
+	+1 em medicina e primeiros socorros
+	Conhecimento Arcano
+	1
+	+1 em testes para identificar feitiços e artefatos mágicos
+	Intimidação
+	1
+	+1 em testes para assustar ou persuadir pela força
+	Investigação
+	1
+	+1 em testes para reunir informações e analisar pistas
+	Reflexos Rápidos
+	1
+	+1 em testes de reação e reflexos
+	Furtividade
+	2
+	+2 em testes de movimentação silenciosa
+	Lutar
+	2
+	+2 em ataques corpo a corpo
+	Atirar
+	2
+	+2 em ataques à distância
+	Ocultismo
+	2
+	+2 em conhecimento e manipulação mágica
+	Manipulação de Magia
+	2
+	+2 em controle e uso de feitiços
+	Acrobacia
+	2
+	+2 em testes de equilíbrio, saltos e manobras ágeis
+	Conhecimento Histórico
+	2
+	+2 em testes para lembrar ou interpretar eventos e artefatos antigos
+	Mecânica
+	2
+	+2 em testes de conserto e criação de dispositivos mágicos ou mecânicos
+	Estratégia de Combate
+	3
+	+3 em planejamento tático e liderança em batalha
+	Domínio Elemental
+	3
+	+3 ao manipular elementos mágicos em combate
+	________________
+
+
+🛡️ Clãs e Classes
+Cada Clã libera 3 Classes exclusivas com habilidades únicas e pontos adicionais em atributos:
+   * Dûn'Avar: +1 em Vigor e Defesa
+   * Rustal: +1 em Astúcia e Vigor
+   * Cebios Esti: +1 em Espírito e Astúcia
+   * Estres do Ét: +1 em Agilidade e Astúcia
+🏰 Clã Dûn'Avar (Defensores da Barreira Arcana)
+   * Passiva: Proteção Arcana – Uma vez por combate, reduz 50% do dano recebido por 1 rodada.
+   * Classes:
+   1. Sentinela da Luz (Tanker)
+   * Pontos Adicionais: +2 em Vigor e +1 em Defesa
+
+   * Skill 1: Muralha Viva - Reduz todo dano recebido em 2 pontos por 2 rodadas.
+
+   * Skill 2: Postura Inquebrantável - Não pode ser empurrado nem derrubado ao defender.
+
+   * Passiva: Vigilância Absoluta - +1 em testes de resistência contra efeitos negativos.
+
+      2. Gladiador da Barreira (Guerreiro)
+      * Pontos Adicionais: +2 em Força e +1 em Vigor
+      * Skill 1: Impacto Arcano - Golpe que empurra o alvo 2 metros para trás.
+      * Skill 2: Contra-Golpe Rúnico - Após bloquear um ataque, pode atacar imediatamente.
+      * Passiva: Treino dos Guardiões - Ataques ignoram 1 ponto de armadura inimiga.
+      3. Batedor da Vigília (Assassino)
+      * Pontos Adicionais: +2 em Agilidade e +1 em Furtividade
+      * Skill 1: Golpe Silencioso - Se atacar um alvo desprevenido, causa dano dobrado.
+      * Skill 2: Reflexo Sombrio - Se esquivar de um ataque, pode se mover 2 metros instantaneamente.
+      * Passiva: Presença Oculta - +2 em testes de furtividade.
+🔷 Clã Rustal (Mestres das Runas e Inscrições Mágicas)
+      * Passiva: Sabedoria das Runas – Uma vez por sessão, pode refazer um teste falho de feitiço.
+      * Classes:
+      1. Forjador Arcano (Tanker)
+      * Pontos Adicionais: +2 em Vigor e +1 em Astúcia
+      * Skill 1: Armadura Rúnica - Recebe +2 de armadura por 3 rodadas.
+      * Skill 2: Punho de Pedra - Atordoa o alvo por 1 rodada.
+      * Passiva: Pele de Cristal - Reduz em 1 todo dano recebido.
+      2. Guardião das Inscrições (Suporte)
+      * Pontos Adicionais: +2 em Astúcia e +1 em Espírito
+      * Skill 1: Runa de Proteção - Concede +2 de defesa a um aliado por 2 rodadas.
+      * Skill 2: Marcar o Destino - Cria um vínculo que permite que um aliado refaça um teste falho.
+      * Passiva: Escrita Mística - Pode identificar qualquer feitiço ou artefato mágico instantaneamente.
+      3. Gravador das Sombras (Dano a Distância)
+      * Pontos Adicionais: +2 em Astúcia e +1 em Agilidade
+      * Skill 1: Projeção Arcana - Dispara uma energia rúnica que causa dano e reduz a velocidade do alvo.
+      * Skill 2: Runa Explosiva - Marca um inimigo; se ele for atingido novamente, sofre dano adicional.
+      * Passiva: Fluxo de Mana - Regenera 1 ponto de energia por rodada.
+🌌 Clã Cebios Esti (Estudiosos dos Astros e do Destino Mágico)
+      * Passiva: Leitura Estelar – Pode prever um evento e ganhar vantagem no próximo teste de Astúcia.
+      * Classes:
+      1. Astrólogo Celestial (Mago)
+      * Pontos Adicionais: +2 em Espírito e +1 em Astúcia
+      * Skill 1: Chuva de Estrelas - Dispara projéteis arcanos que atingem múltiplos inimigos.
+      * Skill 2: Selo Astral - Bloqueia a próxima magia usada pelo inimigo.
+      * Passiva: Sabedoria Antiga - Feitiços custam 1 ponto de energia a menos.
+      2. Profeta do Orbe (Suporte)
+      * Pontos Adicionais: +2 em Espírito e +1 em Astúcia
+      * Skill 1: Olhar do Futuro - Pode prever a próxima ação de um inimigo antes que ele atue.
+      * Skill 2: Bênção Celestial - Restaura 2 pontos de vida ou energia para um aliado.
+      * Passiva: Orbe do Destino - Uma vez por combate, pode forçar um inimigo a refazer um ataque.
+      3. Caçador de Constelações (Dano a Distância)
+      * Pontos Adicionais: +2 em Agilidade e +1 em Astúcia
+      * Skill 1: Arco Estelar - Flecha de energia celestial que atravessa alvos.
+      * Skill 2: Marcar a Lua - O inimigo marcado recebe -1 em defesa por 3 rodadas.
+      * Passiva: Disparo Astral - Primeiro ataque contra um alvo desconhecido sempre tem +2 de dano.
+🌀 Clã Estres do Ét (Estudiosos da Entropia Mágica)
+      * Passiva: Fluxo Caótico – Uma vez por combate, pode alterar um efeito mágico ao seu favor.
+      * Classes:
+      1. Canalizador do Caos (Mago)
+      * Pontos Adicionais: +2 em Astúcia e +1 em Espírito
+      * Skill 1: Explosão Entrópica - Feitiço imprevisível que pode causar dano extra ou falhar.
+      * Skill 2: Distorção Volátil - Pode teleportar aleatoriamente até 5 metros.
+      * Passiva: Magia Inconstante - Ganha +1 de dano mágico, mas -1 de defesa.
+      2. Guardador da Ruptura (Tanker)
+      * Pontos Adicionais: +2 em Vigor e +1 em Defesa
+      * Skill 1: Zona de Ruína - Reduz a defesa de todos os inimigos ao redor.
+      * Skill 2: Fluxo Inconstante - Alterna entre aumento de dano e aumento de defesa a cada rodada.
+      * Passiva: Padrões do Caos - Reduz 50% de dano de magias inimigas.
+      3. Mago da Ruína (Dano a Distância)
+      * Pontos Adicionais: +2 em Astúcia e +1 em Espírito
+      * Skill 1: Rajada Entópica - Dispara um feixe de energia instável que causa dano variável (1d6+2) e tem 30% de chance de causar um efeito aleatório (empurrar, reduzir defesa ou queimar o alvo).
+      * Skill 2: Esfera do Caos - Lança uma orbe de magia destrutiva que explode ao contato, causando dano em área e desestabilizando inimigos por 1 rodada.
+      * Passiva: Ressonância Caótica - Toda vez que usar uma magia de dano, ganha 1 stack de "Fluxo Entópico". Ao atingir 3 stacks, pode lançar um feitiço sem custo de energia.
+________________
+
+
+✅ Vantagens e Desvantagens
+Cada personagem pode escolher vantagens e desvantagens, que impactam a jogabilidade.
+🏆 Vantagens (+1 a +3 pontos)
+      * (+1 Ponto)
+
+         * Conexão Arcana – +2 em Ocultismo e Manipulação de Magia.
+         * Olhos Atentos – Enxerga no escuro sem dificuldades.
+         * Instinto Selvagem – +2 em Sobrevivência.
+         * Curador Nato – +2 em Curar.
+         * Passo Sutil – +2 em Furtividade.
+         * Sentidos Aguçados – +2 em Notar.
+         * Resistência Natural – +1 em testes de resistência contra venenos e doenças.
+         * Conhecimento Ancestral – +1 em Conhecimento Arcano.
+         * Reflexos Treinados – +1 em Reflexos Rápidos.
+         *          * (+2 Pontos)
+
+            * Guerreiro Rúnico – +2 em Lutar e pode usar armas encantadas.
+
+            * Domador de Criaturas – Pode treinar e controlar animais mágicos.
+
+            * Magia Ancestral – Pode lançar feitiços sem treinamento formal.
+
+            * Perito em Armas – Ignora penalidades ao usar armas improvisadas.
+
+            * Sorte Grande – Pode rolar novamente um teste por sessão.
+
+            * Conhecimento de Runas – +2 em Conhecimento Arcano e pode decifrar inscrições mágicas.
+
+            * Reflexos de Combate – +2 em Reflexos Rápidos.
+
+            * Determinação Inabalável – +2 em Espírito contra efeitos de medo ou manipulação.
+
+            * Olhar Estratégico – +2 em Estratégia de Combate.
+
+               * (+3 Pontos)
+
+                  * Mestre das Runas – Consegue aprimorar runas sem risco de falha.
+
+                  * Canalizador Arcano – Absorve energia mágica para recuperar pontos de magia.
+
+                  * Guardião Eterno – Imunidade contra possessão e controle mental.
+
+                  * Manipulador Elemental – +3 em Domínio Elemental e pode combinar dois elementos básicos.
+
+                  * Mestre da Estratégia – +3 em Estratégia de Combate e pode antecipar ações inimigas.
+
+                  * Espírito Indomável – +3 em Espírito e resistência contra efeitos de medo ou manipulação.
+
+                  * Instinto de Sobrevivência – +3 em Sobrevivência e percepção em ambientes hostis.
+
+❌ Desvantagens (-1 a -3 pontos)
+                     * (-1 Ponto)
+
+                        * Coração Generoso – Não consegue negar ajuda.
+                        * Gênio Difícil – Resiste a ordens e trabalho em equipe.
+                        * Pavio Curto – Se irrita e reage impulsivamente.
+                        * Supersticioso – Evita certas ações por medo de azar.
+                        * Medroso – -1 em testes contra efeitos de medo.
+                        * Descuidado – -1 em testes de Notar.
+                        * Corpo Frágil – -1 em testes de resistência contra venenos e doenças.
+                        * Memória Fraca – -1 em Conhecimento Arcano e Investigação.
+                        * (-2 Pontos)
+
+                           * Fobia de Criaturas Grandes – Fica paralisado perto de monstros.
+                           * Frágil – -1 em Vigor.
+                           * Péssimo Mentiroso – -2 em testes de enganação.
+                           * Atração por Problemas – Sempre envolvido em encrencas.
+                           * Vulnerável a Magia – -2 em testes de resistência contra efeitos mágicos.
+                           * Corpo Pesado – -2 em testes de Agilidade.
+                           * Desorientado – -2 em testes de Investigação e Notar.
+                           * Falta de Foco – -2 em testes de Manipulação de Magia.
+                           * Fobia de Criaturas Grandes – Fica paralisado perto de monstros.
+                           * Frágil – -1 em Vigor.
+                           * (-3 Pontos)
+
+                              * Ferimento Antigo – Sofre -1 em testes físicos exigentes.
+                              * Azarado – Sempre que rolar 1 em um teste, sofre uma penalidade adicional.
+                              * Mão Ruim – Todo início de sessão, rola 1d6: se tirar 1, algo ruim acontece.
+                              * Visão Ruim – -3 em testes de Notar e ataques à distância.
+                              * Corpo Débil – -3 em testes de resistência contra doenças e fadiga.
+                              * Impulsivo – Não pode evitar desafios ou provocações diretas.
+                              * Instabilidade Mágica – Ao lançar magia, há 20% de chance de falha crítica.
+                              * Destino Amaldiçoado – A cada sessão, o mestre pode impor um contratempo significativo.
+                              * Ferimento Antigo – Sofre -1 em testes físicos exigentes.
+                              * Azarado – Sempre que rolar 1 em um teste, sofre uma penalidade adicional.
+                              * ________________
+
+
+🪙 Inventário e Itens
+Cada jogador pode carregar um número limitado de itens, dependendo de sua força e classe. O inventário é dividido em categorias específicas para facilitar a organização dos equipamentos.
+📜 Armas e Equipamentos
+Os jogadores podem equipar até duas armas (primária e secundária) e uma armadura. As armas podem ser corpo a corpo ou à distância, cada uma com atributos específicos.
+Armas: Iniciais
+[N] Espada Longa - Dano: 3 | Tipo: Corte | Peso: Médio
+[N] Machado de Guerra - Dano: 4 | Tipo: Corte | Peso: Pesado
+[N] Arco Longo - Dano: 2 | Tipo: Perfuração | Peso: Leve
+[N] Adaga - Dano: 2 | Tipo: Perfuração | Peso: Leve
+[N] Cetro Arcano - Dano: 2 | Tipo: Mágico | Peso: Leve | Efeito: +1 em Manipulação de Magia
+[N] Livro de Magias 'Projéteis' - Dano: 4 | Tipo: Mágico | Peso: Médio | Efeito: Permite lançar projéteis mágicos à distância
+[N] Cajado de Conjuração - Dano: 2 | Tipo: Mágico | Peso: Pesado | Efeito: Amplifica feitiços e reduz custo de magia em 1 ponto
+Armaduras: Iniciais
+[N] Túnica Mística - Defesa: +1 | Peso: Leve | Efeito: +1 em Manipulação de Magia
+[N] Manto das Estrelas - Defesa: +2 | Peso: Médio | Efeito: Reduz custo de magias em 1 ponto
+[N] Vestes Encantadas - Defesa: +3 | Peso: Leve | Efeito: +2 em resistência contra feitiços adversários
+[N] Armadura de Couro - Defesa: +2 | Peso: Leve
+[N] Cota de Malha - Defesa: +3 | Peso: Médio
+[N] Armadura de Placas - Defesa: +5 | Peso: Pesado
+🔮 Itens Mágicos
+Os itens mágicos são artefatos raros que concedem habilidades especiais ao jogador. Eles podem ser ativados durante o combate ou usados para fornecer bônus passivos.
+Amuleto da Regeneração - Regenera 1 ponto de vida por rodada.
+Orbe de Mana Pura - Recupera 3 pontos de energia mágica ao ser usado.
+Anel da Invisibilidade - Concede invisibilidade por 2 rodadas.
+Cristal da Fúria - Aumenta o dano de ataques físicos em +2 por 3 rodadas.
+💎 Joias Encantadas (Tier 1, 2 e 3 disponíveis conforme loot e progressão)
+As joias encantadas podem ser incrustadas em armas ou armaduras para adicionar efeitos mágicos permanentes.
+Tier 1 (Comum):
+Safira das Marés - +1 em Ocultismo e Cura.
+Rubi da Ira - +1 em Lutar e dano de fogo.
+Tier 2 (Raro):
+Ônix da Sombra - +2 em Furtividade e resistência a magia mental.
+Topázio do Relâmpago - +2 em Atirar e resistência a dano elétrico.
+Tier 3 (Lendário):
+Diamante Celestial - Reduz 50% do dano recebido e +3 em Vigor.
+Opala do Caos - +3 em Manipulação de Magia e permite teletransporte curto.
+🔠 Runas Aplicadas
+As runas são inscrições mágicas que concedem efeitos passivos e podem ser aplicadas em armas, armaduras e acessórios.
+Runa da Cura - Regenera 1 ponto de vida por rodada em combate.
+Runa do Fogo - +1 de dano em ataques corpo a corpo.
+Runa do Escudo - Reduz 1 ponto de dano recebido.
+Runa da Ruína - Inimigos sofrem -1 em testes de resistência contra ataques físicos.
+Os jogadores podem aprimorar e combinar runas para criar efeitos ainda mais poderosos ao longo do jogo.

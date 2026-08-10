@@ -1,0 +1,78 @@
+﻿Os Terrírians são uma raça ancestral, profundamente ligada à magia e aos artefatos encantados. Pequenos em estatura, mas incrivelmente adaptáveis, compensam sua falta de força bruta com inteligência estratégica e um domínio sem igual sobre equipamentos mágicos. Eles habitam o norte da Floresta de Astravél, onde construíram a cidade de Terran, um bastião de conhecimento arcano e defesa mágica.
+* Vínculo Arcano: Desde o nascimento, os Terrírians desenvolvem uma conexão única com itens encantados, podendo absorver e canalizar sua energia de formas únicas.
+* Absorção de Essência: São capazes de consumir temporariamente o poder de um item mágico, triplicando sua eficácia por alguns instantes, mas correndo 73% de risco de destruí-lo permanentemente. Apenas 5% dos itens absorvidos saem intactos desse processo, enquanto todos os outros ganham um status de fragmentado, precisando ser submetidos a melhorias de joias ou runas para recuperação total. No entanto, há uma taxa impressionante de 98% de sinergia entre o item absorvido e o usuário, permitindo uma fusão quase perfeita entre o poder do artefato e a magia do portador. Esses números foram descobertos após um trabalho árduo do renomado pesquisador Muhal'Tut, que dedicou sua vida ao estudo das interações entre magia e matéria em Terrúnia.
+* Habilidade Natural para Encantamentos: Possuem um instinto nato para manipular joias rúnicas e artefatos mágicos, sendo artesãos e estudiosos respeitados entre outras raças.
+* Resiliência e Inteligência: Apesar de frágeis fisicamente, compensam essa fraqueza com uma capacidade de adaptação notável e estratégias engenhosas no combate.
+* Longa Vida e Tradição: Vivem por séculos e valorizam fortemente suas tradições, sendo guiados por anciãos que preservam o conhecimento e os segredos de sua civilização.
+Os Terrírians habitam a cidade de Terran, localizada no norte da Floresta de Astravél, um bastião do conhecimento arcano, governado por linhagens ancestrais que dominam as artes mágicas. A sociedade é estruturada em clãs que desempenham diferentes funções essenciais:
+Os Dûn'Avar
+Os Dûn'Avar são uma linhagem ancestral de defensores de Terran, responsáveis pela manutenção da Barreira Arcana, uma proteção mágica que envolve a cidade e impede que forças externas causem sua ruína.
+🏰 Legado e História
+O clã Dûn'Avar surgiu nos primórdios de Terran, fundado pelo guerreiro-místico Kaelor Dûn'Avar, que canalizou a magia da cidade para erguer a primeira barreira protetora. Durante séculos, os membros do clã foram treinados para dominar táticas de defesa mágica e manter a estabilidade do escudo arcano.
+Contudo, conforme o tempo passou e a barreira se tornou autossustentável, os Dûn'Avar enfrentaram um declínio. Com menos ameaças iminentes, sua importância foi diminuindo, e parte de seus conhecimentos foi esquecida. Hoje, poucos ainda dominam as técnicas originais de proteção, e o clã luta para recuperar sua antiga glória.
+⚔️ Função e Treinamento
+Os Dûn'Avar treinam seus membros desde a infância, ensinando tanto habilidades marciais quanto a manipulação de runas defensivas. Seus principais papéis incluem:
+* Manutenção da Barreira Arcana, garantindo que sua energia permaneça estável.
+* Proteção de Terran, patrulhando os limites da cidade e seus portais mágicos.
+* Resgate de Artefatos Perdidos, buscando joias e runas ancestrais que possam fortalecer suas defesas.
+* Neutralização de Ameaças Mágicas, combatendo seres que tentam drenar ou corromper a energia da cidade.
+🛡️ Hierarquia
+O clã é liderado pelo Guardião da Barreira, título atualmente ocupado por Mireya Dûn'Avar, uma combatente que tenta revitalizar o prestígio da família e restaurar seu conhecimento perdido. Abaixo dela, há os Sentinelas Arcanos, mestres em combate e runas de proteção, e os Aprendizes da Luz, jovens treinados para assumir a responsabilidade do clã no futuro.
+⚖️ Conflitos Atuais
+Os Dûn'Avar enfrentam oposição dentro da própria cidade. Muitos acreditam que seu tempo passou e que a barreira mágica não precisa mais de guardiões, enfraquecendo sua influência política. Além disso, grupos externos buscam romper ou manipular a barreira para seus próprios fins, tornando a preservação do legado do clã uma batalha constante.
+Apesar das dificuldades, os Dûn'Avar permanecem fiéis ao seu juramento ancestral: proteger Terran a qualquer custo.
+Os Rustal
+Os Rustal são mestres na arte das inscrições místicas, sendo os responsáveis por preservar e aprimorar o conhecimento sobre símbolos arcanos em Terrúnia. Seu trabalho é essencial para manter o equilíbrio entre a magia e o mundo físico, garantindo que os encantamentos sejam canalizados corretamente e que os artefatos mágicos sejam usados de maneira segura e eficaz.
+🌀 Função e Conhecimento
+* Desenvolvem e refinam runas de poder, usadas para amplificar magias e proteger estruturas sagradas.
+* São os únicos capazes de criar os Símbolos do Éter, inscrições raras que estabilizam a magia ao redor.
+* Trabalham ao lado de alquimistas e ferreiros para gravar runas em armas, armaduras e pergaminhos, tornando-os poderosos catalisadores mágicos.
+* Guardam os segredos da Escrita Arcana Perdida, uma forma antiga de comunicação que permite interação com forças primordiais.
+📜 Hierarquia e Estrutura
+Os Rustal são organizados em uma estrutura de aprendizes e mestres:
+* Guardião das Runas – Líder do clã e detentor dos segredos mais antigos das inscrições mágicas.
+* Mestres Gravadores – Sábios responsáveis por ensinar novas gerações e supervisionar a criação de runas avançadas.
+* Tecelões de Símbolos – Especialistas em criar inscrições móveis em pergaminhos e artefatos portáteis.
+* Aprendizes da Palavra Mística – Estudantes iniciantes que aprendem os fundamentos da gravação mágica.
+🏛️ Influência e Relações
+Os Rustal são respeitados em todas as esferas da sociedade mágica, sendo frequentemente chamados para consultoria em grandes projetos arcanos. Sua relação com os Tejedores de Runas é forte, pois compartilham o objetivo de preservar a magia antiga. Entretanto, mantêm uma rivalidade silenciosa com aqueles que utilizam símbolos proibidos ou distorcem suas inscrições para fins de magia sombria.
+⚠️ Desafios e Ameaças
+* O conhecimento ancestral dos Rustal está se perdendo, pois muitas de suas inscrições mais antigas foram apagadas pelo tempo ou destruídas.
+* Algumas runas podem sair do controle, resultando em eventos mágicos instáveis que afetam toda uma região.
+* Facções inimigas tentam roubar suas inscrições para uso corrupto, criando artefatos perigosos e rituais instáveis.
+Os Cebios Esti
+Os Cebios Esti são estudiosos dos astros e da influência mágica no destino. Como observadores celestes, dedicam suas vidas ao estudo das constelações, da movimentação dos corpos celestes e de sua relação com os fluxos arcanos de Terrúnia.
+🌌 Conhecimento e Propósito
+Os Cebios acreditam que o universo segue padrões invisíveis e que o destino pode ser compreendido por meio da observação minuciosa dos astros. Suas funções principais incluem:
+* Mapear as constelações e analisar seus efeitos na magia e nos eventos mundanos.
+* Interpretar sinais celestiais para prever crises mágicas e rupturas no equilíbrio arcano.
+* Servir como conselheiros para líderes e estudiosos sobre influências cósmicas.
+* Desenvolver técnicas de magia astral, permitindo canalizar a energia das estrelas.
+🏛️ Estrutura e Hierarquia
+Os Cebios Esti se organizam em três grandes círculos de estudo:
+* Os Cartógrafos Celestiais – Responsáveis pelo registro e análise de movimentos estelares.
+* Os Profetas do Éter – Especializados na leitura do destino e interpretação de sinais cósmicos.
+* Os Guardiões do Orbe Celestial – Magos que canalizam a energia das estrelas para feitiçaria e rituais.
+⚠️ Conflitos e Desafios
+Embora respeitados, os Cebios enfrentam desafios constantes:
+* Muitos duvidam da veracidade de suas previsões e os consideram apenas sonhadores.
+* Seu conhecimento é frequentemente procurado por aqueles que desejam manipular o destino para propósitos egoístas.
+* Algumas estrelas ocultam mistérios perigosos, e sua interpretação errônea pode levar a desastres mágicos.
+Os Estres do Ét
+Os Estres do Ét são uma ordem secreta de estudiosos da entropia mágica, dedicados à compreensão e controle das forças caóticas que regem o fluxo arcano de Terrúnia. Diferente dos magos tradicionais, que buscam a harmonia na magia, os Estres estudam as oscilações energéticas e como estas podem ser manipuladas sem corromper o tecido da realidade.
+🌀 Conhecimento e Propósito
+* Analisam anomalias e distorções no fluxo arcano.
+* Desenvolvem métodos para conter rupturas mágicas antes que causem colapsos energéticos.
+* Criam artefatos que estabilizam regiões afetadas por magia instável.
+* Buscam compreender a natureza da entropia para evitar que forças destrutivas se manifestem em Terrúnia.
+🏛️ Estrutura e Hierarquia
+Os Estres do Ét são divididos em três grupos principais:
+* Observadores do Caos – Especializados em prever mudanças nas correntes de magia instável.
+* Teóricos da Ruptura – Pesquisam métodos para conter e redirecionar o fluxo de energia caótica.
+* Guardadores da Ordem – Combatem manifestações perigosas da entropia e estabilizam regiões corrompidas.
+⚠️ Conflitos e Desafios
+* Muitos os veem como um perigo para o equilíbrio mágico, pois estudam forças imprevisíveis.
+* Seu conhecimento é frequentemente procurado por feiticeiros ambiciosos que desejam usar a entropia para fins destrutivos.
+* Alguns dentro da própria ordem acreditam que a entropia não deve ser contida, mas sim utilizada para remodelar a realidade.
+Apesar dos desafios, os Estres do Ét continuam sua missão, certos de que compreender a entropia é essencial para preservar a estabilidade do mundo.
+* Os Anci Da: Guardiões da Árvore de Elu’Thar, a fonte de energia vital de Terran.
