@@ -47,10 +47,12 @@ type GameState = {
 }
 
 const nowIso = () => new Date().toISOString()
+let persistenceQueue = Promise.resolve<void>(undefined)
+
+export const flushPersistence = () => persistenceQueue
 
 export const useGameStore = create<GameState>((set, get) => {
   let notificationId = 0
-  let persistenceQueue = Promise.resolve<void>(undefined)
 
   const show = (
     title: string,
