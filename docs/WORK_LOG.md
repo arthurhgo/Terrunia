@@ -1,5 +1,21 @@
 # Registro de implementação
 
+## v0.3 — Câmaras Fúngicas e Grau II
+
+- integrado o PR v0.2 à `main` após CI aprovado;
+- transformado o nó final das Câmaras Fúngicas em encontro de boss acessível somente após o limiar;
+- cadastrado Colosso Micélio como boss canônico com stats e habilidade marcados `BALANCE_DRAFT`;
+- adicionadas localização e mensagens de vitória data-driven aos encontros;
+- concedido Fragmento de Essência Micelial protegido de venda/conversão e preparado para Infusão;
+- registradas memória do boss e flags de mundo como recompensas declarativas;
+- implementado Rito de Grau II atômico com validação de Terran, Ressonância, componente, proteção e slot;
+- removido o Fragmento somente no mesmo commit que avança Grau, insere Essência e grava Memória;
+- revelado o ramo micelial existente da Skill Tree pelo componente, sem condição de UI;
+- criada migração de save v2→v3 que distingue boss bloqueado de boss atual;
+- corrigida colisão de IDs de loot entre encontros sob UUID determinístico;
+- ampliados testes unitários, integração e E2E até boss → Infusão → reload;
+- revisados Portal, boss, modal do rito e tela do Grau II em desktop/mobile.
+
 ## v0.2 — trilha e combate tático
 
 - integrada a fundação v0.1 na `main` após CI aprovado;

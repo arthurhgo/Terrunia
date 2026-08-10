@@ -1,6 +1,6 @@
 # Terrúnia — Resquícios das Ruínas
 
-Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, Vínculos, Essência, Skill Tree e save local-first.
+Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, primeira Ruína, Vínculos, Infusão, Skill Tree e save local-first.
 
 ## O que já é jogável
 
@@ -20,7 +20,12 @@ O fluxo atual cobre:
 12. progressão pelo acampamento abandonado e obtenção de um consumível;
 13. combate contra três Fungorros com alvos independentes, Mana e status temporários;
 14. descoberta do limiar das Câmaras Fúngicas;
-15. persistência em IndexedDB e sincronização opcional com Firestore.
+15. confronto contra o Colosso Micélio;
+16. Fragmento de Essência preservado para Infusão, sem conversão ou venda;
+17. retorno a Terran e Rito de Evolução atômico;
+18. arma vinculada elevada ao Grau II com Essência Micelial;
+19. memória do boss e ramo micelial revelado na Skill Tree;
+20. persistência em IndexedDB e sincronização opcional com Firestore.
 
 ## Regras canônicas preservadas
 

@@ -20,7 +20,7 @@ flowchart TD
 
 ## Combate e exploração
 
-A trilha resolve um nó atual por vez. Entradas, acampamentos e eventos usam o mesmo motor de progressão; batalhas apontam para `EncounterDefinition`, que declara 1–3 instâncias inimigas e recompensas sem acoplamento à tela.
+A trilha resolve um nó atual por vez. Entradas, acampamentos e eventos usam o mesmo motor de progressão; batalhas apontam para `EncounterDefinition`, que declara 1–3 instâncias inimigas e recompensas sem acoplamento à tela. Chefes mantêm o tipo de nó `boss`, mas o save diferencia `boss` bloqueado de `bossCurrent` acessível.
 
 A batalha usa uma máquina de estados determinística e uma timeline de iniciativa:
 
@@ -43,8 +43,10 @@ O estado inclui cursor de iniciativa, HP/MP, guarda, skills, status com duraçã
 
 Ressonância pertence a cada item vinculado e governa seu progresso. Essência bruta alimenta uma barra global; cada limiar completo acrescenta exatamente um Ponto de Essência ao pool compartilhado. Nodes validam domínio, pré-requisitos, Grau e saldo antes do commit atômico.
 
+O Rito do Grau II também é atômico: valida localização, Ressonância, Fragmento, proteção e capacidade; somente então consome a instância do inventário, avança o Grau, insere a definição de Essência, registra Memória/flag e agenda autosave. A árvore revela nodes consultando as tags do componente inserido.
+
 ## Persistência
 
 Cada mudança cria uma nova revisão do `GameSave`. Escritas são serializadas localmente; a sincronização de nuvem é opcional. Regras de domínio podem ser testadas sem navegador, IndexedDB ou Firebase.
 
-O schema v2 migra saves v1, preserva progresso permanente e encerra somente uma batalha transitória em andamento, retornando o jogador à trilha correspondente.
+O schema v3 migra saves v1/v2, preserva progresso permanente e libera o Colosso apenas quando o limiar já foi concluído. Batalhas antigas continuam válidas porque as novas recompensas de Memória/flags são opcionais.
