@@ -1,0 +1,72 @@
+﻿Ruínas Perdidas de Terran: As Dungeons da Entropia
+As Ruínas Perdidas são fragmentos da realidade distorcida, resultado de uma disrupção na entropia mágica de Terrúnia. Essas estruturas são chamadas de ruínas, mas, na verdade, são dungeons criadas a partir de falhas na teia arcana do mundo. Cada uma delas abriga um boss, uma criatura ou entidade que representa a anomalia específica daquele local. As ruínas possuem diferentes níveis de dificuldade, indo do Nível 1 ao Nível 10, cada uma com um tema e história própria.
+________________
+
+
+1. Câmaras Fúngicas de Astravél (Nível 1 - Fungorros)
+Localização: Floresta de Astravél
+Tema: Infestação de Fungorros
+Boss: O Colosso Micélio, uma entidade fúngica consciente que tenta espalhar sua praga.
+História: Criada a partir de um surto de Fungorros que escapou do controle, essa ruína abriga uma rede subterrânea infestada de esporos letais. Apenas aqueles que dominam magias de luz ou fogo podem impedir sua propagação.
+Criaturas Adicionais:
+* Fungorro Rastejante (Nv1): Pequeno parasita fúngico que se agarra às vítimas para drená-las lentamente.
+   * Vida: 8
+   * Ataque: Mordida parasitária (1d4 de dano + 1 de veneno)
+   * Defesa: 6
+   * Velocidade: Média
+   * Fraquezas: Luz e Fogo (Dano dobrado)
+   * Habilidade Especial: Esporos Adesivos - Se atingir um alvo, reduz sua mobilidade em 50% por 1 rodada.
+   * XP concedido: 15
+* Semeador de Esporos (Nv2): Criatura que libera nuvens de esporos alucinógenos.
+   * Vida: 8
+   * Ataque: Mordida parasitária (1d4 de dano + 1 de veneno)
+   * Defesa: 6
+   * Velocidade: Média
+   * Fraquezas: Luz e Fogo (Dano dobrado)
+   * Habilidade Especial: Esporos Alucinógenos - Quando atingido, o alvo deve fazer um teste de Vigor (Dificuldade 6). Se falhar, sofre 5 de dano.
+   * XP concedido: 25
+* Bola de Gosma Fúngica (Nv3): Uma esfera gelatinosa composta por matéria fúngica instável, capaz de se dividir ao ser destruída. Ao ser derrotada, gera até dois Fungorros Rastejantes.
+   * Vida: 12
+   * Ataque: Investida pegajosa (1d6 de dano + 1 de veneno)
+   * Defesa: 7
+   * Velocidade: Lenta
+   * Fraquezas: Luz e Fogo (Dano dobrado)
+   * Habilidade Especial: Dissolução Fungóide - Quando derrotada, explode em uma chuva de esporos, forçando todos em um raio de 3 metros a fazer um teste de Vigor (Dificuldade 7). Se falharem, perdem uma ação na próxima rodada. Além disso, a gosma fúngica se divide, criando até dois Fungorros Rastejantes de Nível 1 no local onde foi destruída.
+   * XP concedido: 50
+* Horror Esporulante (Nv4): Criatura mutante que infecta seres vivos, tornando-os marionetes da colônia.
+   * Vida: 15
+   * Ataque: Garras Fúngicas (1d8 de dano + infecção)
+   * Defesa: 8
+   * Velocidade: Média
+   * Fraquezas: Luz e Fogo (Dano dobrado)
+   * Habilidade Especial: Infecção Esporulante - Ao atingir um inimigo, ele deve fazer um teste de Vigor (Dificuldade 8). Se falhar, fica envenenado e sofre 3 de dano contínuo por 2 rodadas. Se morrer sob esse efeito, se transforma em um Fungorro Rastejante Nv1.
+   * XP concedido: 100
+* Titan Raiz-Negra (Nv5): A forma mais poderosa dos Fungorros, capaz de absorver a magia do ambiente para fortalecer sua praga.
+   * Vida: 20
+   * Ataque: Raízes Vorazes (1d10 de dano + drenagem de energia)
+   * Defesa: 10
+   * Velocidade: Lenta
+   * Fraquezas: Luz e Fogo (Dano dobrado)
+   * Habilidade Especial: Expansão Corruptora - A cada 3 rodadas, Titan Raiz-Negra pode enraizar-se no solo, absorvendo magia do ambiente e restaurando 5 pontos de vida. Além disso, gera um Fungorro Rastejante Nv1 ao seu redor.
+   * XP concedido: 250
+2. Catacumbas das Runas Esquecidas (Nível 2 - Runas Instáveis)
+Localização: Subterrâneos de Terran
+Tema: Magia rúnica corrompida
+Boss: Lorian, o Gravador Renegado, um espectro de um mestre das runas enlouquecido pela entropia.
+História: Esta dungeon foi um antigo armazém dos Rustal, mas as runas de contenção falharam, criando um campo caótico onde a realidade se distorce constantemente.
+3. O Templo das Estrelas Quebradas (Nível 3 - Astronomia Sombria)
+Localização: Montanhas de Korduun
+Tema: Magia celestial corrompida
+Boss: O Orbe de Valerian, um artefato consciente que distorce o tempo e o espaço.
+História: Um observatório dos Cebios Esti que sofreu uma ruptura na energia estelar, criando visões distorcidas do passado e do futuro.
+4. O Poço das Almas Perdidas (Nível 4 - Maldição Ancestral)
+Localização: Floresta de Astravél
+Tema: Espíritos atormentados
+Boss: O Sem-Rosto, um ser que devora memórias e identidade.
+História: Antigo santuário dos Anci Da, este local foi consumido por um ritual mal sucedido que aprisionou as almas dos habitantes, criando um vórtice de energia negativa.
+5. O Vale das Engrenagens Corrompidas (Nível 5 - Tecnomagia Perdida)
+Localização: Ruínas de Keth'Zar
+Tema: Maquinários descontrolados
+Boss: A Engrenagem Maldita, uma entidade formada por fragmentos de autômatos antigos.
+História: Restos de uma civilização que tentava fundir tecnologia e magia, mas criou uma entidade autoconsciente que busca assimilar tudo ao seu sistema.
+Cada uma dessas ruínas representa uma etapa da decadência e desequilíbrio mágico de Terrúnia, e apenas os mais corajosos aventureiros se atrevem a enfrentá-las.

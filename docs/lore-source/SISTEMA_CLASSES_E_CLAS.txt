@@ -1,0 +1,172 @@
+﻿Classes de RPG dos Clãs de Terran
+Cada clã concede uma passiva única ao jogador, representando seu legado e conexão com sua linhagem. Além disso, cada classe é balanceada dentro do SISTEMA TESTE, garantindo variedade de funções em combate e interação.
+________________
+
+
+Clã Dûn'Avar (Defensores da Barreira Arcana) 🛡
+Passiva do Clã: "Proteção Arcana"
+* Uma vez por combate, pode gerar uma barreira mágica que reduz o dano recebido em 50% por 1 rodada.
+Skills:
+1. Sentinela da Luz (Tanker)
+   * Skill 1: Muralha Viva - Reduz todo dano recebido em 2 pontos por 2 rodadas.
+   * Skill 2: Postura Inquebrantável - Enquanto estiver defendendo, não pode ser empurrado nem derrubado.
+   * Passiva: Vigilância Absoluta - Ganha +1 em testes de resistência contra efeitos negativos.
+2. Gladiador da Barreira (Guerreiro)
+   * Skill 1: Impacto Arcano - Desfere um golpe que empurra o alvo 2 metros para trás.
+   * Skill 2: Contra-Golpe Rúnico - Ao bloquear um ataque, pode atacar imediatamente.
+   * Passiva: Treino dos Guardiões - Ataques básicos ignoram 1 ponto de armadura inimiga.
+3. Batedor da Vigília (Assassino)
+   * Skill 1: Golpe Silencioso - Se atacar um alvo desprevenido, causa dano dobrado.
+   * Skill 2: Reflexo Sombrio - Se esquivar de um ataque, pode se mover 2 metros instantaneamente.
+   * Passiva: Presença Oculta - Ganha +2 em testes de furtividade.
+________________
+
+
+Clã Rustal (Mestres das Runas e Inscrições Mágicas) 🔷
+Passiva do Clã: "Sabedoria das Runas"
+* Uma vez por sessão, pode reescrever um feitiço ou habilidade falha, permitindo refazer o teste.
+Classes:
+1. Forjador Arcano (Tanker)
+   * Skill 1: Armadura Rúnica - Recebe +2 de armadura por 3 rodadas.
+   * Skill 2: Punho de Pedra - Atordoar o alvo por 1 rodada.
+   * Passiva: Pele de Cristal - Reduz em 1 todo dano recebido.
+2. Guardião das Inscrições (Suporte)
+   * Skill 1: Runa de Proteção - Concede +2 de defesa a um aliado por 2 rodadas.
+   * Skill 2: Marcar o Destino - Cria um vínculo que permite que um aliado refaça um teste falho.
+   * Passiva: Escrita Mística - Pode identificar qualquer feitiço ou artefato mágico instantaneamente.
+3. Gravador das Sombras (Dano a Distância)
+   * Skill 1: Projeção Arcana - Dispara uma energia rúnica que causa dano e reduz a velocidade do alvo.
+   * Skill 2: Runa Explosiva - Marca um inimigo; se ele for atingido novamente, sofre dano adicional.
+   * Passiva: Fluxo de Mana - Regenera 1 ponto de energia por rodada.
+________________
+
+
+Clã Cebios Esti (Estudiosos dos Astros e do Destino Mágico) 🌌
+Passiva do Clã: "Leitura Estelar"
+* Pode prever um evento antes que aconteça, recebendo vantagem no próximo teste de Astúcia.
+Classes:
+1. Astrólogo Celestial (Mago)
+   * Skill 1: Chuva de Estrelas - Dispara projéteis arcanos que atingem múltiplos inimigos.
+   * Skill 2: Selo Astral - Bloqueia a próxima magia usada pelo inimigo.
+   * Passiva: Sabedoria Antiga - Feitiços custam 1 ponto de energia a menos.
+2. Profeta do Orbe (Suporte)
+   * Skill 1: Olhar do Futuro - Pode ver a próxima ação de um inimigo antes dele agir.
+   * Skill 2: Bênção Celestial - Restaura 2 pontos de energia ou vida de um aliado.
+   * Passiva: Orbe do Destino - Uma vez por combate, pode forçar um inimigo a repetir um ataque.
+3. Caçador de Constelações (Dano a Distância)
+   * Skill 1: Arco Estelar - Flecha de energia celestial que atravessa alvos.
+   * Skill 2: Marcar a Lua - O inimigo marcado recebe -1 em defesa por 3 rodadas.
+   * Passiva: Disparo Astral - Primeiro ataque contra um alvo desconhecido sempre tem +2 de dano.
+________________
+
+
+Clã Estres do Ét (Estudiosos da Entropia Mágica) 🌀
+Passiva do Clã: "Fluxo Caótico"
+* Pode alterar um efeito mágico ao seu favor uma vez por combate.
+Classes:
+1. Canalizador do Caos (Mago)
+   * Skill 1: Explosão Entrópica - Feitiço imprevisível que pode causar dano extra ou falhar.
+   * Skill 2: Distorção Volátil - Pode teleportar aleatoriamente até 5 metros.
+   * Passiva: Magia Inconstante - Ganha +1 de dano mágico, mas -1 de defesa.
+2. Guardador da Ruptura (Tanker)
+   * Skill 1: Zona de Ruína - Reduz a defesa de todos os inimigos ao redor.
+   * Skill 2: Fluxo Inconstante - Alterna entre aumento de dano e aumento de defesa a cada rodada.
+   * Passiva: Padrões do Caos - Reduz 50% de dano de magias inimigas.
+3. Mago da Ruína (Dano a Distância)
+   * Skill 1: Rajada Entópica - Dispara um feixe de energia instável que causa dano variável (1d6+2) e tem 30% de chance de causar um efeito aleatório (empurrar, reduzir defesa ou queimar o alvo).
+   * Skill 2: Esfera do Caos - Lança uma orbe de magia destrutiva que explode ao contato, causando dano em área e desestabilizando inimigos por 1 rodada.
+   * Passiva: Resonância Caótica - Toda vez que usar uma magia de dano, ganha 1 stack de "Fluxo Entópico". Ao atingir 3 stacks, pode lançar um feitiço sem custo de energia.
+________________
+
+
+Essas classes foram balanceadas conforme o SISTEMA TESTE, garantindo diversidade e sinergia dentro do RPG de Terrúnia. 🌟
+
+
+🎭 Sistema de Atributos Base para Clãs e Classes em Terrúnia
+Cada clã concede +1 em um atributo principal e um bônus adicional específico relacionado à sua natureza mágica e histórica. Além disso, cada classe dentro dos clãs recebe um conjunto inicial de atributos recomendados e bônus de habilidades que guiam seu estilo de jogo.
+________________
+
+
+📜 Clãs e seus Atributos Base
+Cada jogador que escolhe um clã recebe um bônus fixo em um dos atributos principais, além de uma vantagem exclusiva.
+Clã
+	Atributo Base
+	Bônus Exclusivo
+	Dûn'Avar (Defensores da Barreira Arcana) 🛡
+	+1 Vigor
+	Começa com +1 em Defesa
+	Rustal (Mestres das Runas e Inscrições Mágicas) 🔷
+	+1 Astúcia
+	Runas ativadas têm 10% a mais de duração
+	Cebios Esti (Estudiosos dos Astros e do Destino Mágico) 🌌
+	+1 Espírito
+	+1 em testes de Conhecimento Arcano
+	Estres do Ét (Estudiosos da Entropia Mágica) 🌀
+	+1 Agilidade
+	Pode rolar novamente um teste falho 1x por sessão
+	________________
+
+
+🎭 Classes e seus Atributos Base
+Cada classe dentro dos clãs recebe bônus iniciais distribuídos em três atributos principais. Esses bônus garantem que cada classe tenha um diferencial estratégico e funcional no jogo.
+📜 Clã Dûn'Avar (Defensores da Barreira Arcana)
+Classe
+	Atributos Base
+	Bônus Inicial
+	Sentinela da Luz (Tanker)
+	+2 Vigor, +1 Espírito
+	Reduz dano recebido em 1 ponto permanentemente
+	Gladiador da Barreira (Guerreiro)
+	+2 Força, +1 Vigor
+	+1 em testes de Lutar
+	Batedor da Vigília (Assassino)
+	+2 Agilidade, +1 Vigor
+	+1 em testes de Furtividade
+	📜 Clã Rustal (Mestres das Runas e Inscrições Mágicas)
+Classe
+	Atributos Base
+	Bônus Inicial
+	Forjador Arcano (Tanker)
+	+2 Vigor, +1 Astúcia
+	Runas gravadas concedem +1 de bônus
+	Guardião das Inscrições (Suporte)
+	+2 Espírito, +1 Astúcia
+	Feitiços de suporte têm 20% de duração extra
+	Gravador das Sombras (Dano a Distância)
+	+2 Astúcia, +1 Agilidade
+	+1 em testes de Atirar
+	📜 Clã Cebios Esti (Estudiosos dos Astros e do Destino Mágico)
+Classe
+	Atributos Base
+	Bônus Inicial
+	Astrólogo Celestial (Mago)
+	+2 Espírito, +1 Astúcia
+	+1 em testes de Ocultismo
+	Profeta do Orbe (Suporte)
+	+2 Espírito, +1 Vigor
+	Pode refazer um teste de Suporte 1x por sessão
+	Caçador de Constelações (Dano a Distância)
+	+2 Agilidade, +1 Astúcia
+	+1 em testes de Atirar
+	📜 Clã Estres do Ét (Estudiosos da Entropia Mágica)
+Classe
+	Atributos Base
+	Bônus Inicial
+	Canalizador do Caos (Mago)
+	+2 Astúcia, +1 Espírito
+	Magias aleatórias causam +1 de dano extra
+	Guardador da Ruptura (Tanker)
+	+2 Vigor, +1 Agilidade
+	Reduz 50% de dano de magias inimigas
+	Mago da Ruína (Dano a Distância)
+	+2 Espírito, +1 Astúcia
+	Magias ofensivas têm +10% de dano
+	________________
+
+
+🔥 Resumo do Sistema de Atributos Base
+* Cada Clã concede +1 em um atributo principal e um bônus exclusivo.
+* Cada Classe dentro dos clãs tem um conjunto inicial de atributos recomendados e um bônus adicional.
+* Esse sistema garante variedade e equilíbrio entre diferentes arquétipos, reforçando as vantagens e fraquezas de cada escolha.
+Isso ajudará os jogadores a construir seus personagens com maior clareza e coerência dentro do mundo de Terrúnia! 🚀
+Caso precise de ajustes ou queira expandir o sistema com novas mecânicas, me avise! 😊
