@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { GameSave } from '../domain/game/types'
 
-export const CURRENT_SAVE_SCHEMA = 1
+export const CURRENT_SAVE_SCHEMA = 2
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -180,21 +180,31 @@ const combatantSchema = z.object({
   side: z.enum(['player', 'enemy']),
   hp: nonnegativeNumber,
   maxHp: z.number().finite().positive(),
+  mp: nonnegativeNumber,
+  maxMp: nonnegativeNumber,
   attackPower: nonnegativeNumber,
   mitigation: nonnegativeNumber,
   initiative: z.number().finite(),
   alive: z.boolean(),
   defending: z.boolean(),
-  statusIds: z.array(idSchema),
+  skillIds: z.array(idSchema),
+  statusEffects: z.array(z.object({
+    definitionId: idSchema,
+    sourceId: idSchema,
+    remainingTurns: positiveInteger,
+  })),
+  aiSkillEveryRounds: positiveInteger.optional(),
 })
 
 const battleSchema = z.object({
   id: idSchema,
   encounterId: idSchema,
+  trailNodeId: idSchema,
   phase: battlePhaseSchema,
   phaseHistory: z.array(battlePhaseSchema).min(1),
   round: positiveInteger,
   actorId: idSchema,
+  actorCursor: nonnegativeInteger,
   initiativeOrder: z.array(idSchema).min(1),
   combatants: z.record(z.string(), combatantSchema),
   log: z.array(z.object({
@@ -210,6 +220,8 @@ const battleSchema = z.object({
     boundResonance: nonnegativeNumber,
   }),
   claimed: z.boolean(),
+  canFlee: z.boolean(),
+  consumedItemInstanceIds: z.array(idSchema),
   rngSeed: z.number().int(),
 })
 
@@ -287,6 +299,16 @@ export const gameSaveSchema = z.object({
       message: 'O ator atual precisa existir entre os combatentes.',
     })
   }
+  if (
+    save.battle &&
+    save.battle.initiativeOrder[save.battle.actorCursor] !== save.battle.actorId
+  ) {
+    context.addIssue({
+      code: 'custom',
+      path: ['battle', 'actorCursor'],
+      message: 'O cursor de iniciativa deve apontar para o ator atual.',
+    })
+  }
 })
 
 type LegacySave = Partial<GameSave> & { schemaVersion?: number }
@@ -301,14 +323,56 @@ const migrateV0ToV1 = (legacy: LegacySave): unknown => ({
   eventLog: [...(legacy.eventLog ?? []), 'SaveMigrated:0->1'],
 })
 
+const migrateV1ToV2 = (legacy: Record<string, unknown>): unknown => {
+  const world = (legacy.world ?? {}) as Partial<GameSave['world']>
+  const oldStates = { ...(world.trailNodeStates ?? {}) }
+  delete oldStates.astravel_locked_03
+  const completedEncounters = world.completedEncounterIds ?? []
+  const firstEncounterCompleted =
+    oldStates.astravel_fungorro_01 === 'completed' ||
+    completedEncounters.includes('encounter_fungorro_01')
+
+  return {
+    ...legacy,
+    schemaVersion: 2,
+    gameVersion: '0.2.0',
+    battle: null,
+    world: {
+      ...world,
+      trailNodeStates: {
+        ...oldStates,
+        astravel_entry: oldStates.astravel_entry ?? 'locked',
+        astravel_fungorro_01: oldStates.astravel_fungorro_01 ?? 'locked',
+        astravel_camp_03:
+          oldStates.astravel_camp_03 ?? (firstEncounterCompleted ? 'current' : 'locked'),
+        astravel_spore_ambush_04: oldStates.astravel_spore_ambush_04 ?? 'locked',
+        astravel_ruin_threshold_05: oldStates.astravel_ruin_threshold_05 ?? 'locked',
+        astravel_boss_preview: 'boss',
+      },
+    },
+    eventLog: [
+      ...(((legacy.eventLog as string[] | undefined) ?? [])),
+      'SaveMigrated:1->2',
+      ...(legacy.battle ? ['ActiveBattleRecoveredToTrail'] : []),
+    ],
+  }
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
-  const version =
+  let version =
     typeof candidate === 'object' && candidate !== null && 'schemaVersion' in candidate
       ? Number((candidate as { schemaVersion?: unknown }).schemaVersion ?? 0)
       : 0
 
-  if (version === 0) candidate = migrateV0ToV1(candidate as LegacySave)
+  if (version === 0) {
+    candidate = migrateV0ToV1(candidate as LegacySave)
+    version = 1
+  }
+  if (version === 1) {
+    candidate = migrateV1ToV2(candidate as Record<string, unknown>)
+    version = 2
+  }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)
   }

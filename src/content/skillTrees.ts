@@ -11,7 +11,10 @@ export const skillTreeNodeDefinitions = [
     costEssencePoints: 1,
     requires: [{ type: 'boundItemPresent', slot: 'weapon' }],
     hiddenUntil: [],
-    effects: [{ type: 'statModifier', stat: 'attackPower', operation: 'flat', value: 1 }],
+    effects: [
+      { type: 'statModifier', stat: 'attackPower', operation: 'flat', value: 1 },
+      { type: 'unlockSkill', skillId: 'skill_resonant_strike' },
+    ],
     position: { x: 50, y: 82 },
     iconAssetId: 'skill.weapon.bond-core',
     status: 'BALANCE_DRAFT',

@@ -1,6 +1,11 @@
 import type { DraftStatus, Effect, Rarity } from '../domain/shared/types'
 import type { BoundSlot } from '../domain/shared/types'
 
+export type CombatEffectDefinition =
+  | { type: 'damage'; powerBonus: number }
+  | { type: 'restoreHp'; value: number }
+  | { type: 'applyStatus'; statusId: string; durationTurns: number; chance: number }
+
 export type ItemDefinition = {
   id: string
   name: string
@@ -13,6 +18,7 @@ export type ItemDefinition = {
   sellValue: number
   questLocked: boolean
   canInfuseBoundItem: boolean
+  combatEffects: CombatEffectDefinition[]
   affinityTags: string[]
   iconAssetId: string
   status: DraftStatus
@@ -47,8 +53,46 @@ export type EnemyDefinition = {
   goldReward: number
   boundResonanceReward: number
   lootDefinitionIds: string[]
+  skillIds: string[]
+  aiSkillEveryRounds?: number
   weaknessTags: string[]
   assetId: string
+  status: DraftStatus
+}
+
+export type CombatSkillDefinition = {
+  id: string
+  name: string
+  description: string
+  target: 'enemy' | 'self'
+  mpCost: number
+  effects: CombatEffectDefinition[]
+  status: DraftStatus
+}
+
+export type StatusEffectDefinition = {
+  id: string
+  name: string
+  description: string
+  tone: 'beneficial' | 'harmful'
+  startTurnDamage: number
+  attackModifier: number
+  mitigationModifier: number
+  status: DraftStatus
+}
+
+export type EncounterDefinition = {
+  id: string
+  name: string
+  trailNodeId: string
+  enemyDefinitionIds: string[]
+  canFlee: boolean
+  rewards: {
+    characterXp: number
+    gold: number
+    boundResonance: number
+    lootDefinitionIds: string[]
+  }
   status: DraftStatus
 }
 
@@ -145,8 +189,16 @@ export type TrailNodeDefinition = {
   index: number
   type: 'entry' | 'battle' | 'event' | 'chest' | 'camp' | 'npc' | 'boss'
   label: string
+  actionLabel?: string
   encounterId?: string
   requiresQuestId?: string
+  position: { x: number; y: number }
+  interaction?: {
+    actionLabel: string
+    completionMessage: string
+    grantItemDefinitionIds: string[]
+    worldFlag?: string
+  }
 }
 
 export type TrailDefinition = {

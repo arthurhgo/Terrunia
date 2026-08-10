@@ -33,8 +33,8 @@ export const createNewSave = (
   )
 
   return {
-    schemaVersion: 1,
-    gameVersion: '0.1.0',
+    schemaVersion: 2,
+    gameVersion: '0.2.0',
     saveId: ids.saveId,
     ownerId,
     revision: 1,
@@ -101,7 +101,9 @@ export const createNewSave = (
       trailNodeStates: {
         astravel_entry: 'locked',
         astravel_fungorro_01: 'locked',
-        astravel_locked_03: 'locked',
+        astravel_camp_03: 'locked',
+        astravel_spore_ambush_04: 'locked',
+        astravel_ruin_threshold_05: 'locked',
         astravel_boss_preview: 'boss',
       },
       completedEncounterIds: [],
