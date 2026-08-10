@@ -13,6 +13,12 @@ export type BattlePhase =
 
 export type CombatantSide = 'player' | 'enemy'
 
+export type ActiveStatus = {
+  definitionId: string
+  sourceId: string
+  remainingTurns: number
+}
+
 export type Combatant = {
   id: string
   definitionId: string
@@ -20,12 +26,16 @@ export type Combatant = {
   side: CombatantSide
   hp: number
   maxHp: number
+  mp: number
+  maxMp: number
   attackPower: number
   mitigation: number
   initiative: number
   alive: boolean
   defending: boolean
-  statusIds: string[]
+  skillIds: string[]
+  statusEffects: ActiveStatus[]
+  aiSkillEveryRounds?: number
 }
 
 export type BattleLogEntry = {
@@ -45,15 +55,19 @@ export type BattleRewards = {
 export type BattleState = {
   id: string
   encounterId: string
+  trailNodeId: string
   phase: BattlePhase
   phaseHistory: BattlePhase[]
   round: number
   actorId: string
+  actorCursor: number
   initiativeOrder: string[]
   combatants: Record<string, Combatant>
   log: BattleLogEntry[]
   rewards: BattleRewards
   claimed: boolean
+  canFlee: boolean
+  consumedItemInstanceIds: string[]
   rngSeed: number
 }
 

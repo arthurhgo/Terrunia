@@ -33,6 +33,12 @@ const entries: AssetEntry[] = [
     alt: 'Fungorro Rastejante',
   },
   {
+    id: 'enemy.spore-sower',
+    path: '/assets/enemies/fungorros/enemy_spore_sower_idle.png',
+    fallback: '/assets/placeholders/enemy.svg',
+    alt: 'Semeador de Esporos',
+  },
+  {
     id: 'equipment.weapon.prologue.g1',
     path: '/assets/equipment/weapon/weapon_prologue_g1.png',
     fallback: '/assets/placeholders/weapon.svg',
@@ -43,6 +49,18 @@ const entries: AssetEntry[] = [
     path: '/assets/items/item_fungal_nucleus.png',
     fallback: '/assets/placeholders/item.svg',
     alt: 'Núcleo Fúngico',
+  },
+  {
+    id: 'item.spore-cluster',
+    path: '/assets/items/item_spore_cluster.png',
+    fallback: '/assets/placeholders/item.svg',
+    alt: 'Aglomerado de Esporos',
+  },
+  {
+    id: 'item.minor-tonic',
+    path: '/assets/items/item_minor_tonic.png',
+    fallback: '/assets/placeholders/item.svg',
+    alt: 'Tônico de Campo',
   },
   {
     id: 'item.quest-record',

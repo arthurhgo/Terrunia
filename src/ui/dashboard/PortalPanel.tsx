@@ -1,4 +1,13 @@
-import { BookOpen, LockKeyhole, MapPinned, Skull, Swords, Trees } from 'lucide-react'
+import {
+  BookOpen,
+  LockKeyhole,
+  MapPinned,
+  Search,
+  Skull,
+  Swords,
+  TentTree,
+  Trees,
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
@@ -8,14 +17,18 @@ import { GameButton } from '../components/GameButton'
 
 export function PortalPanel({ save, onTalk }: { save: GameSave; onTalk: () => void }) {
   const enterAstravel = useGameStore((state) => state.enterAstravel)
+  const resolveCurrentTrailNode = useGameStore((state) => state.resolveCurrentTrailNode)
   const startBattle = useGameStore((state) => state.startBattle)
   const navigate = useNavigate()
   const trail = content.trails.trail_astravel_entry
   const quest = save.quests.vs_astravel_first_contact
+  const currentNode = trail.nodes.find(
+    (node) => save.world.trailNodeStates[node.id] === 'current',
+  )
 
   const enter = () => enterAstravel()
-  const fight = () => {
-    startBattle()
+  const fight = (nodeId: string) => {
+    startBattle(nodeId)
     navigate('/battle')
   }
 
@@ -23,13 +36,19 @@ export function PortalPanel({ save, onTalk }: { save: GameSave; onTalk: () => vo
     if (quest.status === 'available') {
       return <GameButton variant="primary" full onClick={onTalk}><BookOpen size={17} /> Falar com Eldamar</GameButton>
     }
-    if (save.world.trailNodeStates.astravel_entry === 'current') {
+    if (currentNode?.type === 'entry') {
       return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Entrar em Astravél</GameButton>
     }
-    if (save.world.trailNodeStates.astravel_fungorro_01 === 'current') {
-      return <GameButton variant="primary" full onClick={fight}><Swords size={17} /> Enfrentar Fungorro</GameButton>
+    if (currentNode?.type === 'battle') {
+      return <GameButton variant="primary" full onClick={() => fight(currentNode.id)}><Swords size={17} /> {currentNode.actionLabel ?? currentNode.label}</GameButton>
     }
-    return <GameButton variant="ghost" full disabled><LockKeyhole size={17} /> Próxima rota bloqueada</GameButton>
+    if (currentNode?.type === 'camp') {
+      return <GameButton variant="primary" full onClick={resolveCurrentTrailNode}><TentTree size={17} /> {currentNode.interaction?.actionLabel}</GameButton>
+    }
+    if (currentNode?.type === 'event') {
+      return <GameButton variant="primary" full onClick={resolveCurrentTrailNode}><Search size={17} /> {currentNode.interaction?.actionLabel}</GameButton>
+    }
+    return <GameButton variant="ghost" full disabled><LockKeyhole size={17} /> Câmaras Fúngicas bloqueadas</GameButton>
   })()
 
   return (
@@ -48,20 +67,27 @@ export function PortalPanel({ save, onTalk }: { save: GameSave; onTalk: () => vo
       <div className="trail-map" aria-label="Mapa de nós da Floresta de Astravél">
         <div className="trail-map__texture" aria-hidden="true" />
         <svg viewBox="0 0 320 410" aria-hidden="true" className="trail-paths">
-          <path d="M72 72 C130 72 108 145 164 151 S228 222 170 268 S114 335 226 352" />
+          <path d="M58 54 C105 68 128 92 154 111 S122 177 100 197 S161 239 205 254 S132 305 128 327 S188 359 230 367" />
         </svg>
         {trail.nodes.map((node, index) => {
           const status = save.world.trailNodeStates[node.id] ?? 'locked'
           const className = `trail-node trail-node--${status} trail-node--${node.type}`
           return (
-            <div key={node.id} className={className} style={{ '--node-index': index } as React.CSSProperties}>
+            <div
+              key={node.id}
+              className={className}
+              style={{
+                '--node-index': index,
+                left: `${node.position.x}%`,
+                top: `${node.position.y}%`,
+              } as React.CSSProperties}
+            >
               {node.type === 'boss' ? <Skull size={19} /> : node.index}
               <span>{node.label}</span>
             </div>
           )
         })}
         <span className="map-label map-label--terran">Terran</span>
-        <span className="map-label map-label--ruins">Câmaras</span>
       </div>
 
       <div className="trail-legend">

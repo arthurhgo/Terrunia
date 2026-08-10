@@ -3,6 +3,12 @@ import { content } from '../content/catalog'
 import { gainBoundResonance } from '../domain/bond/boundItems'
 import { createBattle, submitBattleCommand } from '../domain/combat/engine'
 import type { BattleCommand } from '../domain/combat/types'
+import {
+  completeTrailNode,
+  getCurrentTrailNode,
+  getTrailByNodeId,
+  resolveTrailInteraction,
+} from '../domain/exploration/trailEngine'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import type { GameSave, InventoryItemInstance } from '../domain/game/types'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
@@ -34,7 +40,8 @@ type GameState = {
   discoverEldamar: () => void
   acceptQuest: (questId: string) => void
   enterAstravel: () => void
-  startBattle: () => void
+  resolveCurrentTrailNode: () => void
+  startBattle: (nodeId?: string) => void
   submitBattleCommand: (command: BattleCommand) => void
   claimBattleRewards: () => void
   returnToTerran: () => void
@@ -168,44 +175,85 @@ export const useGameStore = create<GameState>((set, get) => {
       if (save.quests.vs_astravel_first_contact?.status !== 'active') {
         return failAction('Converse com Eldamar e aceite a missão antes de entrar na rota.')
       }
-      let next = structuredClone(save)
-      next.world.currentLocationId = 'astravel_entry'
-      if (!next.world.unlockedLocationIds.includes('astravel_entry')) {
-        next.world.unlockedLocationIds.push('astravel_entry')
+      const visiting = structuredClone(save)
+      visiting.world.currentLocationId = 'astravel_entry'
+      if (!visiting.world.unlockedLocationIds.includes('astravel_entry')) {
+        visiting.world.unlockedLocationIds.push('astravel_entry')
       }
-      next.world.trailNodeStates.astravel_entry = 'completed'
-      next.world.trailNodeStates.astravel_fungorro_01 = 'current'
-      next.updatedAt = nowIso()
-      next.revision += 1
+      const now = nowIso()
+      const completed = completeTrailNode(
+        visiting,
+        content.trails.trail_astravel_entry,
+        'astravel_entry',
+        now,
+      )
+      if (!completed.ok) return failAction(completed.message)
+      let next = completed.value.save
       next.eventLog.push('LocationVisited:astravel_entry')
-      next = applyQuestEvent(next, { type: 'visit', targetId: 'astravel_entry' }, content, nowIso())
+      next = applyQuestEvent(next, { type: 'visit', targetId: 'astravel_entry' }, content, now)
       commit(next)
       show('Astravél', 'A presença Fungorra foi localizada no próximo nó.', 'info')
     },
 
-    startBattle: () => {
+    resolveCurrentTrailNode: () => {
       const save = get().save
       if (!save) return
-      if (save.world.trailNodeStates.astravel_fungorro_01 !== 'current') {
+      const trail = content.trails.trail_astravel_entry
+      const node = getCurrentTrailNode(save, trail)
+      if (!node) return failAction('Não existe uma interação atual na trilha.')
+      const now = nowIso()
+      const result = resolveTrailInteraction(save, trail, node.id, content, now)
+      if (!result.ok) return failAction(result.message)
+      commit(result.value.save)
+      show(
+        node.type === 'camp' ? 'Acampamento vasculhado' : 'Rota investigada',
+        node.interaction?.completionMessage ?? 'O nó atual foi concluído.',
+        'success',
+      )
+    },
+
+    startBattle: (nodeId) => {
+      const save = get().save
+      if (!save) return
+      const trail = content.trails.trail_astravel_entry
+      const node = nodeId
+        ? trail.nodes.find((candidate) => candidate.id === nodeId)
+        : getCurrentTrailNode(save, trail)
+      if (!node || save.world.trailNodeStates[node.id] !== 'current') {
         return failAction('Este encontro ainda não está acessível.')
       }
-      const enemy = content.enemies.enemy_fungorro_crawler
-      if (!enemy) return failAction('Conteúdo do inimigo não encontrado.')
+      if (node.type !== 'battle' || !node.encounterId) {
+        return failAction('O nó atual não contém um encontro de combate.')
+      }
+      const encounter = content.encounters[node.encounterId]
+      if (!encounter) return failAction('Conteúdo do encontro não encontrado.')
       const next = structuredClone(save)
-      next.battle = createBattle(next, enemy, content)
+      next.battle = createBattle(next, encounter, content)
+      next.world.currentLocationId = node.id
       next.updatedAt = nowIso()
       next.revision += 1
-      next.eventLog.push('BattleStarted:encounter_fungorro_01')
+      next.eventLog.push(`BattleStarted:${encounter.id}`)
       commit(next)
     },
 
     submitBattleCommand: (command) => {
       const save = get().save
       if (!save?.battle) return failAction('Nenhuma batalha está ativa.')
-      const result = submitBattleCommand(save.battle, command)
+      const consumedBefore = new Set(save.battle.consumedItemInstanceIds)
+      const result = submitBattleCommand(save.battle, command, content, save.inventory)
       if (!result.ok) return failAction(result.message)
       const next = structuredClone(save)
       next.battle = result.value
+      const consumedNow = result.value.consumedItemInstanceIds.filter(
+        (instanceId) => !consumedBefore.has(instanceId),
+      )
+      for (const instanceId of consumedNow) {
+        const index = next.inventory.findIndex((item) => item.instanceId === instanceId)
+        if (index < 0) continue
+        if (next.inventory[index].quantity > 1) next.inventory[index].quantity -= 1
+        else next.inventory.splice(index, 1)
+        next.eventLog.push(`CombatItemConsumed:${instanceId}`)
+      }
       next.updatedAt = nowIso()
       next.revision += 1
       commit(next)
@@ -242,22 +290,34 @@ export const useGameStore = create<GameState>((set, get) => {
         )
       }
       next.battle = { ...battle, claimed: true }
-      next.world.trailNodeStates.astravel_fungorro_01 = 'completed'
-      next.world.trailNodeStates.astravel_locked_03 = 'locked'
+      const trail = getTrailByNodeId(content, battle.trailNodeId)
+      if (!trail) return failAction('A trilha deste encontro não foi encontrada.')
+      const trailResult = completeTrailNode(next, trail, battle.trailNodeId, acquiredAt)
+      if (!trailResult.ok) return failAction(trailResult.message)
+      next = trailResult.value.save
       if (!next.world.completedEncounterIds.includes(battle.encounterId)) {
         next.world.completedEncounterIds.push(battle.encounterId)
       }
       next.eventLog.push(`BattleWon:${battle.encounterId}`, `DropReceived:${loot.length}`)
       next.updatedAt = acquiredAt
-      next.revision += 1
-      next = applyQuestEvent(
-        next,
-        { type: 'kill', targetId: 'enemy_fungorro_crawler' },
-        content,
-        acquiredAt,
-      )
+      for (const enemy of Object.values(battle.combatants).filter(
+        (combatant) => combatant.side === 'enemy' && !combatant.alive,
+      )) {
+        next = applyQuestEvent(
+          next,
+          { type: 'kill', targetId: enemy.definitionId },
+          content,
+          acquiredAt,
+        )
+      }
       commit(next)
-      show('Vitória', 'O Núcleo Fúngico entrou no inventário. Converta ou venda: a escolha é sua.', 'success')
+      show(
+        'Vitória',
+        loot.length > 0
+          ? `${loot.length} drop entrou no inventário. A trilha avançou para o próximo nó.`
+          : 'A trilha avançou para o próximo nó.',
+        'success',
+      )
     },
 
     returnToTerran: () => {

@@ -39,4 +39,23 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.reload()
   await expect(page.getByRole('button', { name: /Núcleo do Vínculo: Desbloqueado/ })).toBeVisible()
   await expect(page.getByText('Pontos de Essência').locator('..').getByText('0')).toBeVisible()
+
+  await page.getByRole('link', { name: 'Nexo', exact: true }).click()
+  await page.getByRole('button', { name: 'Vasculhar acampamento' }).click()
+  await expect(page.locator('.inventory-slot').filter({ hasText: 'Tônico de Campo' })).toBeVisible()
+  await page.getByRole('button', { name: 'Emboscada de Esporos' }).click()
+  await expect(page.getByRole('button', { name: /Selecionar alvo/ })).toHaveCount(3)
+
+  await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
+  await page.getByRole('button', { name: 'Tônico de Campo', exact: true }).click()
+  await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
+  await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
+  await expect(page.getByRole('heading', { name: 'A rota foi preservada' })).toBeVisible()
+  await page.getByRole('button', { name: 'Receber recompensas' }).click()
+  await page.getByRole('button', { name: 'Retornar a Terran' }).click()
+  await page.getByRole('button', { name: 'Investigar o limiar' }).click()
+  await expect(page.getByRole('button', { name: 'Câmaras Fúngicas bloqueadas' })).toBeDisabled()
+
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Câmaras Fúngicas bloqueadas' })).toBeDisabled()
 })

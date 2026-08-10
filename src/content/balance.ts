@@ -4,6 +4,10 @@ export const BALANCE = {
   essenceFallbackGrowth: 1.15,
   initialGold: 0,
   defaultAttributeDie: 6,
+  baseHp: 8,
+  vigorHpMultiplier: 2,
+  baseMana: 5,
+  spiritManaMultiplier: 1,
   boundGradeResonance: {
     1: 0,
     2: 100,

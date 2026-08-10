@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { Requirement, SkillTreeNodeDefinition } from '../../content/types'
 import { evaluateRequirement, getSkillNodeState, type SkillNodeState } from '../../domain/skillTree/skillTree'
-import type { BoundSlot } from '../../domain/shared/types'
+import type { BoundSlot, Effect } from '../../domain/shared/types'
 import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { GameButton } from '../components/GameButton'
@@ -49,6 +49,19 @@ const requirementLabel = (requirement: Requirement) => {
     case 'npcDiscovered': return `Conhecer NPC: ${requirement.npcId}`
     case 'memory': return `Memória: ${requirement.memoryId}`
     case 'worldFlag': return `Marco de mundo: ${requirement.flag}`
+  }
+}
+
+const effectLabel = (effect: Effect) => {
+  switch (effect.type) {
+    case 'statModifier':
+      return `${effect.stat}: ${effect.operation === 'flat' ? '+' : '×'}${effect.value}`
+    case 'unlockSkill':
+      return `Habilidade: ${content.combatSkills[effect.skillId]?.name ?? effect.skillId}`
+    case 'unlockReaction':
+      return `Reação: ${effect.reactionId}`
+    case 'resonanceModifier':
+      return `Ressonância de ${effect.slot}: ${effect.operation === 'flat' ? '+' : '×'}${effect.value}`
   }
 }
 
@@ -214,7 +227,7 @@ export function SkillTreeScreen() {
                 <div className="effect-list">
                   <p className="eyebrow">EFEITOS</p>
                   {selected.effects.map((effect, index) => (
-                    <div key={`${effect.type}-${index}`}>{effect.type === 'statModifier' ? `${effect.stat}: ${effect.operation === 'flat' ? '+' : '×'}${effect.value}` : effect.type}</div>
+                    <div key={`${effect.type}-${index}`}>{effectLabel(effect)}</div>
                   ))}
                 </div>
                 <GameButton
