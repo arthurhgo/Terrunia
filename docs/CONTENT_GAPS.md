@@ -21,6 +21,12 @@ O sistema suporta expansão orientada a dados, mas o slice usa conteúdo técnic
 
 Colosso Micélio é o boss registrado pela especificação; o encontro atual usa uma única fase técnica. Habilidades, stats e recompensa definitiva ainda não são cânone fechado.
 
+## Conteúdo técnico v0.4 — Grau III
+
+A Esmeralda do Crescimento pertence ao banco de Joias da especificação. Sua entrega pelo Colosso, compatibilidade com a Essência Micelial, bônus de +2 Vida e os nodes `Foco Lapidado`, `Amplificação Lapidada` e `Convergência Micelial` existem para validar o sistema e permanecem `CONTENT_DRAFT`/`BALANCE_DRAFT`.
+
+Ainda são `OWNER_DECISION`: origem definitiva da primeira Joia, NPC/edifício do rito, custo narrativo, regra de remoção/substituição e matriz final de sinergias Essência × Joia.
+
 ## Regra de expansão
 
 Novos registros devem entrar nos catálogos de `src/content/`; a UI não deve conter regras exclusivas ou recompensas codificadas diretamente nos componentes.

@@ -1,5 +1,21 @@
 # Registro de implementação
 
+## v0.4 — Grau III e sistema de Joias
+
+- cadastrado banco tipado com as dez Joias registradas pela especificação v0.4;
+- mantidos efeitos, compatibilidades e origens do slice como `BALANCE_DRAFT`/`CONTENT_DRAFT`;
+- adicionada Esmeralda do Crescimento como componente jogável sem permitir venda ou conversão;
+- implementado avaliador data-driven de compatibilidade entre Essência e Joia;
+- implementado Rito de Grau III atômico com validação de Terran, 300 de Ressonância, proteção, compatibilidade e slot;
+- aplicada a propriedade própria da Joia ao cálculo de combate independentemente da compra de nodes;
+- revelados `Foco Lapidado`, `Amplificação Lapidada` e `Convergência Micelial` por hooks de conteúdo;
+- alterada a recompensa provisória do Colosso para fechar exatamente 300 de Ressonância no percurso completo;
+- criada migração v3→v4 que reconcilia Ressonância e Esmeralda para saves que já derrotaram o Colosso;
+- endurecida validação de save para capacidade de slots, componentes cadastrados e composição exata dos Graus II–III;
+- adicionados preview, confirmação de permanência, inventário reservado e representação visual do Grau III;
+- ampliados testes de domínio, schema, integração e E2E até Lapidação → Skill Tree → reload;
+- revisadas telas do rito e do Grau III em desktop/mobile.
+
 ## v0.3.1 — preparação Firebase e deploy público
 
 - registrado o projeto Firebase `terrunia-bf637` sem versionar chaves ou credenciais;

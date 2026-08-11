@@ -8,8 +8,8 @@ O registro central fica em `src/assets/assetRegistry.ts`. Telas solicitam um `as
 | Retratos do jogador | placeholders substituíveis | `public/assets/placeholders/character*.svg` |
 | Eldamar | placeholder substituível | `public/assets/placeholders/npc.svg` |
 | Fungorro Rastejante, Semeador e Colosso Micélio | placeholders substituíveis | `public/assets/placeholders/enemy.svg` |
-| Arma vinculada Graus I–II | placeholders substituíveis | `public/assets/placeholders/weapon.svg` |
-| Drops, Tônico e Fragmento Micelial | placeholders substituíveis | `public/assets/placeholders/item.svg` |
+| Arma vinculada Graus I–III | placeholders substituíveis | `public/assets/placeholders/weapon.svg` |
+| Drops, Tônico, Fragmento Micelial e Joias | placeholders substituíveis | `public/assets/placeholders/item.svg` |
 | Referência visual | somente referência, não servida no jogo | `docs/reference/ui-terrunia-main-v0.4.png` |
 
 Para trocar arte sem alterar telas, mantenha o mesmo `assetId` e atualize somente a entrada do registro. Assets ausentes caem em `placeholder.generic`.
