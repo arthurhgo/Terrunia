@@ -1,4 +1,4 @@
-import { Coins, Filter, FlaskConical, Heart, PackageOpen, Star } from 'lucide-react'
+import { Coins, Filter, FlaskConical, Gem, Heart, PackageOpen, Star } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
@@ -33,8 +33,11 @@ export function InventoryPanel({ save }: { save: GameSave }) {
     const definition = content.items[instance.definitionId]
     return definition?.sellable && !definition.questLocked && !instance.locked && !instance.favorite
   })
-  const selectedForInfusion = selectedItems.some(
-    (instance) => content.items[instance.definitionId]?.canInfuseBoundItem,
+  const selectedForBoundProgression = selectedItems.some(
+    (instance) => {
+      const definition = content.items[instance.definitionId]
+      return Boolean(definition?.canInfuseBoundItem || definition?.gemComponentId)
+    },
   )
   const totals = useMemo(
     () =>
@@ -97,7 +100,9 @@ export function InventoryPanel({ save }: { save: GameSave }) {
                 aria-pressed={isSelected}
                 title={definition.canInfuseBoundItem
                   ? `${definition.name} — reservado para Infusão em item vinculado`
-                  : `${definition.name} — ${definition.essenceValue} Essência ou ${definition.sellValue} Ouro`}
+                  : definition.gemComponentId
+                    ? `${definition.name} — reservada para Lapidação em item vinculado`
+                    : `${definition.name} — ${definition.essenceValue} Essência ou ${definition.sellValue} Ouro`}
               >
                 <AssetImage assetId={definition.iconAssetId} />
                 <span>{definition.name}</span>
@@ -119,7 +124,7 @@ export function InventoryPanel({ save }: { save: GameSave }) {
         </div>
 
         <div className="inventory-actions">
-          <span>{selectedForInfusion ? 'Fragmento reservado para Infusão' : selected.length ? `${selected.length} selecionado(s)` : 'Selecione um drop'}</span>
+          <span>{selectedForBoundProgression ? <><Gem size={14} /> Componente reservado para o Vínculo</> : selected.length ? `${selected.length} selecionado(s)` : 'Selecione um drop'}</span>
           <div>
             <GameButton variant="secondary" disabled={!canConvert} onClick={() => setAction('convert')}>
               <FlaskConical size={16} /> Converter em Essência

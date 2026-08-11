@@ -131,7 +131,11 @@ describe('vertical slice integrada', () => {
     const fragmentId = useGameStore.getState().save?.inventory.find(
       (instance) => instance.definitionId === 'fragment_mycelial_essence',
     )?.instanceId
+    const gemId = useGameStore.getState().save?.inventory.find(
+      (instance) => instance.definitionId === 'item_gem_esmeralda_crescimento',
+    )?.instanceId
     expect(fragmentId).toBeTruthy()
+    expect(gemId).toBeTruthy()
     useGameStore.getState().returnToTerran()
     expect(useGameStore.getState().save?.boundItems[weaponId].resonance).toBeGreaterThanOrEqual(
       useGameStore.getState().save!.boundItems[weaponId].resonanceThreshold,
@@ -144,6 +148,17 @@ describe('vertical slice integrada', () => {
       grade: 2,
       components: { essences: ['essence_mycelial'] },
     })
+    useGameStore.getState().performGradeThreeRite(weaponId, gemId!)
+    expect(useGameStore.getState().notification).toMatchObject({
+      title: 'Vínculo elevado ao Grau III',
+    })
+    expect(useGameStore.getState().save?.boundItems[weaponId]).toMatchObject({
+      grade: 3,
+      components: {
+        essences: ['essence_mycelial'],
+        gems: ['esmeralda_crescimento'],
+      },
+    })
     expect(useGameStore.getState().save?.world.trailNodeStates.astravel_boss_preview).toBe(
       'completed',
     )
@@ -153,8 +168,11 @@ describe('vertical slice integrada', () => {
     expect(reloaded?.world.worldFlags).toContain('fungal_chambers_threshold_discovered')
     expect(reloaded?.inventory[0]?.definitionId).toBe('drop_spore_cluster')
     expect(reloaded?.boundItems[weaponId]).toMatchObject({
-      grade: 2,
-      components: { essences: ['essence_mycelial'] },
+      grade: 3,
+      components: {
+        essences: ['essence_mycelial'],
+        gems: ['esmeralda_crescimento'],
+      },
     })
   })
 })

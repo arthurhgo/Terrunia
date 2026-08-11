@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { content } from '../../content/catalog'
+import { content, type ContentCatalog } from '../../content/catalog'
 import { bindPrologueWeapon, createNewSave } from '../game/createSave'
 import {
   canBindSlot,
   createBoundItem,
+  evaluateGemCompatibility,
   getBoundSlotCapacity,
+  getGradeThreeGemCandidates,
+  performGradeThreeRite,
   performGradeTwoRite,
 } from './boundItems'
 
@@ -36,7 +39,36 @@ const makeRiteSave = () => {
   return bound.value
 }
 
+const makeGradeThreeRiteSave = () => {
+  const save = makeRiteSave()
+  save.boundItems.bound_1.resonance = 300
+  const gradeTwo = performGradeTwoRite(
+    save,
+    'bound_1',
+    'fragment_1',
+    content,
+    '2026-08-10T12:03:00.000Z',
+  )
+  if (!gradeTwo.ok) throw new Error(gradeTwo.message)
+  gradeTwo.value.inventory.push({
+    instanceId: 'gem_1',
+    definitionId: 'item_gem_esmeralda_crescimento',
+    quantity: 1,
+    rarity: 'rare',
+    locked: false,
+    favorite: false,
+    acquiredAt: '2026-08-10T12:04:00.000Z',
+  })
+  return gradeTwo.value
+}
+
 describe('itens vinculados', () => {
+  it('registra as dez Joias previstas pela especificação v0.4', () => {
+    expect(Object.keys(content.gems)).toHaveLength(10)
+    expect(content.gems).toHaveProperty('esmeralda_crescimento')
+    expect(content.gems).toHaveProperty('coracao_kethzar')
+  })
+
   it('aplica exatamente os slots canônicos dos sete Graus', () => {
     expect(getBoundSlotCapacity(1)).toEqual({ essences: 0, gems: 0, runes: 0, superiorRunes: 0 })
     expect(getBoundSlotCapacity(2)).toEqual({ essences: 1, gems: 0, runes: 0, superiorRunes: 0 })
@@ -126,5 +158,106 @@ describe('itens vinculados', () => {
       '2026-08-10T12:04:00.000Z',
     )
     expect(repeated).toMatchObject({ ok: false, code: 'BOUND_GRADE_INVALID' })
+  })
+
+  it('lista somente Joias compatíveis e desprotegidas para o Grau III', () => {
+    const save = makeGradeThreeRiteSave()
+    expect(getGradeThreeGemCandidates(save, 'bound_1', content)).toEqual([
+      {
+        inventoryInstanceId: 'gem_1',
+        itemDefinitionId: 'item_gem_esmeralda_crescimento',
+        gemId: 'esmeralda_crescimento',
+      },
+    ])
+    save.inventory[0].favorite = true
+    expect(getGradeThreeGemCandidates(save, 'bound_1', content)).toEqual([])
+  })
+
+  it('rejeita Joia incompatível por regra data-driven', () => {
+    const save = makeGradeThreeRiteSave()
+    const incompatibleCatalog: ContentCatalog = {
+      ...content,
+      gems: {
+        ...content.gems,
+        esmeralda_crescimento: {
+          ...content.gems.esmeralda_crescimento,
+          compatibility: {
+            anyEssenceTags: [],
+            blockedEssenceTags: ['fungal'],
+          },
+        },
+      },
+    }
+    expect(
+      evaluateGemCompatibility(
+        save.boundItems.bound_1,
+        'esmeralda_crescimento',
+        incompatibleCatalog,
+      ),
+    ).toMatchObject({ ok: false, code: 'GEM_INCOMPATIBLE' })
+    expect(
+      performGradeThreeRite(
+        save,
+        'bound_1',
+        'gem_1',
+        incompatibleCatalog,
+        '2026-08-10T12:05:00.000Z',
+      ),
+    ).toMatchObject({ ok: false, code: 'GEM_INCOMPATIBLE' })
+  })
+
+  it('executa Lapidação e avanço ao Grau III de forma atômica', () => {
+    const save = makeGradeThreeRiteSave()
+    const result = performGradeThreeRite(
+      save,
+      'bound_1',
+      'gem_1',
+      content,
+      '2026-08-10T12:05:00.000Z',
+    )
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.boundItems.bound_1).toMatchObject({
+      grade: 3,
+      resonanceThreshold: 700,
+      visualStage: 3,
+      components: {
+        essences: ['essence_mycelial'],
+        gems: ['esmeralda_crescimento'],
+      },
+    })
+    expect(result.value.boundItems.bound_1.skillTree.discoveredNodeIds).toEqual(
+      expect.arrayContaining([
+        'weapon_gem_focus_1',
+        'weapon_gem_amplification_1',
+        'weapon_synergy_mycelial_emerald_1',
+      ]),
+    )
+    expect(result.value.inventory).toHaveLength(0)
+    expect(result.value.world.worldFlags).toContain('bound_weapon_grade_3')
+    expect(save.boundItems.bound_1.grade).toBe(2)
+    expect(save.inventory).toHaveLength(1)
+  })
+
+  it('Grau III aceita exatamente uma Joia e não permite repetir o rito', () => {
+    const save = makeGradeThreeRiteSave()
+    const first = performGradeThreeRite(
+      save,
+      'bound_1',
+      'gem_1',
+      content,
+      '2026-08-10T12:05:00.000Z',
+    )
+    expect(first.ok).toBe(true)
+    if (!first.ok) return
+    const repeated = performGradeThreeRite(
+      first.value,
+      'bound_1',
+      'gem_1',
+      content,
+      '2026-08-10T12:06:00.000Z',
+    )
+    expect(repeated).toMatchObject({ ok: false, code: 'BOUND_GRADE_INVALID' })
+    expect(first.value.boundItems.bound_1.components.gems).toHaveLength(1)
   })
 })

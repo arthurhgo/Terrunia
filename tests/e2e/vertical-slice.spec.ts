@@ -3,6 +3,11 @@ import { expect, test } from '@playwright/test'
 test('vertical slice: criação, combate, Essência, node e reload', async ({ page }) => {
   test.setTimeout(60_000)
   const visualQa = process.env.VISUAL_QA === '1'
+  const browserErrors: string[] = []
+  page.on('pageerror', (error) => browserErrors.push(error.message))
+  page.on('console', (message) => {
+    if (message.type() === 'error') browserErrors.push(message.text())
+  })
   await page.goto('/login')
 
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
@@ -69,6 +74,7 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: 'Receber recompensas' }).click()
   await page.getByRole('button', { name: 'Retornar a Terran' }).click()
   await expect(page.locator('.inventory-slot').filter({ hasText: 'Fragmento de Essência Micelial' })).toBeVisible()
+  await expect(page.locator('.inventory-slot').filter({ hasText: 'Esmeralda do Crescimento' })).toBeVisible()
 
   await page.getByRole('link', { name: 'Detalhes / Evoluir' }).first().click()
   await expect(page.getByRole('button', { name: 'Executar Rito G2' })).toBeEnabled()
@@ -77,16 +83,28 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: 'Confirmar Infusão' }).click()
   await expect(page.locator('.grade-seal')).toContainText('2')
   await expect(page.getByText('Essência Micelial', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Executar Rito G3' })).toBeEnabled()
+  await page.getByRole('button', { name: 'Executar Rito G3' }).click()
+  await expect(page.getByRole('heading', { name: 'Lapidar a primeira Joia' })).toBeVisible()
+  await expect(page.getByText('Vida máxima +2')).toBeVisible()
+  if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v04-rite-grade3-desktop.png', fullPage: true })
+  await page.getByRole('button', { name: 'Confirmar Lapidação' }).click()
+  await expect(page.locator('.grade-seal')).toContainText('3')
+  await expect(page.getByText('Esmeralda do Crescimento', { exact: true })).toBeVisible()
   if (visualQa) {
     await page.setViewportSize({ width: 390, height: 844 })
-    await page.screenshot({ path: '/tmp/terrunia-v03-grade2-mobile.png', fullPage: true })
+    await page.screenshot({ path: '/tmp/terrunia-v04-grade3-mobile.png', fullPage: true })
     await page.setViewportSize({ width: 1280, height: 720 })
   }
 
   await page.getByRole('link', { name: 'Abrir Skill Tree' }).click()
   await expect(page.getByRole('button', { name: /Memória Micelial: Disponível/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Foco Lapidado: Disponível/ })).toBeVisible()
 
   await page.reload()
   await expect(page.getByRole('button', { name: /Memória Micelial: Disponível/ })).toBeVisible()
-  await expect(page.getByText('G2 · 104 R')).toBeVisible()
+  await expect(page.getByRole('button', { name: /Foco Lapidado: Disponível/ })).toBeVisible()
+  await expect(page.getByText('G3 · 300 R')).toBeVisible()
+  if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v04-skill-tree-desktop.png', fullPage: true })
+  expect(browserErrors).toEqual([])
 })

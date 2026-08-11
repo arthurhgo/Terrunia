@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { bindPrologueWeapon, createNewSave } from '../game/createSave'
-import { getSkillNodeState, unlockSkillNode } from './skillTree'
+import { getFlatStatBonus, getSkillNodeState, unlockSkillNode } from './skillTree'
 
 const makeSave = () => {
   const base = createNewSave(
@@ -55,5 +55,27 @@ describe('Skill Tree data-driven', () => {
       '2026-08-10T12:02:00.000Z',
     )
     expect(result).toMatchObject({ ok: false, code: 'INSUFFICIENT_ESSENCE_POINTS' })
+  })
+
+  it('revela ramos de Joia e sinergia somente após a Lapidação compatível', () => {
+    const save = makeSave()
+    const focus = content.skillTreeNodes.weapon_gem_focus_1
+    const synergy = content.skillTreeNodes.weapon_synergy_mycelial_emerald_1
+    expect(getSkillNodeState(save, focus, content)).toBe('hidden')
+    expect(getSkillNodeState(save, synergy, content)).toBe('hidden')
+
+    save.boundItems.bound_1.grade = 3
+    save.boundItems.bound_1.components.essences.push('essence_mycelial')
+    save.boundItems.bound_1.components.gems.push('esmeralda_crescimento')
+    expect(getSkillNodeState(save, focus, content)).toBe('discovered')
+    expect(getSkillNodeState(save, synergy, content)).toBe('discovered')
+  })
+
+  it('aplica o modificador próprio da Joia mesmo antes de comprar seus nodes', () => {
+    const save = makeSave()
+    save.boundItems.bound_1.grade = 3
+    save.boundItems.bound_1.components.essences.push('essence_mycelial')
+    save.boundItems.bound_1.components.gems.push('esmeralda_crescimento')
+    expect(getFlatStatBonus(save, content, 'maxHp')).toBe(2)
   })
 })

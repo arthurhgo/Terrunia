@@ -8,7 +8,7 @@ import type {
 } from '../../content/types'
 import type { GameSave, InventoryItemInstance } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
-import { collectUnlockedEffects, getFlatStatBonus } from '../skillTree/skillTree'
+import { collectActiveEffects, getFlatStatBonus } from '../skillTree/skillTree'
 import type {
   BattleCommand,
   BattleLogEntry,
@@ -64,7 +64,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
   const weaponId = character.bondedEquipment.weapon
   const boundWeapon = weaponId ? save.boundItems[weaponId] : null
   const weaponBase = boundWeapon ? catalog.boundItemBases[boundWeapon.baseItemId] : null
-  const unlockedSkillIds = collectUnlockedEffects(save, catalog)
+  const unlockedSkillIds = collectActiveEffects(save, catalog)
     .filter((effect): effect is Extract<typeof effect, { type: 'unlockSkill' }> => effect.type === 'unlockSkill')
     .map((effect) => effect.skillId)
   const maxHp =

@@ -57,6 +57,12 @@ const entries: AssetEntry[] = [
     alt: 'Arma básica vinculada, Grau II',
   },
   {
+    id: 'equipment.weapon.prologue.g3',
+    path: '/assets/equipment/weapon/weapon_prologue_g3.png',
+    fallback: '/assets/placeholders/weapon.svg',
+    alt: 'Arma básica vinculada, Grau III com Joia',
+  },
+  {
     id: 'item.fungal-nucleus',
     path: '/assets/items/item_fungal_nucleus.png',
     fallback: '/assets/placeholders/item.svg',
@@ -79,6 +85,12 @@ const entries: AssetEntry[] = [
     path: '/assets/items/item_mycelial_fragment.png',
     fallback: '/assets/placeholders/item.svg',
     alt: 'Fragmento de Essência Micelial',
+  },
+  {
+    id: 'gem.emerald-growth',
+    path: '/assets/gems/gem_emerald_growth.png',
+    fallback: '/assets/placeholders/item.svg',
+    alt: 'Esmeralda do Crescimento',
   },
   {
     id: 'item.quest-record',

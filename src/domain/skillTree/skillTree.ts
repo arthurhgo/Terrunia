@@ -135,12 +135,30 @@ export const collectUnlockedEffects = (save: GameSave, catalog: ContentCatalog):
   return effects
 }
 
+export const collectBoundComponentEffects = (
+  save: GameSave,
+  catalog: ContentCatalog,
+): Effect[] => {
+  const effects: Effect[] = []
+  for (const item of Object.values(save.boundItems)) {
+    for (const gemId of item.components.gems) {
+      effects.push(...(catalog.gems[gemId]?.modifiers ?? []))
+    }
+  }
+  return effects
+}
+
+export const collectActiveEffects = (save: GameSave, catalog: ContentCatalog): Effect[] => [
+  ...collectUnlockedEffects(save, catalog),
+  ...collectBoundComponentEffects(save, catalog),
+]
+
 export const getFlatStatBonus = (
   save: GameSave,
   catalog: ContentCatalog,
   stat: Extract<Effect, { type: 'statModifier' }>['stat'],
 ) =>
-  collectUnlockedEffects(save, catalog)
+  collectActiveEffects(save, catalog)
     .filter(
       (effect): effect is Extract<Effect, { type: 'statModifier' }> =>
         effect.type === 'statModifier' && effect.stat === stat && effect.operation === 'flat',
