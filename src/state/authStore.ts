@@ -26,9 +26,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   error: null,
   initialize: () =>
-    observeAuth((user) => {
-      set({ status: user ? 'signedIn' : 'signedOut', user, error: null })
-    }),
+    observeAuth(
+      (user) => {
+        set({ status: user ? 'signedIn' : 'signedOut', user, error: null })
+      },
+      (error) => {
+        set({
+          status: 'error',
+          user: null,
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Falha ao preparar o perfil de nuvem.',
+        })
+      },
+    ),
   loginGoogle: async () => {
     set({ status: 'loading', error: null })
     try {
