@@ -1,6 +1,7 @@
 import type { GameSave } from '../../domain/game/types'
 import { getLatestLocalSave, putLocalSave } from '../../persistence/localSaveRepository'
 import { isFirebaseConfigured } from '../firebase/firebase'
+import { getActiveCloudSaveId } from './cloudProfileRepository'
 import { getCloudSave, putCloudSave } from './cloudSaveRepository'
 
 export type SyncMode = 'local' | 'cloud'
@@ -13,7 +14,7 @@ const chooseNewest = (local: GameSave, cloud: GameSave) => {
 export const loadSynchronizedSave = async (ownerId: string, saveId?: string) => {
   const local = await getLatestLocalSave(ownerId)
   if (!isFirebaseConfigured || ownerId === 'dev-guest') return local
-  const cloudId = saveId ?? local?.saveId
+  const cloudId = saveId ?? local?.saveId ?? (await getActiveCloudSaveId(ownerId))
   if (!cloudId) return null
   const cloud = await getCloudSave(ownerId, cloudId)
   if (!cloud) {

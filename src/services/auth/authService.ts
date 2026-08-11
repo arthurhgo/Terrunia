@@ -1,5 +1,6 @@
 import type { Unsubscribe, User } from 'firebase/auth'
 import { getFirebaseApp } from '../firebase/firebase'
+import { ensureCloudUserProfile } from '../sync/cloudProfileRepository'
 
 export type AuthProfile = {
   uid: string
@@ -23,9 +24,19 @@ const toProfile = (user: User): AuthProfile => ({
   isGuest: false,
 })
 
-export const observeAuth = (listener: (profile: AuthProfile | null) => void) => {
+const prepareAuthenticatedProfile = async (user: User) => {
+  const profile = toProfile(user)
+  await ensureCloudUserProfile(profile)
+  return profile
+}
+
+export const observeAuth = (
+  listener: (profile: AuthProfile | null) => void,
+  onError: (error: unknown) => void = () => undefined,
+) => {
   let disposed = false
   let unsubscribe: Unsubscribe = () => undefined
+  let authChangeVersion = 0
 
   void (async () => {
     const app = await getFirebaseApp()
@@ -42,15 +53,27 @@ export const observeAuth = (listener: (profile: AuthProfile | null) => void) => 
     const { getAuth, onAuthStateChanged } = await import('firebase/auth')
     if (disposed) return
     unsubscribe = onAuthStateChanged(getAuth(app), (user) => {
-      const profile = user
-        ? toProfile(user)
-        : canUseDevelopmentGuest && hasDevelopmentGuestSession()
-          ? getDevelopmentGuest()
-          : null
-      listener(profile)
+      authChangeVersion += 1
+      const currentVersion = authChangeVersion
+      if (!user) {
+        listener(
+          canUseDevelopmentGuest && hasDevelopmentGuestSession()
+            ? getDevelopmentGuest()
+            : null,
+        )
+        return
+      }
+
+      void prepareAuthenticatedProfile(user)
+        .then((profile) => {
+          if (!disposed && currentVersion === authChangeVersion) listener(profile)
+        })
+        .catch((error) => {
+          if (!disposed && currentVersion === authChangeVersion) onError(error)
+        })
     })
-  })().catch(() => {
-    if (!disposed) listener(null)
+  })().catch((error) => {
+    if (!disposed) onError(error)
   })
 
   return () => {
@@ -64,7 +87,7 @@ export const signInWithGoogle = async () => {
   if (!app) throw new Error('Firebase ainda não foi configurado neste ambiente.')
   const { getAuth, GoogleAuthProvider, signInWithPopup } = await import('firebase/auth')
   const result = await signInWithPopup(getAuth(app), new GoogleAuthProvider())
-  return toProfile(result.user)
+  return prepareAuthenticatedProfile(result.user)
 }
 
 export const signOutFromFirebase = async () => {

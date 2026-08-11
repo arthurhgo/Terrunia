@@ -9,15 +9,23 @@ export const getCloudSave = async (uid: string, saveId: string) => {
   const snapshot = await getDoc(doc(getFirestore(app), 'users', uid, 'saves', saveId))
   if (!snapshot.exists()) return null
   const data = snapshot.data()
-  return migrateAndValidateSave(data.payload)
+  const save = migrateAndValidateSave(data.payload)
+  if (save.ownerId !== uid || save.saveId !== saveId) {
+    throw new Error('O save de nuvem não corresponde ao usuário ou ID solicitado.')
+  }
+  return save
 }
 
 export const putCloudSave = async (uid: string, save: GameSave) => {
   const app = await getFirebaseApp()
   if (!app) return
   if (uid !== save.ownerId) throw new Error('O UID autenticado não corresponde ao proprietário do save.')
-  const { doc, getFirestore, serverTimestamp, setDoc } = await import('firebase/firestore')
-  await setDoc(doc(getFirestore(app), 'users', uid, 'saves', save.saveId), {
+  const { doc, getFirestore, serverTimestamp, writeBatch } = await import(
+    'firebase/firestore'
+  )
+  const database = getFirestore(app)
+  const batch = writeBatch(database)
+  batch.set(doc(database, 'users', uid, 'saves', save.saveId), {
     schemaVersion: save.schemaVersion,
     gameVersion: save.gameVersion,
     revision: save.revision,
@@ -25,4 +33,9 @@ export const putCloudSave = async (uid: string, save: GameSave) => {
     syncedAt: serverTimestamp(),
     payload: save,
   })
+  batch.update(doc(database, 'users', uid), {
+    activeSaveId: save.saveId,
+    lastLoginAt: serverTimestamp(),
+  })
+  await batch.commit()
 }

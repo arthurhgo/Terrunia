@@ -9,9 +9,12 @@ const firebaseConfig: FirebaseOptions = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
-export const isFirebaseConfigured = Object.values(firebaseConfig).every(
+const hasFirebaseConfig = Object.values(firebaseConfig).every(
   (value) => typeof value === 'string' && value.length > 0,
 )
+
+// Automated tests must never connect to the live Firebase project loaded from .env.local.
+export const isFirebaseConfigured = import.meta.env.MODE !== 'test' && hasFirebaseConfig
 
 let appPromise: Promise<FirebaseApp | null> | null = null
 
