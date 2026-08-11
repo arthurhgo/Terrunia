@@ -158,8 +158,11 @@ describe('máquina de estados de combate', () => {
       maxHp: 24,
     })
     expect(battle.rewards).toMatchObject({
-      boundResonance: 60,
-      lootDefinitionIds: ['fragment_mycelial_essence'],
+      boundResonance: 256,
+      lootDefinitionIds: [
+        'fragment_mycelial_essence',
+        'item_gem_esmeralda_crescimento',
+      ],
       worldFlags: ['colossus_mycelium_defeated', 'fungal_chambers_first_clear'],
     })
 

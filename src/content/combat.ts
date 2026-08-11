@@ -98,15 +98,15 @@ export const encounterDefinitions = [
     name: 'Colosso Micélio',
     locationLabel: 'Câmaras Fúngicas de Astravél',
     victoryTitle: 'O núcleo da Ruína cedeu',
-    victorySummary: 'A memória do Colosso foi gravada no Vínculo. O Fragmento deve retornar a Terran.',
+    victorySummary: 'A memória do Colosso foi gravada no Vínculo. O Fragmento e a Joia devem retornar a Terran.',
     trailNodeId: 'astravel_boss_preview',
     enemyDefinitionIds: ['enemy_colossus_mycelium'],
     canFlee: false,
     rewards: {
       characterXp: 120,
       gold: 60,
-      boundResonance: 60,
-      lootDefinitionIds: ['fragment_mycelial_essence'],
+      boundResonance: 256,
+      lootDefinitionIds: ['fragment_mycelial_essence', 'item_gem_esmeralda_crescimento'],
       worldFlags: ['colossus_mycelium_defeated', 'fungal_chambers_first_clear'],
       boundMemory: {
         type: 'boss',

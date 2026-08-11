@@ -1,7 +1,9 @@
 import { z } from 'zod'
+import { content } from '../content/catalog'
+import { getBoundSlotCapacity } from '../domain/bond/boundItems'
 import type { GameSave } from '../domain/game/types'
 
-export const CURRENT_SAVE_SCHEMA = 3
+export const CURRENT_SAVE_SCHEMA = 4
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -275,6 +277,13 @@ export const gameSaveSchema = z.object({
       })
     }
     inventoryIds.add(item.instanceId)
+    if (!content.items[item.definitionId]) {
+      context.addIssue({
+        code: 'custom',
+        path: ['inventory', index, 'definitionId'],
+        message: 'O item do inventário precisa existir no catálogo de conteúdo.',
+      })
+    }
   }
 
   for (const [itemId, item] of Object.entries(save.boundItems)) {
@@ -284,6 +293,54 @@ export const gameSaveSchema = z.object({
         path: ['boundItems', itemId],
         message: 'O Vínculo deve corresponder à chave e ao personagem proprietário.',
       })
+    }
+    const capacity = getBoundSlotCapacity(item.grade)
+    if (
+      item.components.essences.length > capacity.essences ||
+      item.components.gems.length > capacity.gems ||
+      Number(Boolean(item.components.runeId)) > capacity.runes ||
+      Number(Boolean(item.components.superiorRuneId)) > capacity.superiorRunes
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['boundItems', itemId, 'components'],
+        message: 'O Vínculo excede a capacidade de componentes liberada pelo Grau.',
+      })
+    }
+    if (item.grade === 2 && item.components.essences.length !== 1) {
+      context.addIssue({
+        code: 'custom',
+        path: ['boundItems', itemId, 'components', 'essences'],
+        message: 'Um Vínculo de Grau II deve preservar exatamente uma Essência.',
+      })
+    }
+    if (
+      item.grade === 3 &&
+      (item.components.essences.length !== 1 || item.components.gems.length !== 1)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['boundItems', itemId, 'components'],
+        message: 'Um Vínculo de Grau III deve preservar exatamente uma Essência e uma Joia.',
+      })
+    }
+    for (const [index, essenceId] of item.components.essences.entries()) {
+      if (!content.essences[essenceId]) {
+        context.addIssue({
+          code: 'custom',
+          path: ['boundItems', itemId, 'components', 'essences', index],
+          message: 'A Essência vinculada precisa existir no catálogo.',
+        })
+      }
+    }
+    for (const [index, gemId] of item.components.gems.entries()) {
+      if (!content.gems[gemId]) {
+        context.addIssue({
+          code: 'custom',
+          path: ['boundItems', itemId, 'components', 'gems', index],
+          message: 'A Joia vinculada precisa existir no catálogo.',
+        })
+      }
     }
   }
 
@@ -398,6 +455,70 @@ const migrateV2ToV3 = (legacy: Record<string, unknown>): unknown => {
   }
 }
 
+const migrateV3ToV4 = (legacy: Record<string, unknown>): unknown => {
+  const world = (legacy.world ?? {}) as Partial<GameSave['world']>
+  const worldFlags = [...(world.worldFlags ?? [])]
+  const completedEncounterIds = world.completedEncounterIds ?? []
+  const trailNodeStates = world.trailNodeStates ?? {}
+  const bossCompleted =
+    worldFlags.includes('colossus_mycelium_defeated') ||
+    completedEncounterIds.includes('encounter_colossus_mycelium_01') ||
+    trailNodeStates.astravel_boss_preview === 'completed'
+
+  const inventory = structuredClone(
+    (legacy.inventory as GameSave['inventory'] | undefined) ?? [],
+  )
+  const boundItems = structuredClone(
+    (legacy.boundItems as GameSave['boundItems'] | undefined) ?? {},
+  )
+  const character = legacy.character as GameSave['character'] | undefined
+  const activeWeaponId = character?.bondedEquipment.weapon
+  const activeWeapon = activeWeaponId ? boundItems[activeWeaponId] : undefined
+  let rewardReconciled = false
+
+  if (bossCompleted && activeWeapon && activeWeapon.resonance < 300) {
+    activeWeapon.resonance = 300
+    rewardReconciled = true
+  }
+
+  const gemAlreadyOwned =
+    inventory.some((item) => item.definitionId === 'item_gem_esmeralda_crescimento') ||
+    Object.values(boundItems).some((item) => item.components.gems.includes('esmeralda_crescimento'))
+  if (bossCompleted && !gemAlreadyOwned) {
+    inventory.push({
+      instanceId: 'migration_grade3_emerald',
+      definitionId: 'item_gem_esmeralda_crescimento',
+      quantity: 1,
+      rarity: 'rare',
+      locked: false,
+      favorite: false,
+      acquiredAt: String(legacy.updatedAt ?? legacy.createdAt ?? 'migration'),
+    })
+    rewardReconciled = true
+  }
+  if (rewardReconciled && !worldFlags.includes('grade_3_reward_reconciled')) {
+    worldFlags.push('grade_3_reward_reconciled')
+  }
+
+  return {
+    ...legacy,
+    schemaVersion: 4,
+    gameVersion: '0.4.0',
+    revision: Math.max(1, Number(legacy.revision ?? 1)) + (rewardReconciled ? 1 : 0),
+    inventory,
+    boundItems,
+    world: {
+      ...world,
+      worldFlags,
+    },
+    eventLog: [
+      ...(((legacy.eventLog as string[] | undefined) ?? [])),
+      'SaveMigrated:3->4',
+      ...(rewardReconciled ? ['GradeThreeRewardReconciled'] : []),
+    ],
+  }
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -416,6 +537,10 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 2) {
     candidate = migrateV2ToV3(candidate as Record<string, unknown>)
     version = 3
+  }
+  if (version === 3) {
+    candidate = migrateV3ToV4(candidate as Record<string, unknown>)
+    version = 4
   }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)

@@ -1,6 +1,10 @@
 import { create } from 'zustand'
 import { content } from '../content/catalog'
-import { gainBoundResonance, performGradeTwoRite } from '../domain/bond/boundItems'
+import {
+  gainBoundResonance,
+  performGradeThreeRite,
+  performGradeTwoRite,
+} from '../domain/bond/boundItems'
 import { createBattle, submitBattleCommand } from '../domain/combat/engine'
 import type { BattleCommand } from '../domain/combat/types'
 import {
@@ -50,6 +54,7 @@ type GameState = {
   sellItems: (instanceIds: string[]) => void
   toggleFavorite: (instanceId: string) => void
   performGradeTwoRite: (boundItemId: string, fragmentInstanceId: string) => void
+  performGradeThreeRite: (boundItemId: string, gemInstanceId: string) => void
   unlockNode: (nodeId: string) => void
   clearNotification: () => void
   resetSession: () => void
@@ -418,6 +423,25 @@ export const useGameStore = create<GameState>((set, get) => {
       show(
         'Vínculo elevado ao Grau II',
         'A primeira Essência foi incorporada e um novo ramo da Skill Tree foi revelado.',
+        'success',
+      )
+    },
+
+    performGradeThreeRite: (boundItemId, gemInstanceId) => {
+      const save = get().save
+      if (!save) return
+      const result = performGradeThreeRite(
+        save,
+        boundItemId,
+        gemInstanceId,
+        content,
+        nowIso(),
+      )
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+      show(
+        'Vínculo elevado ao Grau III',
+        'A primeira Joia foi lapidada, seus efeitos estão ativos e novos ramos foram revelados.',
         'success',
       )
     },

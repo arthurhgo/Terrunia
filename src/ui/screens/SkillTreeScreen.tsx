@@ -39,7 +39,7 @@ const requirementLabel = (requirement: Requirement) => {
     case 'boundItemResonance': return `${requirement.value} de Ressonância em ${requirement.slot}`
     case 'previousNode': return `Node anterior: ${content.skillTreeNodes[requirement.nodeId]?.name ?? requirement.nodeId}`
     case 'hasEssenceTag': return `Essência com afinidade ${requirement.value}`
-    case 'hasJewelId': return `Joia: ${requirement.value}`
+    case 'hasJewelId': return `Joia: ${content.gems[requirement.value]?.name ?? requirement.value}`
     case 'hasRuneId': return `Runa: ${requirement.value}`
     case 'characterLevel': return `Nível ${requirement.value}`
     case 'clanId': return `Clã ${requirement.value}`
@@ -118,6 +118,15 @@ export function SkillTreeScreen() {
     : null
   const boundItem = itemId ? save.boundItems[itemId] : null
   const hiddenCount = nodes.length - visibleNodes.length
+  const visibleNodeIds = new Set(visibleNodes.map((node) => node.id))
+  const nodeConnections = visibleNodes.flatMap((node) =>
+    node.requires.flatMap((requirement) => {
+      if (requirement.type !== 'previousNode' || !visibleNodeIds.has(requirement.nodeId)) return []
+      const source = content.skillTreeNodes[requirement.nodeId]
+      if (!source) return []
+      return [{ source, target: node }]
+    }),
+  )
 
   const nodeStats = visibleNodes.reduce(
     (result, node) => {
@@ -174,7 +183,15 @@ export function SkillTreeScreen() {
                   {[7, 6, 5, 4, 3, 2, 1].map((grade) => <span key={grade}>GRAU {grade}</span>)}
                 </div>
                 <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="tree-connections" aria-hidden="true">
-                  <path d="M50 82 L34 58 M50 82 L66 58 M34 58 L50 32 M66 58 L50 32" />
+                  {nodeConnections.map(({ source, target }) => (
+                    <line
+                      key={`${source.id}-${target.id}`}
+                      x1={source.position.x}
+                      y1={source.position.y}
+                      x2={target.position.x}
+                      y2={target.position.y}
+                    />
+                  ))}
                 </svg>
                 {visibleNodes.map((node) => (
                   <TreeNode

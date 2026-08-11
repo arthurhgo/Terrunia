@@ -3,6 +3,7 @@ import { boundItemBaseDefinitions, itemDefinitions } from './items'
 import { combatSkillDefinitions, encounterDefinitions, statusEffectDefinitions } from './combat'
 import { enemyDefinitions } from './enemies'
 import { essenceComponentDefinitions } from './essences'
+import { gemComponentDefinitions } from './gems'
 import { npcDefinitions } from './npcs'
 import { questDefinitions } from './quests'
 import { skillTreeNodeDefinitions } from './skillTrees'
@@ -13,6 +14,7 @@ import type {
   EnemyDefinition,
   EncounterDefinition,
   EssenceComponentDefinition,
+  GemComponentDefinition,
   ItemDefinition,
   NPCDefinition,
   QuestDefinition,
@@ -39,6 +41,7 @@ validateStableIds('statusEffects', statusEffectDefinitions)
 validateStableIds('encounters', encounterDefinitions)
 validateStableIds('enemies', enemyDefinitions)
 validateStableIds('essences', essenceComponentDefinitions)
+validateStableIds('gems', gemComponentDefinitions)
 validateStableIds('npcs', npcDefinitions)
 validateStableIds('quests', questDefinitions)
 validateStableIds('skillTreeNodes', skillTreeNodeDefinitions)
@@ -55,6 +58,7 @@ export type ContentCatalog = {
   encounters: Record<string, EncounterDefinition>
   enemies: Record<string, EnemyDefinition>
   essences: Record<string, EssenceComponentDefinition>
+  gems: Record<string, GemComponentDefinition>
   npcs: Record<string, NPCDefinition>
   quests: Record<string, QuestDefinition>
   skillTreeNodes: Record<string, SkillTreeNodeDefinition>
@@ -69,6 +73,7 @@ export const content: ContentCatalog = {
   encounters: indexById(encounterDefinitions),
   enemies: indexById(enemyDefinitions),
   essences: indexById(essenceComponentDefinitions),
+  gems: indexById(gemComponentDefinitions),
   npcs: indexById(npcDefinitions),
   quests: indexById(questDefinitions),
   skillTreeNodes: indexById(skillTreeNodeDefinitions),
@@ -96,6 +101,21 @@ for (const item of Object.values(content.items)) {
     if (!item.canInfuseBoundItem) {
       throw new Error(`Item ${item.id} referencia Infusão sem permitir canInfuseBoundItem.`)
     }
+  }
+  if (item.gemComponentId) {
+    assertReference(
+      content.gems[item.gemComponentId],
+      `${item.id} → ${item.gemComponentId}`,
+    )
+    if (item.category !== 'gem') {
+      throw new Error(`Item ${item.id} referencia uma Joia sem usar a categoria gem.`)
+    }
+  }
+}
+
+for (const gem of Object.values(content.gems)) {
+  for (const nodeId of gem.skillTreeHooks) {
+    assertReference(content.skillTreeNodes[nodeId], `${gem.id} → ${nodeId}`)
   }
 }
 

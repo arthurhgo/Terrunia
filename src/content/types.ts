@@ -10,7 +10,7 @@ export type ItemDefinition = {
   id: string
   name: string
   description: string
-  category: 'drop' | 'material' | 'fragment' | 'consumable' | 'quest' | 'lore' | 'trade'
+  category: 'drop' | 'material' | 'fragment' | 'gem' | 'consumable' | 'quest' | 'lore' | 'trade'
   rarity: Rarity
   convertToEssence: boolean
   essenceValue: number
@@ -19,6 +19,7 @@ export type ItemDefinition = {
   questLocked: boolean
   canInfuseBoundItem: boolean
   infusionComponentId?: string
+  gemComponentId?: string
   combatEffects: CombatEffectDefinition[]
   affinityTags: string[]
   iconAssetId: string
@@ -44,6 +45,27 @@ export type EssenceComponentDefinition = {
   skillTreeHooks: string[]
   visualTags: string[]
   status: DraftStatus
+}
+
+export type GemComponentDefinition = {
+  id: string
+  name: string
+  description: string
+  rarity: Rarity
+  tier: 1 | 2 | 3 | 4
+  modifiers: Effect[]
+  activeEffectIds: string[]
+  skillTreeHooks: string[]
+  affinityTags: string[]
+  compatibility: {
+    anyEssenceTags: string[]
+    blockedEssenceTags: string[]
+  }
+  visualTags: string[]
+  unique: boolean
+  iconAssetId: string
+  status: DraftStatus
+  mechanicsStatus: DraftStatus
 }
 
 export type EnemyDefinition = {
