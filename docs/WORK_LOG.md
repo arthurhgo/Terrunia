@@ -1,5 +1,19 @@
 # Registro de implementação
 
+## v0.3.1 — preparação Firebase e deploy público
+
+- registrado o projeto Firebase `terrunia-bf637` sem versionar chaves ou credenciais;
+- registrado o aplicativo Web `Terrunia Web`, ativado o login Google e publicado o Firestore em modo de produção com regras privadas por usuário;
+- isolado o ambiente de testes para impedir conexões acidentais com o Firebase real;
+- criado perfil privado por usuário com `activeSaveId`;
+- corrigida a descoberta do save em um novo navegador/dispositivo;
+- tornado atômico o batch que grava save e referência ativa;
+- endurecidas as regras para perfil, IDs, tipos e campos permitidos;
+- adicionados testes de sincronização local-first e recuperação cross-device;
+- adicionado rewrite SPA para Vercel;
+- documentado o checklist Firebase, Vercel e validação pública;
+- mantido o convidado em produção como `OWNER_DECISION`.
+
 ## v0.3 — Câmaras Fúngicas e Grau II
 
 - integrado o PR v0.2 à `main` após CI aprovado;
