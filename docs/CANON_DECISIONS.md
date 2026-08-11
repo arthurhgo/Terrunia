@@ -28,4 +28,5 @@ Registro das ambiguidades encontradas durante a implementação do vertical slic
 - Stats/fases finais do Colosso Micélio e definição definitiva do Fragmento Micelial.
 - NPC, edifício, custo e reversibilidade do primeiro Rito de Evolução.
 - Política de resolução e recuperação de conflitos entre saves local e nuvem.
+- Liberação ou não de modo convidado local no build público; o corte atual exige Google Login.
 - Artes finais, tipografia licenciada, áudio e identidade dos retratos.

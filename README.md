@@ -51,6 +51,12 @@ npm run dev
 
 Sem configuração Firebase, o modo convidado de desenvolvimento permanece disponível e salva localmente. Para autenticação Google e nuvem, preencha as variáveis `VITE_FIREBASE_*` em `.env.local` e publique as regras de [`firestore.rules`](./firestore.rules).
 
+## Publicar para jogar no navegador
+
+O repositório inclui [`vercel.json`](./vercel.json) para preservar as rotas do aplicativo no deploy. O projeto Firebase associado é `terrunia-bf637`; Google Authentication, Firestore e as regras privadas por usuário já estão ativos. Antes da divulgação, ainda é necessário cadastrar as variáveis públicas na Vercel e autorizar o domínio gerado no Firebase.
+
+O roteiro completo e os testes de aceite estão em [`docs/DEPLOYMENT_FIREBASE_VERCEL.md`](./docs/DEPLOYMENT_FIREBASE_VERCEL.md).
+
 ## Validação
 
 ```bash
