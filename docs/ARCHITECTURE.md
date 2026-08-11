@@ -43,10 +43,10 @@ O estado inclui cursor de iniciativa, HP/MP, guarda, skills, status com duraçã
 
 Ressonância pertence a cada item vinculado e governa seu progresso. Essência bruta alimenta uma barra global; cada limiar completo acrescenta exatamente um Ponto de Essência ao pool compartilhado. Nodes validam domínio, pré-requisitos, Grau e saldo antes do commit atômico.
 
-O Rito do Grau II também é atômico: valida localização, Ressonância, Fragmento, proteção e capacidade; somente então consome a instância do inventário, avança o Grau, insere a definição de Essência, registra Memória/flag e agenda autosave. A árvore revela nodes consultando as tags do componente inserido.
+Os Ritos dos Graus II–III são atômicos: validam localização, Ressonância, componente, proteção, compatibilidade e capacidade; somente então consomem a instância do inventário, avançam o Grau, incorporam a definição, registram Memória/flag e agendam autosave. A árvore revela nodes consultando tags e IDs dos componentes inseridos. Modificadores próprios de Joia entram na coleção de efeitos ativos sem depender da compra de nodes.
 
 ## Persistência
 
 Cada mudança cria uma nova revisão do `GameSave`. Escritas são serializadas localmente; a sincronização de nuvem é opcional. Regras de domínio podem ser testadas sem navegador, IndexedDB ou Firebase.
 
-O schema v3 migra saves v1/v2, preserva progresso permanente e libera o Colosso apenas quando o limiar já foi concluído. Batalhas antigas continuam válidas porque as novas recompensas de Memória/flags são opcionais.
+O schema v4 migra saves anteriores, preserva progresso permanente e reconcilia a recompensa de Grau III para quem já derrotou o Colosso. A validação rejeita componentes desconhecidos, excesso de slots e Graus II–III incompletos.

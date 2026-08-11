@@ -1,6 +1,6 @@
 # Terrúnia — Resquícios das Ruínas
 
-Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, primeira Ruína, Vínculos, Infusão, Skill Tree e save local-first.
+Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, primeira Ruína, Vínculos, Infusão, Lapidação de Joias, Skill Tree e save local-first.
 
 ## O que já é jogável
 
@@ -25,7 +25,12 @@ O fluxo atual cobre:
 17. retorno a Terran e Rito de Evolução atômico;
 18. arma vinculada elevada ao Grau II com Essência Micelial;
 19. memória do boss e ramo micelial revelado na Skill Tree;
-20. persistência em IndexedDB e sincronização opcional com Firestore.
+20. obtenção da Esmeralda do Crescimento como recompensa técnica do slice;
+21. Rito de Lapidação com preview de efeito, compatibilidade e permanência;
+22. arma vinculada elevada ao Grau III com exatamente uma Joia;
+23. efeito próprio da Joia aplicado ao combate;
+24. três nodes de Joia/sinergia revelados na Skill Tree;
+25. persistência em IndexedDB e sincronização opcional com Firestore.
 
 ## Regras canônicas preservadas
 
@@ -53,7 +58,7 @@ Sem configuração Firebase, o modo convidado de desenvolvimento permanece dispo
 
 ## Publicar para jogar no navegador
 
-O repositório inclui [`vercel.json`](./vercel.json) para preservar as rotas do aplicativo no deploy. O projeto Firebase associado é `terrunia-bf637`; Google Authentication, Firestore e as regras privadas por usuário já estão ativos. Antes da divulgação, ainda é necessário cadastrar as variáveis públicas na Vercel e autorizar o domínio gerado no Firebase.
+O repositório inclui [`vercel.json`](./vercel.json) para preservar as rotas do aplicativo no deploy. O projeto Firebase associado é `terrunia-bf637`; Google Authentication, Firestore e as regras privadas por usuário estão ativos. A versão pública está em [terrunia.vercel.app](https://terrunia.vercel.app).
 
 O roteiro completo e os testes de aceite estão em [`docs/DEPLOYMENT_FIREBASE_VERCEL.md`](./docs/DEPLOYMENT_FIREBASE_VERCEL.md).
 

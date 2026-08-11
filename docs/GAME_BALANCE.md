@@ -21,8 +21,10 @@ Todos os números abaixo são `BALANCE_DRAFT`. Eles existem para tornar o fluxo 
 | Emboscada de Esporos | 3 inimigos; 55 XP, 20 ouro, 32 Ressonância | Valida alvo, timeline e IA multi-inimigo. |
 | Aglomerado de Esporos | 55 Essência ou 20 ouro | Segundo dilema econômico do protótipo. |
 | Colosso Micélio | Nv 6, 24 Vida, 2 mitigação, 4 ataque | Boss técnico vencível com o kit atual; stats finais são `OWNER_DECISION`. |
-| Recompensa do Colosso | 120 XP, 60 ouro, 60 Ressonância | Leva a arma do percurso completo a 104/100, tornando o primeiro rito demonstrável. |
+| Recompensa do Colosso | 120 XP, 60 ouro, 256 Ressonância | Fecha o percurso completo em 300 de Ressonância e evita grind antes do Grau III. |
 | Fragmento Micelial | 1 garantido; sem venda/conversão | Garante que o componente necessário ao Grau II não seja destruído pelo loop de loot. |
 | Rito Grau II | 100 Ressonância + 1 Fragmento + retorno a Terran | Usa threshold da especificação; NPC, edifício e custos adicionais permanecem `OWNER_DECISION`. |
+| Esmeralda do Crescimento | +2 Vida máxima; sem venda/conversão | Demonstra efeito próprio de Joia. Valor e origem no Colosso são drafts. |
+| Rito Grau III | 300 Ressonância + Grau II + Joia compatível + retorno a Terran | Usa threshold da especificação; NPC, edifício, custo e rito narrativo permanecem `OWNER_DECISION`. |
 
 As fontes ficam em `src/content/balance.ts`, `src/content/combat.ts`, `src/content/items.ts`, `src/content/enemies.ts` e `src/content/skillTrees.ts`.

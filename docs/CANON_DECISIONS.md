@@ -18,6 +18,10 @@ Registro das ambiguidades encontradas durante a implementação do vertical slic
 | Primeiro Fragmento | A progressão exige Fragmento no Grau II, mas nome, efeitos e drop final do Colosso não estão fechados. | `Fragmento de Essência Micelial` e `Essência Micelial` são conteúdo técnico substituível; venda e conversão ficam bloqueadas para não destruir progressão. |
 | Rito do Grau II | O rito deve ocorrer em Terran, porém NPC, edifício e custo final são `OWNER_DECISION`. | O build executa um serviço técnico em Terran com confirmação explícita; nenhuma instituição ou personagem é fixado como cânone. |
 | Estado do boss | `boss` era usado simultaneamente como tipo visual e estado, deixando acessibilidade ambígua. | Save v3 preserva `boss` como chefe bloqueado e usa `bossCurrent` somente após concluir o limiar. |
+| Primeira Joia v0.4 | Grau III exige uma Joia, mas a origem e a combinação inicial não estão fechadas. | O slice usa Esmeralda do Crescimento × Essência Micelial como `CONTENT_DRAFT`; catálogo, compatibilidade e recompensa são substituíveis por dados. |
+| Limiar do Grau III | O percurso v0.3 terminava com 104 de Ressonância, abaixo das 300 exigidas. | A recompensa provisória do Colosso foi elevada para 256, fechando 12 + 32 + 256 = 300 sem grind. Valor permanece `BALANCE_DRAFT`. |
+| Rito do Grau III | NPC, edifício, custo e forma narrativa da Lapidação são indefinidos. | Terran executa um serviço técnico com confirmação; nenhuma instituição ou personagem foi tornado cânone. |
+| Permanência da Joia | Remoção, troca e respec estão marcados como `OWNER_DECISION`. | O build informa a incerteza antes da Lapidação e não oferece remoção/troca; o schema continua extensível. |
 
 ## OWNER_DECISION pendente
 
@@ -27,6 +31,8 @@ Registro das ambiguidades encontradas durante a implementação do vertical slic
 - Kit final da primeira habilidade, consumível e cadência das skills inimigas.
 - Stats/fases finais do Colosso Micélio e definição definitiva do Fragmento Micelial.
 - NPC, edifício, custo e reversibilidade do primeiro Rito de Evolução.
+- Origem definitiva da primeira Joia e matriz final de sinergias Essência × Joia.
+- NPC, edifício, custo, remoção e substituição no Rito de Lapidação do Grau III.
 - Política de resolução e recuperação de conflitos entre saves local e nuvem.
 - Liberação ou não de modo convidado local no build público; o corte atual exige Google Login.
 - Artes finais, tipografia licenciada, áudio e identidade dos retratos.
