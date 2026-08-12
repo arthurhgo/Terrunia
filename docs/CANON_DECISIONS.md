@@ -22,6 +22,10 @@ Registro das ambiguidades encontradas durante a implementação do vertical slic
 | Limiar do Grau III | O percurso v0.3 terminava com 104 de Ressonância, abaixo das 300 exigidas. | A recompensa provisória do Colosso foi elevada para 256, fechando 12 + 32 + 256 = 300 sem grind. Valor permanece `BALANCE_DRAFT`. |
 | Rito do Grau III | NPC, edifício, custo e forma narrativa da Lapidação são indefinidos. | Terran executa um serviço técnico com confirmação; nenhuma instituição ou personagem foi tornado cânone. |
 | Permanência da Joia | Remoção, troca e respec estão marcados como `OWNER_DECISION`. | O build informa a incerteza antes da Lapidação e não oferece remoção/troca; o schema continua extensível. |
+| Home de Terran | O mockup v0.4 e o dashboard anterior faziam o Portal ocupar o painel principal; seções históricas listavam prédios legados. | Terran é a Home/cidade-base. A matriz oficial inicial contém seis instituições ao redor da Praça do Portal, conforme `TERRAN_CITY_STRUCTURE.md`. |
+| Papel do Portal | A leitura anterior aproximava Portal, Mundo e tela principal. | O Portal é somente uma área central de Terran, valida missões e dá acesso às instâncias externas. Retornos chegam à Praça. |
+| Ritos dos Vínculos | Grau II–III exigiam Terran, mas o edifício estava `OWNER_DECISION`. | A Oficina dos Vínculos é a instituição responsável pelos cinco Vínculos e seus componentes. NPC, custo e cerimônia final continuam `OWNER_DECISION`. |
+| Geografia da cidade | As casas eram menus sem posição persistente. | `/terran` é mapa/Home; `/terran/:locationId` são áreas. O minimapa registra posição, descoberta e objetivo. Coordenadas são `VISUAL_DRAFT`. |
 
 ## OWNER_DECISION pendente
 
@@ -30,9 +34,11 @@ Registro das ambiguidades encontradas durante a implementação do vertical slic
 - Conteúdo definitivo da primeira missão e da rota de Astravél.
 - Kit final da primeira habilidade, consumível e cadência das skills inimigas.
 - Stats/fases finais do Colosso Micélio e definição definitiva do Fragmento Micelial.
-- NPC, edifício, custo e reversibilidade do primeiro Rito de Evolução.
+- NPC, custo e reversibilidade do primeiro Rito de Evolução na Oficina dos Vínculos.
 - Origem definitiva da primeira Joia e matriz final de sinergias Essência × Joia.
-- NPC, edifício, custo, remoção e substituição no Rito de Lapidação do Grau III.
+- NPC, custo, remoção e substituição no Rito de Lapidação do Grau III na Oficina dos Vínculos.
+- Nome definitivo do Guardião do Portal.
+- Diálogos, requisitos e estados finais dos NPCs condicionais, visitantes e progressivos de Terran.
 - Política de resolução e recuperação de conflitos entre saves local e nuvem.
 - Liberação ou não de modo convidado local no build público; o corte atual exige Google Login.
 - Artes finais, tipografia licenciada, áudio e identidade dos retratos.

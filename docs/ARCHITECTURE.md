@@ -50,3 +50,19 @@ Os Ritos dos Graus II–III são atômicos: validam localização, Ressonância,
 Cada mudança cria uma nova revisão do `GameSave`. Escritas são serializadas localmente; a sincronização de nuvem é opcional. Regras de domínio podem ser testadas sem navegador, IndexedDB ou Firebase.
 
 O schema v4 migra saves anteriores, preserva progresso permanente e reconcilia a recompensa de Grau III para quem já derrotou o Colosso. A validação rejeita componentes desconhecidos, excesso de slots e Graus II–III incompletos.
+
+## Terran
+
+Terran usa um catálogo próprio de localizações. A UI resolve nomes, serviços, NPCs e coordenadas pelo conteúdo; o domínio valida IDs, registra primeira descoberta, persiste `currentLocationId` e calcula o destino urbano da missão.
+
+```mermaid
+flowchart TD
+    Home["/terran · mapa/Home"] --> Area["/terran/:locationId"]
+    Area --> Houses["Seis instituições"]
+    Area --> Plaza["Praça do Portal"]
+    Houses --> Plaza
+    Plaza --> Instance["Instância externa"]
+    Instance --> Plaza
+```
+
+O Portal não é a Home. A entrada externa exige a Praça; o retorno grava a Praça. A Oficina dos Vínculos é o gate espacial dos Ritos. Coordenadas e tons são apresentação, não regra de domínio.

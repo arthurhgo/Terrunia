@@ -2,13 +2,14 @@
 
 ## Autoridade
 
-Antes de alterar regras, leia `docs/TERRUNIA_GAME_APP_MASTER_SPEC_v0.4.md`. Em conflito, aplique:
+Antes de alterar regras, leia `docs/TERRUNIA_GAME_APP_MASTER_SPEC_v0.4.md` e, para qualquer trabalho em Terran, `docs/TERRAN_CITY_STRUCTURE.md`. Em conflito, aplique:
 
-1. seção 0B;
-2. seção 0A;
-3. seções de sistema mais novas;
-4. lore;
-5. material legado.
+1. decisões do criador registradas em `docs/TERRAN_CITY_STRUCTURE.md` para a cidade;
+2. seção 0B;
+3. seção 0A;
+4. seções de sistema mais novas;
+5. lore;
+6. material legado.
 
 Nunca silencie um conflito. Registre a resolução em `docs/CANON_DECISIONS.md`.
 
