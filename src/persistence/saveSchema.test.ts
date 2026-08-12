@@ -143,6 +143,7 @@ describe('save versionado', () => {
     )
     const bound = bindPrologueWeapon(base, content, '2026-08-10T12:01:00.000Z', 'bound_1')
     if (!bound.ok) throw new Error(bound.message)
+    bound.value.world.currentLocationId = 'location_terran_bond_workshop'
     bound.value.boundItems.bound_1.resonance = 300
     bound.value.inventory.push({
       instanceId: 'fragment_1',

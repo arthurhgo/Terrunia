@@ -27,6 +27,7 @@ const makeRiteSave = () => {
     'bound_1',
   )
   if (!bound.ok) throw new Error(bound.message)
+  bound.value.world.currentLocationId = 'location_terran_bond_workshop'
   bound.value.inventory.push({
     instanceId: 'fragment_1',
     definitionId: 'fragment_mycelial_essence',
@@ -107,6 +108,20 @@ describe('itens vinculados', () => {
       '2026-08-10T12:03:00.000Z',
     )
     expect(result).toMatchObject({ ok: false, code: 'BOUND_RESONANCE_REQUIRED' })
+  })
+
+  it('rejeita Ritos fora da Oficina dos Vínculos', () => {
+    const save = makeRiteSave()
+    save.world.currentLocationId = 'location_terran_portal_plaza'
+    save.boundItems.bound_1.resonance = 100
+    const result = performGradeTwoRite(
+      save,
+      'bound_1',
+      'fragment_1',
+      content,
+      '2026-08-10T12:03:00.000Z',
+    )
+    expect(result).toMatchObject({ ok: false, code: 'RITE_REQUIRES_WORKSHOP' })
   })
 
   it('executa Infusão e avanço ao Grau II de forma atômica', () => {

@@ -1,4 +1,4 @@
-import { BookOpen, CircleUserRound, GitBranch, LogOut, Map, Settings, Sparkles } from 'lucide-react'
+import { BookOpen, GitBranch, Landmark, LogOut, Map, Settings, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../state/authStore'
@@ -10,7 +10,7 @@ type GameShellProps = {
 }
 
 const navItems = [
-  { to: '/terran', label: 'Nexo', icon: CircleUserRound },
+  { to: '/terran', label: 'Terran', icon: Landmark },
   { to: '/skill-tree', label: 'Skill Tree', icon: GitBranch },
   { to: '/quests', label: 'Missões', icon: BookOpen },
   { to: '/npcs', label: 'Relações', icon: Sparkles },
@@ -34,7 +34,7 @@ export function GameShell({ children, fluid = false }: GameShellProps) {
   return (
     <div className="game-shell">
       <header className="game-header">
-        <NavLink to="/terran" className="brand" aria-label="Terrúnia — Nexo">
+        <NavLink to="/terran" className="brand" aria-label="Terrúnia — Terran">
           <img src="/assets/ui/terrunia-mark.svg" alt="" />
           <span>
             <strong>Terrúnia</strong>

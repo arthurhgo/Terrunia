@@ -987,6 +987,198 @@ code {
 .owner-decision-note { border: 1px solid #44364e; padding: 12px; color: #9a8fa2; background: rgb(93 49 119 / 9%); font-size: 0.7rem; line-height: 1.5; }
 .owner-decision-note strong { color: var(--violet-soft); }
 
+/* Terran — Home, instituições e Praça do Portal */
+.terran-home,
+.terran-location { display: grid; gap: 14px; min-height: calc(100vh - 103px); }
+.terran-home__heading,
+.terran-location__heading { display: flex; min-width: 0; align-items: end; justify-content: space-between; gap: 28px; border-bottom: 1px solid #3d2f1d; padding: 13px 8px 18px; }
+.terran-home__heading > div:first-child { max-width: 820px; }
+.terran-home__heading h1,
+.terran-location__heading h1 { margin: 0 0 8px; color: var(--gold-bright); font-size: clamp(2.35rem, 5.2vw, 4.9rem); line-height: 0.92; }
+.terran-home__heading > div:first-child > p:last-child,
+.terran-location__identity > div > p:last-child { max-width: 850px; margin: 0; color: #9b9489; font-size: 0.82rem; line-height: 1.6; }
+.location-readout { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 10px; border: 1px solid #3e352a; padding: 9px 12px; color: var(--blue-soft); background: #080b0f; }
+.location-readout span { display: grid; color: #716e68; font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.location-readout strong { margin-top: 3px; color: #d9e8ec; font-family: var(--display); font-size: 0.65rem; letter-spacing: 0.04em; }
+.terran-home__layout { display: grid; min-width: 0; gap: 14px; grid-template-columns: minmax(620px, 1fr) 355px; }
+.terran-home__sidebar { display: grid; min-width: 0; align-content: start; gap: 14px; }
+.terran-map-panel .arcane-panel__content { padding: 10px; }
+
+.terran-minimap { position: relative; min-height: 650px; overflow: hidden; border: 1px solid #5a421f; background: radial-gradient(circle at 50% 50%, rgb(32 105 153 / 18%), transparent 15%), radial-gradient(circle at 50% 50%, transparent 0 29%, rgb(170 114 43 / 9%) 29.3% 29.8%, transparent 30.1%), radial-gradient(ellipse at 50% 55%, #162128 0, #0b1015 52%, #06090c 100%); box-shadow: inset 0 0 0 4px #06080b, inset 0 0 0 5px rgb(126 85 31 / 35%), inset 0 0 90px #000; }
+.terran-minimap::before { position: absolute; inset: 0; opacity: 0.19; content: ""; background-image: linear-gradient(30deg, transparent 48%, rgb(213 166 86 / 9%) 49% 51%, transparent 52%), linear-gradient(150deg, transparent 48%, rgb(213 166 86 / 7%) 49% 51%, transparent 52%); background-size: 46px 46px; }
+.terran-minimap__atmosphere { position: absolute; top: 50%; left: 50%; width: min(72%, 510px); aspect-ratio: 1; border: 1px dashed rgb(70 177 231 / 13%); border-radius: 50%; box-shadow: 0 0 0 70px rgb(215 154 49 / 1.4%), 0 0 75px rgb(40 134 190 / 8%); transform: translate(-50%, -50%) rotate(12deg); }
+.terran-minimap__atmosphere::before,
+.terran-minimap__atmosphere::after { position: absolute; inset: 14%; border: 1px solid rgb(215 154 49 / 10%); content: ""; transform: rotate(45deg); }
+.terran-minimap__atmosphere::after { inset: 31%; border-color: rgb(70 177 231 / 16%); }
+.terran-minimap__routes { position: absolute; inset: 0; width: 100%; height: 100%; }
+.terran-minimap__routes line { stroke: #72552f; stroke-width: 0.48; stroke-dasharray: 1.7 1.25; vector-effect: non-scaling-stroke; }
+.terran-minimap__routes circle { fill: none; stroke: rgb(68 154 204 / 22%); stroke-width: 0.3; stroke-dasharray: 1 2; }
+.terran-map-node { position: absolute; z-index: 3; display: grid; width: 104px; min-height: 87px; place-items: center; align-content: center; gap: 3px; border: 1px solid #4b3a27; padding: 8px 6px; color: #8b8377; background: linear-gradient(180deg, rgb(17 23 30 / 97%), rgb(7 10 14 / 98%)); box-shadow: inset 0 0 0 2px #07090c, 0 11px 24px rgb(0 0 0 / 55%); text-align: center; transform: translate(-50%, -50%); transition: border-color 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease; }
+.terran-map-node:hover { z-index: 8; border-color: var(--gold); color: #e9ddc7; transform: translate(-50%, -53%); }
+.terran-map-node--portal { z-index: 5; width: 116px; min-height: 100px; border-color: #466d88; background: radial-gradient(circle, #173247, #080c11 68%); }
+.terran-map-node__icon { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid #554329; border-radius: 50%; color: var(--gold); background: #090d12; }
+.terran-map-node strong { max-width: 100%; overflow: hidden; color: #d2c3a7; font-family: var(--display); font-size: 0.67rem; line-height: 1.15; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.terran-map-node small { color: #6f6961; font-size: 0.51rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.terran-map-node.is-discovered { border-color: #665035; }
+.terran-map-node.is-current { border-color: var(--blue-soft); box-shadow: inset 0 0 0 2px #07090c, 0 0 0 4px rgb(43 170 231 / 13%), 0 0 26px rgb(43 170 231 / 28%); }
+.terran-map-node.is-current .terran-map-node__icon { border-color: var(--blue); color: var(--blue-soft); }
+.terran-map-node.is-objective { border-color: var(--gold-bright); animation: terranObjectivePulse 2s ease-in-out infinite; }
+.terran-map-node__objective { position: absolute; top: -9px; right: -8px; color: #fff0bf; filter: drop-shadow(0 0 6px var(--gold)); }
+.terran-map-node__player { position: absolute; bottom: -9px; left: 50%; color: var(--blue-soft); filter: drop-shadow(0 0 6px var(--blue)); transform: translateX(-50%); }
+@keyframes terranObjectivePulse { 50% { box-shadow: inset 0 0 0 2px #07090c, 0 0 0 7px rgb(215 154 49 / 9%), 0 0 28px rgb(215 154 49 / 29%); } }
+.terran-minimap__legend { position: absolute; right: 12px; bottom: 10px; left: 12px; display: flex; justify-content: center; gap: 14px; border: 1px solid #2f2a24; padding: 7px; color: #777168; background: rgb(5 8 11 / 84%); font-size: 0.55rem; }
+.terran-minimap__legend span { display: inline-flex; align-items: center; gap: 5px; }
+.terran-minimap__legend i { width: 7px; height: 7px; border: 1px solid #63543d; border-radius: 50%; }
+.terran-minimap__legend i.player { border-color: var(--blue-soft); background: var(--blue); }
+.terran-minimap__legend i.objective { border-color: var(--gold-bright); background: var(--gold); }
+
+.journey-panel .arcane-panel__content { display: grid; gap: 13px; }
+.journey-panel .arcane-panel__content > p { margin: 0; color: #8e887e; font-size: 0.7rem; line-height: 1.5; }
+.journey-status { display: flex; align-items: center; gap: 10px; border: 1px solid #4a3822; padding: 10px; color: var(--gold); background: rgb(112 73 25 / 10%); }
+.journey-status span { display: grid; color: #837b70; font-size: 0.57rem; text-transform: uppercase; }
+.journey-status strong { color: #d8c6a5; font-family: var(--display); font-size: 0.75rem; text-transform: none; }
+.journey-status--active { border-color: #315f7c; color: var(--blue-soft); background: rgb(34 105 151 / 10%); }
+.journey-status--completed { border-color: #48623b; color: var(--green); }
+.journey-destination { display: grid; gap: 3px; border-left: 2px solid var(--blue); padding: 8px 10px; background: rgb(32 99 140 / 7%); }
+.journey-destination span { color: #6d7376; font-size: 0.51rem; letter-spacing: 0.09em; }
+.journey-destination strong { color: var(--blue-soft); font-family: var(--display); font-size: 0.82rem; }
+.journey-destination small { color: #79756f; font-size: 0.58rem; }
+.city-complete-state { display: grid; min-height: 180px; place-items: center; align-content: center; gap: 7px; color: #5f7553; text-align: center; }
+.city-complete-state strong { color: #b7cfa7; font-family: var(--display); }
+.city-complete-state p { margin: 0; color: #74736e; font-size: 0.66rem; }
+.terran-character-card .arcane-panel__content { display: grid; gap: 12px; }
+.terran-character-card__identity { display: grid; align-items: center; gap: 12px; grid-template-columns: 72px 1fr; }
+.terran-character-card__identity img { width: 72px; height: 88px; border: 1px solid #5c4323; background: #07090c; object-fit: cover; object-position: top; }
+.terran-character-card__identity > div { display: grid; gap: 3px; }
+.terran-character-card__identity strong { color: #ead7b5; font-family: var(--display); font-size: 0.84rem; }
+.terran-character-card__identity span { color: #777168; font-size: 0.63rem; }
+.terran-resource-list { display: grid; gap: 4px; margin: 0; }
+.terran-resource-list div { display: flex; justify-content: space-between; border-bottom: 1px dotted #302a22; padding: 4px 0; font-size: 0.63rem; }
+.terran-resource-list dt { color: #777168; }
+.terran-resource-list dd { margin: 0; color: #d5c29e; font-family: var(--display); }
+
+.terran-location { --location-tone: var(--gold); }
+.terran-location--knowledge { --location-tone: #c69b54; }
+.terran-location--exploration { --location-tone: #6f9f72; }
+.terran-location--bond { --location-tone: #8f64c4; }
+.terran-location--defense { --location-tone: #7096bd; }
+.terran-location--clan { --location-tone: #d09d50; }
+.terran-location--healing { --location-tone: #5fae8a; }
+.terran-location--portal { --location-tone: #53bce9; }
+.terran-location__heading { position: relative; align-items: center; padding-top: 38px; }
+.back-to-city { position: absolute; top: 5px; left: 4px; display: inline-flex; align-items: center; gap: 5px; color: #8b8478; font-size: 0.62rem; text-transform: uppercase; }
+.back-to-city:hover { color: var(--gold-bright); }
+.terran-location__identity { display: grid; min-width: 0; align-items: center; gap: 17px; grid-template-columns: 72px minmax(0, 1fr); }
+.terran-location__identity h1 { font-size: clamp(2rem, 4vw, 3.65rem); }
+.location-seal { display: grid; width: 68px; height: 68px; place-items: center; border: 1px solid var(--location-tone); color: var(--location-tone); background: radial-gradient(circle, color-mix(in srgb, var(--location-tone) 13%, #091018), #07090c 70%); box-shadow: 0 0 0 5px #07090c, 0 0 0 6px color-mix(in srgb, var(--location-tone) 40%, transparent), 0 0 28px color-mix(in srgb, var(--location-tone) 18%, transparent); transform: rotate(45deg); }
+.location-seal svg { transform: rotate(-45deg); }
+.terran-location__layout { display: grid; min-width: 0; align-items: start; gap: 14px; grid-template-columns: minmax(0, 1fr) 355px; }
+.terran-location__main,
+.terran-location__sidebar { display: grid; min-width: 0; align-content: start; gap: 14px; }
+.terran-location__main > .arcane-panel,
+.terran-location__sidebar > .arcane-panel { box-shadow: inset 0 0 0 3px #080b0f, inset 0 0 0 4px rgb(111 74 28 / 38%), 0 11px 26px rgb(0 0 0 / 28%); }
+.terran-location .arcane-panel__header::after { background: linear-gradient(90deg, transparent, var(--location-tone), transparent); }
+.terran-location .arcane-panel { border-color: color-mix(in srgb, var(--location-tone) 50%, #4b351a); }
+
+.terran-minimap--compact { min-height: 360px; }
+.terran-minimap--compact .terran-minimap__atmosphere { width: 73%; }
+.terran-minimap--compact .terran-map-node { width: 68px; min-height: 58px; gap: 1px; padding: 4px; }
+.terran-minimap--compact .terran-map-node--portal { width: 73px; min-height: 65px; }
+.terran-minimap--compact .terran-map-node__icon { width: 27px; height: 27px; }
+.terran-minimap--compact .terran-map-node strong { font-size: 0.53rem; }
+.terran-minimap--compact .terran-minimap__legend { gap: 7px; font-size: 0.48rem; }
+.terran-compact-map-panel .arcane-panel__content { display: grid; gap: 8px; padding: 9px; }
+
+.terran-service-list,
+.terran-presence-list { display: grid; gap: 7px; }
+.service-card { display: grid; min-width: 0; align-items: center; gap: 9px; border: 1px solid #302a22; padding: 9px; color: var(--location-tone); background: #080b0f; grid-template-columns: auto 1fr auto; }
+.service-card > span,
+.presence-card > span:nth-child(2) { display: grid; min-width: 0; }
+.service-card strong,
+.presence-card strong { color: #d2c3a8; font-family: var(--display); font-size: 0.68rem; }
+.service-card small,
+.presence-card small { color: #746f68; font-size: 0.57rem; line-height: 1.35; }
+.service-card > a { display: grid; width: 26px; height: 26px; place-items: center; border: 1px solid #413729; color: var(--gold); }
+.service-card--progressive,
+.service-card--ownerDecision { color: #5d5954; opacity: 0.72; }
+.presence-card { display: grid; min-width: 0; align-items: center; gap: 8px; border: 1px solid #2f2a23; padding: 7px; background: #080b0f; grid-template-columns: 31px minmax(0, 1fr) auto; }
+.presence-card__portrait { display: grid; width: 30px; height: 34px; place-items: center; border: 1px solid #453925; color: var(--location-tone); background: #0b0e12; }
+.presence-card i { color: #6e6961; font-size: 0.48rem; font-style: normal; text-transform: uppercase; }
+.presence-card--conditional,
+.presence-card--progressive { opacity: 0.58; }
+.presence-card--visitor { border-style: dashed; }
+
+.location-feature .arcane-panel__content { display: grid; gap: 14px; }
+.institution-hero { display: grid; align-items: center; gap: 14px; border: 1px solid #4b3922; padding: 17px; background: linear-gradient(90deg, rgb(139 92 32 / 12%), transparent); grid-template-columns: auto 1fr; }
+.institution-hero > svg { color: var(--location-tone); }
+.institution-hero h3 { margin: 0 0 5px; color: #ead7b2; font-size: 1.05rem; }
+.institution-hero p:last-child { margin: 0; color: #8f887e; font-size: 0.72rem; line-height: 1.5; }
+.mission-circulation { display: grid; align-items: center; gap: 8px; grid-template-columns: 1fr auto 1fr auto 1fr; }
+.mission-circulation > span { display: grid; min-height: 78px; align-content: center; border: 1px solid #302a22; padding: 8px; color: #716b63; background: #080b0f; font-family: var(--display); font-size: 0.68rem; text-align: center; }
+.mission-circulation > span i { display: grid; width: 21px; height: 21px; place-items: center; justify-self: center; border: 1px solid #494035; border-radius: 50%; margin-bottom: 4px; font-size: 0.56rem; font-style: normal; }
+.mission-circulation > span strong { color: #5f5b55; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.5rem; font-weight: 500; text-transform: uppercase; }
+.mission-circulation > span.current { border-color: var(--gold); color: var(--gold-bright); box-shadow: inset 0 0 16px rgb(215 154 49 / 8%); }
+.mission-circulation > span.done { border-color: #41613a; color: #9ab886; }
+.mission-circulation > svg { color: #4f463a; }
+
+.field-metrics { display: grid; gap: 8px; grid-template-columns: repeat(3, 1fr); }
+.field-metrics > div { display: flex; align-items: center; gap: 9px; border: 1px solid #324238; padding: 11px; color: #83aa82; background: rgb(54 102 64 / 8%); }
+.field-metrics span { display: grid; color: #79756e; font-size: 0.54rem; text-transform: uppercase; }
+.field-metrics strong { color: #c3d5bb; font-family: var(--display); font-size: 0.76rem; text-transform: none; }
+.bestiary-strip { display: grid; gap: 7px; grid-template-columns: repeat(3, 1fr); }
+.bestiary-strip article { display: grid; min-width: 0; align-items: center; gap: 8px; border: 1px solid #2c2a25; padding: 8px; opacity: 0.48; background: #080b0f; grid-template-columns: 52px 1fr; }
+.bestiary-strip article.known { border-color: #3b543c; opacity: 1; }
+.bestiary-strip img { width: 52px; height: 58px; }
+.bestiary-strip span { display: grid; min-width: 0; }
+.bestiary-strip strong { overflow: hidden; color: #c5bda9; font-family: var(--display); font-size: 0.64rem; text-overflow: ellipsis; white-space: nowrap; }
+.bestiary-strip small { color: #6f6b64; font-size: 0.52rem; line-height: 1.35; }
+
+.workshop-feature { display: grid; min-width: 0; gap: 12px; }
+.defense-status,
+.clan-state-banner,
+.preparation-score,
+.guardian-identity { display: flex; align-items: center; gap: 14px; border: 1px solid #34485b; padding: 16px; color: var(--location-tone); background: linear-gradient(90deg, color-mix(in srgb, var(--location-tone) 10%, transparent), transparent); }
+.defense-status > div,
+.clan-state-banner > span,
+.preparation-score > span,
+.guardian-identity > span { display: grid; color: #77746f; font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.defense-status strong,
+.clan-state-banner strong,
+.preparation-score strong,
+.guardian-identity strong { color: #d4c9b4; font-family: var(--display); font-size: 0.88rem; letter-spacing: 0; text-transform: none; }
+.clan-state-banner small,
+.preparation-score small,
+.guardian-identity small { color: #777168; font-size: 0.56rem; letter-spacing: 0; text-transform: none; }
+.threat-board { display: grid; gap: 7px; }
+.threat-board article { display: flex; justify-content: space-between; gap: 12px; border-left: 2px solid #54412a; padding: 10px 12px; color: #837d74; background: #080b0f; font-size: 0.65rem; }
+.threat-board article.known { border-color: var(--gold); }
+.threat-board article.resolved { border-color: var(--green); color: #a4bd8a; }
+.threat-board strong { color: #84796a; font-size: 0.56rem; }
+.clan-representatives { display: grid; gap: 7px; grid-template-columns: repeat(2, 1fr); }
+.clan-representatives article { display: grid; align-items: center; gap: 7px; border: 1px solid #403421; padding: 10px; color: var(--location-tone); background: #080b0f; grid-template-columns: auto 1fr; }
+.clan-representatives strong { color: #d2c1a2; font-family: var(--display); font-size: 0.68rem; }
+.clan-representatives small { color: #6c6861; font-size: 0.52rem; grid-column: 2; }
+.clan-actions { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+.preparation-inventory { display: grid; gap: 7px; }
+.preparation-inventory article { display: grid; align-items: center; gap: 9px; border: 1px solid #315142; padding: 8px; background: #080b0f; grid-template-columns: 48px 1fr auto; }
+.preparation-inventory article img { width: 48px; height: 48px; }
+.preparation-inventory article span { display: grid; }
+.preparation-inventory article strong { color: #bde1cd; font-family: var(--display); font-size: 0.7rem; }
+.preparation-inventory article small { color: #72847a; font-size: 0.56rem; }
+.preparation-inventory article b { color: #8fc6a7; }
+.preparation-empty { display: flex; min-height: 115px; align-items: center; justify-content: center; gap: 11px; border: 1px dashed #33463d; color: #5c836d; }
+.preparation-empty span { display: grid; color: #9db6a8; font-family: var(--display); }
+.preparation-empty small { max-width: 380px; color: #68746d; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.58rem; }
+.portal-location-feature { display: grid; min-width: 0; gap: 14px; grid-template-columns: minmax(260px, 0.62fr) minmax(360px, 1fr); }
+.guardian-checks { display: grid; gap: 8px; }
+.guardian-checks > div { display: grid; align-items: center; gap: 8px; border: 1px solid #3a3025; padding: 10px; color: #756f67; grid-template-columns: auto 1fr; }
+.guardian-checks > div.met { border-color: #3c664e; color: #87bfa0; }
+.guardian-checks > div.unmet { color: #8f6c63; }
+.guardian-checks span { display: grid; font-size: 0.59rem; }
+.guardian-checks strong { color: inherit; font-size: 0.54rem; }
+.portal-location-feature .portal-panel { min-width: 0; }
+.portal-location-feature .trail-map { min-height: 430px; }
+
 /* Bound detail */
 .bound-detail-screen { display: grid; gap: 14px; }
 .bound-detail-hero .arcane-panel__content { display: grid; gap: 28px; grid-template-columns: 300px 1fr; }
@@ -1066,6 +1258,17 @@ code {
   .battle-character img { width: 135px; }
   .battle-enemy-party { width: 65%; }
   .npc-grid { grid-template-columns: repeat(2, 1fr); }
+  .terran-home__layout,
+  .terran-location__layout { grid-template-columns: minmax(0, 1fr) 315px; }
+  .portal-location-feature { grid-template-columns: 1fr; }
+  .portal-location-feature .portal-panel .arcane-panel__content { grid-template-columns: 1fr; }
+  .portal-location-feature .portal-heading,
+  .portal-location-feature .difficulty-tabs,
+  .portal-location-feature .trail-map,
+  .portal-location-feature .trail-legend,
+  .portal-location-feature .portal-rewards,
+  .portal-location-feature .portal-panel .game-button { grid-column: 1; }
+  .portal-location-feature .trail-map { grid-row: auto; }
 }
 
 @media (max-width: 900px) {
@@ -1097,6 +1300,14 @@ code {
   .combatant-panel .arcane-panel__content > img { height: 160px; }
   .world-cards,
   .settings-grid { grid-template-columns: 1fr; }
+  .terran-home__heading,
+  .terran-location__heading { align-items: start; flex-direction: column; }
+  .location-readout { width: 100%; }
+  .terran-home__layout,
+  .terran-location__layout { grid-template-columns: 1fr; }
+  .terran-home__sidebar { grid-template-columns: 1fr 1fr; }
+  .terran-location__sidebar { grid-template-columns: 1fr 1fr; }
+  .terran-minimap--compact { min-height: 400px; }
 }
 
 @media (max-width: 640px) {
@@ -1160,6 +1371,39 @@ code {
   .rite-preview { grid-template-columns: 72px 1fr; }
   .rite-preview > img { width: 72px; height: 72px; }
   .npc-grid { grid-template-columns: 1fr; }
+  .terran-home,
+  .terran-location { gap: 10px; }
+  .terran-home__heading,
+  .terran-location__heading { gap: 14px; padding: 12px 3px 15px; }
+  .terran-location__heading { padding-top: 40px; }
+  .terran-home__heading h1,
+  .terran-location__heading h1 { font-size: 2.25rem; }
+  .terran-home__heading > div:first-child > p:last-child,
+  .terran-location__identity > div > p:last-child { font-size: 0.71rem; }
+  .terran-location__identity { align-items: start; gap: 13px; grid-template-columns: 54px 1fr; }
+  .location-seal { width: 50px; height: 50px; }
+  .location-seal svg { width: 25px; }
+  .location-readout { align-items: flex-start; }
+  .terran-home__sidebar,
+  .terran-location__sidebar { grid-template-columns: 1fr; }
+  .terran-minimap { min-height: 525px; }
+  .terran-map-node { width: 78px; min-height: 69px; padding: 5px 3px; }
+  .terran-map-node--portal { width: 86px; min-height: 78px; }
+  .terran-map-node__icon { width: 30px; height: 30px; }
+  .terran-map-node strong { font-size: 0.55rem; }
+  .terran-map-node small { font-size: 0.43rem; }
+  .terran-minimap__legend { gap: 7px; font-size: 0.47rem; }
+  .terran-minimap--compact { min-height: 420px; }
+  .terran-minimap--compact .terran-map-node { width: 62px; min-height: 54px; }
+  .mission-circulation { grid-template-columns: 1fr; }
+  .mission-circulation > svg { justify-self: center; transform: rotate(90deg); }
+  .field-metrics,
+  .bestiary-strip,
+  .clan-representatives,
+  .clan-actions { grid-template-columns: 1fr; }
+  .portal-location-feature { grid-template-columns: 1fr; }
+  .presence-card { grid-template-columns: 31px minmax(0, 1fr); }
+  .presence-card i { grid-column: 2; }
 }
 
 @media (prefers-reduced-motion: reduce) {

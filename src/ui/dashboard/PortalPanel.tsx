@@ -16,7 +16,7 @@ import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { GameButton } from '../components/GameButton'
 
-export function PortalPanel({ save, onTalk }: { save: GameSave; onTalk: () => void }) {
+export function PortalPanel({ save, onGoToEldamar }: { save: GameSave; onGoToEldamar: () => void }) {
   const enterAstravel = useGameStore((state) => state.enterAstravel)
   const resolveCurrentTrailNode = useGameStore((state) => state.resolveCurrentTrailNode)
   const startBattle = useGameStore((state) => state.startBattle)
@@ -33,7 +33,7 @@ export function PortalPanel({ save, onTalk }: { save: GameSave; onTalk: () => vo
 
   const action = (() => {
     if (quest.status === 'available') {
-      return <GameButton variant="primary" full onClick={onTalk}><BookOpen size={17} /> Falar com Eldamar</GameButton>
+      return <GameButton variant="secondary" full onClick={onGoToEldamar}><BookOpen size={17} /> Ir à Casa de Eldamar</GameButton>
     }
     if (currentNode?.type === 'entry') {
       return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Entrar em Astravél</GameButton>
@@ -57,7 +57,7 @@ export function PortalPanel({ save, onTalk }: { save: GameSave; onTalk: () => vo
   })()
 
   return (
-    <ArcanePanel title="Portal" eyebrow="PARA ONDE VOU AGORA" className="portal-panel" as="aside">
+    <ArcanePanel title="Instância disponível" eyebrow="ACESSO DE EXPEDIÇÃO" className="portal-panel" as="aside">
       <div className="portal-heading">
         <MapPinned size={20} />
         <div><p className="eyebrow">EXPLORAÇÃO DE TERRÚNIA</p><h3>{trail.name}</h3><small>{trail.actLabel}</small></div>

@@ -174,6 +174,41 @@ export type QuestDefinition = {
     | { type: 'rawEssence'; value: number }
     | { type: 'gold'; value: number }
   >
+  terranFlow?: Partial<Record<'available' | 'active' | 'completed' | 'failed', string>>
+  status: DraftStatus
+}
+
+export type TerranNpcPresence = {
+  id: string
+  label: string
+  npcId?: string
+  presence: 'resident' | 'conditional' | 'visitor' | 'progressive' | 'institution'
+  roleLabel: string
+}
+
+export type TerranServiceDefinition = {
+  id: string
+  name: string
+  description: string
+  state: 'available' | 'progressive' | 'ownerDecision'
+  route?: string
+}
+
+export type TerranLocationDefinition = {
+  id: string
+  settlementId: 'city_terran'
+  name: string
+  shortName: string
+  verb: string
+  role: string
+  description: string
+  category: 'institution' | 'portal'
+  viewKind: 'eldamar' | 'vorren' | 'workshop' | 'zareth' | 'clanHall' | 'daeryn' | 'portal'
+  iconId: 'book' | 'compass' | 'anvil' | 'shield' | 'clan' | 'flask' | 'portal'
+  tone: 'knowledge' | 'exploration' | 'bond' | 'defense' | 'clan' | 'healing' | 'portal'
+  mapPosition: { x: number; y: number }
+  services: TerranServiceDefinition[]
+  npcPresences: TerranNpcPresence[]
   status: DraftStatus
 }
 

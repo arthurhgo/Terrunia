@@ -168,8 +168,8 @@ export const performGradeTwoRite = (
   catalog: ContentCatalog,
   now: string,
 ): Result<GameSave> => {
-  if (save.world.currentLocationId !== 'terran') {
-    return fail('RITE_REQUIRES_TERRAN', 'O Rito de Evolução deve ser realizado em Terran.')
+  if (save.world.currentLocationId !== 'location_terran_bond_workshop') {
+    return fail('RITE_REQUIRES_WORKSHOP', 'O Rito de Evolução deve ser realizado na Oficina dos Vínculos.')
   }
 
   const item = save.boundItems[boundItemId]
@@ -244,8 +244,8 @@ export const performGradeThreeRite = (
   catalog: ContentCatalog,
   now: string,
 ): Result<GameSave> => {
-  if (save.world.currentLocationId !== 'terran') {
-    return fail('RITE_REQUIRES_TERRAN', 'O Rito de Lapidação deve ser realizado em Terran.')
+  if (save.world.currentLocationId !== 'location_terran_bond_workshop') {
+    return fail('RITE_REQUIRES_WORKSHOP', 'O Rito de Lapidação deve ser realizado na Oficina dos Vínculos.')
   }
 
   const item = save.boundItems[boundItemId]

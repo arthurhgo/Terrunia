@@ -18,7 +18,7 @@ export function WorldScreen() {
   return (
     <GameShell>
       <div className="content-screen">
-        <header className="screen-heading"><p className="eyebrow">ROTAS E RUÍNAS</p><h1>Mundo</h1><p>Portal é uma área funcional: nem toda viagem representa teletransporte literal.</p></header>
+        <header className="screen-heading"><p className="eyebrow">CONSULTA DE ROTAS E RUÍNAS</p><h1>Mundo</h1><p>Este é o registro das regiões conhecidas. A entrada em qualquer instância externa acontece exclusivamente pela Praça do Portal, dentro de Terran.</p></header>
         <div className="world-cards">
           <ArcanePanel title="Terran" eyebrow="HUB PRINCIPAL"><Map size={31} /><p>NPCs, serviços, preparação e evolução dos Vínculos.</p><strong>DESBLOQUEADO</strong></ArcanePanel>
           <ArcanePanel title="Floresta de Astravél" eyebrow="PRIMEIRA ROTA"><Trees size={31} /><p>Trilha sequencial com encontros, acampamento e efeitos Fungorros.</p><strong>{save.world.unlockedLocationIds.includes('astravel_entry') ? `${completedNodes}/${trail.nodes.length - 1} NÓS CONCLUÍDOS` : 'BLOQUEADO POR MISSÃO'}</strong></ArcanePanel>
