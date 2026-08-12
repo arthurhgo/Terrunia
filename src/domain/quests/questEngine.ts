@@ -15,8 +15,41 @@ export type QuestEvent =
 export const createQuestProgress = (definition: QuestDefinition): QuestProgress => ({
   questId: definition.id,
   status: 'available',
+  tracked: false,
   objectives: Object.fromEntries(definition.objectives.map((objective) => [objective.id, 0])),
 })
+
+export const offerQuest = (
+  save: GameSave,
+  questId: string,
+  catalog: ContentCatalog,
+  now: string,
+): Result<GameSave> => {
+  if (!catalog.quests[questId]) return fail('UNKNOWN_QUEST', 'Missão desconhecida.')
+  const progress = save.quests[questId]
+  if (!progress || progress.status !== 'available') {
+    return fail('QUEST_NOT_AVAILABLE', 'Esta missão não está disponível para oferta.')
+  }
+  const next = structuredClone(save)
+  next.quests[questId].status = 'offered'
+  next.updatedAt = now
+  next.revision += 1
+  next.eventLog.push(`QuestOffered:${questId}`)
+  return ok(next)
+}
+
+export const declineQuest = (save: GameSave, questId: string, now: string): Result<GameSave> => {
+  const progress = save.quests[questId]
+  if (!progress || progress.status !== 'offered') {
+    return fail('QUEST_NOT_OFFERED', 'Esta missão não possui uma oferta aberta.')
+  }
+  const next = structuredClone(save)
+  next.quests[questId].status = 'available'
+  next.updatedAt = now
+  next.revision += 1
+  next.eventLog.push(`QuestDeclined:${questId}`)
+  return ok(next)
+}
 
 export const acceptQuest = (
   save: GameSave,
@@ -27,12 +60,12 @@ export const acceptQuest = (
   const definition = catalog.quests[questId]
   if (!definition) return fail('UNKNOWN_QUEST', 'Missão desconhecida.')
   const progress = save.quests[questId]
-  if (!progress || progress.status !== 'available') {
-    return fail('QUEST_NOT_AVAILABLE', 'Esta missão não está disponível para aceitação.')
+  if (!progress || progress.status !== 'offered') {
+    return fail('QUEST_NOT_OFFERED', 'Leia a oferta antes de aceitar esta missão.')
   }
-
   const next = structuredClone(save)
   next.quests[questId].status = 'active'
+  next.quests[questId].tracked = true
   next.quests[questId].acceptedAt = now
   next.updatedAt = now
   next.revision += 1
@@ -40,11 +73,26 @@ export const acceptQuest = (
   return ok(next)
 }
 
-const applyQuestRewards = (
+export const setQuestTracked = (
   save: GameSave,
-  definition: QuestDefinition,
+  questId: string,
+  tracked: boolean,
   now: string,
-) => {
+): Result<GameSave> => {
+  const progress = save.quests[questId]
+  if (!progress || !['active', 'ready_to_turn_in'].includes(progress.status)) {
+    return fail('QUEST_NOT_JOURNALED', 'Somente missões do Journal podem ser rastreadas.')
+  }
+  if (progress.tracked === tracked) return ok(save)
+  const next = structuredClone(save)
+  next.quests[questId].tracked = tracked
+  next.updatedAt = now
+  next.revision += 1
+  next.eventLog.push(`QuestTrackingChanged:${questId}:${tracked}`)
+  return ok(next)
+}
+
+const applyQuestRewards = (save: GameSave, definition: QuestDefinition) => {
   for (const reward of definition.rewards) {
     if (reward.type === 'characterXp') save.character.xp += reward.value
     if (reward.type === 'gold') save.wallet.gold += reward.value
@@ -52,17 +100,36 @@ const applyQuestRewards = (
       const gain = addRawEssence(save.essence, reward.value)
       if (gain.ok) {
         save.essence = gain.value.progress
-        save.eventLog.push(
-          `RawEssenceReward:${reward.value}`,
-          `EssencePointsGained:${gain.value.gainedPoints}`,
-        )
-      } else {
-        save.eventLog.push(`RawEssenceRewardRejected:${reward.value}`)
-      }
+        save.eventLog.push(`RawEssenceReward:${reward.value}`, `EssencePointsGained:${gain.value.gainedPoints}`)
+      } else save.eventLog.push(`RawEssenceRewardRejected:${reward.value}`)
     }
   }
-  save.quests[definition.id].completedAt = now
-  save.eventLog.push(`QuestCompleted:${definition.id}`)
+}
+
+export const turnInQuest = (
+  save: GameSave,
+  questId: string,
+  npcId: string,
+  catalog: ContentCatalog,
+  now: string,
+): Result<GameSave> => {
+  const definition = catalog.quests[questId]
+  const progress = save.quests[questId]
+  if (!definition || !progress) return fail('UNKNOWN_QUEST', 'Missão desconhecida.')
+  if (progress.status !== 'ready_to_turn_in') return fail('QUEST_NOT_READY', 'Os objetivos desta missão ainda não foram concluídos.')
+  if (definition.turnInNpcId !== npcId) return fail('WRONG_TURN_IN_NPC', 'Esta missão deve ser entregue a outro NPC.')
+
+  const next = structuredClone(save)
+  applyQuestRewards(next, definition)
+  next.quests[questId].status = 'completed'
+  next.quests[questId].tracked = false
+  next.quests[questId].completedAt = now
+  const relationship = next.relationships[npcId]
+  if (relationship && !relationship.completedQuestIds.includes(questId)) relationship.completedQuestIds.push(questId)
+  next.updatedAt = now
+  next.revision += 1
+  next.eventLog.push(`QuestCompleted:${questId}`)
+  return ok(next)
 }
 
 export const applyQuestEvent = (
@@ -73,30 +140,21 @@ export const applyQuestEvent = (
 ): GameSave => {
   const next = structuredClone(save)
   let changed = false
-
   for (const progress of Object.values(next.quests)) {
     if (progress.status !== 'active') continue
     const definition = catalog.quests[progress.questId]
     if (!definition) continue
-
     for (const objective of definition.objectives) {
       if (objective.type !== event.type || objective.targetId !== event.targetId) continue
-      progress.objectives[objective.id] = Math.min(
-        objective.required,
-        (progress.objectives[objective.id] ?? 0) + (event.amount ?? 1),
-      )
+      progress.objectives[objective.id] = Math.min(objective.required, (progress.objectives[objective.id] ?? 0) + (event.amount ?? 1))
       changed = true
     }
-
-    const complete = definition.objectives.every(
-      (objective) => (progress.objectives[objective.id] ?? 0) >= objective.required,
-    )
-    if (complete) {
-      progress.status = 'completed'
-      applyQuestRewards(next, definition, now)
+    if (definition.objectives.every((objective) => (progress.objectives[objective.id] ?? 0) >= objective.required)) {
+      progress.status = 'ready_to_turn_in'
+      progress.tracked = true
+      next.eventLog.push(`QuestReadyToTurnIn:${definition.id}`)
     }
   }
-
   if (changed) {
     next.updatedAt = now
     next.revision += 1

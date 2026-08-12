@@ -1,6 +1,7 @@
 import type { ContentCatalog } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
-import type { GameSave, QuestStatus } from '../game/types'
+import type { GameSave } from '../game/types'
+import { getTrackedQuestEntries } from '../quests/questSelectors'
 import { fail, ok, type Result } from '../shared/types'
 
 const terranLocationIdSet = new Set<string>(TERRAN_LOCATION_IDS)
@@ -14,16 +15,14 @@ export const getDiscoveredTerranLocationIds = (save: GameSave): TerranLocationId
 export const getTerranQuestDestination = (
   save: GameSave,
   catalog: ContentCatalog,
-): { questId: string; locationId: TerranLocationId; status: QuestStatus } | null => {
-  const priority: QuestStatus[] = ['active', 'available', 'completed', 'failed']
-
+): { questId: string; locationId: TerranLocationId; status: 'active' | 'ready_to_turn_in' } | null => {
+  const tracked = getTrackedQuestEntries(save, catalog)
+  const priority: Array<'ready_to_turn_in' | 'active'> = ['ready_to_turn_in', 'active']
   for (const status of priority) {
-    for (const progress of Object.values(save.quests)) {
+    for (const { definition, progress } of tracked) {
       if (progress.status !== status) continue
-      const locationId = catalog.quests[progress.questId]?.terranFlow?.[status]
-      if (locationId && isTerranLocationId(locationId)) {
-        return { questId: progress.questId, locationId, status }
-      }
+      const locationId = definition.terranFlow?.[status]
+      if (locationId && isTerranLocationId(locationId)) return { questId: progress.questId, locationId, status }
     }
   }
 

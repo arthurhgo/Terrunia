@@ -10,6 +10,7 @@ describe('vertical slice integrada', () => {
     useGameStore.getState().bindPrologueWeapon()
     useGameStore.getState().travelInTerran('location_terran_eldamar_house')
     useGameStore.getState().discoverEldamar()
+    useGameStore.getState().offerQuest('vs_astravel_first_contact')
     useGameStore.getState().acceptQuest('vs_astravel_first_contact')
 
     useGameStore.getState().enterAstravel()
@@ -33,6 +34,7 @@ describe('vertical slice integrada', () => {
     useGameStore.getState().bindPrologueWeapon()
     useGameStore.getState().travelInTerran('location_terran_eldamar_house')
     useGameStore.getState().discoverEldamar()
+    useGameStore.getState().offerQuest('vs_astravel_first_contact')
     useGameStore.getState().acceptQuest('vs_astravel_first_contact')
     useGameStore.getState().travelInTerran('location_terran_portal_plaza')
     useGameStore.getState().enterAstravel()
@@ -70,6 +72,7 @@ describe('vertical slice integrada', () => {
     useGameStore.getState().bindPrologueWeapon()
     useGameStore.getState().travelInTerran('location_terran_eldamar_house')
     useGameStore.getState().discoverEldamar()
+    useGameStore.getState().offerQuest('vs_astravel_first_contact')
     useGameStore.getState().acceptQuest('vs_astravel_first_contact')
     useGameStore.getState().travelInTerran('location_terran_portal_plaza')
     useGameStore.getState().enterAstravel()

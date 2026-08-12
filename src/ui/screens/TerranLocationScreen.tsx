@@ -20,6 +20,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { TerranLocationDefinition } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
+import { getNpcQuestMarker } from '../../domain/quests/questSelectors'
 import { isTerranLocationId } from '../../domain/terran/cityEngine'
 import { useGameStore } from '../../state/gameStore'
 import { BoundItemsPanel } from '../dashboard/BoundItemsPanel'
@@ -57,13 +58,13 @@ function ServiceBoard({ location }: { location: TerranLocationDefinition }) {
   )
 }
 
-function NpcRoster({ location }: { location: TerranLocationDefinition }) {
+function NpcRoster({ location, save }: { location: TerranLocationDefinition; save: GameSave }) {
   return (
     <ArcanePanel title="Pessoas neste local" eyebrow="DISTRIBUIÇÃO OFICIAL" className="terran-npc-roster">
       <div className="terran-presence-list">
         {location.npcPresences.map((presence) => (
           <article key={presence.id} className={`presence-card presence-card--${presence.presence}`}>
-            <span className="presence-card__portrait"><UsersRound size={18} /></span>
+            <span className="presence-card__portrait"><UsersRound size={18} />{presence.npcId && getNpcQuestMarker(save, presence.npcId, content) ? <b className={`npc-quest-marker npc-quest-marker--${getNpcQuestMarker(save, presence.npcId, content)}`}>{getNpcQuestMarker(save, presence.npcId, content) === 'turnIn' ? '✓' : '!'}</b> : null}</span>
             <span><strong>{presence.label}</strong><small>{presence.roleLabel}</small></span>
             <i>{presenceLabels[presence.presence]}</i>
           </article>
@@ -83,14 +84,14 @@ function EldamarFeature({ save, onTalk }: { save: GameSave; onTalk: () => void }
         <div><p className="eyebrow">{progress.status}</p><h3>{quest.title}</h3><p>{quest.summary}</p></div>
       </div>
       <div className="mission-circulation">
-        <span className={progress.status !== 'available' ? 'done' : 'current'}><i>1</i>Eldamar<strong>Origem e autorização</strong></span>
+        <span className={['active', 'ready_to_turn_in', 'completed'].includes(progress.status) ? 'done' : 'current'}><i>1</i>Eldamar<strong>Origem e autorização</strong></span>
         <ArrowRight size={16} />
         <span className={progress.status === 'active' ? 'current' : ''}><i>2</i>Praça do Portal<strong>Despacho da instância</strong></span>
         <ArrowRight size={16} />
         <span><i>3</i>Astravél<strong>Objetivo externo</strong></span>
       </div>
       <GameButton variant="primary" onClick={onTalk}>
-        <ScrollText size={17} /> {progress.status === 'available' ? 'Falar com Eldamar' : 'Consultar Eldamar'}
+        <ScrollText size={17} /> {['available', 'offered'].includes(progress.status) ? 'Ver oferta de Eldamar' : progress.status === 'ready_to_turn_in' ? 'Entregar missão' : 'Consultar Eldamar'}
       </GameButton>
     </ArcanePanel>
   )
@@ -271,7 +272,7 @@ export function TerranLocationScreen() {
               <TerranMinimap save={save} compact />
               <Link className="panel-link" to="/terran">Abrir mapa completo <ArrowRight size={15} /></Link>
             </ArcanePanel>
-            <NpcRoster location={location} />
+            <NpcRoster location={location} save={save} />
           </aside>
         </div>
       </div>
