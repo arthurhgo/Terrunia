@@ -14,10 +14,8 @@ import { ProgressBar } from '../components/ProgressBar'
 import { TerranMinimap } from '../terran/TerranMinimap'
 
 const statusLabels = {
-  available: 'Disponível',
   active: 'Em andamento',
-  completed: 'Concluída',
-  failed: 'Falhou',
+  ready_to_turn_in: 'Retorno necessário',
 }
 
 export function TerranScreen() {
@@ -99,6 +97,7 @@ export function TerranScreen() {
                 <div><dt>Ouro</dt><dd>{save.wallet.gold.toLocaleString('pt-BR')}</dd></div>
                 <div><dt>Locais descobertos</dt><dd>{discovered.length}/{TERRAN_LOCATION_IDS.length}</dd></div>
               </dl>
+              <Link className="panel-link" to="/nexus">Abrir Nexo completo <ArrowRight size={16} /></Link>
             </ArcanePanel>
           </aside>
         </div>

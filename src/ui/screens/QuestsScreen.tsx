@@ -1,32 +1,52 @@
-import { CheckCircle2, Circle, ScrollText } from 'lucide-react'
+import { CheckCircle2, Circle, MapPinned, Radio, RadioTower, ScrollText } from 'lucide-react'
+import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
+import type { QuestCategory } from '../../content/types'
+import {
+  getQuestEntriesByCategory,
+  getQuestJournalEntries,
+  getQuestStatusLabel,
+  QUEST_JOURNAL_CATEGORIES,
+} from '../../domain/quests/questSelectors'
 import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
+import { GameButton } from '../components/GameButton'
 import { GameShell } from '../components/GameShell'
+
+type JournalCategory = QuestCategory | 'completed'
 
 export function QuestsScreen() {
   const save = useGameStore((state) => state.save)
+  const setTracked = useGameStore((state) => state.setQuestTracked)
+  const [category, setCategory] = useState<JournalCategory>('main')
   if (!save) return <Navigate to="/character/create" replace />
+  const entries = getQuestJournalEntries(save, content)
+  const visibleEntries = getQuestEntriesByCategory(entries, category)
+
   return (
     <GameShell>
-      <div className="content-screen">
-        <header className="screen-heading"><p className="eyebrow">CAMPANHA E PROVAS</p><h1>Missões</h1><p>Quests conectam NPCs, exploração, Vínculo, Clã e Classe.</p></header>
-        {Object.values(save.quests).map((progress) => {
-          const quest = content.quests[progress.questId]
-          return (
-            <ArcanePanel key={progress.questId} title={quest.title} eyebrow={`${progress.status} · ${quest.status}`} action={<ScrollText size={20} />}>
-              <p>{quest.summary}</p>
-              <div className="quest-objectives">
-                {quest.objectives.map((objective) => {
-                  const current = progress.objectives[objective.id] ?? 0
-                  const done = current >= objective.required
-                  return <div key={objective.id} className={done ? 'done' : ''}>{done ? <CheckCircle2 size={17} /> : <Circle size={17} />}<span>{objective.type}: {objective.targetId}</span><strong>{current}/{objective.required}</strong></div>
-                })}
-              </div>
+      <div className="content-screen quest-journal-screen">
+        <header className="screen-heading"><p className="eyebrow">JOURNAL COMPLETO</p><h1>Missões</h1><p>Somente missões aceitas entram neste registro. O tracker acompanha apenas as selecionadas.</p></header>
+        <nav className="journal-tabs" aria-label="Categorias de missões">
+          {QUEST_JOURNAL_CATEGORIES.map((tab) => {
+            const count = getQuestEntriesByCategory(entries, tab.id).length
+            return <button key={tab.id} type="button" className={category === tab.id ? 'active' : ''} onClick={() => setCategory(tab.id)}><span>{tab.label}</span><b>{count}</b></button>
+          })}
+        </nav>
+        <div className="quest-journal-list">
+          {visibleEntries.length ? visibleEntries.map(({ definition, progress }) => (
+            <ArcanePanel key={progress.questId} title={definition.title} eyebrow={`${getQuestStatusLabel(progress.status)} · ${definition.status}`} action={<ScrollText size={20} />} className={`journal-entry journal-entry--${progress.status}`}>
+              <div className="journal-entry__heading"><p>{definition.summary}</p>{progress.status !== 'completed' ? <GameButton variant={progress.tracked ? 'primary' : 'ghost'} onClick={() => setTracked(progress.questId, !progress.tracked)}>{progress.tracked ? <RadioTower size={16} /> : <Radio size={16} />}{progress.tracked ? 'Rastreando' : 'Rastrear'}</GameButton> : null}</div>
+              <div className="quest-objectives">{definition.objectives.map((objective) => {
+                const current = progress.objectives[objective.id] ?? 0
+                const done = current >= objective.required
+                return <div key={objective.id} className={done ? 'done' : ''}>{done ? <CheckCircle2 size={17} /> : <Circle size={17} />}<span>{objective.label}</span><strong>{current}/{objective.required}</strong></div>
+              })}</div>
+              {progress.status === 'ready_to_turn_in' ? <div className="quest-next-step"><MapPinned size={19} /><span>PRÓXIMO PASSO<strong>Retorne a {content.npcs[definition.turnInNpcId]?.name ?? definition.turnInNpcId}</strong><small>Terran → Casa de Eldamar</small></span></div> : null}
             </ArcanePanel>
-          )
-        })}
+          )) : <div className="journal-empty"><ScrollText size={34} /><strong>Nenhuma missão nesta categoria</strong><p>Ofertas ainda não aceitas não aparecem no Journal.</p></div>}
+        </div>
       </div>
     </GameShell>
   )

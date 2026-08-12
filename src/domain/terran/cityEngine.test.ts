@@ -48,18 +48,28 @@ describe('Terran city engine', () => {
     expect(result).toMatchObject({ ok: false, code: 'UNKNOWN_TERRAN_LOCATION' })
   })
 
-  it('orienta a missão disponível para Eldamar e a missão ativa para o Portal', () => {
+  it('orienta somente missões aceitas e rastreadas', () => {
     const save = createSave()
-    expect(getTerranQuestDestination(save, content)).toMatchObject({
-      questId: 'vs_astravel_first_contact',
-      locationId: 'location_terran_eldamar_house',
-      status: 'available',
-    })
+    expect(getTerranQuestDestination(save, content)).toBeNull()
 
     save.quests.vs_astravel_first_contact.status = 'active'
+    save.quests.vs_astravel_first_contact.tracked = true
     expect(getTerranQuestDestination(save, content)).toMatchObject({
       locationId: 'location_terran_portal_plaza',
       status: 'active',
     })
+
+    save.quests.vs_astravel_first_contact.status = 'ready_to_turn_in'
+    expect(getTerranQuestDestination(save, content)).toMatchObject({
+      locationId: 'location_terran_eldamar_house',
+      status: 'ready_to_turn_in',
+    })
+  })
+
+  it('não orienta uma missão ativa quando o jogador desativa o tracker', () => {
+    const save = createSave()
+    save.quests.vs_astravel_first_contact.status = 'active'
+    save.quests.vs_astravel_first_contact.tracked = false
+    expect(getTerranQuestDestination(save, content)).toBeNull()
   })
 })

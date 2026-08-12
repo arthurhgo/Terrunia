@@ -3,7 +3,7 @@ import { content } from '../content/catalog'
 import { getBoundSlotCapacity } from '../domain/bond/boundItems'
 import type { GameSave } from '../domain/game/types'
 
-export const CURRENT_SAVE_SCHEMA = 4
+export const CURRENT_SAVE_SCHEMA = 5
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -37,6 +37,7 @@ const characterSchema = z.object({
   name: z.string().trim().min(2).max(28),
   raceId: z.literal('terririan'),
   portraitAssetId: idSchema,
+  titleIds: z.array(idSchema),
   level: positiveInteger,
   xp: nonnegativeNumber,
   xpRequired: z.number().finite().positive(),
@@ -134,7 +135,8 @@ const inventoryItemSchema = z.object({
 
 const questProgressSchema = z.object({
   questId: idSchema,
-  status: z.enum(['available', 'active', 'completed', 'failed']),
+  status: z.enum(['locked', 'available', 'offered', 'active', 'ready_to_turn_in', 'completed']),
+  tracked: z.boolean(),
   objectives: z.record(z.string(), nonnegativeNumber),
   acceptedAt: z.string().optional(),
   completedAt: z.string().optional(),
@@ -519,6 +521,24 @@ const migrateV3ToV4 = (legacy: Record<string, unknown>): unknown => {
   }
 }
 
+const migrateV4ToV5 = (legacy: Record<string, unknown>): unknown => {
+  const character = structuredClone(legacy.character as GameSave['character'])
+  character.titleIds ??= []
+  const quests = structuredClone((legacy.quests ?? {}) as Record<string, { status: string; tracked?: boolean }>)
+  for (const progress of Object.values(quests)) {
+    if (progress.status === 'failed') progress.status = 'available'
+    progress.tracked = progress.status === 'active'
+  }
+  return {
+    ...legacy,
+    schemaVersion: 5,
+    gameVersion: '0.5.0',
+    character,
+    quests,
+    eventLog: [...(((legacy.eventLog as string[] | undefined) ?? [])), 'SaveMigrated:4->5'],
+  }
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -541,6 +561,10 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 3) {
     candidate = migrateV3ToV4(candidate as Record<string, unknown>)
     version = 4
+  }
+  if (version === 4) {
+    candidate = migrateV4ToV5(candidate as Record<string, unknown>)
+    version = 5
   }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)

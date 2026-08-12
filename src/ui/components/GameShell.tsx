@@ -1,8 +1,9 @@
-import { BookOpen, GitBranch, Landmark, LogOut, Map, Settings, Sparkles } from 'lucide-react'
+import { BookOpen, CircleUserRound, GitBranch, Landmark, Link2, LogOut, Map, Settings, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../state/authStore'
 import { useGameStore } from '../../state/gameStore'
+import { QuestTracker } from './QuestTracker'
 
 type GameShellProps = {
   children: ReactNode
@@ -11,6 +12,8 @@ type GameShellProps = {
 
 const navItems = [
   { to: '/terran', label: 'Terran', icon: Landmark },
+  { to: '/nexus', label: 'Nexo', icon: Link2 },
+  { to: '/character', label: 'Personagem', icon: CircleUserRound },
   { to: '/skill-tree', label: 'Skill Tree', icon: GitBranch },
   { to: '/quests', label: 'Missões', icon: BookOpen },
   { to: '/npcs', label: 'Relações', icon: Sparkles },
@@ -20,6 +23,7 @@ const navItems = [
 
 export function GameShell({ children, fluid = false }: GameShellProps) {
   const syncStatus = useGameStore((state) => state.syncStatus)
+  const save = useGameStore((state) => state.save)
   const syncMode = useGameStore((state) => state.syncMode)
   const resetSession = useGameStore((state) => state.resetSession)
   const logout = useAuthStore((state) => state.logout)
@@ -60,6 +64,7 @@ export function GameShell({ children, fluid = false }: GameShellProps) {
         </div>
       </header>
       <main className={fluid ? 'game-main game-main--fluid' : 'game-main'}>{children}</main>
+      {save ? <QuestTracker save={save} /> : null}
       <footer className="game-footer">
         <span>PERSONAGEM É O NEXO</span>
         <i aria-hidden="true" />

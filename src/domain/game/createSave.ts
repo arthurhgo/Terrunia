@@ -33,8 +33,8 @@ export const createNewSave = (
   )
 
   return {
-    schemaVersion: 4,
-    gameVersion: '0.4.0',
+    schemaVersion: 5,
+    gameVersion: '0.5.0',
     saveId: ids.saveId,
     ownerId,
     revision: 1,
@@ -45,6 +45,7 @@ export const createNewSave = (
       name: characterName.trim(),
       raceId: 'terririan',
       portraitAssetId,
+      titleIds: [],
       level: 1,
       xp: 0,
       xpRequired: 250,

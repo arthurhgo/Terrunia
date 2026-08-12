@@ -17,7 +17,14 @@ import {
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import type { GameSave, InventoryItemInstance } from '../domain/game/types'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
-import { acceptQuest as acceptQuestDomain, applyQuestEvent } from '../domain/quests/questEngine'
+import {
+  acceptQuest as acceptQuestDomain,
+  applyQuestEvent,
+  declineQuest as declineQuestDomain,
+  offerQuest as offerQuestDomain,
+  setQuestTracked as setQuestTrackedDomain,
+  turnInQuest as turnInQuestDomain,
+} from '../domain/quests/questEngine'
 import { unlockSkillNode } from '../domain/skillTree/skillTree'
 import { visitTerranLocation } from '../domain/terran/cityEngine'
 import { loadSynchronizedSave, saveEverywhere, type SyncMode } from '../services/sync/syncService'
@@ -44,7 +51,11 @@ type GameState = {
   createGame: (name: string, portraitAssetId: string) => void
   bindPrologueWeapon: () => void
   discoverEldamar: () => void
+  offerQuest: (questId: string) => void
+  declineQuest: (questId: string) => void
   acceptQuest: (questId: string) => void
+  turnInQuest: (questId: string, npcId: string) => void
+  setQuestTracked: (questId: string, tracked: boolean) => void
   travelInTerran: (locationId: string) => void
   enterAstravel: () => void
   resolveCurrentTrailNode: () => void
@@ -161,6 +172,23 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(next)
     },
 
+    offerQuest: (questId) => {
+      const save = get().save
+      if (!save) return
+      const offered = offerQuestDomain(save, questId, content, nowIso())
+      if (!offered.ok) return failAction(offered.message)
+      commit(offered.value)
+    },
+
+    declineQuest: (questId) => {
+      const save = get().save
+      if (!save) return
+      const declined = declineQuestDomain(save, questId, nowIso())
+      if (!declined.ok) return failAction(declined.message)
+      commit(declined.value)
+      show('Oferta mantida', 'A missão continuará disponível com o NPC.', 'info')
+    },
+
     acceptQuest: (questId) => {
       const save = get().save
       if (!save) return
@@ -176,6 +204,23 @@ export const useGameStore = create<GameState>((set, get) => {
       next.world.trailNodeStates.astravel_fungorro_01 = 'locked'
       commit(next)
       show('Missão aceita', content.quests[questId]?.title ?? questId, 'success')
+    },
+
+    turnInQuest: (questId, npcId) => {
+      const save = get().save
+      if (!save) return
+      const completed = turnInQuestDomain(save, questId, npcId, content, nowIso())
+      if (!completed.ok) return failAction(completed.message)
+      commit(completed.value)
+      show('Missão concluída', 'Recompensas aplicadas e registro movido para Concluídas.', 'success')
+    },
+
+    setQuestTracked: (questId, tracked) => {
+      const save = get().save
+      if (!save) return
+      const changed = setQuestTrackedDomain(save, questId, tracked, nowIso())
+      if (!changed.ok) return failAction(changed.message)
+      if (changed.value !== save) commit(changed.value)
     },
 
     travelInTerran: (locationId) => {

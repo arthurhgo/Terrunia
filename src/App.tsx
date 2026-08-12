@@ -10,6 +10,8 @@ const BattleScreen = lazy(() => import('./ui/screens/BattleScreen').then((module
 const BoundItemScreen = lazy(() => import('./ui/screens/BoundItemScreen').then((module) => ({ default: module.BoundItemScreen })))
 const CharacterCreationScreen = lazy(() => import('./ui/screens/CharacterCreationScreen').then((module) => ({ default: module.CharacterCreationScreen })))
 const NpcsScreen = lazy(() => import('./ui/screens/NpcsScreen').then((module) => ({ default: module.NpcsScreen })))
+const NexusScreen = lazy(() => import('./ui/screens/NexusScreen').then((module) => ({ default: module.NexusScreen })))
+const CharacterScreen = lazy(() => import('./ui/screens/CharacterScreen').then((module) => ({ default: module.CharacterScreen })))
 const PrologueScreen = lazy(() => import('./ui/screens/PrologueScreen').then((module) => ({ default: module.PrologueScreen })))
 const QuestsScreen = lazy(() => import('./ui/screens/QuestsScreen').then((module) => ({ default: module.QuestsScreen })))
 const SettingsScreen = lazy(() => import('./ui/screens/SettingsScreen').then((module) => ({ default: module.SettingsScreen })))
@@ -64,6 +66,8 @@ export default function App() {
           <Route path="/new-game" element={<GameBoot><PrologueScreen /></GameBoot>} />
           <Route path="/terran" element={<GameBoot><TerranScreen /></GameBoot>} />
           <Route path="/terran/:locationId" element={<GameBoot><TerranLocationScreen /></GameBoot>} />
+          <Route path="/nexus" element={<GameBoot><NexusScreen /></GameBoot>} />
+          <Route path="/character" element={<GameBoot><CharacterScreen /></GameBoot>} />
           <Route path="/skill-tree" element={<GameBoot><SkillTreeScreen /></GameBoot>} />
           <Route path="/battle" element={<GameBoot><BattleScreen /></GameBoot>} />
           <Route path="/bound-items/:slot" element={<GameBoot><BoundItemScreen /></GameBoot>} />

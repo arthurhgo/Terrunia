@@ -15,6 +15,7 @@ export type Character = {
   name: string
   raceId: 'terririan'
   portraitAssetId: string
+  titleIds: string[]
   level: number
   xp: number
   xpRequired: number
@@ -100,11 +101,18 @@ export type InventoryItemInstance = {
   acquiredAt: string
 }
 
-export type QuestStatus = 'available' | 'active' | 'completed' | 'failed'
+export type QuestStatus =
+  | 'locked'
+  | 'available'
+  | 'offered'
+  | 'active'
+  | 'ready_to_turn_in'
+  | 'completed'
 
 export type QuestProgress = {
   questId: string
   status: QuestStatus
+  tracked: boolean
   objectives: Record<string, number>
   acceptedAt?: string
   completedAt?: string

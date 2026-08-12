@@ -32,7 +32,7 @@ export function PortalPanel({ save, onGoToEldamar }: { save: GameSave; onGoToEld
   }
 
   const action = (() => {
-    if (quest.status === 'available') {
+    if (['available', 'offered'].includes(quest.status)) {
       return <GameButton variant="secondary" full onClick={onGoToEldamar}><BookOpen size={17} /> Ir à Casa de Eldamar</GameButton>
     }
     if (currentNode?.type === 'entry') {

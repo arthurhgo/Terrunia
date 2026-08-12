@@ -2,9 +2,9 @@
 
 ## Autoridade
 
-Antes de alterar regras, leia `docs/TERRUNIA_GAME_APP_MASTER_SPEC_v0.4.md` e, para qualquer trabalho em Terran, `docs/TERRAN_CITY_STRUCTURE.md`. Em conflito, aplique:
+Antes de alterar regras, leia `docs/TERRUNIA_GAME_APP_MASTER_SPEC_v0.4.md`, `docs/NEXUS_AND_QUEST_JOURNAL.md` para Nexo/missões e, para qualquer trabalho em Terran, `docs/TERRAN_CITY_STRUCTURE.md`. Em conflito, aplique:
 
-1. decisões do criador registradas em `docs/TERRAN_CITY_STRUCTURE.md` para a cidade;
+1. decisões mais recentes do criador registradas em `docs/NEXUS_AND_QUEST_JOURNAL.md` e `docs/TERRAN_CITY_STRUCTURE.md` no respectivo domínio;
 2. seção 0B;
 3. seção 0A;
 4. seções de sistema mais novas;

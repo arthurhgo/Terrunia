@@ -6,6 +6,7 @@ import {
   getDiscoveredTerranLocationIds,
   getTerranQuestDestination,
 } from '../../domain/terran/cityEngine'
+import { getNpcQuestMarker } from '../../domain/quests/questSelectors'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { TerranIcon } from './TerranIcon'
@@ -39,6 +40,11 @@ export function TerranMinimap({ save, compact = false }: { save: GameSave; compa
         const isCurrent = save.world.currentLocationId === locationId
         const isObjective = questDestination?.locationId === locationId
         const isDiscovered = discovered.has(locationId)
+        const npcMarker = location.npcPresences.reduce<'available' | 'turnIn' | null>((marker, presence) => {
+          if (!presence.npcId) return marker
+          const candidate = getNpcQuestMarker(save, presence.npcId, content)
+          return candidate === 'turnIn' || !marker ? candidate : marker
+        }, null)
 
         return (
           <Link
@@ -51,6 +57,7 @@ export function TerranMinimap({ save, compact = false }: { save: GameSave; compa
             aria-current={isCurrent ? 'location' : undefined}
           >
             {isObjective && <Navigation className="terran-map-node__objective" size={13} aria-hidden="true" />}
+            {npcMarker && <b className={`terran-map-node__quest-marker terran-map-node__quest-marker--${npcMarker}`}>{npcMarker === 'turnIn' ? '✓' : '!'}</b>}
             <span className="terran-map-node__icon"><TerranIcon iconId={location.iconId} size={compact ? 16 : 21} /></span>
             <strong>{location.shortName}</strong>
             {!compact && <small>{location.verb}</small>}

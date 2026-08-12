@@ -26,6 +26,9 @@ Registro das ambiguidades encontradas durante a implementação do vertical slic
 | Papel do Portal | A leitura anterior aproximava Portal, Mundo e tela principal. | O Portal é somente uma área central de Terran, valida missões e dá acesso às instâncias externas. Retornos chegam à Praça. |
 | Ritos dos Vínculos | Grau II–III exigiam Terran, mas o edifício estava `OWNER_DECISION`. | A Oficina dos Vínculos é a instituição responsável pelos cinco Vínculos e seus componentes. NPC, custo e cerimônia final continuam `OWNER_DECISION`. |
 | Geografia da cidade | As casas eram menus sem posição persistente. | `/terran` é mapa/Home; `/terran/:locationId` são áreas. O minimapa registra posição, descoberta e objetivo. Coordenadas são `VISUAL_DRAFT`. |
+| Nexo e Personagem | A revisão v0.4 separava STATUS e Vínculos, enquanto a direção mais recente exige uma leitura integrada sem tornar Personagem uma cópia. | `/nexus` reúne status principais, origem dos derivados e exatamente os cinco Vínculos; `/character` preserva ficha detalhada, Memórias, títulos, progressão e crônica. |
+| Aceitação de missões | O vertical slice anterior adicionava a missão diretamente ao estado `active` e concluía/recompensava ao fechar objetivos. | O fluxo oficial é `AVAILABLE → OFFERED → ACTIVE → READY_TO_TURN_IN → COMPLETED`. O Journal deriva apenas de `ACTIVE`, `READY_TO_TURN_IN` e `COMPLETED`; recompensas são aplicadas somente na entrega ao NPC correto. |
+| Estado compartilhado de quests | Tracker, minimapa, Journal e ícones de NPC possuíam leituras parcialmente independentes. | Todas as superfícies derivam de `GameSave.quests` por seletores puros. `tracked` seleciona objetivos do HUD; não existe lista paralela de missões na UI. |
 
 ## OWNER_DECISION pendente
 

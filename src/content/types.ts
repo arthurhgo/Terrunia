@@ -161,20 +161,25 @@ export type QuestObjectiveDefinition = {
   type: 'talk' | 'kill' | 'collect' | 'visit' | 'interact' | 'completeRite'
   targetId: string
   required: number
+  label: string
 }
+
+export type QuestCategory = 'main' | 'clan' | 'class' | 'secondary' | 'bounty'
 
 export type QuestDefinition = {
   id: string
   title: string
   summary: string
   giverNpcId: string
+  turnInNpcId: string
+  category: QuestCategory
   objectives: QuestObjectiveDefinition[]
   rewards: Array<
     | { type: 'characterXp'; value: number }
     | { type: 'rawEssence'; value: number }
     | { type: 'gold'; value: number }
   >
-  terranFlow?: Partial<Record<'available' | 'active' | 'completed' | 'failed', string>>
+  terranFlow?: Partial<Record<'active' | 'ready_to_turn_in', string>>
   status: DraftStatus
 }
 
