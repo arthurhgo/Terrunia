@@ -19,6 +19,7 @@ import type { GameSave, InventoryItemInstance } from '../domain/game/types'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
 import { acceptQuest as acceptQuestDomain, applyQuestEvent } from '../domain/quests/questEngine'
 import { unlockSkillNode } from '../domain/skillTree/skillTree'
+import { visitTerranLocation } from '../domain/terran/cityEngine'
 import { loadSynchronizedSave, saveEverywhere, type SyncMode } from '../services/sync/syncService'
 
 type GameStatus = 'idle' | 'loading' | 'ready' | 'error'
@@ -44,6 +45,7 @@ type GameState = {
   bindPrologueWeapon: () => void
   discoverEldamar: () => void
   acceptQuest: (questId: string) => void
+  travelInTerran: (locationId: string) => void
   enterAstravel: () => void
   resolveCurrentTrailNode: () => void
   startBattle: (nodeId?: string) => void
@@ -176,11 +178,29 @@ export const useGameStore = create<GameState>((set, get) => {
       show('Missão aceita', content.quests[questId]?.title ?? questId, 'success')
     },
 
+    travelInTerran: (locationId) => {
+      const save = get().save
+      if (!save) return
+      const result = visitTerranLocation(save, locationId, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      if (result.value.save !== save) commit(result.value.save)
+      if (result.value.firstVisit) {
+        show(
+          'Local descoberto',
+          `${content.terranLocations[locationId].name} agora faz parte do seu minimapa.`,
+          'success',
+        )
+      }
+    },
+
     enterAstravel: () => {
       const save = get().save
       if (!save) return
       if (save.quests.vs_astravel_first_contact?.status !== 'active') {
         return failAction('Converse com Eldamar e aceite a missão antes de entrar na rota.')
+      }
+      if (save.world.currentLocationId !== 'location_terran_portal_plaza') {
+        return failAction('A instância deve ser acessada pela Praça do Portal.')
       }
       const visiting = structuredClone(save)
       visiting.world.currentLocationId = 'astravel_entry'
@@ -352,10 +372,13 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!save) return
       const next = structuredClone(save)
       next.battle = null
-      next.world.currentLocationId = 'terran'
+      next.world.currentLocationId = 'location_terran_portal_plaza'
+      if (!next.world.unlockedLocationIds.includes('location_terran_portal_plaza')) {
+        next.world.unlockedLocationIds.push('location_terran_portal_plaza')
+      }
       next.updatedAt = nowIso()
       next.revision += 1
-      next.eventLog.push('ReturnedToTerran')
+      next.eventLog.push('ReturnedToTerran:location_terran_portal_plaza')
       commit(next)
     },
 

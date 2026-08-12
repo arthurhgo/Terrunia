@@ -80,7 +80,7 @@ export function BattleScreen() {
 
   const leave = () => {
     returnToTerran()
-    navigate('/terran')
+    navigate('/terran/location_terran_portal_plaza')
   }
 
   const attack = () => {

@@ -17,8 +17,10 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: 'Confirmar Terrírian' }).click()
   await page.getByRole('button', { name: /Executar Vínculo da Arma/ }).click()
 
+  await page.getByRole('link', { name: /Ir para Casa de Eldamar/ }).click()
   await page.getByRole('button', { name: 'Falar com Eldamar' }).click()
   await page.getByRole('button', { name: 'Aceitar missão' }).click()
+  await page.getByRole('link', { name: /Ir para Praça do Portal/ }).click()
   await page.getByRole('button', { name: 'Entrar em Astravél' }).click()
   await page.getByRole('button', { name: 'Enfrentar Fungorro' }).click()
 
@@ -27,6 +29,8 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await expect(page.getByRole('heading', { name: 'A rota foi preservada' })).toBeVisible()
   await page.getByRole('button', { name: 'Receber recompensas' }).click()
   await page.getByRole('button', { name: 'Retornar a Terran' }).click()
+  await expect(page.getByText('TERRAN > PRAÇA DO PORTAL')).toBeVisible()
+  await page.getByRole('link', { name: /Ir para Oficina dos Vínculos/ }).click()
 
   const lootSlot = page.locator('.inventory-slot').filter({ hasText: 'Núcleo Fúngico' }).first()
   await lootSlot.click()
@@ -46,7 +50,8 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await expect(page.getByRole('button', { name: /Núcleo do Vínculo: Desbloqueado/ })).toBeVisible()
   await expect(page.getByText('Pontos de Essência').locator('..').getByText('0')).toBeVisible()
 
-  await page.getByRole('link', { name: 'Nexo', exact: true }).click()
+  await page.getByRole('link', { name: 'Terran', exact: true }).click()
+  await page.getByRole('link', { name: /Ir para Praça do Portal/ }).click()
   await page.getByRole('button', { name: 'Vasculhar acampamento' }).click()
   await expect(page.locator('.inventory-slot').filter({ hasText: 'Tônico de Campo' })).toBeVisible()
   await page.getByRole('button', { name: 'Emboscada de Esporos' }).click()
@@ -73,6 +78,7 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await expect(page.getByRole('heading', { name: 'O núcleo da Ruína cedeu' })).toBeVisible()
   await page.getByRole('button', { name: 'Receber recompensas' }).click()
   await page.getByRole('button', { name: 'Retornar a Terran' }).click()
+  await page.getByRole('link', { name: /Ir para Oficina dos Vínculos/ }).click()
   await expect(page.locator('.inventory-slot').filter({ hasText: 'Fragmento de Essência Micelial' })).toBeVisible()
   await expect(page.locator('.inventory-slot').filter({ hasText: 'Esmeralda do Crescimento' })).toBeVisible()
 

@@ -70,9 +70,9 @@ export function BoundItemScreen() {
     : null
   const gem = selectedGemCandidate ? content.gems[selectedGemCandidate.gemId] : null
   const resonanceReady = item.resonance >= item.resonanceThreshold
-  const inTerran = save.world.currentLocationId === 'terran'
-  const gradeTwoReady = item.grade === 1 && resonanceReady && inTerran && Boolean(fragment && essence)
-  const gradeThreeReady = item.grade === 2 && resonanceReady && inTerran && Boolean(selectedGemCandidate)
+  const inWorkshop = save.world.currentLocationId === 'location_terran_bond_workshop'
+  const gradeTwoReady = item.grade === 1 && resonanceReady && inWorkshop && Boolean(fragment && essence)
+  const gradeThreeReady = item.grade === 2 && resonanceReady && inWorkshop && Boolean(selectedGemCandidate)
 
   const openGradeThreeRite = () => {
     setSelectedGemInstanceId(gemCandidates[0]?.inventoryInstanceId ?? '')
@@ -169,16 +169,16 @@ export function BoundItemScreen() {
                   {resonanceReady ? <Check size={16} /> : <LockKeyhole size={16} />}
                   <span>Ressonância mínima<strong>{item.resonance}/{item.resonanceThreshold}</strong></span>
                 </div>
-                <div className={inTerran ? 'met' : 'unmet'}>
-                  {inTerran ? <Check size={16} /> : <MapPin size={16} />}
-                  <span>Retorno ao hub<strong>Terran</strong></span>
+                <div className={inWorkshop ? 'met' : 'unmet'}>
+                  {inWorkshop ? <Check size={16} /> : <MapPin size={16} />}
+                  <span>Instituição responsável<strong>Oficina dos Vínculos</strong></span>
                 </div>
                 <div className={riteComponentReady ? 'met' : 'unmet'}>
                   {riteComponentReady ? <Check size={16} /> : <LockKeyhole size={16} />}
                   <span>{item.grade === 1 ? 'Componente infusível' : 'Joia compatível'}<strong>{riteComponentName}</strong></span>
                 </div>
               </div>
-              <p className="modal-warning">O NPC e o local definitivo do rito permanecem OWNER_DECISION. Neste build, Terran executa o serviço técnico sem definir lore nova.</p>
+              <p className="modal-warning">A Oficina dos Vínculos é a instituição responsável. NPC, custo e forma narrativa final do rito permanecem OWNER_DECISION.</p>
             </ArcanePanel>
           )}
         </div>

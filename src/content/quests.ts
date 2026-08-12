@@ -12,6 +12,10 @@ export const questDefinitions = [
       { id: 'defeat_fungorro', type: 'kill', targetId: 'enemy_fungorro_crawler', required: 1 },
     ],
     rewards: [{ type: 'characterXp', value: 20 }],
+    terranFlow: {
+      available: 'location_terran_eldamar_house',
+      active: 'location_terran_portal_plaza',
+    },
     status: 'CONTENT_DRAFT',
   },
 ] satisfies QuestDefinition[]

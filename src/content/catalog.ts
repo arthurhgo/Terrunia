@@ -8,6 +8,7 @@ import { npcDefinitions } from './npcs'
 import { questDefinitions } from './quests'
 import { skillTreeNodeDefinitions } from './skillTrees'
 import { trailDefinitions } from './trails'
+import { terranLocationDefinitions } from './terran'
 import type {
   BoundItemBaseDefinition,
   CombatSkillDefinition,
@@ -21,6 +22,7 @@ import type {
   SkillTreeNodeDefinition,
   StatusEffectDefinition,
   TrailDefinition,
+  TerranLocationDefinition,
 } from './types'
 
 const stableIdSchema = z.string().min(3).regex(/^[a-z0-9_.-]+$/)
@@ -46,6 +48,7 @@ validateStableIds('npcs', npcDefinitions)
 validateStableIds('quests', questDefinitions)
 validateStableIds('skillTreeNodes', skillTreeNodeDefinitions)
 validateStableIds('trails', trailDefinitions)
+validateStableIds('terranLocations', terranLocationDefinitions)
 
 const indexById = <T extends { id: string }>(entries: readonly T[]) =>
   Object.fromEntries(entries.map((entry) => [entry.id, entry])) as Record<string, T>
@@ -63,6 +66,7 @@ export type ContentCatalog = {
   quests: Record<string, QuestDefinition>
   skillTreeNodes: Record<string, SkillTreeNodeDefinition>
   trails: Record<string, TrailDefinition>
+  terranLocations: Record<string, TerranLocationDefinition>
 }
 
 export const content: ContentCatalog = {
@@ -78,6 +82,7 @@ export const content: ContentCatalog = {
   quests: indexById(questDefinitions),
   skillTreeNodes: indexById(skillTreeNodeDefinitions),
   trails: indexById(trailDefinitions),
+  terranLocations: indexById(terranLocationDefinitions),
 }
 
 const assertReference = (exists: unknown, label: string) => {
@@ -154,5 +159,27 @@ for (const trail of Object.values(content.trails)) {
     for (const itemId of node.interaction?.grantItemDefinitionIds ?? []) {
       assertReference(content.items[itemId], `${node.id} → ${itemId}`)
     }
+  }
+}
+
+for (const location of Object.values(content.terranLocations)) {
+  if (
+    location.mapPosition.x < 0 ||
+    location.mapPosition.x > 100 ||
+    location.mapPosition.y < 0 ||
+    location.mapPosition.y > 100
+  ) {
+    throw new Error(`Posição inválida no minimapa de Terran: ${location.id}`)
+  }
+  for (const presence of location.npcPresences) {
+    if (presence.npcId) {
+      assertReference(content.npcs[presence.npcId], `${location.id} → ${presence.npcId}`)
+    }
+  }
+}
+
+for (const quest of Object.values(content.quests)) {
+  for (const locationId of Object.values(quest.terranFlow ?? {})) {
+    assertReference(content.terranLocations[locationId], `${quest.id} → ${locationId}`)
   }
 }

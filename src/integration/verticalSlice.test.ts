@@ -3,13 +3,38 @@ import { getLatestLocalSave } from '../persistence/localSaveRepository'
 import { flushPersistence, useGameStore } from '../state/gameStore'
 
 describe('vertical slice integrada', () => {
+  it('impede acesso à instância fora da Praça do Portal', async () => {
+    const ownerId = 'integration-portal-gate-user'
+    await useGameStore.getState().boot(ownerId)
+    useGameStore.getState().createGame('Iria', 'character.terririan.default')
+    useGameStore.getState().bindPrologueWeapon()
+    useGameStore.getState().travelInTerran('location_terran_eldamar_house')
+    useGameStore.getState().discoverEldamar()
+    useGameStore.getState().acceptQuest('vs_astravel_first_contact')
+
+    useGameStore.getState().enterAstravel()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe(
+      'location_terran_eldamar_house',
+    )
+    expect(useGameStore.getState().notification).toMatchObject({
+      title: 'Ação indisponível',
+      message: 'A instância deve ser acessada pela Praça do Portal.',
+    })
+
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
+    useGameStore.getState().enterAstravel()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_entry')
+  })
+
   it('criação → vínculo → quest → batalha → drop → ponto → node → reload', async () => {
     const ownerId = 'integration-user'
     await useGameStore.getState().boot(ownerId)
     useGameStore.getState().createGame('Aron', 'character.terririan.default')
     useGameStore.getState().bindPrologueWeapon()
+    useGameStore.getState().travelInTerran('location_terran_eldamar_house')
     useGameStore.getState().discoverEldamar()
     useGameStore.getState().acceptQuest('vs_astravel_first_contact')
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
     useGameStore.getState().enterAstravel()
     useGameStore.getState().startBattle()
 
@@ -22,6 +47,7 @@ describe('vertical slice integrada', () => {
     const dropId = useGameStore.getState().save?.inventory[0]?.instanceId
     expect(dropId).toBeTruthy()
     useGameStore.getState().returnToTerran()
+    useGameStore.getState().travelInTerran('location_terran_bond_workshop')
     useGameStore.getState().convertItems([dropId!])
     expect(useGameStore.getState().save?.essence.essencePoints).toBe(1)
     useGameStore.getState().unlockNode('weapon_bond_core')
@@ -42,8 +68,10 @@ describe('vertical slice integrada', () => {
     await useGameStore.getState().boot(ownerId)
     useGameStore.getState().createGame('Lysa', 'character.terririan.default')
     useGameStore.getState().bindPrologueWeapon()
+    useGameStore.getState().travelInTerran('location_terran_eldamar_house')
     useGameStore.getState().discoverEldamar()
     useGameStore.getState().acceptQuest('vs_astravel_first_contact')
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
     useGameStore.getState().enterAstravel()
     useGameStore.getState().startBattle()
 
@@ -53,9 +81,11 @@ describe('vertical slice integrada', () => {
     useGameStore.getState().claimBattleRewards()
     const firstDrop = useGameStore.getState().save?.inventory[0]?.instanceId
     useGameStore.getState().returnToTerran()
+    useGameStore.getState().travelInTerran('location_terran_bond_workshop')
     useGameStore.getState().convertItems([firstDrop!])
     useGameStore.getState().unlockNode('weapon_bond_core')
 
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
     useGameStore.getState().resolveCurrentTrailNode()
     expect(useGameStore.getState().save?.inventory[0]?.definitionId).toBe(
       'consumable_minor_tonic',
@@ -137,6 +167,7 @@ describe('vertical slice integrada', () => {
     expect(fragmentId).toBeTruthy()
     expect(gemId).toBeTruthy()
     useGameStore.getState().returnToTerran()
+    useGameStore.getState().travelInTerran('location_terran_bond_workshop')
     expect(useGameStore.getState().save?.boundItems[weaponId].resonance).toBeGreaterThanOrEqual(
       useGameStore.getState().save!.boundItems[weaponId].resonanceThreshold,
     )
