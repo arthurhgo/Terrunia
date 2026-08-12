@@ -1,5 +1,17 @@
 # Registro de implementação
 
+## Terran — Home e sete áreas jogáveis
+
+- substituído o dashboard que tratava Portal como painel principal por `/terran` como mapa/Home;
+- cadastradas as seis instituições e a Praça do Portal com IDs, funções, serviços, NPCs e estados de presença;
+- criada rota `/terran/:locationId` com interface específica para cada área;
+- adicionados minimapa persistente, posição do jogador, destino de missão e progresso de descoberta 0/7–7/7;
+- tornada obrigatória a Praça do Portal para acessar Astravél e definido o retorno de instância à Praça;
+- movidos Vínculos, inventário e Ritos para a Oficina dos Vínculos;
+- mantida a missão técnica atual no fluxo Eldamar → Portal → Astravél, sem inventar visitas obrigatórias a outras instituições;
+- adicionados motor puro, validação de conteúdo, testes unitários, integração e E2E da cidade;
+- registradas as substituições de cânone em `TERRAN_CITY_STRUCTURE.md`.
+
 ## v0.4 — Grau III e sistema de Joias
 
 - cadastrado banco tipado com as dez Joias registradas pela especificação v0.4;

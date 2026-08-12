@@ -25,7 +25,15 @@ Colosso Micélio é o boss registrado pela especificação; o encontro atual usa
 
 A Esmeralda do Crescimento pertence ao banco de Joias da especificação. Sua entrega pelo Colosso, compatibilidade com a Essência Micelial, bônus de +2 Vida e os nodes `Foco Lapidado`, `Amplificação Lapidada` e `Convergência Micelial` existem para validar o sistema e permanecem `CONTENT_DRAFT`/`BALANCE_DRAFT`.
 
-Ainda são `OWNER_DECISION`: origem definitiva da primeira Joia, NPC/edifício do rito, custo narrativo, regra de remoção/substituição e matriz final de sinergias Essência × Joia.
+Ainda são `OWNER_DECISION`: origem definitiva da primeira Joia, NPC oficiante do rito na Oficina dos Vínculos, custo narrativo, regra de remoção/substituição e matriz final de sinergias Essência × Joia.
+
+## Estrutura oficial de Terran
+
+A Home, as seis instituições, a Praça do Portal, a distribuição de NPCs e o fluxo espacial estão registrados em `TERRAN_CITY_STRUCTURE.md`.
+
+Continuam pendentes: diálogos, retratos, árvores de relacionamento, requisitos dos serviços progressivos, nome do Guardião, bounties, receitas, provas de Clã/Classe e consequências. Coordenadas do minimapa são `VISUAL_DRAFT`.
+
+O local institucional dos Ritos passou a ser a Oficina dos Vínculos. Permanecem `OWNER_DECISION` o NPC oficiante, o custo e a forma narrativa de cada cerimônia.
 
 ## Regra de expansão
 

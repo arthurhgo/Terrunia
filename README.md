@@ -9,28 +9,29 @@ O fluxo atual cobre:
 1. login com Google/Firebase ou convidado de desenvolvimento;
 2. criação de um Terrírian sem Clã e sem Classe;
 3. Vínculo da primeira arma permanente no prólogo;
-4. conversa com Eldamar em Terran;
-5. aceitação da missão técnica `O Primeiro Rastro`;
-6. entrada na trilha de Astravél;
-7. combate por turnos contra um Fungorro;
-8. recebimento de drop sem substituir o item vinculado;
-9. conversão do drop em Essência ou venda por ouro;
-10. obtenção de 1 Ponto de Essência e desbloqueio do primeiro node da arma;
-11. liberação de `Golpe Ressonante` pelo efeito data-driven do node;
-12. progressão pelo acampamento abandonado e obtenção de um consumível;
-13. combate contra três Fungorros com alvos independentes, Mana e status temporários;
-14. descoberta do limiar das Câmaras Fúngicas;
-15. confronto contra o Colosso Micélio;
-16. Fragmento de Essência preservado para Infusão, sem conversão ou venda;
-17. retorno a Terran e Rito de Evolução atômico;
-18. arma vinculada elevada ao Grau II com Essência Micelial;
-19. memória do boss e ramo micelial revelado na Skill Tree;
-20. obtenção da Esmeralda do Crescimento como recompensa técnica do slice;
-21. Rito de Lapidação com preview de efeito, compatibilidade e permanência;
-22. arma vinculada elevada ao Grau III com exatamente uma Joia;
-23. efeito próprio da Joia aplicado ao combate;
-24. três nodes de Joia/sinergia revelados na Skill Tree;
-25. persistência em IndexedDB e sincronização opcional com Firestore.
+4. Terran como Home jogável, com seis instituições ao redor da Praça do Portal;
+5. interfaces próprias, minimapa persistente, serviços e NPCs para cada área da cidade;
+6. conversa com Eldamar na Casa de Eldamar e aceitação da missão técnica `O Primeiro Rastro`;
+7. validação da missão na Praça do Portal e entrada na trilha de Astravél;
+8. combate por turnos contra um Fungorro;
+9. recebimento de drop sem substituir o item vinculado;
+10. conversão do drop em Essência ou venda por ouro;
+11. obtenção de 1 Ponto de Essência e desbloqueio do primeiro node da arma;
+12. liberação de `Golpe Ressonante` pelo efeito data-driven do node;
+13. progressão pelo acampamento abandonado e obtenção de um consumível;
+14. combate contra três Fungorros com alvos independentes, Mana e status temporários;
+15. descoberta do limiar das Câmaras Fúngicas;
+16. confronto contra o Colosso Micélio;
+17. Fragmento de Essência preservado para Infusão, sem conversão ou venda;
+18. retorno pela Praça do Portal e Rito de Evolução atômico na Oficina dos Vínculos;
+19. arma vinculada elevada ao Grau II com Essência Micelial;
+20. memória do boss e ramo micelial revelado na Skill Tree;
+21. obtenção da Esmeralda do Crescimento como recompensa técnica do slice;
+22. Rito de Lapidação com preview de efeito, compatibilidade e permanência;
+23. arma vinculada elevada ao Grau III com exatamente uma Joia;
+24. efeito próprio da Joia aplicado ao combate;
+25. três nodes de Joia/sinergia revelados na Skill Tree;
+26. persistência em IndexedDB e sincronização opcional com Firestore.
 
 ## Regras canônicas preservadas
 
@@ -84,6 +85,6 @@ docs/               especificações, decisões e lacunas de conteúdo
 
 ## Autoridade documental
 
-Em conflito, a precedência adotada é: `0B > 0A > seções novas > lore > legado`. Consulte [`docs/CANON_DECISIONS.md`](./docs/CANON_DECISIONS.md) antes de alterar regras de jogo e [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) antes de ampliar sistemas.
+Em conflito, a precedência adotada é: `0B > 0A > seções novas > lore > legado`. Consulte [`docs/CANON_DECISIONS.md`](./docs/CANON_DECISIONS.md) antes de alterar regras de jogo, [`docs/TERRAN_CITY_STRUCTURE.md`](./docs/TERRAN_CITY_STRUCTURE.md) para a estrutura oficial da cidade e [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) antes de ampliar sistemas.
 
 Valores provisórios estão explicitamente marcados como `BALANCE_DRAFT`, `CONTENT_DRAFT`, `VISUAL_DRAFT` ou `OWNER_DECISION` no código e na documentação.
