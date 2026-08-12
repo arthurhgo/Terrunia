@@ -1247,6 +1247,50 @@ code {
 .clan-representatives strong { color: #d2c1a2; font-family: var(--display); font-size: 0.68rem; }
 .clan-representatives small { color: #6c6861; font-size: 0.52rem; grid-column: 2; }
 .clan-actions { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+.clan-path-grid,
+.class-path-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.class-path-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.clan-path-grid article,
+.class-path-grid article { display: grid; align-content: start; gap: 8px; border: 1px solid #403421; padding: 13px; color: var(--location-tone); background: linear-gradient(145deg, rgb(166 107 36 / 8%), #080b0f 62%); }
+.clan-path-grid article.eligible,
+.class-path-grid article.eligible { border-color: var(--gold); box-shadow: inset 0 0 28px rgb(215 154 49 / 7%); }
+.clan-path-grid h3,
+.class-path-grid h3 { margin: 0; color: #e0cba8; font-family: var(--display); font-size: 0.9rem; }
+.clan-path-grid p,
+.class-path-grid p { min-height: 44px; margin: 0; color: #827b72; font-size: 0.62rem; line-height: 1.5; }
+.class-path-grid > article > strong { color: #9b8b70; font-size: 0.57rem; text-transform: uppercase; }
+.clan-trial-progress,
+.path-unlocked { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #342c22; padding-top: 7px; color: #7d7468; font-size: 0.53rem; letter-spacing: 0.08em; }
+.path-unlocked { justify-content: flex-start; gap: 6px; color: #9ec982; }
+.social-quest-detail { display: grid; gap: 12px; }
+.social-quest-detail h3 { margin: 0; color: var(--gold-bright); font-family: var(--display); }
+.social-quest-detail > p { margin: 0; color: #91887c; font-size: 0.7rem; line-height: 1.55; }
+.quest-limit-alert { display: grid; gap: 4px; border: 1px solid #8c493c; padding: 11px; color: #e8a596; background: rgb(127 43 32 / 12%); }
+.quest-limit-alert strong { font-family: var(--display); font-size: 0.68rem; }
+.quest-limit-alert span { font-size: 0.62rem; }
+.quest-limit-alert .game-button { width: fit-content; margin-top: 5px; text-decoration: none; }
+.main-lore-unlock { display: grid; align-items: center; gap: 13px; border: 1px solid #365d7c; padding: 15px; background: linear-gradient(90deg, rgb(45 118 171 / 13%), transparent); grid-template-columns: auto 1fr auto; }
+.main-lore-unlock > svg { color: var(--blue); }
+.main-lore-unlock > span { display: grid; gap: 3px; }
+.main-lore-unlock small { color: var(--blue); font-size: 0.52rem; letter-spacing: 0.12em; }
+.main-lore-unlock strong { color: #c9e0ee; font-family: var(--display); }
+.main-lore-unlock p { margin: 0; color: #7e8e98; font-size: 0.62rem; }
+.quest-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; }
+.quest-capacity { display: grid; min-width: 210px; border: 1px solid #5b4325; padding: 12px; background: #080b0f; text-align: center; }
+.quest-capacity span,
+.quest-capacity small { color: #777168; font-size: 0.52rem; letter-spacing: 0.08em; }
+.quest-capacity strong { color: var(--gold-bright); font-family: var(--display); font-size: 1.35rem; }
+.campaign-reset-panel { margin-top: 14px; border-color: #6c332d; }
+.campaign-reset-copy { display: grid; align-items: center; gap: 14px; grid-template-columns: auto 1fr auto; }
+.campaign-reset-copy > svg { color: #c26756; }
+.campaign-reset-copy span { display: grid; gap: 4px; }
+.campaign-reset-copy strong { color: #e1b3a9; font-family: var(--display); }
+.campaign-reset-copy p { max-width: 740px; margin: 0; color: #867975; font-size: 0.65rem; line-height: 1.5; }
+.reset-warning { display: grid; justify-items: center; gap: 12px; color: #c26756; text-align: center; }
+.reset-warning p { max-width: 570px; margin: 0; color: #a89b95; line-height: 1.6; }
+.reset-warning strong { color: #e5c1b8; }
+.reset-confirmation-field { display: grid; gap: 10px; color: #a99b94; }
+.reset-confirmation-field input { border: 1px solid #704038; padding: 13px; color: #f0d3ca; background: #080a0d; font-family: var(--display); font-size: 1rem; letter-spacing: 0.12em; text-transform: uppercase; }
 .preparation-inventory { display: grid; gap: 7px; }
 .preparation-inventory article { display: grid; align-items: center; gap: 9px; border: 1px solid #315142; padding: 8px; background: #080b0f; grid-template-columns: 48px 1fr auto; }
 .preparation-inventory article img { width: 48px; height: 48px; }
@@ -1489,6 +1533,14 @@ code {
   .bestiary-strip,
   .clan-representatives,
   .clan-actions { grid-template-columns: 1fr; }
+  .clan-path-grid,
+  .class-path-grid { grid-template-columns: 1fr; }
+  .quest-heading { align-items: stretch; flex-direction: column; }
+  .quest-capacity { width: 100%; }
+  .campaign-reset-copy { grid-template-columns: auto 1fr; }
+  .campaign-reset-copy .game-button { grid-column: 1 / -1; }
+  .main-lore-unlock { grid-template-columns: auto 1fr; }
+  .main-lore-unlock .game-button { grid-column: 1 / -1; }
   .portal-location-feature { grid-template-columns: 1fr; }
   .presence-card { grid-template-columns: 31px minmax(0, 1fr); }
   .presence-card i { grid-column: 2; }

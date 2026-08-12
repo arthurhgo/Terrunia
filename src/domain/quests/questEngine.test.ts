@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { content, type ContentCatalog } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
-import { acceptQuest, applyQuestEvent, declineQuest, offerQuest, turnInQuest } from './questEngine'
+import { migrateAndValidateSave } from '../../persistence/saveSchema'
+import {
+  acceptQuest,
+  applyQuestEvent,
+  canAcceptQuest,
+  declineQuest,
+  getActiveQuestCount,
+  MAX_ACTIVE_QUESTS,
+  offerQuest,
+  turnInQuest,
+} from './questEngine'
 
 describe('quest engine', () => {
   it('mantém a oferta fora do Journal até a aceitação explícita', () => {
@@ -69,5 +79,35 @@ describe('quest engine', () => {
     if (!turnedIn.ok) return
     expect(turnedIn.value.essence.essencePoints).toBe(1)
     expect(turnedIn.value.essence.current).toBe(15)
+  })
+
+  it('aceita três missões e bloqueia a quarta sem substituir nenhuma', () => {
+    const save = createNewSave('quest-user', 'Iria', 'character.terririan.default', content)
+    const questIds = ['clan_dunavar_01', 'clan_rustal_01', 'clan_cebios_01', 'clan_estres_01']
+    for (const clanId of ['dunavar', 'rustal', 'cebios_esti', 'estres_do_et']) save.character.clan.knownClanIds.push(clanId)
+    for (const questId of questIds) save.quests[questId].status = 'offered'
+    let current = save
+    for (const questId of questIds.slice(0, 3)) {
+      const result = acceptQuest(current, questId, content, '2026-08-12T15:00:00.000Z')
+      expect(result.ok).toBe(true)
+      if (result.ok) current = result.value
+    }
+    expect(getActiveQuestCount(current)).toBe(MAX_ACTIVE_QUESTS)
+    expect(canAcceptQuest(current)).toMatchObject({ ok: false, code: 'QUEST_LIMIT_REACHED' })
+    const fourth = acceptQuest(current, questIds[3], content, '2026-08-12T15:01:00.000Z')
+    expect(fourth).toMatchObject({ ok: false, code: 'QUEST_LIMIT_REACHED' })
+    expect(current.quests[questIds[0]].status).toBe('active')
+    expect(current.quests[questIds[3]].status).toBe('offered')
+    const reloaded = migrateAndValidateSave(structuredClone(current))
+    expect(getActiveQuestCount(reloaded)).toBe(MAX_ACTIVE_QUESTS)
+    expect(reloaded.quests[questIds[3]].status).toBe('offered')
+  })
+
+  it('mantém pronta para entrega ocupando slot e libera o slot após concluir', () => {
+    const save = createNewSave('quest-user', 'Iria', 'character.terririan.default', content)
+    save.quests.vs_astravel_first_contact.status = 'ready_to_turn_in'
+    expect(getActiveQuestCount(save)).toBe(1)
+    const completed = turnInQuest(save, 'vs_astravel_first_contact', 'npc_eldamar', content, '2026-08-12T15:02:00.000Z')
+    expect(completed.ok && getActiveQuestCount(completed.value)).toBe(0)
   })
 })

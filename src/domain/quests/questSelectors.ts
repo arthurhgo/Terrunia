@@ -4,6 +4,12 @@ import type { GameSave, QuestProgress, QuestStatus } from '../game/types'
 
 export type QuestJournalEntry = { definition: QuestDefinition; progress: QuestProgress }
 
+export const resolveQuestDefinition = (save: GameSave, definition: QuestDefinition): QuestDefinition => {
+  const classId = save.character.classProgression.classId
+  const variant = classId ? definition.classVariants?.[classId] : undefined
+  return variant ? { ...definition, title: variant.title ?? definition.title, summary: variant.summary } : definition
+}
+
 export const QUEST_JOURNAL_CATEGORIES: Array<{ id: QuestCategory | 'completed'; label: string }> = [
   { id: 'main', label: 'Principal' },
   { id: 'clan', label: 'Clã' },
@@ -17,7 +23,7 @@ export const getQuestJournalEntries = (save: GameSave, catalog: ContentCatalog):
   Object.values(save.quests).flatMap((progress) => {
     if (!['active', 'ready_to_turn_in', 'completed'].includes(progress.status)) return []
     const definition = catalog.quests[progress.questId]
-    return definition ? [{ definition, progress }] : []
+    return definition ? [{ definition: resolveQuestDefinition(save, definition), progress }] : []
   })
 
 export const getQuestEntriesByCategory = (

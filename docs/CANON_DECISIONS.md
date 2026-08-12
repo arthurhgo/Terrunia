@@ -29,6 +29,11 @@ Registro das ambiguidades encontradas durante a implementação do vertical slic
 | Nexo e Personagem | A revisão v0.4 separava STATUS e Vínculos, enquanto a direção mais recente exige uma leitura integrada sem tornar Personagem uma cópia. | `/nexus` reúne status principais, origem dos derivados e exatamente os cinco Vínculos; `/character` preserva ficha detalhada, Memórias, títulos, progressão e crônica. |
 | Aceitação de missões | O vertical slice anterior adicionava a missão diretamente ao estado `active` e concluía/recompensava ao fechar objetivos. | O fluxo oficial é `AVAILABLE → OFFERED → ACTIVE → READY_TO_TURN_IN → COMPLETED`. O Journal deriva apenas de `ACTIVE`, `READY_TO_TURN_IN` e `COMPLETED`; recompensas são aplicadas somente na entrega ao NPC correto. |
 | Estado compartilhado de quests | Tracker, minimapa, Journal e ícones de NPC possuíam leituras parcialmente independentes. | Todas as superfícies derivam de `GameSave.quests` por seletores puros. `tracked` seleciona objetivos do HUD; não existe lista paralela de missões na UI. |
+| Capacidade de missões | A especificação anterior não fixava uma capacidade global entre categorias. | A decisão aprovada fixa três missões `ACTIVE` + `READY_TO_TURN_IN`; ofertas e concluídas não ocupam slot. |
+| Filiação de Clã | Materiais legados podiam ser lidos como escolha direta de Clã. | O Terrírian conhece representantes, aceita e entrega três provas, torna-se elegível e só entra após confirmar o Vínculo e o rito. |
+| Desbloqueio de Classe | Menus antigos sugeriam escolher Classe por seleção. | Somente as três Classes do Clã ativo aparecem; cada uma exige oferta de NPC, aceitação, prova, entrega, elegibilidade e confirmação. |
+| Main Lore pós-Classe | A Main Lore precisava reagir à identidade conquistada. | `quest core + clan context + class variant`: a definição permanece única e o texto é resolvido pela Classe ativa após `ClanJoined` + `ClassUnlocked`. |
+| Reset de campanha | Limpar apenas IndexedDB permitiria que Firestore restaurasse a campanha apagada. | `CampaignReset` incrementa `campaignGeneration`, invalida o save cloud em transação, limpa o local e retorna à criação preservando autenticação e preferências. |
 
 ## OWNER_DECISION pendente
 

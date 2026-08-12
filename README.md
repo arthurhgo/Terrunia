@@ -32,6 +32,11 @@ O fluxo atual cobre:
 24. efeito próprio da Joia aplicado ao combate;
 25. três nodes de Joia/sinergia revelados na Skill Tree;
 26. persistência em IndexedDB e sincronização opcional com Firestore.
+27. recrutamento data-driven dos quatro Clãs por três provas e confirmação explícita;
+28. doze provas de Classe liberadas somente após o Vínculo do Clã;
+29. limite global de três missões aceitas, compartilhado por todas as categorias;
+30. Main Lore adaptada por contexto de Clã e variante de Classe;
+31. reset de campanha em duas etapas, com invalidação cloud e preservação da conta.
 
 ## Regras canônicas preservadas
 
@@ -43,6 +48,8 @@ O fluxo atual cobre:
 - A Skill Tree tem domínios separados para Nexo, Clã, Classe e os cinco Vínculos.
 - Itens vinculados usam exatamente sete Graus.
 - O motor de combate é uma máquina de estados pura, fora do React.
+- Missões existem no mundo antes do Journal e só entram após aceitação explícita do jogador.
+- Clã e Classe exigem recrutamento, provas, elegibilidade e confirmação — não são seleções de menu.
 - Habilidades, consumíveis, status, encontros e nós de trilha são conteúdo, não condicionais de UI.
 
 ## Executar
@@ -85,6 +92,6 @@ docs/               especificações, decisões e lacunas de conteúdo
 
 ## Autoridade documental
 
-Em conflito, a precedência adotada é: `0B > 0A > seções novas > lore > legado`. Consulte [`docs/CANON_DECISIONS.md`](./docs/CANON_DECISIONS.md) antes de alterar regras de jogo, [`docs/TERRAN_CITY_STRUCTURE.md`](./docs/TERRAN_CITY_STRUCTURE.md) para a estrutura oficial da cidade e [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) antes de ampliar sistemas.
+Em conflito, a precedência adotada é: decisões recentes do criador > `0B` > `0A` > seções novas > lore > legado. Consulte [`docs/GAMEPLAY_RECRUITMENT_AND_RESET.md`](./docs/GAMEPLAY_RECRUITMENT_AND_RESET.md), [`docs/CANON_DECISIONS.md`](./docs/CANON_DECISIONS.md), [`docs/TERRAN_CITY_STRUCTURE.md`](./docs/TERRAN_CITY_STRUCTURE.md) e [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) antes de ampliar sistemas.
 
 Valores provisórios estão explicitamente marcados como `BALANCE_DRAFT`, `CONTENT_DRAFT`, `VISUAL_DRAFT` ou `OWNER_DECISION` no código e na documentação.

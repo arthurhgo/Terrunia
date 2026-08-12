@@ -2,8 +2,9 @@ import { z } from 'zod'
 import { content } from '../content/catalog'
 import { getBoundSlotCapacity } from '../domain/bond/boundItems'
 import type { GameSave } from '../domain/game/types'
+import { MAX_ACTIVE_QUESTS, SLOT_OCCUPYING_QUEST_STATUSES } from '../domain/quests/questEngine'
 
-export const CURRENT_SAVE_SCHEMA = 5
+export const CURRENT_SAVE_SCHEMA = 6
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -52,11 +53,14 @@ const characterSchema = z.object({
     clanId: z.string().nullable(),
     rank: nonnegativeInteger,
     reputation: nonnegativeNumber,
+    knownClanIds: z.array(idSchema),
+    eligibleClanIds: z.array(idSchema),
     initiationQuestId: z.string().optional(),
     joinedAt: z.string().optional(),
   }),
   classProgression: z.object({
     classId: z.string().nullable(),
+    eligibleClassIds: z.array(idSchema),
     masteryLevel: nonnegativeInteger,
     masteryXp: nonnegativeNumber,
     unlockedNodeIds: z.array(idSchema),
@@ -240,6 +244,8 @@ export const gameSaveSchema = z.object({
   schemaVersion: z.literal(CURRENT_SAVE_SCHEMA),
   gameVersion: z.string().min(1),
   saveId: idSchema,
+  campaignId: idSchema,
+  campaignGeneration: nonnegativeInteger,
   ownerId: idSchema,
   revision: positiveInteger,
   createdAt: z.string().min(1),
@@ -266,6 +272,16 @@ export const gameSaveSchema = z.object({
       code: 'custom',
       path: ['essence', 'current'],
       message: 'A Essência acumulada deve ser menor que o limiar atual.',
+    })
+  }
+
+  const occupiedQuestSlots = Object.values(save.quests).filter((progress) =>
+    SLOT_OCCUPYING_QUEST_STATUSES.includes(progress.status as typeof SLOT_OCCUPYING_QUEST_STATUSES[number])).length
+  if (occupiedQuestSlots > MAX_ACTIVE_QUESTS) {
+    context.addIssue({
+      code: 'custom',
+      path: ['quests'],
+      message: `Um save não pode possuir mais de ${MAX_ACTIVE_QUESTS} missões em andamento.`,
     })
   }
 
@@ -539,6 +555,45 @@ const migrateV4ToV5 = (legacy: Record<string, unknown>): unknown => {
   }
 }
 
+const migrateV5ToV6 = (legacy: Record<string, unknown>): unknown => {
+  const character = structuredClone(legacy.character as GameSave['character'])
+  character.clan.knownClanIds ??= []
+  character.clan.eligibleClanIds ??= []
+  character.classProgression.eligibleClassIds ??= []
+  const quests = structuredClone((legacy.quests ?? {}) as GameSave['quests'])
+  for (const definition of Object.values(content.quests)) {
+    quests[definition.id] ??= {
+      questId: definition.id,
+      status: definition.initialStatus ?? 'available',
+      tracked: false,
+      objectives: Object.fromEntries(definition.objectives.map((objective) => [objective.id, 0])),
+    }
+  }
+  const relationships = structuredClone((legacy.relationships ?? {}) as GameSave['relationships'])
+  for (const npc of Object.values(content.npcs)) {
+    relationships[npc.id] ??= {
+      npcId: npc.id,
+      discovered: false,
+      affinity: 0,
+      trust: 0,
+      reputationFlags: [],
+      completedQuestIds: [],
+      dialogueFlags: [],
+    }
+  }
+  return {
+    ...legacy,
+    schemaVersion: 6,
+    gameVersion: '0.6.0',
+    campaignId: String(legacy.campaignId ?? legacy.saveId),
+    campaignGeneration: Number(legacy.campaignGeneration ?? 0),
+    character,
+    quests,
+    relationships,
+    eventLog: [...(((legacy.eventLog as string[] | undefined) ?? [])), 'SaveMigrated:5->6'],
+  }
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -565,6 +620,10 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 4) {
     candidate = migrateV4ToV5(candidate as Record<string, unknown>)
     version = 5
+  }
+  if (version === 5) {
+    candidate = migrateV5ToV6(candidate as Record<string, unknown>)
+    version = 6
   }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)

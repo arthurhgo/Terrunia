@@ -4,6 +4,17 @@ import { addRawEssence } from '../essence/essence'
 import type { GameSave, QuestProgress } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
 
+export const MAX_ACTIVE_QUESTS = 3
+export const SLOT_OCCUPYING_QUEST_STATUSES = ['active', 'ready_to_turn_in'] as const
+
+export const getActiveQuestCount = (save: GameSave) => Object.values(save.quests)
+  .filter((progress) => SLOT_OCCUPYING_QUEST_STATUSES.includes(progress.status as typeof SLOT_OCCUPYING_QUEST_STATUSES[number])).length
+
+export const canAcceptQuest = (save: GameSave): Result<true> =>
+  getActiveQuestCount(save) < MAX_ACTIVE_QUESTS
+    ? ok(true)
+    : fail('QUEST_LIMIT_REACHED', `Você já possui ${MAX_ACTIVE_QUESTS} missões em andamento.`)
+
 export type QuestEvent =
   | { type: 'talk'; targetId: string; amount?: number }
   | { type: 'kill'; targetId: string; amount?: number }
@@ -14,10 +25,40 @@ export type QuestEvent =
 
 export const createQuestProgress = (definition: QuestDefinition): QuestProgress => ({
   questId: definition.id,
-  status: 'available',
+  status: definition.initialStatus ?? 'available',
   tracked: false,
   objectives: Object.fromEntries(definition.objectives.map((objective) => [objective.id, 0])),
 })
+
+const prerequisitesMet = (save: GameSave, definition: QuestDefinition) =>
+  (definition.prerequisites ?? []).every((requirement) => {
+    switch (requirement.type) {
+      case 'clanKnown': return save.character.clan.knownClanIds.includes(requirement.clanId)
+      case 'questCompleted': return save.quests[requirement.questId]?.status === 'completed'
+      case 'clanJoined': return save.character.clan.clanId === requirement.clanId
+      case 'noClan': return save.character.clan.clanId === null
+      case 'noClass': return save.character.classProgression.classId === null
+      case 'hasClan': return save.character.clan.clanId !== null
+      case 'hasClass': return save.character.classProgression.classId !== null
+    }
+  })
+
+export const refreshQuestAvailability = (save: GameSave, catalog: ContentCatalog, now: string): GameSave => {
+  const next = structuredClone(save)
+  let changed = false
+  for (const definition of Object.values(catalog.quests)) {
+    const progress = next.quests[definition.id]
+    if (!progress || progress.status !== 'locked' || !prerequisitesMet(next, definition)) continue
+    progress.status = 'available'
+    changed = true
+    next.eventLog.push(`QuestAvailable:${definition.id}`)
+  }
+  if (changed) {
+    next.updatedAt = now
+    next.revision += 1
+  }
+  return changed ? next : save
+}
 
 export const offerQuest = (
   save: GameSave,
@@ -29,6 +70,9 @@ export const offerQuest = (
   const progress = save.quests[questId]
   if (!progress || progress.status !== 'available') {
     return fail('QUEST_NOT_AVAILABLE', 'Esta missão não está disponível para oferta.')
+  }
+  if (!prerequisitesMet(save, catalog.quests[questId])) {
+    return fail('QUEST_PREREQUISITES_NOT_MET', 'Os requisitos desta missão não estão mais válidos.')
   }
   const next = structuredClone(save)
   next.quests[questId].status = 'offered'
@@ -63,6 +107,8 @@ export const acceptQuest = (
   if (!progress || progress.status !== 'offered') {
     return fail('QUEST_NOT_OFFERED', 'Leia a oferta antes de aceitar esta missão.')
   }
+  const capacity = canAcceptQuest(save)
+  if (!capacity.ok) return capacity
   const next = structuredClone(save)
   next.quests[questId].status = 'active'
   next.quests[questId].tracked = true
@@ -104,6 +150,17 @@ const applyQuestRewards = (save: GameSave, definition: QuestDefinition) => {
       } else save.eventLog.push(`RawEssenceRewardRejected:${reward.value}`)
     }
   }
+  for (const outcome of definition.outcomes ?? []) {
+    if (outcome.type === 'clanEligibility' && !save.character.clan.eligibleClanIds.includes(outcome.clanId)) {
+      save.character.clan.eligibleClanIds.push(outcome.clanId)
+    }
+    if (outcome.type === 'classEligibility' && !save.character.classProgression.eligibleClassIds.includes(outcome.classId)) {
+      save.character.classProgression.eligibleClassIds.push(outcome.classId)
+    }
+    if (outcome.type === 'clanReputation' && save.character.clan.knownClanIds.includes(outcome.clanId)) {
+      save.character.clan.reputation += outcome.value
+    }
+  }
 }
 
 export const turnInQuest = (
@@ -129,7 +186,7 @@ export const turnInQuest = (
   next.updatedAt = now
   next.revision += 1
   next.eventLog.push(`QuestCompleted:${questId}`)
-  return ok(next)
+  return ok(refreshQuestAvailability(next, catalog, now))
 }
 
 export const applyQuestEvent = (

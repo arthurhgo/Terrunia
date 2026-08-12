@@ -9,6 +9,7 @@ import {
   getQuestStatusLabel,
   QUEST_JOURNAL_CATEGORIES,
 } from '../../domain/quests/questSelectors'
+import { getActiveQuestCount, MAX_ACTIVE_QUESTS } from '../../domain/quests/questEngine'
 import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { GameButton } from '../components/GameButton'
@@ -27,7 +28,7 @@ export function QuestsScreen() {
   return (
     <GameShell>
       <div className="content-screen quest-journal-screen">
-        <header className="screen-heading"><p className="eyebrow">JOURNAL COMPLETO</p><h1>Missões</h1><p>Somente missões aceitas entram neste registro. O tracker acompanha apenas as selecionadas.</p></header>
+        <header className="screen-heading quest-heading"><div><p className="eyebrow">JOURNAL COMPLETO</p><h1>Missões</h1><p>Somente missões aceitas entram neste registro. O tracker acompanha apenas as selecionadas.</p></div><div className="quest-capacity" aria-label={`${getActiveQuestCount(save)} de ${MAX_ACTIVE_QUESTS} missões em andamento`}><span>EM ANDAMENTO</span><strong>{getActiveQuestCount(save)} / {MAX_ACTIVE_QUESTS}</strong><small>ATIVAS + PRONTAS PARA ENTREGA</small></div></header>
         <nav className="journal-tabs" aria-label="Categorias de missões">
           {QUEST_JOURNAL_CATEGORIES.map((tab) => {
             const count = getQuestEntriesByCategory(entries, tab.id).length
@@ -43,7 +44,7 @@ export function QuestsScreen() {
                 const done = current >= objective.required
                 return <div key={objective.id} className={done ? 'done' : ''}>{done ? <CheckCircle2 size={17} /> : <Circle size={17} />}<span>{objective.label}</span><strong>{current}/{objective.required}</strong></div>
               })}</div>
-              {progress.status === 'ready_to_turn_in' ? <div className="quest-next-step"><MapPinned size={19} /><span>PRÓXIMO PASSO<strong>Retorne a {content.npcs[definition.turnInNpcId]?.name ?? definition.turnInNpcId}</strong><small>Terran → Casa de Eldamar</small></span></div> : null}
+              {progress.status === 'ready_to_turn_in' ? <div className="quest-next-step"><MapPinned size={19} /><span>PRÓXIMO PASSO<strong>Retorne a {content.npcs[definition.turnInNpcId]?.name ?? definition.turnInNpcId}</strong><small>{definition.terranFlow?.ready_to_turn_in === 'location_terran_clan_hall' ? 'Terran → Salão dos Clãs' : 'Terran → Casa de Eldamar'}</small></span></div> : null}
             </ArcanePanel>
           )) : <div className="journal-empty"><ScrollText size={34} /><strong>Nenhuma missão nesta categoria</strong><p>Ofertas ainda não aceitas não aparecem no Journal.</p></div>}
         </div>

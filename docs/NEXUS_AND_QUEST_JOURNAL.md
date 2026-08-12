@@ -50,3 +50,9 @@ Não criar listas paralelas de missões na UI.
 O Journal possui: Principal, Clã, Classe, Secundárias, Caça/Contratos e Concluídas.
 
 O Tracker exibe apenas missões `ACTIVE` ou `READY_TO_TURN_IN` marcadas como `tracked`. Desativar o Tracker também remove o destaque correspondente do minimapa, sem alterar o estado da missão.
+
+## Capacidade global
+
+`MAX_ACTIVE_QUESTS = 3` é uma regra única do domínio. Contam apenas `ACTIVE` e `READY_TO_TURN_IN`; `OFFERED` não entra no Journal nem ocupa slot, e `COMPLETED` libera o slot. A UI deve consultar `canAcceptQuest`, mostrar `X / 3` e nunca descartar ou substituir uma missão automaticamente.
+
+Provas de Clã e Classe usam o mesmo motor e a mesma capacidade. Abandono de Main Quest, Clã ou Classe permanece `OWNER_DECISION` e não é oferecido pela interface.
