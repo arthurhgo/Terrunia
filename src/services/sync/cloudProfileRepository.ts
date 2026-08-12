@@ -28,7 +28,12 @@ export const ensureCloudUserProfile = async (identity: CloudUserIdentity) => {
     }
 
     if (snapshot.exists()) {
-      transaction.update(profileReference, identityFields)
+      const data = snapshot.data()
+      transaction.update(profileReference, {
+        ...identityFields,
+        activeCampaignId: data.activeCampaignId ?? null,
+        campaignGeneration: Number(data.campaignGeneration ?? 0),
+      })
       return
     }
 
@@ -36,6 +41,8 @@ export const ensureCloudUserProfile = async (identity: CloudUserIdentity) => {
       ...identityFields,
       createdAt: serverTimestamp(),
       activeSaveId: null,
+      activeCampaignId: null,
+      campaignGeneration: 0,
     })
   })
 }
@@ -52,4 +59,24 @@ export const getActiveCloudSaveId = async (uid: string) => {
   return typeof activeSaveId === 'string' && activeSaveId.length > 0
     ? activeSaveId
     : null
+}
+
+export type ActiveCampaignReference = {
+  activeSaveId: string | null
+  activeCampaignId: string | null
+  campaignGeneration: number
+}
+
+export const getActiveCampaignReference = async (uid: string): Promise<ActiveCampaignReference> => {
+  const app = await getFirebaseApp()
+  if (!app) return { activeSaveId: null, activeCampaignId: null, campaignGeneration: 0 }
+  const { doc, getDoc, getFirestore } = await import('firebase/firestore')
+  const snapshot = await getDoc(doc(getFirestore(app), 'users', uid))
+  if (!snapshot.exists()) return { activeSaveId: null, activeCampaignId: null, campaignGeneration: 0 }
+  const data = snapshot.data()
+  return {
+    activeSaveId: typeof data.activeSaveId === 'string' ? data.activeSaveId : null,
+    activeCampaignId: typeof data.activeCampaignId === 'string' ? data.activeCampaignId : null,
+    campaignGeneration: typeof data.campaignGeneration === 'number' ? data.campaignGeneration : 0,
+  }
 }

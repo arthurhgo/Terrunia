@@ -6,7 +6,6 @@ import {
   CircleDot,
   Crosshair,
   FlaskConical,
-  GitBranch,
   LockKeyhole,
   Map,
   MapPinned,
@@ -27,6 +26,7 @@ import { BoundItemsPanel } from '../dashboard/BoundItemsPanel'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { NpcDialog } from '../dashboard/NpcDialog'
 import { PortalPanel } from '../dashboard/PortalPanel'
+import { ClanHallPanel } from '../dashboard/ClanHallPanel'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
@@ -157,24 +157,8 @@ function ZarethFeature({ save }: { save: GameSave }) {
 }
 
 function ClanHallFeature({ save, location }: { save: GameSave; location: TerranLocationDefinition }) {
-  const representatives = location.npcPresences.filter((presence) => presence.presence === 'institution')
-  return (
-    <ArcanePanel title="Câmara de filiação" eyebrow="CLÃ · CLASSE · MAIN LORE" className="location-feature location-feature--clan">
-      <div className="clan-state-banner">
-        <UsersRound size={34} />
-        <span>ESTADO DO PERSONAGEM<strong>{save.character.clan.clanId ? `Clã ${save.character.clan.clanId} · Rank ${save.character.clan.rank}` : 'Terrírian sem filiação'}</strong><small>Classe: {save.character.classProgression.classId ?? 'ainda não desenvolvida'}</small></span>
-      </div>
-      <div className="clan-representatives">
-        {representatives.map((presence) => (
-          <article key={presence.id}><Sparkles size={17} /><strong>{presence.label}</strong><small>Conhecer → ajudar → provar → filiar-se</small></article>
-        ))}
-      </div>
-      <div className="clan-actions">
-        <Link className="panel-link" to="/npcs">Ver relações <ArrowRight size={16} /></Link>
-        <Link className="panel-link" to="/skill-tree">Abrir progressão <GitBranch size={16} /></Link>
-      </div>
-    </ArcanePanel>
-  )
+  void location
+  return <ClanHallPanel save={save} />
 }
 
 function DaerynFeature({ save }: { save: GameSave }) {

@@ -64,3 +64,24 @@ export const deleteLocalSaves = async (ownerId: string) => {
   }
   await transaction.done
 }
+
+export const replaceLocalCampaign = async (ownerId: string, save: GameSave) => {
+  const validated = migrateAndValidateSave(save)
+  if (validated.ownerId !== ownerId) throw new Error('A nova campanha não pertence ao usuário ativo.')
+  const database = await databasePromise
+  const transaction = database.transaction('saves', 'readwrite')
+  const index = transaction.store.index('byOwner')
+  let cursor = await index.openCursor(ownerId)
+  while (cursor) {
+    await cursor.delete()
+    cursor = await cursor.continue()
+  }
+  await transaction.store.put({
+    key: saveKey(validated.ownerId, validated.saveId),
+    ownerId: validated.ownerId,
+    saveId: validated.saveId,
+    updatedAt: validated.updatedAt,
+    payload: validated,
+  })
+  await transaction.done
+}

@@ -24,11 +24,14 @@ export type Character = {
     clanId: string | null
     rank: number
     reputation: number
+    knownClanIds: string[]
+    eligibleClanIds: string[]
     initiationQuestId?: string
     joinedAt?: string
   }
   classProgression: {
     classId: string | null
+    eligibleClassIds: string[]
     masteryLevel: number
     masteryXp: number
     unlockedNodeIds: string[]
@@ -148,6 +151,8 @@ export type GameSave = {
   schemaVersion: number
   gameVersion: string
   saveId: string
+  campaignId: string
+  campaignGeneration: number
   ownerId: string
   revision: number
   createdAt: string

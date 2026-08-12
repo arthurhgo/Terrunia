@@ -9,6 +9,7 @@ import { questDefinitions } from './quests'
 import { skillTreeNodeDefinitions } from './skillTrees'
 import { trailDefinitions } from './trails'
 import { terranLocationDefinitions } from './terran'
+import { clanDefinitions, classDefinitions } from './progression'
 import type {
   BoundItemBaseDefinition,
   CombatSkillDefinition,
@@ -23,6 +24,8 @@ import type {
   StatusEffectDefinition,
   TrailDefinition,
   TerranLocationDefinition,
+  ClanDefinition,
+  CharacterClassDefinition,
 } from './types'
 
 const stableIdSchema = z.string().min(3).regex(/^[a-z0-9_.-]+$/)
@@ -49,6 +52,8 @@ validateStableIds('quests', questDefinitions)
 validateStableIds('skillTreeNodes', skillTreeNodeDefinitions)
 validateStableIds('trails', trailDefinitions)
 validateStableIds('terranLocations', terranLocationDefinitions)
+validateStableIds('clans', clanDefinitions)
+validateStableIds('classes', classDefinitions)
 
 const indexById = <T extends { id: string }>(entries: readonly T[]) =>
   Object.fromEntries(entries.map((entry) => [entry.id, entry])) as Record<string, T>
@@ -67,6 +72,8 @@ export type ContentCatalog = {
   skillTreeNodes: Record<string, SkillTreeNodeDefinition>
   trails: Record<string, TrailDefinition>
   terranLocations: Record<string, TerranLocationDefinition>
+  clans: Record<string, ClanDefinition>
+  classes: Record<string, CharacterClassDefinition>
 }
 
 export const content: ContentCatalog = {
@@ -83,6 +90,8 @@ export const content: ContentCatalog = {
   skillTreeNodes: indexById(skillTreeNodeDefinitions),
   trails: indexById(trailDefinitions),
   terranLocations: indexById(terranLocationDefinitions),
+  clans: indexById(clanDefinitions),
+  classes: indexById(classDefinitions),
 }
 
 const assertReference = (exists: unknown, label: string) => {
@@ -175,6 +184,27 @@ for (const location of Object.values(content.terranLocations)) {
     if (presence.npcId) {
       assertReference(content.npcs[presence.npcId], `${location.id} → ${presence.npcId}`)
     }
+  }
+}
+
+for (const clan of Object.values(content.clans)) {
+  assertReference(content.npcs[clan.recruiterNpcId], `${clan.id} → ${clan.recruiterNpcId}`)
+  for (const questId of clan.recruitmentQuestIds) assertReference(content.quests[questId], `${clan.id} → ${questId}`)
+  for (const classId of clan.classIds) assertReference(content.classes[classId], `${clan.id} → ${classId}`)
+}
+
+for (const classDefinition of Object.values(content.classes)) {
+  assertReference(content.clans[classDefinition.clanId], `${classDefinition.id} → ${classDefinition.clanId}`)
+  assertReference(content.npcs[classDefinition.masterNpcId], `${classDefinition.id} → ${classDefinition.masterNpcId}`)
+  assertReference(content.quests[classDefinition.trialQuestId], `${classDefinition.id} → ${classDefinition.trialQuestId}`)
+}
+
+for (const quest of Object.values(content.quests)) {
+  assertReference(content.npcs[quest.giverNpcId], `${quest.id} → ${quest.giverNpcId}`)
+  assertReference(content.npcs[quest.turnInNpcId], `${quest.id} → ${quest.turnInNpcId}`)
+  for (const requirement of quest.prerequisites ?? []) {
+    if (requirement.type === 'questCompleted') assertReference(content.quests[requirement.questId], `${quest.id} → ${requirement.questId}`)
+    if ('clanId' in requirement) assertReference(content.clans[requirement.clanId], `${quest.id} → ${requirement.clanId}`)
   }
 }
 

@@ -3,14 +3,15 @@
 ## Fluxo
 
 1. `authStore` inicializa o Firebase Auth quando as variáveis `VITE_FIREBASE_*` existem.
-2. O login Google garante o perfil privado `users/{uid}` com `activeSaveId`.
+2. O login Google garante o perfil privado `users/{uid}` com `activeSaveId`, `activeCampaignId` e `campaignGeneration`.
 3. Em desenvolvimento, `dev-guest` permite validar o jogo sem infraestrutura externa.
 4. O jogo carrega primeiro o save local versionado em IndexedDB.
 5. Sem save local, consulta `activeSaveId` para recuperar a campanha em outro dispositivo.
 6. Com Firebase configurado, compara o save local com `users/{uid}/saves/{saveId}`.
 7. A maior `revision` vence; em empate, vence o `updatedAt` mais recente.
 8. Cada mutação entra numa fila de gravação para preservar a ordem.
-9. Save e alteração de `activeSaveId` são enviados no mesmo batch do Firestore.
+9. Save e referências ativas são enviados na mesma transação do Firestore.
+10. `CampaignReset` incrementa a geração, invalida o documento anterior na nuvem e somente então limpa o IndexedDB.
 
 ## Segurança
 
@@ -20,11 +21,13 @@
 - O perfil aceita somente os campos declarados e não permite alterar `createdAt`.
 - O `ownerId` do documento deve coincidir com o UID da rota.
 - O `saveId` do payload deve coincidir com o ID do documento.
+- `campaignId` e `campaignGeneration` do payload devem coincidir com o envelope do documento.
+- Uma geração inferior à geração ativa do perfil é rejeitada e um save invalidado não pode voltar a ativo.
 - O schema Zod rejeita payloads incompatíveis antes de colocá-los no estado.
 
 ## Versionamento
 
-O save possui `schemaVersion`, `gameVersion`, `revision`, `createdAt` e `updatedAt`. O carregador atual aceita apenas a versão conhecida. Migrações devem ser explícitas e cobertas por fixtures antes de incrementar o schema.
+O save possui `schemaVersion`, `gameVersion`, `campaignId`, `campaignGeneration`, `revision`, `createdAt` e `updatedAt`. O carregador atual aceita apenas a versão conhecida. Migrações devem ser explícitas e cobertas por fixtures antes de incrementar o schema.
 
 ## Pendência
 

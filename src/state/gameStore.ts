@@ -15,6 +15,7 @@ import {
   resolveTrailInteraction,
 } from '../domain/exploration/trailEngine'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
+import { requestCampaignReset } from '../domain/game/campaignReset'
 import type { GameSave, InventoryItemInstance } from '../domain/game/types'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
 import {
@@ -26,8 +27,21 @@ import {
   turnInQuest as turnInQuestDomain,
 } from '../domain/quests/questEngine'
 import { unlockSkillNode } from '../domain/skillTree/skillTree'
+import {
+  discoverClan as discoverClanDomain,
+  joinClan as joinClanDomain,
+  unlockClass as unlockClassDomain,
+} from '../domain/progression/progressionEngine'
 import { visitTerranLocation } from '../domain/terran/cityEngine'
-import { loadSynchronizedSave, saveEverywhere, type SyncMode } from '../services/sync/syncService'
+import {
+  loadCampaignSeed,
+  loadSynchronizedSave,
+  resetCampaignEverywhere,
+  saveEverywhere,
+  type CampaignSeed,
+  type SyncMode,
+} from '../services/sync/syncService'
+import { loadAccountSettings, saveAccountSettings } from '../services/settings/accountSettings'
 
 type GameStatus = 'idle' | 'loading' | 'ready' | 'error'
 type SyncStatus = 'idle' | 'saving' | 'saved' | 'error'
@@ -45,17 +59,23 @@ type GameState = {
   syncMode: SyncMode | null
   ownerId: string | null
   save: GameSave | null
+  campaignSeed: CampaignSeed | null
+  preservedSettings: GameSave['settings'] | null
   error: string | null
   notification: GameNotification | null
   boot: (ownerId: string) => Promise<void>
   createGame: (name: string, portraitAssetId: string) => void
   bindPrologueWeapon: () => void
   discoverEldamar: () => void
+  discoverClan: (clanId: string) => void
   offerQuest: (questId: string) => void
   declineQuest: (questId: string) => void
   acceptQuest: (questId: string) => void
   turnInQuest: (questId: string, npcId: string) => void
   setQuestTracked: (questId: string, tracked: boolean) => void
+  performSocialTrial: (questId: string) => void
+  joinClan: (clanId: string) => void
+  unlockClass: (classId: string) => void
   travelInTerran: (locationId: string) => void
   enterAstravel: () => void
   resolveCurrentTrailNode: () => void
@@ -69,6 +89,7 @@ type GameState = {
   performGradeTwoRite: (boundItemId: string, fragmentInstanceId: string) => void
   performGradeThreeRite: (boundItemId: string, gemInstanceId: string) => void
   unlockNode: (nodeId: string) => void
+  resetCampaign: () => Promise<boolean>
   clearNotification: () => void
   resetSession: () => void
 }
@@ -120,14 +141,28 @@ export const useGameStore = create<GameState>((set, get) => {
     syncMode: null,
     ownerId: null,
     save: null,
+    campaignSeed: null,
+    preservedSettings: null,
     error: null,
     notification: null,
 
     boot: async (ownerId) => {
       set({ status: 'loading', ownerId, error: null })
       try {
-        const save = await loadSynchronizedSave(ownerId)
-        set({ status: 'ready', save, error: null, syncStatus: save ? 'saved' : 'idle' })
+        const [save, campaignSeed] = await Promise.all([
+          loadSynchronizedSave(ownerId),
+          loadCampaignSeed(ownerId),
+        ])
+        set({
+          status: 'ready',
+          save,
+          campaignSeed: save
+            ? { campaignId: save.campaignId, campaignGeneration: save.campaignGeneration }
+            : campaignSeed,
+          preservedSettings: save?.settings ?? loadAccountSettings(ownerId),
+          error: null,
+          syncStatus: save ? 'saved' : 'idle',
+        })
       } catch (error) {
         set({
           status: 'error',
@@ -139,12 +174,23 @@ export const useGameStore = create<GameState>((set, get) => {
 
     createGame: (name, portraitAssetId) => {
       const ownerId = get().ownerId
+      const campaignSeed = get().campaignSeed
+      const preservedSettings = get().preservedSettings
       const cleanName = name.trim()
       if (!ownerId) return failAction('Nenhum usuário ativo.')
       if (cleanName.length < 2 || cleanName.length > 28) {
         return failAction('O nome deve possuir entre 2 e 28 caracteres.')
       }
-      const save = createNewSave(ownerId, cleanName, portraitAssetId, content)
+      const save = createNewSave(
+        ownerId,
+        cleanName,
+        portraitAssetId,
+        content,
+        nowIso(),
+        undefined,
+        campaignSeed ?? { campaignId: crypto.randomUUID(), campaignGeneration: 0 },
+      )
+      if (preservedSettings) save.settings = preservedSettings
       commit(save)
       show('Terrírian criado', 'Você começa sem Clã, sem Classe e sem build pronta.', 'success')
     },
@@ -172,6 +218,14 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(next)
     },
 
+    discoverClan: (clanId) => {
+      const save = get().save
+      if (!save) return
+      const discovered = discoverClanDomain(save, clanId, content, nowIso())
+      if (!discovered.ok) return failAction(discovered.message)
+      if (discovered.value !== save) commit(discovered.value)
+    },
+
     offerQuest: (questId) => {
       const save = get().save
       if (!save) return
@@ -194,14 +248,17 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!save) return
       const accepted = acceptQuestDomain(save, questId, content, nowIso())
       if (!accepted.ok) return failAction(accepted.message)
-      let next = applyQuestEvent(
-        accepted.value,
-        { type: 'talk', targetId: 'npc_eldamar' },
-        content,
-        nowIso(),
-      )
-      next.world.trailNodeStates.astravel_entry = 'current'
-      next.world.trailNodeStates.astravel_fungorro_01 = 'locked'
+      let next = accepted.value
+      if (questId === 'vs_astravel_first_contact') {
+        next = applyQuestEvent(
+          next,
+          { type: 'talk', targetId: 'npc_eldamar' },
+          content,
+          nowIso(),
+        )
+        next.world.trailNodeStates.astravel_entry = 'current'
+        next.world.trailNodeStates.astravel_fungorro_01 = 'locked'
+      }
       commit(next)
       show('Missão aceita', content.quests[questId]?.title ?? questId, 'success')
     },
@@ -221,6 +278,41 @@ export const useGameStore = create<GameState>((set, get) => {
       const changed = setQuestTrackedDomain(save, questId, tracked, nowIso())
       if (!changed.ok) return failAction(changed.message)
       if (changed.value !== save) commit(changed.value)
+    },
+
+    performSocialTrial: (questId) => {
+      const save = get().save
+      const progress = save?.quests[questId]
+      const definition = content.quests[questId]
+      const isHallMainLore = definition?.id === 'main_lore_identity_01'
+      if (!save || !progress || !definition || (!['clan', 'class'].includes(definition.category) && !isHallMainLore)) {
+        return failAction('Esta prova não está disponível.')
+      }
+      if (save.world.currentLocationId !== 'location_terran_clan_hall') {
+        return failAction('As provas sociais desta build são iniciadas no Salão dos Clãs.')
+      }
+      if (progress.status !== 'active') return failAction('Aceite a prova antes de realizá-la.')
+      const next = applyQuestEvent(save, { type: 'interact', targetId: questId }, content, nowIso())
+      commit(next)
+      show('Prova realizada', 'Retorne ao representante para concluir a avaliação.', 'success')
+    },
+
+    joinClan: (clanId) => {
+      const save = get().save
+      if (!save) return
+      const joined = joinClanDomain(save, clanId, content, nowIso())
+      if (!joined.ok) return failAction(joined.message)
+      commit(joined.value)
+      show('Vínculo aceito', `${content.clans[clanId].name} agora faz parte da identidade do Terrírian.`, 'success')
+    },
+
+    unlockClass: (classId) => {
+      const save = get().save
+      if (!save) return
+      const unlocked = unlockClassDomain(save, classId, content, nowIso())
+      if (!unlocked.ok) return failAction(unlocked.message)
+      commit(unlocked.value)
+      show('Classe desbloqueada', `${content.classes[classId].name} foi assumida após a prova.`, 'success')
     },
 
     travelInTerran: (locationId) => {
@@ -525,6 +617,42 @@ export const useGameStore = create<GameState>((set, get) => {
       show('Node desbloqueado', `${node.name} agora faz parte do Vínculo.`, 'success')
     },
 
+    resetCampaign: async () => {
+      const save = get().save
+      if (!save) return false
+      set({ syncStatus: 'saving', error: null })
+      await flushPersistence()
+      const campaignSeed = {
+        campaignId: crypto.randomUUID(),
+        campaignGeneration: save.campaignGeneration + 1,
+      }
+      const resetEvent = requestCampaignReset(save, campaignSeed.campaignId, nowIso())
+      if (!resetEvent.ok) {
+        show('Reset não concluído', resetEvent.message, 'error')
+        return false
+      }
+      try {
+        saveAccountSettings(save.ownerId, save.settings)
+        const mode = await resetCampaignEverywhere(save, resetEvent.value)
+        set({
+          save: null,
+          campaignSeed,
+          preservedSettings: save.settings,
+          status: 'ready',
+          syncStatus: 'saved',
+          syncMode: mode,
+          error: null,
+        })
+        show('Campanha resetada', 'O progresso foi apagado. Sua conta continua ativa.', 'success')
+        return true
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Falha ao resetar a campanha.'
+        set({ syncStatus: 'error', error: message })
+        show('Reset não concluído', message, 'error')
+        return false
+      }
+    },
+
     clearNotification: () => set({ notification: null }),
     resetSession: () =>
       set({
@@ -533,6 +661,8 @@ export const useGameStore = create<GameState>((set, get) => {
         syncMode: null,
         ownerId: null,
         save: null,
+        campaignSeed: null,
+        preservedSettings: null,
         error: null,
         notification: null,
       }),

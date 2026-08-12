@@ -156,6 +156,29 @@ export type NPCDefinition = {
   status: DraftStatus
 }
 
+export type ClanDefinition = {
+  id: string
+  name: string
+  philosophy: string
+  recruiterNpcId: string
+  recruitmentQuestIds: [string, string, string]
+  classIds: [string, string, string]
+  bonusLabel: string
+  bonuses: Partial<Record<'maxHp' | 'mana' | 'mitigation' | 'physicalAttack' | 'magicalAttack', number>>
+  status: DraftStatus
+}
+
+export type CharacterClassDefinition = {
+  id: string
+  clanId: string
+  name: string
+  role: string
+  principle: string
+  masterNpcId: string
+  trialQuestId: string
+  status: DraftStatus
+}
+
 export type QuestObjectiveDefinition = {
   id: string
   type: 'talk' | 'kill' | 'collect' | 'visit' | 'interact' | 'completeRite'
@@ -165,6 +188,25 @@ export type QuestObjectiveDefinition = {
 }
 
 export type QuestCategory = 'main' | 'clan' | 'class' | 'secondary' | 'bounty'
+
+export type QuestPrerequisite =
+  | { type: 'clanKnown'; clanId: string }
+  | { type: 'questCompleted'; questId: string }
+  | { type: 'clanJoined'; clanId: string }
+  | { type: 'noClan' }
+  | { type: 'noClass' }
+  | { type: 'hasClan' }
+  | { type: 'hasClass' }
+
+export type QuestNarrativeVariant = {
+  title?: string
+  summary: string
+}
+
+export type QuestProgressionOutcome =
+  | { type: 'clanEligibility'; clanId: string }
+  | { type: 'classEligibility'; classId: string }
+  | { type: 'clanReputation'; clanId: string; value: number }
 
 export type QuestDefinition = {
   id: string
@@ -179,6 +221,10 @@ export type QuestDefinition = {
     | { type: 'rawEssence'; value: number }
     | { type: 'gold'; value: number }
   >
+  prerequisites?: QuestPrerequisite[]
+  outcomes?: QuestProgressionOutcome[]
+  classVariants?: Record<string, QuestNarrativeVariant>
+  initialStatus?: 'available' | 'locked'
   terranFlow?: Partial<Record<'active' | 'ready_to_turn_in', string>>
   status: DraftStatus
 }

@@ -18,7 +18,9 @@ service cloud.firestore {
           'photoURL',
           'createdAt',
           'lastLoginAt',
-          'activeSaveId'
+          'activeSaveId',
+          'activeCampaignId',
+          'campaignGeneration'
         ])
         && request.resource.data.keys().hasOnly([
           'uid',
@@ -27,12 +29,16 @@ service cloud.firestore {
           'photoURL',
           'createdAt',
           'lastLoginAt',
-          'activeSaveId'
+          'activeSaveId',
+          'activeCampaignId',
+          'campaignGeneration'
         ])
         && request.resource.data.uid == uid
         && isNullableString(request.resource.data.displayName)
         && isNullableString(request.resource.data.email)
         && isNullableString(request.resource.data.photoURL)
+        && isNullableString(request.resource.data.activeCampaignId)
+        && request.resource.data.campaignGeneration is int
         && request.resource.data.createdAt is timestamp
         && request.resource.data.lastLoginAt is timestamp
         && (
@@ -51,7 +57,10 @@ service cloud.firestore {
           'revision',
           'updatedAt',
           'syncedAt',
-          'payload'
+          'payload',
+          'campaignId',
+          'campaignGeneration',
+          'invalidated'
         ])
         && request.resource.data.keys().hasOnly([
           'schemaVersion',
@@ -59,7 +68,12 @@ service cloud.firestore {
           'revision',
           'updatedAt',
           'syncedAt',
-          'payload'
+          'payload',
+          'campaignId',
+          'campaignGeneration',
+          'invalidated',
+          'invalidatedAt',
+          'resetEvent'
         ])
         && request.resource.data.schemaVersion is int
         && request.resource.data.gameVersion is string
@@ -67,9 +81,18 @@ service cloud.firestore {
         && request.resource.data.revision > 0
         && request.resource.data.updatedAt is string
         && request.resource.data.syncedAt is timestamp
+        && request.resource.data.campaignId is string
+        && request.resource.data.campaignGeneration is int
+        && request.resource.data.invalidated is bool
         && request.resource.data.payload is map
         && request.resource.data.payload.ownerId == uid
-        && request.resource.data.payload.saveId == saveId;
+        && request.resource.data.payload.saveId == saveId
+        && request.resource.data.payload.campaignId == request.resource.data.campaignId
+        && request.resource.data.payload.campaignGeneration == request.resource.data.campaignGeneration
+        && (
+          request.resource.data.invalidated == false
+          || request.resource.data.keys().hasAll(['invalidatedAt', 'resetEvent'])
+        );
     }
 
     match /users/{uid} {
@@ -77,12 +100,16 @@ service cloud.firestore {
       allow create: if ownsUser(uid) && isValidUserProfile(uid);
       allow update: if ownsUser(uid)
         && isValidUserProfile(uid)
-        && request.resource.data.createdAt == resource.data.createdAt;
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.campaignGeneration >= resource.data.get('campaignGeneration', 0);
       allow delete: if false;
 
       match /saves/{saveId} {
         allow read: if ownsUser(uid);
-        allow create, update: if ownsUser(uid) && isValidSave(uid, saveId);
+        allow create: if ownsUser(uid) && isValidSave(uid, saveId);
+        allow update: if ownsUser(uid)
+          && isValidSave(uid, saveId)
+          && (resource.data.invalidated != true || request.resource.data.invalidated == true);
         allow delete: if false;
       }
 

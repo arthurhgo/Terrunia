@@ -23,6 +23,10 @@ export const createNewSave = (
     saveId: crypto.randomUUID(),
     characterId: crypto.randomUUID(),
   },
+  campaign: { campaignId: string; campaignGeneration: number } = {
+    campaignId: ids.saveId,
+    campaignGeneration: 0,
+  },
 ): GameSave => {
   const quests = Object.values(catalog.quests).reduce<Record<string, QuestProgress>>(
     (result, definition) => {
@@ -33,9 +37,11 @@ export const createNewSave = (
   )
 
   return {
-    schemaVersion: 5,
-    gameVersion: '0.5.0',
+    schemaVersion: 6,
+    gameVersion: '0.6.0',
     saveId: ids.saveId,
+    campaignId: campaign.campaignId,
+    campaignGeneration: campaign.campaignGeneration,
     ownerId,
     revision: 1,
     createdAt: now,
@@ -50,9 +56,10 @@ export const createNewSave = (
       xp: 0,
       xpRequired: 250,
       attributes: createDefaultAttributes(),
-      clan: { clanId: null, rank: 0, reputation: 0 },
+      clan: { clanId: null, rank: 0, reputation: 0, knownClanIds: [], eligibleClanIds: [] },
       classProgression: {
         classId: null,
+        eligibleClassIds: [],
         masteryLevel: 0,
         masteryXp: 0,
         unlockedNodeIds: [],
@@ -85,9 +92,10 @@ export const createNewSave = (
     inventory: [],
     wallet: { gold: BALANCE.initialGold },
     quests,
-    relationships: {
-      npc_eldamar: {
-        npcId: 'npc_eldamar',
+    relationships: Object.fromEntries(Object.values(catalog.npcs).map((npc) => [
+      npc.id,
+      {
+        npcId: npc.id,
         discovered: false,
         affinity: 0,
         trust: 0,
@@ -95,7 +103,7 @@ export const createNewSave = (
         completedQuestIds: [],
         dialogueFlags: [],
       },
-    },
+    ])),
     world: {
       currentLocationId: 'terran',
       unlockedLocationIds: ['terran'],
