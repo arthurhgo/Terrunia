@@ -109,7 +109,7 @@ service cloud.firestore {
         allow create: if ownsUser(uid) && isValidSave(uid, saveId);
         allow update: if ownsUser(uid)
           && isValidSave(uid, saveId)
-          && (resource.data.invalidated != true || request.resource.data.invalidated == true);
+          && (resource.data.get('invalidated', false) != true || request.resource.data.invalidated == true);
         allow delete: if false;
       }
 
