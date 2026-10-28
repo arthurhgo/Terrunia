@@ -1,5 +1,13 @@
 # Registro de implementação
 
+## Hotfix — Firestore e carregamento de batalha
+
+- identificado erro público de `Transaction.set()` provocado por `battle.combatants.*.aiSkillEveryRounds: undefined` em saves com Fungorro Rastejante;
+- corrigida a criação do combatente para omitir a propriedade opcional quando a definição do inimigo não possui cadência de skill;
+- protegidos os caminhos de gravação e invalidação de campanhas no Firestore por sanitização recursiva de dados JSON, mantendo o save local intacto;
+- adicionados testes para o caso real de save legado, operação de transação simulada, comportamento de IA e estruturas aninhadas;
+- preservadas autenticação, identidade da campanha, inventário, progressão e arquivos locais; nenhuma exclusão ou reset foi necessário.
+
 ## Terran — Home e sete áreas jogáveis
 
 - substituído o dashboard que tratava Portal como painel principal por `/terran` como mapa/Home;

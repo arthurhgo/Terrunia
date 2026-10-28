@@ -2,6 +2,7 @@ import type { GameSave } from '../../domain/game/types'
 import type { CampaignReset } from '../../domain/game/campaignReset'
 import { migrateAndValidateSave } from '../../persistence/saveSchema'
 import { getFirebaseApp } from '../firebase/firebase'
+import { toFirestorePayload } from './firestorePayload'
 
 export const getCloudSave = async (uid: string, saveId: string) => {
   const app = await getFirebaseApp()
@@ -43,7 +44,7 @@ export const putCloudSave = async (uid: string, save: GameSave) => {
       revision: save.revision,
       updatedAt: save.updatedAt,
       syncedAt: serverTimestamp(),
-      payload: save,
+      payload: toFirestorePayload(save),
       campaignId: save.campaignId,
       campaignGeneration: save.campaignGeneration,
       invalidated: false,
@@ -83,12 +84,12 @@ export const resetCloudCampaign = async (
         gameVersion: migratedPayload.gameVersion,
         revision: migratedPayload.revision,
         updatedAt: migratedPayload.updatedAt,
-        payload: migratedPayload,
+        payload: toFirestorePayload(migratedPayload),
         campaignId: migratedPayload.campaignId,
         campaignGeneration: migratedPayload.campaignGeneration,
         invalidated: true,
         invalidatedAt: serverTimestamp(),
-        resetEvent: event,
+        resetEvent: toFirestorePayload(event),
       })
     }
     transaction.update(profileReference, {

@@ -122,7 +122,10 @@ const deriveEnemyCombatant = (
     defending: false,
     skillIds: enemy.skillIds,
     statusEffects: [],
-    aiSkillEveryRounds: enemy.aiSkillEveryRounds,
+    // Firestore rejects undefined; enemies without a special skill omit this field.
+    ...(enemy.aiSkillEveryRounds !== undefined
+      ? { aiSkillEveryRounds: enemy.aiSkillEveryRounds }
+      : {}),
   }
 }
 
