@@ -1,8 +1,11 @@
+import type { BoundSlot } from '../domain/shared/types'
+
 export type AssetEntry = {
   id: string
   path: string
   fallback: string
   alt: string
+  pixelArt?: boolean
 }
 
 const FALLBACK = '/assets/placeholders/generic.svg'
@@ -13,12 +16,14 @@ const entries: AssetEntry[] = [
     path: '/assets/characters/terririan/player_default.png',
     fallback: '/assets/placeholders/character.svg',
     alt: 'Retrato do Terrírian',
+    pixelArt: true,
   },
   {
     id: 'character.terririan.sigil',
     path: '/assets/characters/terririan/player_sigil.png',
     fallback: '/assets/placeholders/character-alt.svg',
     alt: 'Retrato alternativo do Terrírian',
+    pixelArt: true,
   },
   {
     id: 'npc.eldamar.portrait',
@@ -49,6 +54,7 @@ const entries: AssetEntry[] = [
     path: '/assets/equipment/weapon/weapon_prologue_g1.png',
     fallback: '/assets/placeholders/weapon.svg',
     alt: 'Arma básica vinculada, Grau I',
+    pixelArt: true,
   },
   {
     id: 'equipment.weapon.prologue.g2',
@@ -67,38 +73,60 @@ const entries: AssetEntry[] = [
     path: '/assets/items/item_fungal_nucleus.png',
     fallback: '/assets/placeholders/item.svg',
     alt: 'Núcleo Fúngico',
+    pixelArt: true,
   },
   {
     id: 'item.spore-cluster',
     path: '/assets/items/item_spore_cluster.png',
     fallback: '/assets/placeholders/item.svg',
     alt: 'Aglomerado de Esporos',
+    pixelArt: true,
   },
   {
     id: 'item.minor-tonic',
     path: '/assets/items/item_minor_tonic.png',
     fallback: '/assets/placeholders/item.svg',
     alt: 'Tônico de Campo',
+    pixelArt: true,
   },
   {
     id: 'item.mycelial-fragment',
     path: '/assets/items/item_mycelial_fragment.png',
     fallback: '/assets/placeholders/item.svg',
     alt: 'Fragmento de Essência Micelial',
+    pixelArt: true,
   },
   {
     id: 'gem.emerald-growth',
     path: '/assets/gems/gem_emerald_growth.png',
     fallback: '/assets/placeholders/item.svg',
     alt: 'Esmeralda do Crescimento',
+    pixelArt: true,
   },
   {
     id: 'item.quest-record',
     path: '/assets/items/item_astravel_record.png',
     fallback: '/assets/placeholders/item.svg',
     alt: 'Registro de Astravél',
+    pixelArt: true,
   },
+  ...(['weapon', 'shield', 'armor', 'necklace', 'bracelet'] as const).map((slot) => ({
+    id: `equipment.slot-preview.${slot}`,
+    path: `/assets/equipment/slot-previews/${slot}.png`,
+    fallback: '/assets/placeholders/item.svg',
+    alt: `Silhueta de referência do slot ${slot}`,
+    pixelArt: true,
+  })),
 ]
+
+// Only visual references. These are not bound-item definitions or inventory entries.
+export const boundSlotPreviewAssetIds: Record<BoundSlot, string> = {
+  weapon: 'equipment.slot-preview.weapon',
+  shield: 'equipment.slot-preview.shield',
+  armor: 'equipment.slot-preview.armor',
+  necklace: 'equipment.slot-preview.necklace',
+  bracelet: 'equipment.slot-preview.bracelet',
+}
 
 export const assetRegistry = Object.fromEntries(entries.map((entry) => [entry.id, entry])) as Record<
   string,

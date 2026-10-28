@@ -1,6 +1,7 @@
 import { Braces, Gem, Link2, Shield, ShieldHalf, Sparkles, Sword, Watch } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { content } from '../../content/catalog'
+import { boundSlotPreviewAssetIds } from '../../assets/assetRegistry'
 import { getBoundSlotCapacity } from '../../domain/bond/boundItems'
 import type { GameSave } from '../../domain/game/types'
 import { BOUND_SLOTS, BOUND_SLOT_LABELS, type BoundSlot } from '../../domain/shared/types'
@@ -34,7 +35,10 @@ function BoundItemCard({ slot, save }: { slot: BoundSlot; save: GameSave }) {
         {item && definition ? (
           <AssetImage assetId={definition.assetIdByGrade[item.grade] ?? definition.assetIdByGrade[1] ?? ''} />
         ) : (
-          <div className="slot-silhouette"><Icon size={42} /><span>Placeholder</span></div>
+          <div className="slot-silhouette">
+            <AssetImage assetId={boundSlotPreviewAssetIds[slot]} alt="" aria-hidden="true" />
+            <span>Não vinculado</span>
+          </div>
         )}
       </div>
       <div className="component-slots" aria-label="Slots estruturais">

@@ -7,8 +7,8 @@ import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
 
 const portraits = [
-  { id: 'character.terririan.default', label: 'Vigília Azul' },
-  { id: 'character.terririan.sigil', label: 'Selo Violeta' },
+  { id: 'character.terririan.default', label: 'Viajante Azul' },
+  { id: 'character.terririan.sigil', label: 'Viajante Grafite' },
 ]
 
 export function CharacterCreationScreen() {
@@ -75,6 +75,7 @@ export function CharacterCreationScreen() {
               </label>
             ))}
           </fieldset>
+          <small className="creation-visual-note">VISUAL_DRAFT · A aparência não altera atributos, Clã, Classe ou equipamentos.</small>
 
           <div className="attribute-draft">
             <Sparkles size={18} />
