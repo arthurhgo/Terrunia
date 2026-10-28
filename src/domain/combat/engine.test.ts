@@ -27,6 +27,16 @@ describe('máquina de estados de combate', () => {
     expect(calculateDamage(2, 99)).toBe(1)
   })
 
+  it('não inclui IA indefinida no Fungorro Rastejante ao montar a batalha', () => {
+    const battle = createBattle(makeSave(), firstEncounter, content, 'battle_firestore_safe')
+    expect(battle.combatants[firstTargetId]).not.toHaveProperty('aiSkillEveryRounds')
+    const sporeBattle = createBattle(makeSave(), content.encounters.encounter_spore_ambush_01, content)
+    const sower = Object.values(sporeBattle.combatants).find(
+      (combatant) => combatant.definitionId === 'enemy_spore_sower',
+    )
+    expect(sower?.aiSkillEveryRounds).toBe(2)
+  })
+
   it('resolve batalha determinística e encerra em vitória', () => {
     const battle = createBattle(makeSave(), firstEncounter, content, 'battle_1')
     const first = submitBattleCommand(
