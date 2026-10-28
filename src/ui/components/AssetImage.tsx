@@ -8,16 +8,17 @@ type AssetImageProps = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt'> 
 
 export function AssetImage({ assetId, alt, className = '', ...props }: AssetImageProps) {
   const asset = resolveAsset(assetId)
-  const [source, setSource] = useState(asset.path)
+  const [loaded, setLoaded] = useState({ assetId, path: asset.path })
+  const source = loaded.assetId === assetId ? loaded.path : asset.path
 
   return (
     <img
       {...props}
       src={source}
       alt={alt ?? asset.alt}
-      className={`asset-image ${className}`}
+      className={`asset-image ${asset.pixelArt ? 'asset-image--pixel-art' : ''} ${className}`.trim()}
       onError={() => {
-        if (source !== asset.fallback) setSource(asset.fallback)
+        if (source !== asset.fallback) setLoaded({ assetId, path: asset.fallback })
       }}
     />
   )
