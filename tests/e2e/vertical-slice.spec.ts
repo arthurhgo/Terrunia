@@ -1,4 +1,11 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
+
+async function visitTerran(page: Page, location: string) {
+  const skip = page.getByRole('button', { name: 'Pular cena' })
+  if (await skip.isVisible()) await skip.click()
+  await page.getByRole('button', { name: `Ir para ${location}` }).click()
+  await expect(page.getByRole('complementary', { name: `Painel lateral: ${location}` })).toBeVisible()
+}
 
 test('vertical slice: criação, combate, Essência, node e reload', async ({ page }) => {
   test.setTimeout(60_000)
@@ -17,10 +24,10 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: 'Confirmar Terrírian' }).click()
   await page.getByRole('button', { name: /Executar Vínculo da Arma/ }).click()
 
-  await page.getByRole('link', { name: /Ir para Casa de Eldamar/ }).click()
+  await visitTerran(page, 'Casa de Eldamar')
   await page.getByRole('button', { name: 'Falar com Eldamar' }).click()
   await page.getByRole('button', { name: 'Aceitar missão' }).click()
-  await page.getByRole('link', { name: /Ir para Praça do Portal/ }).click()
+  await visitTerran(page, 'Praça do Portal')
   await page.getByRole('button', { name: 'Entrar em Astravél' }).click()
   await page.getByRole('button', { name: 'Enfrentar Fungorro' }).click()
 
@@ -30,7 +37,7 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: 'Receber recompensas' }).click()
   await page.getByRole('button', { name: 'Retornar a Terran' }).click()
   await expect(page.getByText('TERRAN > PRAÇA DO PORTAL')).toBeVisible()
-  await page.getByRole('link', { name: /Ir para Oficina dos Vínculos/ }).click()
+  await visitTerran(page, 'Oficina dos Vínculos')
 
   const lootSlot = page.locator('.inventory-slot').filter({ hasText: 'Núcleo Fúngico' }).first()
   await lootSlot.click()
@@ -41,17 +48,17 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: 'Confirmar +100' }).click()
   await expect(page.getByText('Pontos').locator('..').getByText('1')).toBeVisible()
 
-  await page.getByRole('link', { name: 'Skill Tree', exact: true }).click()
-  await page.getByRole('button', { name: /Núcleo do Vínculo: Disponível/ }).click()
-  await page.getByRole('button', { name: 'Desbloquear node' }).click()
-  await expect(page.getByRole('button', { name: 'Node ativo' })).toBeVisible()
+  await page.getByRole('button', { name: 'Abrir Evolução' }).click()
+  const initialNode = page.locator('.terran-skill').filter({ hasText: 'Núcleo do Vínculo' })
+  await initialNode.click()
+  await expect(initialNode).toContainText('Desbloqueado')
 
   await page.reload()
-  await expect(page.getByRole('button', { name: /Núcleo do Vínculo: Desbloqueado/ })).toBeVisible()
-  await expect(page.getByText('Pontos de Essência').locator('..').getByText('0')).toBeVisible()
+  await page.getByRole('button', { name: 'Abrir Evolução' }).click()
+  await expect(page.locator('.terran-skill').filter({ hasText: 'Núcleo do Vínculo' })).toContainText('Desbloqueado')
+  await expect(page.getByText('0 ponto(s) disponíveis')).toBeVisible()
 
-  await page.getByRole('link', { name: 'Terran', exact: true }).click()
-  await page.getByRole('link', { name: /Ir para Praça do Portal/ }).click()
+  await visitTerran(page, 'Praça do Portal')
   await page.getByRole('button', { name: 'Vasculhar acampamento' }).click()
   await expect(page.locator('.inventory-slot').filter({ hasText: 'Tônico de Campo' })).toBeVisible()
   await page.getByRole('button', { name: 'Emboscada de Esporos' }).click()
@@ -78,7 +85,7 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await expect(page.getByRole('heading', { name: 'O núcleo da Ruína cedeu' })).toBeVisible()
   await page.getByRole('button', { name: 'Receber recompensas' }).click()
   await page.getByRole('button', { name: 'Retornar a Terran' }).click()
-  await page.getByRole('link', { name: /Ir para Oficina dos Vínculos/ }).click()
+  await visitTerran(page, 'Oficina dos Vínculos')
   await expect(page.locator('.inventory-slot').filter({ hasText: 'Fragmento de Essência Micelial' })).toBeVisible()
   await expect(page.locator('.inventory-slot').filter({ hasText: 'Esmeralda do Crescimento' })).toBeVisible()
 

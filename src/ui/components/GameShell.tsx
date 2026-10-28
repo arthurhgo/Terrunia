@@ -8,6 +8,7 @@ import { QuestTracker } from './QuestTracker'
 type GameShellProps = {
   children: ReactNode
   fluid?: boolean
+  immersive?: boolean
 }
 
 const navItems = [
@@ -22,7 +23,7 @@ const navItems = [
   { to: '/settings', label: 'Config.', icon: Settings },
 ]
 
-export function GameShell({ children, fluid = false }: GameShellProps) {
+export function GameShell({ children, fluid = false, immersive = false }: GameShellProps) {
   const syncStatus = useGameStore((state) => state.syncStatus)
   const save = useGameStore((state) => state.save)
   const syncMode = useGameStore((state) => state.syncMode)
@@ -37,7 +38,7 @@ export function GameShell({ children, fluid = false }: GameShellProps) {
   }
 
   return (
-    <div className="game-shell">
+    <div className={`game-shell ${immersive ? 'game-shell--immersive' : ''}`}>
       <header className="game-header">
         <NavLink to="/terran" className="brand" aria-label="Terrúnia — Terran">
           <img src="/assets/ui/terrunia-mark.svg" alt="" />
@@ -46,14 +47,14 @@ export function GameShell({ children, fluid = false }: GameShellProps) {
             <small>Resquícios das Ruínas</small>
           </span>
         </NavLink>
-        <nav className="main-nav" aria-label="Navegação principal">
+        {!immersive && <nav className="main-nav" aria-label="Navegação principal">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>
               <Icon size={16} aria-hidden="true" />
               <span>{label}</span>
             </NavLink>
           ))}
-        </nav>
+        </nav>}
         <div className="header-actions">
           <span className={`save-state save-state--${syncStatus}`} title={`Persistência ${syncMode ?? 'local'}`}>
             <i aria-hidden="true" />
@@ -65,7 +66,7 @@ export function GameShell({ children, fluid = false }: GameShellProps) {
         </div>
       </header>
       <main className={fluid ? 'game-main game-main--fluid' : 'game-main'}>{children}</main>
-      {save ? <QuestTracker save={save} /> : null}
+      {save && !immersive ? <QuestTracker save={save} /> : null}
       <footer className="game-footer">
         <span>PERSONAGEM É O NEXO</span>
         <i aria-hidden="true" />

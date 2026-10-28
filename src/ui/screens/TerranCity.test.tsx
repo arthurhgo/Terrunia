@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS } from '../../content/terran'
@@ -27,8 +27,9 @@ const createPlayableSave = () => {
   return bound.value
 }
 
-const loadSave = (currentLocationId = 'terran') => {
+const loadSave = (currentLocationId = 'terran', showArrival = false) => {
   const save = createPlayableSave()
+  if (!showArrival) save.eventLog.push('CutsceneViewed:terran_arrival')
   save.world.currentLocationId = currentLocationId
   if (!save.world.unlockedLocationIds.includes(currentLocationId)) {
     save.world.unlockedLocationIds.push(currentLocationId)
@@ -44,23 +45,47 @@ const loadSave = (currentLocationId = 'terran') => {
   })
 }
 
+beforeAll(() => {
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null)
+})
+
+afterAll(() => vi.restoreAllMocks())
+
 afterEach(() => {
   cleanup()
   useGameStore.getState().resetSession()
 })
 
 describe('interfaces de Terran', () => {
-  it('renderiza Terran como Home com as sete áreas no minimapa', () => {
+  it('mantém a cidade pixelada e abre painéis adjacentes sem navegação por abas', () => {
     loadSave()
     render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
 
     expect(screen.getByRole('heading', { name: /^Terran$/ })).toBeInTheDocument()
     expect(screen.getByText('HOME · CIDADE-BASE DO JOGADOR')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Navegação principal' })).not.toBeInTheDocument()
     for (const locationId of TERRAN_LOCATION_IDS) {
       expect(
-        screen.getByRole('link', { name: new RegExp(`Ir para ${content.terranLocations[locationId].name}`) }),
+        screen.getByRole('button', { name: new RegExp(`Ir para ${content.terranLocations[locationId].name}`) }),
       ).toBeInTheDocument()
     }
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Mochila' }))
+    expect(screen.getByRole('complementary', { name: 'Painel lateral: Mochila e Arsenal' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
+    expect(screen.queryByRole('complementary', { name: /Painel lateral/ })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Ir para Praça do Portal' }))
+    expect(screen.getByRole('complementary', { name: 'Painel lateral: Praça do Portal' })).toBeInTheDocument()
+  })
+
+  it('exibe a cutscene de chegada sobre a mesma cidade e permite encerrá-la', () => {
+    loadSave('terran', true)
+    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    expect(screen.getByRole('dialog', { name: /TERRAN · O PRIMEIRO PASSO/ })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Pular cena' }))
+    expect(screen.queryByRole('dialog', { name: /TERRAN · O PRIMEIRO PASSO/ })).not.toBeInTheDocument()
   })
 
   for (const locationId of TERRAN_LOCATION_IDS) {

@@ -42,6 +42,7 @@ import {
   type SyncMode,
 } from '../services/sync/syncService'
 import { loadAccountSettings, saveAccountSettings } from '../services/settings/accountSettings'
+import { cutscenes, type CutsceneId } from '../domain/terran/cutscenes'
 
 type GameStatus = 'idle' | 'loading' | 'ready' | 'error'
 type SyncStatus = 'idle' | 'saving' | 'saved' | 'error'
@@ -77,6 +78,7 @@ type GameState = {
   joinClan: (clanId: string) => void
   unlockClass: (classId: string) => void
   travelInTerran: (locationId: string) => void
+  recordCutsceneViewed: (sceneId: CutsceneId) => void
   enterAstravel: () => void
   resolveCurrentTrailNode: () => void
   startBattle: (nodeId?: string) => void
@@ -328,6 +330,18 @@ export const useGameStore = create<GameState>((set, get) => {
           'success',
         )
       }
+    },
+
+    recordCutsceneViewed: (sceneId) => {
+      const save = get().save
+      if (!save || !cutscenes.some((scene) => scene.id === sceneId)) return
+      const marker = `CutsceneViewed:${sceneId}`
+      if (save.eventLog.includes(marker)) return
+      const next = structuredClone(save)
+      next.eventLog.push(marker)
+      next.updatedAt = nowIso()
+      next.revision += 1
+      commit(next)
     },
 
     enterAstravel: () => {
