@@ -84,6 +84,7 @@ type GameState = {
   startBattle: (nodeId?: string) => void
   submitBattleCommand: (command: BattleCommand) => void
   claimBattleRewards: () => void
+  finishBattleIntoExpedition: () => void
   returnToTerran: () => void
   convertItems: (instanceIds: string[]) => void
   sellItems: (instanceIds: string[]) => void
@@ -320,6 +321,9 @@ export const useGameStore = create<GameState>((set, get) => {
     travelInTerran: (locationId) => {
       const save = get().save
       if (!save) return
+      if (save.battle || content.trails.trail_astravel_entry.nodes.some((node) => node.id === save.world.currentLocationId)) {
+        return failAction('Registre o retorno da expedição antes de circular por Terran.')
+      }
       const result = visitTerranLocation(save, locationId, content, nowIso())
       if (!result.ok) return failAction(result.message)
       if (result.value.save !== save) commit(result.value.save)
@@ -347,11 +351,26 @@ export const useGameStore = create<GameState>((set, get) => {
     enterAstravel: () => {
       const save = get().save
       if (!save) return
-      if (save.quests.vs_astravel_first_contact?.status !== 'active') {
+      const alreadyEntered = save.world.trailNodeStates.astravel_entry === 'completed'
+        && save.world.unlockedLocationIds.includes('astravel_entry')
+      if (!alreadyEntered && save.quests.vs_astravel_first_contact?.status !== 'active') {
         return failAction('Converse com Eldamar e aceite a missão antes de entrar na rota.')
       }
       if (save.world.currentLocationId !== 'location_terran_portal_plaza') {
         return failAction('A instância deve ser acessada pela Praça do Portal.')
+      }
+      const trail = content.trails.trail_astravel_entry
+      if (alreadyEntered) {
+        const activeNode = getActiveTrailNode(save, trail)
+        if (!activeNode) return failAction('A expedição já foi concluída.')
+        const resumed = structuredClone(save)
+        resumed.world.currentLocationId = activeNode.id
+        resumed.updatedAt = nowIso()
+        resumed.revision += 1
+        resumed.eventLog.push('ExpeditionResumed:trail_astravel_entry')
+        commit(resumed)
+        show('Astravél', 'A expedição foi retomada na etapa já alcançada.', 'info')
+        return
       }
       const visiting = structuredClone(save)
       visiting.world.currentLocationId = 'astravel_entry'
@@ -382,6 +401,7 @@ export const useGameStore = create<GameState>((set, get) => {
       const now = nowIso()
       const result = resolveTrailInteraction(save, trail, node.id, content, now)
       if (!result.ok) return failAction(result.message)
+      result.value.save.world.currentLocationId = node.id
       commit(result.value.save)
       show(
         node.type === 'camp' ? 'Acampamento vasculhado' : 'Rota investigada',
@@ -516,6 +536,19 @@ export const useGameStore = create<GameState>((set, get) => {
           : 'A trilha avançou para o próximo nó.',
         'success',
       )
+    },
+
+    finishBattleIntoExpedition: () => {
+      const save = get().save
+      if (!save?.battle || save.battle.phase !== 'Victory' || !save.battle.claimed) {
+        return failAction('Receba as recompensas antes de continuar a expedição.')
+      }
+      const next = structuredClone(save)
+      next.battle = null
+      next.updatedAt = nowIso()
+      next.revision += 1
+      next.eventLog.push('BattleExitedToExpedition')
+      commit(next)
     },
 
     returnToTerran: () => {

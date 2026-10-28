@@ -7,6 +7,15 @@ async function visitTerran(page: Page, location: string) {
   await expect(page.getByRole('complementary', { name: `Painel lateral: ${location}` })).toBeVisible()
 }
 
+async function exploreAstravel(page: Page, node: string, action: string) {
+  const skip = page.getByRole('button', { name: 'Pular cena' })
+  if (await skip.isVisible()) await skip.click()
+  await page.getByRole('button', { name: `Aproximar-se de ${node}` }).click()
+  const detail = page.getByRole('complementary', { name: `Painel lateral: ${node}` })
+  await expect(detail).toBeVisible({ timeout: 15_000 })
+  await detail.getByRole('button', { name: action }).click()
+}
+
 test('vertical slice: criação, combate, Essência, node e reload', async ({ page }) => {
   test.setTimeout(60_000)
   const visualQa = process.env.VISUAL_QA === '1'
@@ -29,7 +38,8 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: 'Aceitar missão' }).click()
   await visitTerran(page, 'Praça do Portal')
   await page.getByRole('button', { name: 'Entrar em Astravél' }).click()
-  await page.getByRole('button', { name: 'Enfrentar Fungorro' }).click()
+  await expect(page.getByRole('heading', { name: 'Astravél' })).toBeVisible()
+  await exploreAstravel(page, 'Presença Fungorra', 'Enfrentar Fungorro')
 
   await page.getByRole('button', { name: 'Atacar' }).click()
   await page.getByRole('button', { name: 'Atacar' }).click()
@@ -59,9 +69,11 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await expect(page.getByText('0 ponto(s) disponíveis')).toBeVisible()
 
   await visitTerran(page, 'Praça do Portal')
-  await page.getByRole('button', { name: 'Vasculhar acampamento' }).click()
+  await page.getByRole('button', { name: 'Retomar exploração em Astravél' }).click()
+  await exploreAstravel(page, 'Acampamento Abandonado', 'Vasculhar acampamento')
+  await page.getByRole('button', { name: 'Abrir Mochila' }).click()
   await expect(page.locator('.inventory-slot').filter({ hasText: 'Tônico de Campo' })).toBeVisible()
-  await page.getByRole('button', { name: 'Emboscada de Esporos' }).click()
+  await exploreAstravel(page, 'Emboscada de Esporos', 'Emboscada de Esporos')
   await expect(page.getByRole('button', { name: /Selecionar alvo/ })).toHaveCount(3)
 
   await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
@@ -70,12 +82,12 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
   await expect(page.getByRole('heading', { name: 'A rota foi preservada' })).toBeVisible()
   await page.getByRole('button', { name: 'Receber recompensas' }).click()
-  await page.getByRole('button', { name: 'Retornar a Terran' }).click()
-  await page.getByRole('button', { name: 'Investigar o limiar' }).click()
-  await expect(page.getByRole('button', { name: 'Enfrentar Colosso Micélio' })).toBeEnabled()
+  await page.getByRole('button', { name: 'Continuar expedição' }).click()
+  await exploreAstravel(page, 'Limiar da Ruína', 'Investigar o limiar')
+  await expect(page.getByRole('button', { name: 'Aproximar-se de Câmaras Fúngicas' })).toBeEnabled()
   if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v03-portal-desktop.png', fullPage: true })
 
-  await page.getByRole('button', { name: 'Enfrentar Colosso Micélio' }).click()
+  await exploreAstravel(page, 'Câmaras Fúngicas', 'Enfrentar Colosso Micélio')
   await expect(page.getByText('Câmaras Fúngicas de Astravél')).toBeVisible()
   if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v03-boss-desktop.png', fullPage: true })
   await page.getByRole('button', { name: /Golpe Ressonante/ }).click()

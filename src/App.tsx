@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { useAuthStore } from './state/authStore'
 import { useGameStore } from './state/gameStore'
+import { content } from './content/catalog'
 import { NotificationToast } from './ui/components/NotificationToast'
 import { LoadingScreen } from './ui/screens/LoadingScreen'
 import { LoginScreen } from './ui/screens/LoginScreen'
@@ -20,6 +21,7 @@ const SkillTreeScreen = lazy(() => import('./ui/screens/SkillTreeScreen').then((
 const TerranScreen = lazy(() => import('./ui/screens/TerranScreen').then((module) => ({ default: module.TerranScreen })))
 const TerranLocationScreen = lazy(() => import('./ui/screens/TerranLocationScreen').then((module) => ({ default: module.TerranLocationScreen })))
 const WorldScreen = lazy(() => import('./ui/screens/WorldScreen').then((module) => ({ default: module.WorldScreen })))
+const ExpeditionScreen = lazy(() => import('./ui/screens/ExpeditionScreen').then((module) => ({ default: module.ExpeditionScreen })))
 
 function GameBoot({ children }: { children: ReactNode }) {
   const authStatus = useAuthStore((state) => state.status)
@@ -49,6 +51,7 @@ function EntryRouter() {
   if (!save) return <Navigate to="/character/create" replace />
   if (!save.character.bondedEquipment.weapon) return <Navigate to="/new-game" replace />
   if (save.battle) return <Navigate to="/battle" replace />
+  if (content.trails.trail_astravel_entry.nodes.some((node) => node.id === save.world.currentLocationId)) return <Navigate to="/expedition" replace />
   return <Navigate to="/terran" replace />
 }
 
@@ -72,6 +75,7 @@ export default function App() {
           <Route path="/character" element={<GameBoot><CharacterScreen /></GameBoot>} />
           <Route path="/skill-tree" element={<GameBoot><SkillTreeScreen /></GameBoot>} />
           <Route path="/battle" element={<GameBoot><BattleScreen /></GameBoot>} />
+          <Route path="/expedition" element={<GameBoot><ExpeditionScreen /></GameBoot>} />
           <Route path="/bound-items/:slot" element={<GameBoot><BoundItemScreen /></GameBoot>} />
           <Route path="/quests" element={<GameBoot><QuestsScreen /></GameBoot>} />
           <Route path="/npcs" element={<GameBoot><NpcsScreen /></GameBoot>} />

@@ -219,14 +219,17 @@ export function TerranLocationScreen() {
   const currentLocationId = save?.world.currentLocationId
   const resolvedLocationId = location?.id
   const hasSave = Boolean(save)
+  const inExpedition = Boolean(save && content.trails.trail_astravel_entry.nodes.some((node) => node.id === save.world.currentLocationId))
 
   useEffect(() => {
-    if (hasSave && resolvedLocationId && currentLocationId !== resolvedLocationId) {
+    if (hasSave && !save?.battle && !inExpedition && resolvedLocationId && currentLocationId !== resolvedLocationId) {
       travel(resolvedLocationId)
     }
-  }, [currentLocationId, hasSave, resolvedLocationId, travel])
+  }, [currentLocationId, hasSave, inExpedition, resolvedLocationId, save?.battle, travel])
 
   if (!save) return <Navigate to="/character/create" replace />
+  if (save.battle) return <Navigate to="/battle" replace />
+  if (inExpedition) return <Navigate to="/expedition" replace />
   if (!location || !isTerranLocationId(locationId)) return <Navigate to="/terran" replace />
 
   const goTo = (targetId: string) => {

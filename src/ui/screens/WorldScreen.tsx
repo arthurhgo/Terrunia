@@ -15,6 +15,10 @@ export function WorldScreen() {
   const thresholdDiscovered = save.world.worldFlags.includes(
     'fungal_chambers_threshold_discovered',
   )
+  const bossStatus = save.world.trailNodeStates.astravel_boss_preview
+  const ruinsLabel = bossStatus === 'completed' ? 'COLOSSO MICÉLIO DERROTADO'
+    : bossStatus === 'bossCurrent' ? 'COLOSSO MICÉLIO DESBLOQUEADO'
+      : thresholdDiscovered ? 'LIMIAR DESCOBERTO' : 'NÃO DESCOBERTO'
   return (
     <GameShell>
       <div className="content-screen">
@@ -22,7 +26,7 @@ export function WorldScreen() {
         <div className="world-cards">
           <ArcanePanel title="Terran" eyebrow="HUB PRINCIPAL"><Map size={31} /><p>NPCs, serviços, preparação e evolução dos Vínculos.</p><strong>DESBLOQUEADO</strong></ArcanePanel>
           <ArcanePanel title="Floresta de Astravél" eyebrow="PRIMEIRA ROTA"><Trees size={31} /><p>Trilha sequencial com encontros, acampamento e efeitos Fungorros.</p><strong>{save.world.unlockedLocationIds.includes('astravel_entry') ? `${completedNodes}/${trail.nodes.length - 1} NÓS CONCLUÍDOS` : 'BLOQUEADO POR MISSÃO'}</strong></ArcanePanel>
-          <ArcanePanel title="Câmaras Fúngicas" eyebrow="RUÍNA I"><LockKeyhole size={31} /><p>O limiar pode ser descoberto; o boss aguarda conteúdo aprovado.</p><strong>{thresholdDiscovered ? 'LIMIAR DESCOBERTO · BOSS BLOQUEADO' : 'NÃO DESCOBERTO'}</strong></ArcanePanel>
+          <ArcanePanel title="Câmaras Fúngicas" eyebrow="RUÍNA I"><LockKeyhole size={31} /><p>A primeira anomalia fúngica pode ser investigada na expedição de Astravél.</p><strong>{ruinsLabel}</strong></ArcanePanel>
         </div>
       </div>
     </GameShell>

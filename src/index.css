@@ -1688,6 +1688,34 @@ code {
 .terran-dialogue__text strong { display: block; color: #ead19d; font-family: var(--display); }
 .terran-dialogue__text p { color: #ddd4c3; font-size: .82rem; line-height: 1.5; }
 .terran-dialogue button { border: 1px solid #c5a35c; padding: 8px; color: #ffda8d; background: #19232a; cursor: pointer; }
+.astravel-field { background: #183734; }
+.astravel-field__nodes { position: absolute; inset: 0; pointer-events: none; }
+.astravel-field__node { position: absolute; z-index: 3; display: grid; min-width: 62px; gap: 2px; justify-items: center; transform: translate(-50%, -50%); border: 1px solid #7e735b; padding: 3px 5px; color: #e7d5aa; background: #101e24eb; font-family: var(--display); text-align: center; cursor: pointer; pointer-events: auto; }
+.astravel-field__node strong { display: grid; width: 14px; height: 14px; place-items: center; color: #192b2b; background: #bea97c; font-size: .6rem; }
+.astravel-field__node span { max-width: 90px; font-size: clamp(.47rem, .7vw, .61rem); line-height: 1.2; }
+.astravel-field__node--current, .astravel-field__node--bossCurrent { border-color: #e2c07d; box-shadow: 0 0 0 2px #f7d4794a; }
+.astravel-field__node--current strong, .astravel-field__node--bossCurrent strong { background: #f2ce83; }
+.astravel-field__node--completed { border-color: #649d81; color: #a2dfc0; }
+.astravel-field__node--completed strong { background: #89be99; }
+.astravel-field__node:disabled { border-color: #3a514b; color: #778781; background: #17242ac9; cursor: default; pointer-events: none; }
+.astravel-field__node:disabled strong { background: #556b64; }
+.astravel-field__node:not(:disabled):hover, .astravel-field__node:not(:disabled):focus-visible { z-index: 5; outline: 2px solid #9ce1d0; border-color: #c5efda; }
+.expedition-game__retreat { position: absolute; top: 12px; right: 12px; z-index: 6; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #869c88; padding: 8px 10px; color: #deebcf; background: #132a2bd9; font-family: var(--display); font-size: .67rem; cursor: pointer; }
+.expedition-game__retreat:hover { border-color: #e9c885; color: #fce5b3; }
+.expedition-node-detail { display: grid; gap: 12px; border: 1px solid #695a46; padding: 14px; background: #111d22; }
+.expedition-node-detail h3 { margin: 0; color: #e8d19e; font-family: var(--display); font-size: 1.1rem; }
+.expedition-node-detail p, .expedition-route-list p { margin: 0; color: #bab7a7; font-size: .78rem; line-height: 1.6; }
+.expedition-node-detail__action { display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: 1px solid #c6a469; padding: 10px; color: #ffe3ac; background: #283b32; font-family: var(--display); cursor: pointer; }
+.expedition-node-detail__action:hover { background: #395143; }
+.expedition-node-detail__done { color: #9dd3b9; font-size: .75rem; }
+.expedition-route-list { display: grid; gap: 9px; }
+.expedition-route-list h3 { margin: 0; color: #dfcb9f; font-family: var(--display); }
+.expedition-route-list > small { color: #89caba; }
+.expedition-route-list__item { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-left: 3px solid #485a53; padding: 9px; background: #152127; }
+.expedition-route-list__item strong { color: #c6c7b4; font-size: .76rem; }
+.expedition-route-list__item small { color: #99aca5; font-size: .63rem; text-align: right; }
+.expedition-route-list__item--current, .expedition-route-list__item--bossCurrent { border-color: #d6bb7b; }
+.expedition-route-list__item--completed { border-color: #83c2a0; }
 .terran-cutscene { position: fixed; z-index: 900; inset: 0; display: grid; place-items: center; padding: 20px; background: #05080bf2; }
 .terran-cutscene__scene { position: relative; width: min(840px, 94vw); aspect-ratio: 384 / 160; overflow: hidden; border: 3px solid #8e7049; background: #192d38; }
 .terran-cutscene__canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
@@ -1719,4 +1747,7 @@ code {
   .terran-dialogue__portrait .asset-image { width: 40px; height: 40px; }
   .terran-dialogue__text p { margin: 4px 0; font-size: .67rem; }
   .terran-dialogue button { padding: 5px; font-size: .6rem; }
+  .astravel-field__node { min-width: 27px; padding: 2px; }
+  .astravel-field__node span { display: none; }
+  .expedition-game__retreat { top: 4px; right: 4px; padding: 5px; font-size: .55rem; }
 }

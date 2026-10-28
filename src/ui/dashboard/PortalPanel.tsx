@@ -2,10 +2,7 @@ import {
   BookOpen,
   LockKeyhole,
   MapPinned,
-  Search,
   Skull,
-  Swords,
-  TentTree,
   Trees,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -18,42 +15,27 @@ import { GameButton } from '../components/GameButton'
 
 export function PortalPanel({ save, onGoToEldamar }: { save: GameSave; onGoToEldamar: () => void }) {
   const enterAstravel = useGameStore((state) => state.enterAstravel)
-  const resolveCurrentTrailNode = useGameStore((state) => state.resolveCurrentTrailNode)
-  const startBattle = useGameStore((state) => state.startBattle)
   const navigate = useNavigate()
   const trail = content.trails.trail_astravel_entry
   const quest = save.quests.vs_astravel_first_contact
   const currentNode = getActiveTrailNode(save, trail)
 
-  const enter = () => enterAstravel()
-  const fight = (nodeId: string) => {
-    startBattle(nodeId)
-    navigate('/battle')
-  }
+  const enter = () => { enterAstravel(); navigate('/expedition') }
 
   const action = (() => {
+    if (save.world.trailNodeStates.astravel_entry === 'completed' && currentNode) {
+      return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Retomar exploração em Astravél</GameButton>
+    }
     if (['available', 'offered'].includes(quest.status)) {
       return <GameButton variant="secondary" full onClick={onGoToEldamar}><BookOpen size={17} /> Ir à Casa de Eldamar</GameButton>
     }
-    if (currentNode?.type === 'entry') {
+    if (quest.status === 'active' && currentNode?.type === 'entry') {
       return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Entrar em Astravél</GameButton>
     }
-    if (currentNode?.type === 'battle') {
-      return <GameButton variant="primary" full onClick={() => fight(currentNode.id)}><Swords size={17} /> {currentNode.actionLabel ?? currentNode.label}</GameButton>
-    }
-    if (currentNode?.type === 'boss') {
-      return <GameButton variant="primary" full onClick={() => fight(currentNode.id)}><Skull size={17} /> {currentNode.actionLabel ?? currentNode.label}</GameButton>
-    }
-    if (currentNode?.type === 'camp') {
-      return <GameButton variant="primary" full onClick={resolveCurrentTrailNode}><TentTree size={17} /> {currentNode.interaction?.actionLabel}</GameButton>
-    }
-    if (currentNode?.type === 'event') {
-      return <GameButton variant="primary" full onClick={resolveCurrentTrailNode}><Search size={17} /> {currentNode.interaction?.actionLabel}</GameButton>
-    }
     if (save.world.trailNodeStates.astravel_boss_preview === 'completed') {
-      return <GameButton variant="ghost" full disabled><Skull size={17} /> Câmaras Fúngicas concluídas</GameButton>
+      return <GameButton variant="ghost" full disabled><Skull size={17} /> Expedição concluída</GameButton>
     }
-    return <GameButton variant="ghost" full disabled><LockKeyhole size={17} /> Câmaras Fúngicas bloqueadas</GameButton>
+    return <GameButton variant="ghost" full disabled><LockKeyhole size={17} /> Aceite a missão para partir</GameButton>
   })()
 
   return (

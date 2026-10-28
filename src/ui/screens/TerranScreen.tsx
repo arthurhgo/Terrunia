@@ -138,6 +138,10 @@ export function TerranScreen() {
   const [dialogueLine, setDialogueLine] = useState(0)
 
   if (!save) return <Navigate to="/character/create" replace />
+  if (save.battle) return <Navigate to="/battle" replace />
+  if (content.trails.trail_astravel_entry.nodes.some((node) => node.id === save.world.currentLocationId)) {
+    return <Navigate to="/expedition" replace />
+  }
 
   const scene = getNextCutscene(save)
   const cityCast = getCityCast(save)

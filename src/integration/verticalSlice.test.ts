@@ -3,6 +3,43 @@ import { getLatestLocalSave } from '../persistence/localSaveRepository'
 import { flushPersistence, useGameStore } from '../state/gameStore'
 
 describe('vertical slice integrada', () => {
+  it('continua a expedição após o combate e a retoma sem duplicar a entrada', async () => {
+    const ownerId = 'integration-expedition-continuity'
+    await useGameStore.getState().boot(ownerId)
+    useGameStore.getState().createGame('Nira', 'character.terririan.default')
+    useGameStore.getState().bindPrologueWeapon()
+    useGameStore.getState().travelInTerran('location_terran_eldamar_house')
+    useGameStore.getState().discoverEldamar()
+    useGameStore.getState().offerQuest('vs_astravel_first_contact')
+    useGameStore.getState().acceptQuest('vs_astravel_first_contact')
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
+    useGameStore.getState().enterAstravel()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_entry')
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_entry')
+    expect(useGameStore.getState().notification?.message).toContain('Registre o retorno')
+    useGameStore.getState().startBattle('astravel_fungorro_01')
+    const enemy = 'combatant_enemy_fungorro_crawler_1'
+    useGameStore.getState().submitBattleCommand({ type: 'attack', targetId: enemy })
+    useGameStore.getState().submitBattleCommand({ type: 'attack', targetId: enemy })
+    expect(useGameStore.getState().save?.battle?.phase).toBe('Victory')
+    useGameStore.getState().finishBattleIntoExpedition()
+    expect(useGameStore.getState().notification?.message).toContain('Receba as recompensas')
+    expect(useGameStore.getState().save?.battle?.claimed).toBe(false)
+    useGameStore.getState().claimBattleRewards()
+    useGameStore.getState().finishBattleIntoExpedition()
+    expect(useGameStore.getState().save?.battle).toBeNull()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_fungorro_01')
+    expect(useGameStore.getState().save?.world.trailNodeStates.astravel_camp_03).toBe('current')
+
+    useGameStore.getState().returnToTerran()
+    useGameStore.getState().enterAstravel()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_camp_03')
+    expect(useGameStore.getState().save?.world.trailNodeStates.astravel_entry).toBe('completed')
+    expect(useGameStore.getState().save?.eventLog.filter((event) => event === 'TrailNodeCompleted:astravel_entry')).toHaveLength(1)
+    expect(useGameStore.getState().save?.eventLog).toContain('ExpeditionResumed:trail_astravel_entry')
+  })
+
   it('impede acesso à instância fora da Praça do Portal', async () => {
     const ownerId = 'integration-portal-gate-user'
     await useGameStore.getState().boot(ownerId)

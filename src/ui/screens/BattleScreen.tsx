@@ -37,6 +37,7 @@ export function BattleScreen() {
   const save = useGameStore((state) => state.save)
   const submit = useGameStore((state) => state.submitBattleCommand)
   const claim = useGameStore((state) => state.claimBattleRewards)
+  const finishBattleIntoExpedition = useGameStore((state) => state.finishBattleIntoExpedition)
   const returnToTerran = useGameStore((state) => state.returnToTerran)
   const navigate = useNavigate()
 
@@ -80,7 +81,11 @@ export function BattleScreen() {
 
   const leave = () => {
     returnToTerran()
-    navigate('/terran/location_terran_portal_plaza')
+    navigate('/terran')
+  }
+  const continueExpedition = () => {
+    finishBattleIntoExpedition()
+    navigate('/expedition')
   }
 
   const attack = () => {
@@ -102,7 +107,7 @@ export function BattleScreen() {
   }
 
   return (
-    <GameShell fluid>
+    <GameShell fluid immersive>
       <div className="battle-screen">
         <header className="battle-topline">
           <div><span>Local</span><strong>{encounter?.locationLabel ?? 'Astravél'}</strong></div>
@@ -227,7 +232,10 @@ export function BattleScreen() {
             {!activeBattle.claimed ? (
               <GameButton variant="primary" onClick={claim}>Receber recompensas</GameButton>
             ) : (
-              <GameButton variant="primary" onClick={leave}>Retornar a Terran</GameButton>
+              <>
+                <GameButton variant="primary" onClick={continueExpedition}>Continuar expedição</GameButton>
+                <GameButton variant="ghost" onClick={leave}>Retornar a Terran</GameButton>
+              </>
             )}
           </div>
         )}

@@ -37,7 +37,7 @@ O `eventLog` permanece dentro do save local/cloud já versionado. Não exige mig
 - Colisão por máscara de elementos decorativos e câmera para regiões maiores.
 - Retratos e sprites definitivos exclusivos de cada NPC, diálogos aprovados pelo criador e triggers canônicos de visitantes/condicionais.
 - Efeitos sonoros, trilha sonora e novas cutscenes da evolução dos cinco Vínculos.
-- Consolidar as telas legadas de combate/exploração em uma transição de mundo coesa após validar esta vertical slice de Terran.
+- Evoluir a tela de combate por turnos e criar mapas interiores/regionais de várias salas com câmera. A primeira rota pixelada de Astravél foi integrada em `docs/ASTRAVEL_PIXEL_EXPEDITION_v0.1.md`.
 
 ## Incremento visual v0.2 — 2026-10-28
 
