@@ -175,7 +175,7 @@ export function TerranScreen() {
         </header>
         <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
-            <PixelCityCanvas portraitAssetId={save.character.portraitAssetId}
+            <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} reducedMotion={save.settings.reducedMotion}
               currentLocationId={save.world.currentLocationId}
               enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
               actors={cityCast} onEnter={openLocation} onTalk={(id, presence) => talk(presence, id)} />
@@ -214,7 +214,8 @@ export function TerranScreen() {
         </div>
         <NpcDialog open={eldamarOpen} onClose={() => setEldamarOpen(false)} save={save} />
         <SocialQuestDialog questId={socialQuestId} save={save} onClose={() => setSocialQuestId(null)} />
-        {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId} onComplete={() => recordCutsceneViewed(scene.id)} />}
+        {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId}
+          reducedMotion={save.settings.reducedMotion} onComplete={() => recordCutsceneViewed(scene.id)} />}
       </div>
     </GameShell>
   )

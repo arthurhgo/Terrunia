@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react'
 import type { Cutscene } from '../../domain/terran/cutscenes'
 import { CINEMATIC_HEIGHT, CINEMATIC_WIDTH, drawCinematicFrame } from './cinematicArt'
 
-export function PixelCinematicCanvas({ tone, step, portraitAssetId }: {
-  tone: Cutscene['tone']; step: number; portraitAssetId: string
+export function PixelCinematicCanvas({ tone, step, portraitAssetId, reducedMotion }: {
+  tone: Cutscene['tone']; step: number; portraitAssetId: string; reducedMotion: boolean
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
@@ -18,9 +18,9 @@ export function PixelCinematicCanvas({ tone, step, portraitAssetId }: {
       raf = requestAnimationFrame(animate)
     }
     drawCinematicFrame(ctx, tone, step, 0, portraitAssetId.includes('sigil') ? 'sigil' : 'terririan')
-    raf = requestAnimationFrame(animate)
+    if (!reducedMotion) raf = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(raf)
-  }, [tone, step, portraitAssetId])
+  }, [tone, step, portraitAssetId, reducedMotion])
   return <canvas ref={canvasRef} width={CINEMATIC_WIDTH} height={CINEMATIC_HEIGHT}
     className="terran-cutscene__canvas" aria-hidden="true" />
 }

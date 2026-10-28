@@ -19,6 +19,7 @@ type Destination = {
 }
 type Props = {
   portraitAssetId: string
+  reducedMotion: boolean
   currentLocationId: string
   enabled: boolean
   objectiveId: string | null
@@ -53,7 +54,7 @@ const nearestNpc = (point: WorldPoint, actors: readonly CityActor[], radius: num
   return nearest
 }
 
-export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, objectiveId, actors, onEnter, onTalk }: Props) {
+export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocationId, enabled, objectiveId, actors, onEnter, onTalk }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const keysRef = useRef(new Set<Direction>())
   const destinationRef = useRef<Destination | null>(null)
@@ -61,12 +62,14 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
   const playerRef = useRef<WorldPoint>({ ...getCityDoor(initialId) })
   const facingRef = useRef<Direction>('down')
   const enabledRef = useRef(enabled)
+  const reducedMotionRef = useRef(reducedMotion)
   const actorsRef = useRef(actors)
   const liveActorsRef = useRef<MovingCityActor[]>([])
   const npcButtonsRef = useRef(new Map<string, HTMLButtonElement>())
   const enterRef = useRef(onEnter)
   const talkRef = useRef(onTalk)
   enabledRef.current = enabled
+  reducedMotionRef.current = reducedMotion
   actorsRef.current = actors
   // Keep live positions across React renders while retaining identity from the save.
   if (!liveActorsRef.current.length && actors.length) liveActorsRef.current = actors.map((actor) => getNpcPatrol(actor, 0))
@@ -128,9 +131,9 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
       const delta = Math.min(0.05, previous ? (now - previous) / 1000 : 0)
       previous = now
       frame += 1
-      if (enabledRef.current) elapsed += delta
+      if (enabledRef.current && !reducedMotionRef.current) elapsed += delta
       const liveCast = actorsRef.current.map((actor) => {
-        const live = getNpcPatrol(actor, elapsed)
+        const live = getNpcPatrol(actor, reducedMotionRef.current ? 0 : elapsed)
         return enabledRef.current ? live : { ...live, moving: false }
       })
       liveActorsRef.current = liveCast
@@ -185,7 +188,7 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
           else if (destinationRef.current) destinationRef.current = null
         }
       }
-      drawPixelCity(ctx, playerRef.current, sheet, frame, walking, facingRef.current,
+      drawPixelCity(ctx, playerRef.current, sheet, reducedMotionRef.current ? 0 : frame, walking && !reducedMotionRef.current, facingRef.current,
         portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', liveCast)
       raf = requestAnimationFrame(tick)
     }
