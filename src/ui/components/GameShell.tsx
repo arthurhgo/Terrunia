@@ -1,4 +1,4 @@
-import { BookOpen, CircleUserRound, GitBranch, Landmark, Link2, LogOut, Map, Settings, Sparkles } from 'lucide-react'
+import { BookOpen, CircleUserRound, GitBranch, Landmark, Link2, LogOut, Map, Package, Settings, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../state/authStore'
@@ -13,6 +13,7 @@ type GameShellProps = {
 const navItems = [
   { to: '/terran', label: 'Terran', icon: Landmark },
   { to: '/nexus', label: 'Nexo', icon: Link2 },
+  { to: '/inventory', label: 'Inventário', icon: Package },
   { to: '/character', label: 'Personagem', icon: CircleUserRound },
   { to: '/skill-tree', label: 'Skill Tree', icon: GitBranch },
   { to: '/quests', label: 'Missões', icon: BookOpen },

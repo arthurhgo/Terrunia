@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest'
 import { assetRegistry, boundSlotPreviewAssetIds, resolveAsset } from './assetRegistry'
 import { BOUND_SLOTS } from '../domain/shared/types'
 import { itemDefinitions } from '../content/items'
+import { boundItemBaseDefinitions } from '../content/items'
+import { visualEquipmentCatalog } from '../content/visualEquipment'
 
 describe('grade pixel art v0.1', () => {
   it('registra exatamente cinco prévias para os cinco vínculos, sem criar equipamento', () => {
@@ -21,6 +23,29 @@ describe('grade pixel art v0.1', () => {
     expect(resolveAsset('character.terririan.sigil').pixelArt).toBe(true)
     for (const item of itemDefinitions) {
       expect(resolveAsset(item.iconAssetId).pixelArt).toBe(true)
+    }
+  })
+
+  it('cobre as sete armas do manual e oito conceitos dos outros Vínculos', () => {
+    expect(visualEquipmentCatalog).toHaveLength(15)
+    expect(visualEquipmentCatalog.filter((item) => item.slot === 'weapon')).toHaveLength(7)
+    expect(visualEquipmentCatalog.filter((item) => item.source === 'concept')).toHaveLength(8)
+    expect(new Set(visualEquipmentCatalog.map((item) => item.id)).size).toBe(15)
+    for (const item of visualEquipmentCatalog) {
+      expect(resolveAsset(item.assetId).path).toBe(item.assetPath)
+      expect(resolveAsset(item.assetId).pixelArt).toBe(true)
+    }
+    for (const slot of BOUND_SLOTS) {
+      expect(visualEquipmentCatalog.some((item) => item.slot === slot)).toBe(true)
+    }
+  })
+
+  it('registra sete sprites nativos de evolução sem mudar os slots', () => {
+    const weapon = boundItemBaseDefinitions.find((item) => item.id === 'bound_weapon_prologue_base')
+    for (const grade of [1, 2, 3, 4, 5, 6, 7] as const) {
+      const assetId = weapon?.assetIdByGrade[grade]
+      expect(assetId).toBe(`equipment.weapon.prologue.g${grade}`)
+      expect(resolveAsset(assetId ?? '').pixelArt).toBe(true)
     }
   })
 
