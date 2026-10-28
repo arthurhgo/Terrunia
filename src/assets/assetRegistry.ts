@@ -1,4 +1,5 @@
 import type { BoundSlot } from '../domain/shared/types'
+import { visualEquipmentCatalog } from '../content/visualEquipment'
 
 export type AssetEntry = {
   id: string
@@ -61,13 +62,22 @@ const entries: AssetEntry[] = [
     path: '/assets/equipment/weapon/weapon_prologue_g2.png',
     fallback: '/assets/placeholders/weapon.svg',
     alt: 'Arma básica vinculada, Grau II',
+    pixelArt: true,
   },
   {
     id: 'equipment.weapon.prologue.g3',
     path: '/assets/equipment/weapon/weapon_prologue_g3.png',
     fallback: '/assets/placeholders/weapon.svg',
     alt: 'Arma básica vinculada, Grau III com Joia',
+    pixelArt: true,
   },
+  ...([4, 5, 6, 7] as const).map((grade) => ({
+    id: `equipment.weapon.prologue.g${grade}`,
+    path: `/assets/equipment/weapon/weapon_prologue_g${grade}.png`,
+    fallback: '/assets/placeholders/weapon.svg',
+    alt: `Arma básica vinculada, Grau ${grade}`,
+    pixelArt: true,
+  })),
   {
     id: 'item.fungal-nucleus',
     path: '/assets/items/item_fungal_nucleus.png',
@@ -115,6 +125,13 @@ const entries: AssetEntry[] = [
     path: `/assets/equipment/slot-previews/${slot}.png`,
     fallback: '/assets/placeholders/item.svg',
     alt: `Silhueta de referência do slot ${slot}`,
+    pixelArt: true,
+  })),
+  ...visualEquipmentCatalog.map((item) => ({
+    id: item.assetId,
+    path: item.assetPath,
+    fallback: '/assets/placeholders/item.svg',
+    alt: `Conceito pixel art: ${item.name}`,
     pixelArt: true,
   })),
 ]

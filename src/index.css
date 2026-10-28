@@ -813,6 +813,47 @@ code {
 .inventory-actions > div { display: flex; gap: 7px; }
 .inventory-actions .game-button { min-height: 32px; padding: 6px 10px; font-size: 0.62rem; }
 
+/* Inventory v0.2: collected resources and visual equipment catalog stay separate. */
+.inventory-screen { max-width: 1640px; margin: 0 auto; padding: 12px; }
+.inventory-screen__hero { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; border: 1px solid #514029; padding: 10px 14px; background: linear-gradient(95deg, #162433, #0a0c0e 65%); }
+.inventory-screen__hero .asset-image { width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; }
+.inventory-screen__hero > div { display: grid; gap: 4px; flex: 1; }
+.inventory-screen__hero strong { color: #dfc99e; font-family: var(--display); font-size: 1.1rem; }
+.inventory-screen__hero small { color: #9b9588; font-size: 0.7rem; }
+.pixel-draft-label { color: #9bbeda; font-family: var(--display); font-size: 0.61rem; letter-spacing: 0.06em; }
+.inventory-screen__columns { display: grid; align-items: start; gap: 14px; grid-template-columns: minmax(320px, 0.9fr) minmax(440px, 1.1fr); margin-top: 14px; }
+.inventory-screen__columns > * { min-width: 0; }
+.equipment-catalog .arcane-panel__content { padding: 12px; }
+.equipment-catalog__tabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+.equipment-catalog__tabs button { display: flex; align-items: center; gap: 7px; border: 1px solid #4b3827; padding: 8px 10px; color: #aaa193; background: #0c1015; font-family: var(--display); font-size: 0.68rem; cursor: pointer; }
+.equipment-catalog__tabs button.active { border-color: #6aafdf; color: #e4f2ff; background: #152a3e; }
+.equipment-catalog__tabs button small { color: #8db5c8; font-size: 0.58rem; }
+.equipment-catalog__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 7px; }
+.equipment-catalog__tile { display: grid; align-content: center; justify-items: center; gap: 9px; min-height: 104px; border: 1px solid #493825; padding: 10px 5px; color: #bfb29f; background: radial-gradient(circle at 50% 33%, #1c2935, #080b0e 74%); cursor: pointer; }
+.equipment-catalog__tile.selected { border-color: #56b7ec; box-shadow: inset 0 0 0 1px #225477; }
+.equipment-catalog__tile:focus-visible, .equipment-catalog__tabs button:focus-visible { outline: 2px solid #8bdcff; outline-offset: 2px; }
+.equipment-catalog__tile .asset-image { width: 48px; height: 48px; image-rendering: pixelated; }
+.equipment-catalog__tile span { max-width: 100%; font-family: var(--display); font-size: 0.62rem; line-height: 1.3; text-align: center; }
+.equipment-catalog__detail { display: flex; align-items: center; gap: 15px; margin-top: 12px; border: 1px solid #3b3a34; padding: 12px; background: #0b1116; }
+.equipment-catalog__sprite { display: grid; width: 80px; height: 80px; flex: none; place-items: center; border: 1px solid #485c69; background: #15202b; }
+.equipment-catalog__sprite .asset-image { width: 64px; height: 64px; image-rendering: pixelated; }
+.equipment-catalog__detail > div:last-child { min-width: 0; }
+.equipment-catalog__detail strong { display: block; margin-top: 5px; color: #f2d49d; font-family: var(--display); }
+.equipment-catalog__detail p { margin: 5px 0; color: #aca598; font-size: 0.7rem; line-height: 1.45; }
+.equipment-catalog__detail small { color: #7396a4; font-size: 0.62rem; }
+.equipment-catalog__disclaimer { margin: 12px 0 0; border-left: 2px solid #627c93; padding: 4px 10px; color: #928a7e; font-size: 0.67rem; line-height: 1.4; }
+
+@media (max-width: 1050px) { .inventory-screen__columns { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .inventory-screen { padding: 2px; }
+  .inventory-screen__hero { padding: 8px; gap: 8px; }
+  .inventory-screen__hero .asset-image { width: 48px; height: 48px; }
+  .inventory-screen__hero > .pixel-draft-label { display: none; }
+  .equipment-catalog__tabs button { padding: 6px 7px; }
+  .equipment-catalog__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .equipment-catalog__tile { min-height: 95px; }
+}
+
 .economy-strip { display: flex; min-height: 35px; align-items: center; justify-content: flex-end; gap: 22px; border: 1px solid #4a351a; padding: 6px 13px; color: #8f877a; background: #080b0e; font-size: 0.65rem; }
 .economy-strip span { display: inline-flex; align-items: center; gap: 7px; }
 .economy-strip strong { color: #efd08e; font-family: var(--display); font-size: 0.8rem; }

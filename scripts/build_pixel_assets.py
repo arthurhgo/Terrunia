@@ -237,6 +237,152 @@ def record():
     return im
 
 
+# Equipment catalog: manual weapon archetypes and four families of visual concepts.
+# Each design is an actual 16x16 matrix, never a resized illustration.
+def sword_long():
+    im, d = sheet()
+    p(d, 'outline', (11, 0), (13, 2), (7, 11), (5, 10))
+    p(d, 'steel_light', (11, 1), (12, 2), (7, 9), (6, 9))
+    d.line([(5, 8), (9, 12)], fill=COLORS['gold_dark'], width=3)
+    d.line([(5, 8), (9, 12)], fill=COLORS['gold'], width=1)
+    d.line([(6, 11), (3, 14)], fill=COLORS['outline'], width=3)
+    px(d, 'gold_light', 3, 14)
+    return im
+
+
+def war_axe():
+    im, d = sheet()
+    d.line([(5, 14), (10, 2)], fill=COLORS['outline'], width=4)
+    d.line([(5, 14), (10, 2)], fill=COLORS['leather_light'], width=2)
+    p(d, 'outline', (8, 1), (14, 2), (15, 7), (13, 9), (8, 7), (6, 4))
+    p(d, 'steel', (9, 2), (13, 3), (14, 7), (12, 8), (8, 6), (7, 4))
+    p(d, 'steel_light', (9, 2), (13, 3), (13, 5), (10, 4))
+    return im
+
+
+def long_bow():
+    im, d = sheet()
+    d.line([(11, 1), (6, 3), (4, 7), (6, 12), (11, 14)], fill=COLORS['outline'], width=3)
+    d.line([(11, 1), (6, 3), (4, 7), (6, 12), (11, 14)], fill=COLORS['gold'], width=1)
+    d.line([(11, 1), (11, 14)], fill=COLORS['steel_light'], width=1)
+    r(d, 'leather_light', (4, 7, 6, 8))
+    return im
+
+
+def dagger():
+    im, d = sheet()
+    p(d, 'outline', (11, 2), (12, 5), (7, 11), (5, 9))
+    p(d, 'steel_light', (11, 3), (11, 5), (7, 9), (6, 9))
+    d.line([(4, 9), (9, 12)], fill=COLORS['gold'], width=2)
+    d.line([(6, 11), (4, 14)], fill=COLORS['leather_light'], width=3)
+    px(d, 'gold_light', 4, 14)
+    return im
+
+
+def arcane_scepter():
+    im, d = sheet()
+    d.line([(5, 14), (10, 5)], fill=COLORS['outline'], width=4)
+    d.line([(5, 14), (10, 5)], fill=COLORS['gold'], width=2)
+    p(d, 'outline', (9, 0), (12, 2), (13, 5), (10, 8), (7, 5), (7, 2))
+    p(d, 'cyan', (9, 1), (11, 3), (11, 5), (10, 6), (8, 4))
+    px(d, 'ice', 9, 3)
+    return im
+
+
+def spellbook():
+    im, d = sheet()
+    p(d, 'outline', (2, 3), (8, 4), (14, 2), (14, 13), (8, 15), (2, 13))
+    p(d, 'navy', (3, 4), (8, 5), (8, 13), (3, 12))
+    p(d, 'gold_dark', (9, 5), (13, 3), (13, 12), (9, 13))
+    d.line([(8, 5), (8, 13)], fill=COLORS['gold_light'], width=1)
+    px(d, 'cyan', 5, 7)
+    px(d, 'ice', 5, 8)
+    px(d, 'gold_light', 11, 8)
+    return im
+
+
+def conjuration_staff():
+    im, d = sheet()
+    d.line([(5, 15), (10, 3)], fill=COLORS['outline'], width=4)
+    d.line([(5, 14), (10, 3)], fill=COLORS['leather_light'], width=2)
+    p(d, 'gold_dark', (7, 2), (8, 0), (12, 0), (14, 3), (12, 7), (9, 6))
+    p(d, 'blue', (9, 1), (12, 1), (13, 3), (11, 5), (9, 4))
+    r(d, 'cyan', (10, 2, 11, 4))
+    px(d, 'ice', 10, 2)
+    return im
+
+
+def round_shield():
+    im, d = sheet()
+    p(d, 'outline', (5, 1), (11, 1), (15, 5), (15, 11), (11, 15), (5, 15), (1, 11), (1, 5))
+    p(d, 'gold', (5, 2), (11, 2), (14, 5), (14, 11), (11, 14), (5, 14), (2, 11), (2, 5))
+    p(d, 'navy', (5, 4), (11, 4), (12, 6), (12, 10), (10, 12), (6, 12), (4, 10), (4, 6))
+    r(d, 'steel_light', (7, 6, 9, 9))
+    px(d, 'cyan', 8, 7)
+    return im
+
+
+def arcane_shield():
+    im, d = sheet()
+    p(d, 'outline', (8, 0), (14, 5), (14, 10), (8, 15), (2, 10), (2, 5))
+    p(d, 'navy', (8, 1), (13, 6), (13, 9), (8, 14), (3, 9), (3, 6))
+    p(d, 'cyan', (8, 3), (11, 6), (11, 9), (8, 12), (5, 9), (5, 6))
+    p(d, 'ice', (8, 4), (9, 6), (8, 9), (7, 6))
+    return im
+
+
+def leather_armor():
+    im = armor()
+    dark, base = COLORS['steel'], COLORS['steel_light']
+    data = list(im.getdata())
+    im.putdata([tuple(bytes.fromhex(COLORS['leather'][1:])) + (a,) if (r, g, b) == tuple(bytes.fromhex(dark[1:])) and a else
+                tuple(bytes.fromhex(COLORS['leather_light'][1:])) + (a,) if (r, g, b) == tuple(bytes.fromhex(base[1:])) and a else
+                (r, g, b, a) for r, g, b, a in data])
+    return im
+
+
+def moon_necklace():
+    im, d = sheet()
+    d.line([(3, 2), (5, 8), (8, 10), (11, 8), (13, 2)], fill=COLORS['outline'], width=3)
+    d.line([(3, 2), (5, 8), (8, 10), (11, 8), (13, 2)], fill=COLORS['steel_light'], width=1)
+    p(d, 'gold_dark', (7, 9), (12, 10), (10, 14), (6, 14), (5, 11))
+    p(d, 'steel_light', (7, 10), (10, 11), (9, 13), (7, 13), (6, 11))
+    px(d, 'ice', 8, 11)
+    return im
+
+
+def leather_bracelet():
+    im, d = sheet()
+    p(d, 'outline', (4, 3), (12, 3), (15, 6), (15, 10), (12, 13), (4, 13), (1, 10), (1, 6))
+    p(d, 'leather', (4, 4), (12, 4), (14, 6), (14, 10), (11, 12), (5, 12), (2, 10), (2, 6))
+    r(d, 'leather_light', (4, 5, 12, 6))
+    r(d, 'gold_dark', (7, 4, 9, 7))
+    px(d, 'gold_light', 8, 5)
+    return im
+
+
+def weapon_grade(grade: int):
+    im = weapon()
+    d = ImageDraw.Draw(im)
+    if grade >= 2:
+        r(d, 'cyan', (9, 4, 9, 6))
+    if grade >= 3:
+        r(d, 'ice', (8, 10, 8, 10))
+    if grade >= 4:
+        px(d, 'gold_light', 10, 3)
+        px(d, 'cyan', 8, 8)
+    if grade >= 5:
+        r(d, 'gold_light', (5, 9, 8, 9))
+    if grade >= 6:
+        px(d, 'ice', 10, 2)
+        px(d, 'cyan', 7, 10)
+    if grade >= 7:
+        px(d, 'gold_light', 6, 7)
+        px(d, 'ice', 11, 1)
+        px(d, 'ice', 5, 6)
+    return im
+
+
 ASSETS = {
     "characters/terririan/player_default.png": lambda: character(False),
     "characters/terririan/player_sigil.png": lambda: character(True),
@@ -246,6 +392,23 @@ ASSETS = {
     "equipment/slot-previews/necklace.png": necklace,
     "equipment/slot-previews/bracelet.png": bracelet,
     "equipment/weapon/weapon_prologue_g1.png": weapon,
+    **{f"equipment/weapon/weapon_prologue_g{grade}.png":
+       (lambda grade=grade: weapon_grade(grade)) for grade in range(2, 8)},
+    "equipment/catalog/weapon_long_sword.png": sword_long,
+    "equipment/catalog/weapon_war_axe.png": war_axe,
+    "equipment/catalog/weapon_long_bow.png": long_bow,
+    "equipment/catalog/weapon_dagger.png": dagger,
+    "equipment/catalog/weapon_arcane_scepter.png": arcane_scepter,
+    "equipment/catalog/weapon_spellbook.png": spellbook,
+    "equipment/catalog/weapon_conjuration_staff.png": conjuration_staff,
+    "equipment/catalog/shield_round.png": round_shield,
+    "equipment/catalog/shield_arcane.png": arcane_shield,
+    "equipment/catalog/armor_leather.png": leather_armor,
+    "equipment/catalog/armor_plate.png": armor,
+    "equipment/catalog/necklace_moon.png": moon_necklace,
+    "equipment/catalog/necklace_rune.png": necklace,
+    "equipment/catalog/bracelet_leather.png": leather_bracelet,
+    "equipment/catalog/bracelet_resonance.png": bracelet,
     "items/item_fungal_nucleus.png": fungal_nucleus,
     "items/item_spore_cluster.png": spores,
     "items/item_minor_tonic.png": tonic,
@@ -308,6 +471,43 @@ def build_reference_board(images: dict[str, Image.Image]):
     board.convert('RGB').save(output)
 
 
+def build_catalog_board(images: dict[str, Image.Image]):
+    """VISUAL_DRAFT catalog board for approval; the UI loads individual 16px PNGs."""
+    board = Image.new('RGBA', (1480, 1210), '#11131A')
+    d = ImageDraw.Draw(board)
+    font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'
+    title = ImageFont.truetype(font_path, 33) if Path(font_path).exists() else ImageFont.load_default()
+    small = ImageFont.truetype(font_path, 16) if Path(font_path).exists() else ImageFont.load_default()
+    d.text((40, 32), 'TERRUNIA / INVENTARIO PIXEL v0.2', fill=COLORS['gold_light'], font=title)
+    d.text((40, 80), '7 ARMAS DO MANUAL + 8 ESTUDOS DE EQUIPAMENTO  /  16x16 NATIVOS  /  VISUAL_DRAFT', fill=COLORS['steel_light'], font=small)
+    catalog = (
+        ('weapon_long_sword', 'Espada Longa'), ('weapon_war_axe', 'Machado de Guerra'),
+        ('weapon_long_bow', 'Arco Longo'), ('weapon_dagger', 'Adaga'),
+        ('weapon_arcane_scepter', 'Cetro Arcano'), ('weapon_spellbook', 'Livro de Magias'),
+        ('weapon_conjuration_staff', 'Cajado de Conjuracao'), ('shield_round', 'Escudo Redondo'),
+        ('shield_arcane', 'Protetor Arcano'), ('armor_leather', 'Armadura de Couro'),
+        ('armor_plate', 'Armadura de Placas'), ('necklace_moon', 'Colar Lunar'),
+        ('necklace_rune', 'Colar Runico'), ('bracelet_leather', 'Pulseira de Couro'),
+        ('bracelet_resonance', 'Pulseira Ressonancia'),
+    )
+    for i, (name, label) in enumerate(catalog):
+        x, y = 40 + (i % 5) * 290, 128 + (i // 5) * 245
+        d.rectangle((x, y, x + 262, y + 222), fill='#1A202B', outline=COLORS['gold_dark'], width=2)
+        art = images[f'equipment/catalog/{name}.png'].resize((128, 128), Image.Resampling.NEAREST)
+        board.alpha_composite(art, (x + 66, y + 16))
+        d.text((x + 12, y + 164), label, font=small, fill=COLORS['skin_light'])
+        d.text((x + 12, y + 190), '16 x 16', font=small, fill=COLORS['steel_light'])
+    d.text((40, 896), 'ARMA VINCULADA / GRAUS I - VII', font=title, fill=COLORS['gold_light'])
+    for grade in range(1, 8):
+        x, y = 40 + (grade - 1) * 206, 957
+        d.rectangle((x, y, x + 185, y + 182), fill='#1A202B', outline=COLORS['steel'])
+        art = images[f'equipment/weapon/weapon_prologue_g{grade}.png'].resize((112, 112), Image.Resampling.NEAREST)
+        board.alpha_composite(art, (x + 35, y + 15))
+        d.text((x + 57, y + 140), f'GRAU {grade}', font=small, fill=COLORS['skin_light'])
+    output = ROOT.parents[1] / 'docs' / 'reference' / 'terrunia-inventory-pixel-v0.2.png'
+    board.convert('RGB').save(output)
+
+
 def build():
     permitted = {tuple(bytes.fromhex(value[1:])) for value in COLORS.values()}
     images = {}
@@ -327,6 +527,7 @@ def build():
         im.save(path)
         print(f"{relative_path}: {im.width}x{im.height} / {len(opaque_colors)} colors")
     build_reference_board(images)
+    build_catalog_board(images)
 
 
 if __name__ == "__main__":
