@@ -88,6 +88,19 @@ describe('interfaces de Terran', () => {
     expect(screen.queryByRole('dialog', { name: /TERRAN · O PRIMEIRO PASSO/ })).not.toBeInTheDocument()
   })
 
+  it('apresenta o juramento apenas após entrar no Clã, sem trocar a cena', () => {
+    loadSave()
+    const save = useGameStore.getState().save!
+    save.character.clan.clanId = 'dunavar'
+    useGameStore.setState({ save })
+    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    expect(screen.getByRole('dialog', { name: /TERRAN · O JURAMENTO/ })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Pular cena' }))
+    expect(screen.queryByRole('dialog', { name: /TERRAN · O JURAMENTO/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+  })
+
   it('abre o diálogo de um NPC sem remover o canvas da cidade', () => {
     loadSave()
     render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)

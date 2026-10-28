@@ -1,6 +1,7 @@
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { CityActor } from './cityCast'
+import type { MovingCityActor } from './cityLife'
 import { ACTOR_PALETTES, drawPixelActor, type ActorFacing } from './pixelActorArt'
 
 export const CITY_WIDTH = 384
@@ -72,7 +73,7 @@ export const drawPixelCity = (
   walking: boolean,
   facing: ActorFacing,
   playerPalette: string,
-  cityCast: readonly CityActor[],
+  cityCast: readonly (CityActor | MovingCityActor)[],
 ) => {
   ctx.imageSmoothingEnabled = false
   ctx.clearRect(0, 0, CITY_WIDTH, CITY_HEIGHT)
@@ -121,7 +122,9 @@ export const drawPixelCity = (
     const variantPalette = actor.variant === 0 ? palette : actor.variant === 1
       ? { ...palette, hair: '#c7b594', accent: '#a5c3b0' }
       : { ...palette, hair: '#5a434d', skin: '#c08e7c', accent: '#d3a0bd' }
-    drawPixelActor(ctx, actor.point.x, actor.point.y, 'down', 0, variantPalette, 1)
+    const movingActor = actor as MovingCityActor
+    drawPixelActor(ctx, actor.point.x, actor.point.y, movingActor.facing ?? 'down',
+      movingActor.moving ? Math.floor(frame / 8) % 3 : 0, variantPalette, 1)
     if (actor.marker) {
       ctx.fillStyle = actor.marker === '!' ? '#f1c76c' : '#77d2a8'
       ctx.fillRect(actor.point.x - 3, actor.point.y - 23, 6, 6)

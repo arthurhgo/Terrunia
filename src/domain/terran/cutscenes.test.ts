@@ -34,4 +34,20 @@ describe('cutscenes de progressão', () => {
     save.eventLog.push('CutsceneViewed:colossus_aftermath')
     expect(getNextCutscene(save)).toBeNull()
   })
+
+  it('apresenta o rito do Clã e depois o despertar da Classe sem concedê-los', () => {
+    const save = playable()
+    save.eventLog.push('CutsceneViewed:terran_arrival')
+    save.character.clan.clanId = 'dunavar'
+    expect(getNextCutscene(save)?.id).toBe('clan_oath')
+    save.character.classProgression.classId = 'sentinel'
+    // Mesmo se a Classe já foi conquistada, o juramento é contado primeiro.
+    expect(getNextCutscene(save)?.id).toBe('clan_oath')
+    save.eventLog.push('CutsceneViewed:clan_oath')
+    expect(getNextCutscene(save)?.id).toBe('class_awakening')
+    save.eventLog.push('CutsceneViewed:class_awakening')
+    expect(getNextCutscene(save)).toBeNull()
+    expect(save.character.clan.clanId).toBe('dunavar')
+    expect(save.character.classProgression.classId).toBe('sentinel')
+  })
 })

@@ -45,14 +45,35 @@ function colossus(ctx: CanvasRenderingContext2D, x: number, y: number, defeated:
   }
 }
 
+/** VISUAL_DRAFT: an abstract oath hall, no final Clan heraldry is asserted. */
+function riteHall(ctx: CanvasRenderingContext2D, frame: number, classRite: boolean) {
+  rect(ctx, '#232936', 57, 19, 270, 103)
+  rect(ctx, '#6f6471', 65, 26, 254, 88)
+  rect(ctx, '#2f3546', 76, 35, 232, 70)
+  for (let x = 85; x <= 287; x += 67) {
+    const color = ['#8797b7', '#a88776', '#6f9b84', '#a68caf'][(x - 85) / 67]
+    rect(ctx, '#141e2a', x - 4, 33, 36, 59)
+    rect(ctx, color, x, 35, 28, 47)
+    rect(ctx, '#cfba90', x + 10, 40, 8, 25)
+    rect(ctx, '#1d2934', x + 12, 45, 4, 13)
+  }
+  rect(ctx, '#777081', 150, 96, 84, 17)
+  rect(ctx, '#ac9a8c', 158, 91, 68, 14)
+  rect(ctx, classRite ? '#4dc1cb' : '#d6b271', 178, 85, 28, 8)
+  const pulse = Math.floor(frame / 12) % 3
+  rect(ctx, classRite ? '#8adfe3' : '#e9d79b', 188, 61 - pulse, 8, 19)
+  rect(ctx, classRite ? '#4dc1cb' : '#a785bc', 182 - pulse, 67, 6, 8)
+  rect(ctx, classRite ? '#4dc1cb' : '#a785bc', 204 + pulse, 67, 6, 8)
+}
+
 /** VISUAL_DRAFT cinematic plates, frame-driven and independent from the quest engine. */
 export function drawCinematicFrame(
   ctx: CanvasRenderingContext2D, tone: Tone, step: number, frame: number, variant: 'terririan' | 'sigil',
 ) {
-  const ruins = tone === 'ruins', victory = tone === 'victory'
-  const night = ruins || tone === 'portal'
+  const ruins = tone === 'ruins', victory = tone === 'victory', ritual = tone === 'clan' || tone === 'class'
+  const night = ruins || tone === 'portal' || ritual
   ctx.imageSmoothingEnabled = false
-  rect(ctx, night ? '#17233a' : victory ? '#3a4556' : '#2c5260', 0, 0, CINEMATIC_WIDTH, CINEMATIC_HEIGHT)
+  rect(ctx, ritual ? '#1b2434' : night ? '#17233a' : victory ? '#3a4556' : '#2c5260', 0, 0, CINEMATIC_WIDTH, CINEMATIC_HEIGHT)
   rect(ctx, night ? '#27344a' : '#54717a', 0, 44, CINEMATIC_WIDTH, 54)
   for (let x = 0; x < CINEMATIC_WIDTH; x += 31) {
     const height = 8 + (x * 7 % 25)
@@ -65,7 +86,8 @@ export function drawCinematicFrame(
       if (seed < 3) rect(ctx, night ? '#384544' : '#63715a', x + seed, y + 2, 4, 3)
     }
   }
-  if (ruins || victory) {
+  if (ritual) riteHall(ctx, frame, tone === 'class')
+  else if (ruins || victory) {
     rect(ctx, '#32313b', 242, 30, 105, 90)
     rect(ctx, '#615664', 250, 29, 90, 79)
     rect(ctx, '#252f3d', 268, 46, 54, 60)
@@ -88,9 +110,9 @@ export function drawCinematicFrame(
   for (let i = 0; i < 12; i += 1) {
     const x = (i * 67 + pulse * (i % 3 + 1) * 2) % CINEMATIC_WIDTH
     const y = (i * 23 + 55 - pulse * 2 + 1600) % 115
-    rect(ctx, ruins ? '#ad86ba' : victory ? '#eacb91' : '#81cbd4', x, y, 2 + i % 2, 2 + i % 2)
+    rect(ctx, ruins ? '#ad86ba' : ritual ? '#d7b1db' : victory ? '#eacb91' : '#81cbd4', x, y, 2 + i % 2, 2 + i % 2)
   }
-  drawPixelActor(ctx, ruins ? 143 : victory ? 150 : 126, 137, victory ? 'down' : 'right',
+  drawPixelActor(ctx, ritual ? 192 : ruins ? 143 : victory ? 150 : 126, 137, ritual || victory ? 'down' : 'right',
     Math.floor(frame / 12) % 3, ACTOR_PALETTES[variant], 2)
   if (tone === 'portal') {
     rect(ctx, '#bfe8e4', 180, 18 + pulse % 17, 5, 12)

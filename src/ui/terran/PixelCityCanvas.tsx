@@ -5,11 +5,18 @@ import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran
 import type { TerranNpcPresence } from '../../content/types'
 import { findCityPath, isCityWalkable } from './cityNavigation'
 import type { CityActor } from './cityCast'
+import { getNpcPatrol, type MovingCityActor } from './cityLife'
 import { CITY_HEIGHT, CITY_WIDTH, drawPixelCity, getCityDoor, getCityPoint, type WorldPoint } from './pixelCityArt'
 import type { ActorFacing } from './pixelActorArt'
 
 type Direction = ActorFacing
-type Destination = { path: WorldPoint[]; site: TerranLocationId | null; actor: CityActor | null }
+type Destination = {
+  path: WorldPoint[]
+  site: TerranLocationId | null
+  actorId: string | null
+  goal: WorldPoint
+  lastRepath: number
+}
 type Props = {
   portraitAssetId: string
   currentLocationId: string
@@ -55,10 +62,14 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
   const facingRef = useRef<Direction>('down')
   const enabledRef = useRef(enabled)
   const actorsRef = useRef(actors)
+  const liveActorsRef = useRef<MovingCityActor[]>([])
+  const npcButtonsRef = useRef(new Map<string, HTMLButtonElement>())
   const enterRef = useRef(onEnter)
   const talkRef = useRef(onTalk)
   enabledRef.current = enabled
   actorsRef.current = actors
+  // Keep live positions across React renders while retaining identity from the save.
+  if (!liveActorsRef.current.length && actors.length) liveActorsRef.current = actors.map((actor) => getNpcPatrol(actor, 0))
   enterRef.current = onEnter
   talkRef.current = onTalk
 
@@ -67,26 +78,31 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
   }, [enabled])
 
   const arrive = (destination: Destination) => {
-    if (destination.actor) talkRef.current(destination.actor.locationId, destination.actor.presence)
+    const actor = destination.actorId && liveActorsRef.current.find((candidate) => candidate.id === destination.actorId)
+    if (actor && Math.hypot(actor.point.x - playerRef.current.x, actor.point.y - playerRef.current.y) < 20)
+      talkRef.current(actor.locationId, actor.presence)
     else if (destination.site) enterRef.current(destination.site)
   }
 
-  const walkTo = (point: WorldPoint, site: TerranLocationId | null, actor: CityActor | null) => {
+  const walkTo = (point: WorldPoint, site: TerranLocationId | null, actorId: string | null) => {
     if (!enabledRef.current) return
     const distance = Math.hypot(point.x - playerRef.current.x, point.y - playerRef.current.y)
-    const destination = { path: findCityPath(playerRef.current, point), site, actor }
-    if (distance < (site || actor ? 17 : 4)) { arrive(destination); return }
+    const destination: Destination = { path: findCityPath(playerRef.current, point), site, actorId, goal: point, lastRepath: 0 }
+    if (distance < (site || actorId ? 17 : 4)) { arrive(destination); return }
     if (destination.path.length > 0) destinationRef.current = destination
   }
 
   const walkToSite = (site: TerranLocationId) => walkTo(getCityDoor(site), site, null)
-  const walkToActor = (actor: CityActor) => walkTo({ x: actor.point.x, y: Math.min(CITY_HEIGHT - 8, actor.point.y + 7) }, null, actor)
+  const walkToActor = (actor: CityActor) => {
+    const live = liveActorsRef.current.find((candidate) => candidate.id === actor.id) ?? actor
+    walkTo({ x: live.point.x, y: Math.min(CITY_HEIGHT - 8, live.point.y + 7) }, null, actor.id)
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
     if (!ctx) return
-    let frame = 0, raf = 0, previous = 0
+    let frame = 0, raf = 0, previous = 0, elapsed = 0
     const sheet = new Image()
     sheet.src = resolveAsset('character.terririan.map').path
     sheet.onerror = () => { sheet.onerror = null; sheet.src = resolveAsset('character.terririan.map').fallback }
@@ -97,9 +113,10 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
       const key = event.key.toLowerCase()
       if (directions[key]) { keysRef.current.add(directions[key]); destinationRef.current = null; event.preventDefault() }
       if (key === 'e' || key === 'enter') {
-        const actor = nearestNpc(playerRef.current, actorsRef.current, 19)
+        const actor = nearestNpc(playerRef.current, liveActorsRef.current, 19)
         if (actor) talkRef.current(actor.locationId, actor.presence)
         else { const site = nearestSite(playerRef.current, 29); if (site) enterRef.current(site) }
+        event.preventDefault()
       }
     }
     const keyup = (event: KeyboardEvent) => {
@@ -111,6 +128,18 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
       const delta = Math.min(0.05, previous ? (now - previous) / 1000 : 0)
       previous = now
       frame += 1
+      if (enabledRef.current) elapsed += delta
+      const liveCast = actorsRef.current.map((actor) => {
+        const live = getNpcPatrol(actor, elapsed)
+        return enabledRef.current ? live : { ...live, moving: false }
+      })
+      liveActorsRef.current = liveCast
+      for (const actor of liveCast) {
+        const button = npcButtonsRef.current.get(actor.id)
+        if (!button) continue
+        button.style.left = `${actor.point.x / CITY_WIDTH * 100}%`
+        button.style.top = `${(actor.point.y - 9) / CITY_HEIGHT * 100}%`
+      }
       let walking = false
       if (enabledRef.current) {
         let dx = Number(keysRef.current.has('right')) - Number(keysRef.current.has('left'))
@@ -118,6 +147,20 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
         const destination = destinationRef.current
         const speed = 70 * delta
         if (dx === 0 && dy === 0 && destination) {
+          const target = destination.actorId && liveCast.find((actor) => actor.id === destination.actorId)
+          if (destination.actorId && !target) destinationRef.current = null
+          else if (target && Math.hypot(target.point.x - playerRef.current.x, target.point.y - playerRef.current.y) < 20) {
+            destinationRef.current = null
+            arrive(destination)
+          } else if (target && (destination.path.length === 0 || (now - destination.lastRepath > 400 && Math.hypot(target.point.x - destination.goal.x, target.point.y + 7 - destination.goal.y) > 6))) {
+            const goal = { x: target.point.x, y: Math.min(CITY_HEIGHT - 8, target.point.y + 7) }
+            destination.path = findCityPath(playerRef.current, goal)
+            destination.goal = goal
+            destination.lastRepath = now
+          }
+        }
+        if (dx === 0 && dy === 0 && destinationRef.current) {
+          const destination = destinationRef.current
           const waypoint = destination.path[0]
           if (!waypoint) { destinationRef.current = null; arrive(destination) }
           else {
@@ -125,7 +168,7 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
             if (distance <= speed + 0.4) {
               playerRef.current = { ...waypoint }
               destination.path.shift()
-              if (!destination.path.length) { destinationRef.current = null; arrive(destination) }
+              if (!destination.path.length && !destination.actorId) { destinationRef.current = null; arrive(destination) }
             } else {
               dx = (waypoint.x - playerRef.current.x) / distance
               dy = (waypoint.y - playerRef.current.y) / distance
@@ -143,7 +186,7 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
         }
       }
       drawPixelCity(ctx, playerRef.current, sheet, frame, walking, facingRef.current,
-        portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', actorsRef.current)
+        portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', liveCast)
       raf = requestAnimationFrame(tick)
     }
     window.addEventListener('keydown', keydown)
@@ -163,7 +206,7 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
     const bounds = event.currentTarget.getBoundingClientRect()
     if (!bounds.width || !bounds.height) return
     const point = { x: Math.round((event.clientX - bounds.left) / bounds.width * CITY_WIDTH), y: Math.round((event.clientY - bounds.top) / bounds.height * CITY_HEIGHT) }
-    const actor = nearestNpc(point, actorsRef.current, 14)
+    const actor = nearestNpc(point, liveActorsRef.current, 14)
     if (actor) { walkToActor(actor); return }
     const site = nearestSite(point, 30)
     if (site) walkToSite(site)
@@ -187,6 +230,7 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
           </button>
         })}
         {actors.map((actor) => <button key={actor.id} type="button" className="pixel-city__npc"
+          ref={(button) => { if (button) npcButtonsRef.current.set(actor.id, button); else npcButtonsRef.current.delete(actor.id) }}
           style={{ left: `${actor.point.x / CITY_WIDTH * 100}%`, top: `${(actor.point.y - 9) / CITY_HEIGHT * 100}%` }}
           aria-label={`Conversar com ${actor.presence.label}`} title={actor.presence.label}
           disabled={!enabled} onClick={() => walkToActor(actor)}>
@@ -204,7 +248,7 @@ export function PixelCityCanvas({ portraitAssetId, currentLocationId, enabled, o
           </button>
         ))}
         <button type="button" className="pixel-city__interact" disabled={!enabled} onClick={() => {
-          const actor = nearestNpc(playerRef.current, actorsRef.current, 19)
+          const actor = nearestNpc(playerRef.current, liveActorsRef.current, 19)
           if (actor) talkRef.current(actor.locationId, actor.presence)
           else { const site = nearestSite(playerRef.current, 29); if (site) enterRef.current(site) }
         }}>E</button>

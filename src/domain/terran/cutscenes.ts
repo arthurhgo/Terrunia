@@ -1,10 +1,10 @@
 import type { GameSave } from '../game/types'
 
-export type CutsceneId = 'terran_arrival' | 'astravel_call' | 'ruins_threshold' | 'colossus_aftermath'
+export type CutsceneId = 'terran_arrival' | 'astravel_call' | 'ruins_threshold' | 'colossus_aftermath' | 'clan_oath' | 'class_awakening'
 export type Cutscene = {
   id: CutsceneId
   title: string
-  tone: 'arrival' | 'portal' | 'ruins' | 'victory'
+  tone: 'arrival' | 'portal' | 'ruins' | 'victory' | 'clan' | 'class'
   lines: readonly string[]
 }
 
@@ -29,11 +29,27 @@ export const cutscenes: readonly Cutscene[] = [
     'O Vínculo guardou a memória desse confronto.',
     'Volte a Terran para continuar sua evolução.',
   ] },
+  { id: 'clan_oath', title: 'TERRAN · O JURAMENTO', tone: 'clan', lines: [
+    'Três provas não bastam para definir uma vida. Elas revelam a escolha que você conquistou.',
+    'No Salão dos Clãs, o rito reconhece seu compromisso. O mundo verá suas decisões através desse Vínculo.',
+    'A identidade de seu Terrírian agora carrega um juramento, mas sua jornada continua sendo sua.',
+  ] },
+  { id: 'class_awakening', title: 'TERRAN · O CAMINHO ASSUMIDO', tone: 'class', lines: [
+    'O conhecimento e as provas de sua Classe deixam de ser promessa.',
+    'Uma nova maneira de agir ganha forma, sem apagar suas memórias, seus cinco Vínculos ou o Clã conquistado.',
+    'Sua história seguirá pelos caminhos que escolher trilhar.',
+  ] },
 ]
 
 const seen = (save: GameSave, id: CutsceneId) => save.eventLog.includes(`CutsceneViewed:${id}`)
 
 export const getNextCutscene = (save: GameSave): Cutscene | null => {
+  // The social achievements are independent, explicit campaign milestones.
+  // They do not confer the Clan or Class; they only present what the save already earned.
+  const socialId: CutsceneId | null = save.character.clan.clanId && !seen(save, 'clan_oath')
+    ? 'clan_oath'
+    : save.character.classProgression.classId && !seen(save, 'class_awakening') ? 'class_awakening' : null
+  if (socialId) return cutscenes.find((scene) => scene.id === socialId) ?? null
   const quest = save.quests.vs_astravel_first_contact?.status
   const id: CutsceneId | null = save.world.worldFlags.includes('colossus_mycelium_defeated')
     ? 'colossus_aftermath'

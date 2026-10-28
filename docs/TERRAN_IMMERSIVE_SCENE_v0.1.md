@@ -34,9 +34,9 @@ O `eventLog` permanece dentro do save local/cloud já versionado. Não exige mig
 
 ## Próximos incrementos (não implementados)
 
-- Colisão por máscara de elementos decorativos, câmera para regiões maiores e deslocamento autônomo de NPCs.
+- Colisão por máscara de elementos decorativos e câmera para regiões maiores.
 - Retratos e sprites definitivos exclusivos de cada NPC, diálogos aprovados pelo criador e triggers canônicos de visitantes/condicionais.
-- Efeitos sonoros, trilha sonora e novas cutscenes de Clã, Classe e evolução dos cinco Vínculos.
+- Efeitos sonoros, trilha sonora e novas cutscenes da evolução dos cinco Vínculos.
 - Consolidar as telas legadas de combate/exploração em uma transição de mundo coesa após validar esta vertical slice de Terran.
 
 ## Incremento visual v0.2 — 2026-10-28
@@ -59,3 +59,12 @@ O `eventLog` permanece dentro do save local/cloud já versionado. Não exige mig
 - `src/domain/terran/cityDialogue.ts` concentra falas ambientais `CONTENT_DRAFT`, com pequenas variantes após descobertas relevantes. Dados existentes de `NPCDefinition.dialogue` têm prioridade.
 - As quatro cutscenes preservam seus triggers e marcadores persistentes, mas agora apresentam quadros em canvas 384×160 com portal, arquitetura, esporos e silhueta do Colosso em pixel art (`cinematicArt.ts`). O texto avançado pelo jogador é separado do desenho.
 - Os moradores visíveis em Terran não modificam o `GameSave` por conta própria. Missões continuam exigindo oferta, aceite explícito e entrega ao NPC correto.
+
+## Incremento de cidade viva v0.3 — 2026-10-28
+
+- `src/ui/terran/cityLife.ts` é a fonte pura dos trajetos ambientais `VISUAL_DRAFT`: cada personagem inicia na sua posição conhecida, espera, caminha entre dois pontos curtos e retorna. Os trechos são verificados contra a máscara lógica de colisão; nenhuma caminhada atravessa paredes. Os ciclos são estáveis por ID, sem sorteio ou dependência de estado cloud.
+- O relógio da cidade avança somente enquanto a exploração está habilitada. Diálogo, cutscene ou fluxo modal pausam a movimentação, e os NPCs permanecem no mesmo cenário.
+- Ícones e áreas clicáveis de NPC acompanham a posição visual no canvas. Cliques recalculam caminho até o interlocutor móvel, e a conversa só começa ao aproximar-se. Tecla E e botão E consultam a posição atual, não a localização inicial do ator.
+- Sprites de NPC agora exibem passo e orientação durante deslocamentos, ainda na matriz 16×16. A implementação de patrulha é exclusivamente visual; não cria progresso de missões, encontros ou flags.
+- `clan_oath` e `class_awakening` são cutscenes `CONTENT_DRAFT`/`VISUAL_DRAFT`, com arte de salão e rito em pixel art. Dependem respectivamente de `character.clan.clanId` e `character.classProgression.classId` já presentes no save. São vistas uma vez por campanha, ordenadas Clã → Classe, e usam o mesmo marcador persistido `CutsceneViewed:*`; não alteram a identidade do Terrírian.
+- Limites intencionais: moradores patrulham apenas a área de suas instituições; não há rotina econômica, IA social, colisor dinâmico com o jogador, câmera de mundo expandido ou persistência de coordenadas transitórias.
