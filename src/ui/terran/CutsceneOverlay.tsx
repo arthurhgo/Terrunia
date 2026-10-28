@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { SkipForward, ArrowRight } from 'lucide-react'
 import type { Cutscene } from '../../domain/terran/cutscenes'
-import { AssetImage } from '../components/AssetImage'
+import { PixelCinematicCanvas } from './PixelCinematicCanvas'
 
 export function CutsceneOverlay({ scene, portraitAssetId, onComplete }: {
   scene: Cutscene
@@ -17,9 +17,7 @@ export function CutsceneOverlay({ scene, portraitAssetId, onComplete }: {
   return (
     <div className={`terran-cutscene terran-cutscene--${scene.tone}`} role="dialog" aria-modal="true" aria-label={scene.title}>
       <div className="terran-cutscene__scene" aria-hidden="true">
-        <div className="terran-cutscene__horizon" />
-        <div className="terran-cutscene__portal" />
-        <AssetImage assetId={portraitAssetId} alt="" />
+        <PixelCinematicCanvas tone={scene.tone} step={step} portraitAssetId={portraitAssetId} />
       </div>
       <div className="terran-cutscene__script">
         <span className="eyebrow">CRÔNICA DO NEXO · {step + 1}/{scene.lines.length}</span>

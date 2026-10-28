@@ -1,5 +1,7 @@
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
+import type { CityActor } from './cityCast'
+import { ACTOR_PALETTES, drawPixelActor, type ActorFacing } from './pixelActorArt'
 
 export const CITY_WIDTH = 384
 export const CITY_HEIGHT = 256
@@ -52,12 +54,6 @@ const drawBuilding = (ctx: CanvasRenderingContext2D, id: TerranLocationId, frame
   ctx.fillStyle = colors.ink; ctx.fillRect(p.x - 15, p.y + 1, 7, 7); ctx.fillRect(p.x + 8, p.y + 1, 7, 7)
   ctx.fillStyle = colors.glow; ctx.fillRect(p.x - 13, p.y + 3, 3, 3); ctx.fillRect(p.x + 10, p.y + 3, 3, 3)
   ctx.fillStyle = '#584c41'; ctx.fillRect(p.x - 8, p.y + 17, 16, 3)
-  // A resident is visible in front of each institution, with no scene swap.
-  const nx = p.x + 17, ny = p.y + 15
-  ctx.fillStyle = colors.ink; ctx.fillRect(nx - 4, ny - 7, 8, 10)
-  ctx.fillStyle = location.tone === 'healing' ? '#7cbaa6' : '#b1a36f'; ctx.fillRect(nx - 3, ny - 4, 6, 5)
-  ctx.fillStyle = '#d6ab8c'; ctx.fillRect(nx - 2, ny - 7, 4, 3)
-  ctx.fillStyle = colors.wood; ctx.fillRect(nx - 3, ny + 1, 2, 4); ctx.fillRect(nx + 1, ny + 1, 2, 4)
 }
 
 const drawTree = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
@@ -74,6 +70,9 @@ export const drawPixelCity = (
   playerSprite: HTMLImageElement | null,
   frame: number,
   walking: boolean,
+  facing: ActorFacing,
+  playerPalette: string,
+  cityCast: readonly CityActor[],
 ) => {
   ctx.imageSmoothingEnabled = false
   ctx.clearRect(0, 0, CITY_WIDTH, CITY_HEIGHT)
@@ -103,12 +102,31 @@ export const drawPixelCity = (
   ctx.fillStyle = '#b09c7c'; ctx.fillRect(plaza.x - 37, plaza.y - 25, 74, 56)
   ctx.fillStyle = colors.roadLight; ctx.fillRect(plaza.x - 32, plaza.y - 20, 64, 46)
   TERRAN_LOCATION_IDS.forEach((id) => drawBuilding(ctx, id, frame))
-  const bob = walking && frame % 12 < 6 ? 1 : 0
-  ctx.fillStyle = '#1a282b'; ctx.fillRect(Math.round(player.x - 9), Math.round(player.y - 3), 18, 5)
-  if (playerSprite?.complete && playerSprite.naturalWidth > 0) {
-    ctx.drawImage(playerSprite, Math.round(player.x - 16), Math.round(player.y - 30 + bob), 32, 32)
-  } else {
-    ctx.fillStyle = '#223d70'; ctx.fillRect(player.x - 5, player.y - 17 + bob, 10, 15)
-    ctx.fillStyle = '#d5a78b'; ctx.fillRect(player.x - 4, player.y - 24 + bob, 8, 8)
+  const stride = walking ? Math.floor(frame / 8) % 3 : 0
+  const renderPlayer = () => {
+    ctx.fillStyle = '#162728'; ctx.fillRect(Math.round(player.x - 9), Math.round(player.y - 3), 18, 4)
+    if (playerSprite?.complete && playerSprite.naturalWidth >= 128 && playerSprite.naturalHeight >= 128) {
+      const row = { down: 0, left: 1, right: 2, up: 3 }[facing]
+      ctx.drawImage(playerSprite, stride * 32, row * 32, 32, 32, Math.round(player.x - 16), Math.round(player.y - 32), 32, 32)
+    } else {
+      drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[playerPalette] ?? ACTOR_PALETTES.terririan)
+    }
   }
+  const actors = [...cityCast].sort((a, b) => a.point.y - b.point.y)
+  let playerDrawn = false
+  for (const actor of actors) {
+    if (!playerDrawn && player.y <= actor.point.y) { renderPlayer(); playerDrawn = true }
+    ctx.fillStyle = '#1a282b'; ctx.fillRect(actor.point.x - 5, actor.point.y - 2, 10, 3)
+    const palette = ACTOR_PALETTES[actor.palette] ?? ACTOR_PALETTES.knowledge
+    const variantPalette = actor.variant === 0 ? palette : actor.variant === 1
+      ? { ...palette, hair: '#c7b594', accent: '#a5c3b0' }
+      : { ...palette, hair: '#5a434d', skin: '#c08e7c', accent: '#d3a0bd' }
+    drawPixelActor(ctx, actor.point.x, actor.point.y, 'down', 0, variantPalette, 1)
+    if (actor.marker) {
+      ctx.fillStyle = actor.marker === '!' ? '#f1c76c' : '#77d2a8'
+      ctx.fillRect(actor.point.x - 3, actor.point.y - 23, 6, 6)
+      ctx.fillStyle = colors.ink; ctx.fillRect(actor.point.x, actor.point.y - 22, 1, 3)
+    }
+  }
+  if (!playerDrawn) renderPlayer()
 }

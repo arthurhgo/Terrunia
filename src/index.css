@@ -1623,6 +1623,10 @@ code {
 .pixel-city__site:hover, .pixel-city__site:focus-visible { border-color: #6fcbef; color: #d5f6ff; outline: 1px solid #67bad7; }
 .pixel-city__site.is-objective { border-color: #e3bd6e; box-shadow: 0 0 0 2px #f7d17166; }
 .pixel-city__site b { position: absolute; top: -13px; right: -8px; display: grid; width: 16px; height: 16px; place-items: center; border: 1px solid #53350b; color: #211401; background: #ffdc74; font-size: 0.68rem; }
+.pixel-city__npc { position: absolute; z-index: 3; transform: translate(-50%, -50%); display: grid; width: 22px; height: 24px; place-items: center; border: 1px solid transparent; padding: 0; background: transparent; color: #f4d394; cursor: pointer; pointer-events: auto; }
+.pixel-city__npc span { position: absolute; top: -7px; right: -3px; display: grid; width: 12px; height: 12px; place-items: center; border: 1px solid #53665c; background: #1a3038db; font-size: .58rem; line-height: 1; }
+.pixel-city__npc:hover, .pixel-city__npc:focus-visible { border-color: #e8c888; outline: 2px solid #73c5d6; outline-offset: 1px; }
+.pixel-city__npc:hover span, .pixel-city__npc:focus-visible span { border-color: #ffdf99; background: #384b4b; }
 .terran-game__hud { position: absolute; top: 14px; left: 14px; z-index: 5; display: grid; gap: 5px; width: 95px; }
 .terran-game__hud button { display: flex; align-items: center; gap: 7px; border: 1px solid #4d6d77; padding: 7px; color: #d9e9ed; background: #101b25ef; font-family: var(--display); font-size: .62rem; cursor: pointer; }
 .terran-game__hud button.active, .terran-game__hud button:hover { border-color: #e1c17e; color: #ffdfa5; background: #20303c; }
@@ -1685,12 +1689,8 @@ code {
 .terran-dialogue__text p { color: #ddd4c3; font-size: .82rem; line-height: 1.5; }
 .terran-dialogue button { border: 1px solid #c5a35c; padding: 8px; color: #ffda8d; background: #19232a; cursor: pointer; }
 .terran-cutscene { position: fixed; z-index: 900; inset: 0; display: grid; place-items: center; padding: 20px; background: #05080bf2; }
-.terran-cutscene__scene { position: relative; width: min(800px, 94vw); height: min(43vh, 310px); overflow: hidden; border: 3px solid #8e7049; background: linear-gradient(#112539, #1c3a45 48%, #34493d 49%, #1e302b); }
-.terran-cutscene__horizon { position: absolute; right: 0; bottom: 20px; left: 0; height: 32px; background: repeating-linear-gradient(90deg, #3a423a 0 15px, #2c3432 15px 32px); image-rendering: pixelated; }
-.terran-cutscene__portal { position: absolute; top: 20%; left: 48%; width: 52px; height: 110px; border: 10px solid #6a6c6a; background: #23769f; box-shadow: 0 0 60px #59b8e277, inset 0 0 25px #a1e1ff; }
-.terran-cutscene__scene > .asset-image { position: absolute; bottom: 27px; left: 22%; width: 112px; height: 112px; image-rendering: pixelated; }
-.terran-cutscene--ruins .terran-cutscene__scene { filter: hue-rotate(70deg) saturate(.75); }
-.terran-cutscene--victory .terran-cutscene__scene { filter: hue-rotate(145deg) saturate(.8); }
+.terran-cutscene__scene { position: relative; width: min(840px, 94vw); aspect-ratio: 384 / 160; overflow: hidden; border: 3px solid #8e7049; background: #192d38; }
+.terran-cutscene__canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
 .terran-cutscene__script { width: min(800px, 94vw); border: 2px solid #8e7049; border-top: 0; padding: 20px 24px; background: #101920; }
 .terran-cutscene__script h2 { margin: 7px 0; color: #f0d398; font-family: var(--display); font-size: clamp(1rem, 2.5vw, 1.5rem); }
 .terran-cutscene__script p { min-height: 60px; margin: 10px 0; color: #e1e5e6; font-size: clamp(.85rem, 1.7vw, 1.1rem); line-height: 1.6; }

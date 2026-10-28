@@ -5,6 +5,8 @@ import { content } from '../../content/catalog'
 import type { TerranLocationDefinition } from '../../content/types'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import { getNextCutscene } from '../../domain/terran/cutscenes'
+import { getTerranDialogue } from '../../domain/terran/cityDialogue'
+import { getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
 import { getDiscoveredTerranLocationIds, getTerranQuestDestination } from '../../domain/terran/cityEngine'
 import { getSkillNodeState } from '../../domain/skillTree/skillTree'
 import type { GameSave } from '../../domain/game/types'
@@ -21,6 +23,7 @@ import { GameShell } from '../components/GameShell'
 import { ProgressBar } from '../components/ProgressBar'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { PixelCityCanvas } from '../terran/PixelCityCanvas'
+import { getCityCast } from '../terran/cityCast'
 
 type Drawer = 'location' | 'nexus' | 'inventory' | 'quests' | 'skills' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
@@ -32,12 +35,9 @@ const hud = [
   { id: 'skills', label: 'Evolução', icon: GitBranch },
 ] as const
 
-function DialogueBox({ presence, line, onNext }: { presence: Presence; line: number; onNext: () => void }) {
+function DialogueBox({ save, presence, line, onNext }: { save: GameSave; presence: Presence; line: number; onNext: () => void }) {
   const npc = presence.npcId ? content.npcs[presence.npcId] : null
-  const script = npc?.dialogue.length ? npc.dialogue : [
-    `${presence.roleLabel}.`,
-    'Novas conversas serão reveladas ao longo da campanha.',
-  ]
+  const script = getTerranDialogue(save, presence)
   return (
     <div className="terran-dialogue" role="dialog" aria-label={`Conversa com ${presence.label}`}>
       <div className="terran-dialogue__portrait"><AssetImage assetId={npc?.portraitAssetId ?? 'npc.unassigned'} /></div>
@@ -111,7 +111,7 @@ function LocationDrawer({ save, location, onTalk, onVisit }: {
       {location.viewKind === 'clanHall' && <ClanHallPanel save={save} />}
       <h3>Moradores e representantes</h3>
       <div className="terran-drawer__residents">
-        {location.npcPresences.filter((presence) => presence.presence === 'resident' || presence.presence === 'institution').map((presence) => (
+        {getVisibleNpcsInLocation(save, location.id as TerranLocationId).map(({ presence }) => (
           <button type="button" key={presence.id} aria-label={`Falar com ${presence.label}`} onClick={() => onTalk(presence)}>
             <span className="terran-npc-avatar">◆</span>
             <span><strong>{presence.label}</strong><small>{presence.roleLabel}</small></span>
@@ -140,6 +140,7 @@ export function TerranScreen() {
   if (!save) return <Navigate to="/character/create" replace />
 
   const scene = getNextCutscene(save)
+  const cityCast = getCityCast(save)
   const guidance = getTerranQuestDestination(save, content)
   const discovered = getDiscoveredTerranLocationIds(save).length
   const location = content.terranLocations[locationId]
@@ -150,11 +151,14 @@ export function TerranScreen() {
     setLocationId(id)
     setDrawer('location')
   }
-  const talk = (presence: Presence) => {
+  const talk = (presence: Presence, sourceId: TerranLocationId = locationId) => {
+    travel(sourceId)
+    setLocationId(sourceId)
+    setDrawer('location')
     if (presence.npcId === 'npc_eldamar') { setEldamarOpen(true); return }
     const quest = Object.values(content.quests).find((candidate) => candidate.giverNpcId === presence.npcId &&
       ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[candidate.id]?.status ?? 'locked'))
-    if (quest && location.viewKind === 'clanHall') { setSocialQuestId(quest.id); return }
+    if (quest && content.terranLocations[sourceId].viewKind === 'clanHall') { setSocialQuestId(quest.id); return }
     setDialogueLine(0)
     setDialogue(presence)
   }
@@ -174,7 +178,7 @@ export function TerranScreen() {
             <PixelCityCanvas portraitAssetId={save.character.portraitAssetId}
               currentLocationId={save.world.currentLocationId}
               enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
-              onEnter={openLocation} />
+              actors={cityCast} onEnter={openLocation} onTalk={(id, presence) => talk(presence, id)} />
             <div className="terran-game__hud" aria-label="Ações do personagem">
               {hud.map(({ id, label, icon: Icon }) => (
                 <button key={id} type="button" className={drawer === id ? 'active' : ''}
@@ -189,9 +193,8 @@ export function TerranScreen() {
               <span>{guidance ? `Objetivo: ${content.terranLocations[guidance.locationId].name}` : 'Explore a cidade · converse com Eldamar'}
                 <small>WASD / setas para andar · toque ou clique para caminhar · E para interagir</small></span>
             </div>
-            {dialogue && <DialogueBox presence={dialogue} line={dialogueLine} onNext={() => {
-              const npc = dialogue.npcId ? content.npcs[dialogue.npcId] : null
-              const length = npc?.dialogue.length || 2
+            {dialogue && <DialogueBox save={save} presence={dialogue} line={dialogueLine} onNext={() => {
+              const length = getTerranDialogue(save, dialogue).length
               if (dialogueLine + 1 < length) setDialogueLine(dialogueLine + 1)
               else setDialogue(null)
             }} />}

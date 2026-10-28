@@ -88,6 +88,16 @@ describe('interfaces de Terran', () => {
     expect(screen.queryByRole('dialog', { name: /TERRAN · O PRIMEIRO PASSO/ })).not.toBeInTheDocument()
   })
 
+  it('abre o diálogo de um NPC sem remover o canvas da cidade', () => {
+    loadSave()
+    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    fireEvent.click(screen.getByRole('button', { name: 'Ir para Praça do Portal' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Falar com Guardião do Portal' }))
+    expect(screen.getByRole('dialog', { name: 'Conversa com Guardião do Portal' })).toBeInTheDocument()
+    expect(screen.getByText(/O Portal registra destinos, não desejos/)).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+  })
+
   for (const locationId of TERRAN_LOCATION_IDS) {
     const location = content.terranLocations[locationId]
     it(`renderiza a interface de ${location.name}`, () => {
