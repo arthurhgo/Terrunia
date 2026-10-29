@@ -8,6 +8,7 @@ before committing them; the browser uses CSS image-rendering: pixelated.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -32,6 +33,16 @@ COLORS = {
     "skin_dark": "#8F655D",
     "skin": "#D5A78B",
     "skin_light": "#F0DDC0",
+    "moss_dark": "#30533F",
+    "moss": "#58A96A",
+    "moss_light": "#AFD99B",
+    "ember_dark": "#742F41",
+    "ember": "#CE5764",
+    "ember_light": "#F6A37B",
+    "violet_dark": "#44365F",
+    "violet": "#8668B5",
+    "violet_light": "#C1A8E6",
+    "sun": "#F7E08B",
 }
 
 
@@ -237,6 +248,225 @@ def record():
     return im
 
 
+def gem_variant(primary: str, shine: str, deep: str, glyph: str = 'dot'):
+    """Individual gemstones: transparent native 16x16 matrices with distinct facets."""
+    im = growth_gem()
+    mapping = {
+        tuple(bytes.fromhex(COLORS['blue'][1:])): COLORS[primary],
+        tuple(bytes.fromhex(COLORS['cyan'][1:])): COLORS[shine],
+        tuple(bytes.fromhex(COLORS['gold_dark'][1:])): COLORS[deep],
+    }
+    im.putdata([tuple(bytes.fromhex(mapping[rgb][1:])) + (a,) if a and
+                (rgb := (r, g, b)) in mapping else (r, g, b, a)
+                for r, g, b, a in im.getdata()])
+    d = ImageDraw.Draw(im)
+    if glyph == 'wave':
+        d.line([(6, 9), (8, 8), (10, 9)], fill=COLORS['ice'], width=1)
+    elif glyph == 'bolt':
+        p(d, 'sun', (9, 3), (7, 7), (9, 7), (7, 11), (10, 6), (8, 6))
+    elif glyph == 'star':
+        d.line((8, 3, 8, 12), fill=COLORS['ice'])
+        d.line((5, 8, 11, 8), fill=COLORS['ice'])
+    elif glyph == 'fracture':
+        d.line([(8, 3), (6, 7), (10, 8), (7, 12)], fill=COLORS['violet_light'], width=1)
+    elif glyph == 'leaf':
+        p(d, 'moss_light', (7, 10), (7, 6), (11, 4), (10, 8))
+    elif glyph == 'heart':
+        p(d, 'ember_light', (5, 5), (7, 4), (8, 6), (10, 4), (12, 5), (11, 9), (8, 12), (5, 9))
+    else:
+        px(d, 'ice', 7, 5)
+    return im
+
+
+def essence_bottle(tone: str):
+    im = tonic()
+    new_color = COLORS['moss'] if tone == 'fungal' else COLORS['violet']
+    new_glow = COLORS['moss_light'] if tone == 'fungal' else COLORS['violet_light']
+    replacements = {COLORS['blue']: new_color, COLORS['cyan']: new_glow}
+    im.putdata([tuple(bytes.fromhex(replacements[COLORS['blue']][1:])) + (a,)
+                if a and '#%02X%02X%02X' % (r, g, b) == COLORS['blue'] else
+                tuple(bytes.fromhex(replacements[COLORS['cyan']][1:])) + (a,)
+                if a and '#%02X%02X%02X' % (r, g, b) == COLORS['cyan'] else
+                (r, g, b, a) for r, g, b, a in im.getdata()])
+    return im
+
+
+def fungorro_crawler():
+    im, d = sheet(32, 32)
+    # Low predatory silhouette; cap at the back, four dark forelimbs.
+    for x in (6, 11, 21, 26):
+        p(d, 'outline', (x, 18), (x + 2, 19), (x + 3, 27), (x - 1, 29))
+        d.line([(x + 1, 20), (x + 1, 26)], fill=COLORS['leather'], width=2)
+    d.ellipse((6, 9, 27, 24), fill=COLORS['outline'])
+    d.ellipse((8, 11, 26, 22), fill=COLORS['moss_dark'])
+    p(d, 'moss', (5, 11), (9, 6), (18, 3), (26, 7), (29, 14), (23, 17), (9, 16))
+    p(d, 'moss_light', (9, 8), (18, 5), (24, 8), (25, 11), (12, 11))
+    for x, y in ((12, 8), (19, 9), (24, 12)):
+        r(d, 'ice', (x, y, x + 1, y + 1))
+    r(d, 'ember', (12, 17, 13, 18))
+    r(d, 'ember', (21, 17, 22, 18))
+    r(d, 'outline', (12, 18, 12, 18))
+    return im
+
+
+def spore_sower():
+    im, d = sheet(32, 32)
+    d.polygon([(10, 17), (22, 17), (26, 28), (7, 28)], fill=COLORS['outline'])
+    d.polygon([(12, 17), (21, 17), (24, 26), (9, 26)], fill=COLORS['violet_dark'])
+    d.ellipse((10, 9, 22, 22), fill=COLORS['outline'])
+    d.ellipse((11, 10, 21, 20), fill=COLORS['leather_light'])
+    d.ellipse((3, 4, 28, 17), fill=COLORS['outline'])
+    d.ellipse((4, 5, 27, 15), fill=COLORS['violet'])
+    d.ellipse((9, 5, 21, 10), fill=COLORS['violet_light'])
+    for x, y in ((8, 8), (17, 7), (22, 11)):
+        d.rectangle((x, y, x + 2, y + 1), fill=COLORS['ice'])
+    r(d, 'cyan', (13, 17, 14, 18))
+    r(d, 'cyan', (18, 17, 19, 18))
+    for x, y in ((2, 18), (28, 20), (5, 27)):
+        r(d, 'violet_light', (x, y, x + 1, y + 1))
+    return im
+
+
+def mycelium_colossus():
+    im, d = sheet(48, 48)
+    for x in (7, 37):
+        p(d, 'outline', (x, 21), (x + 5, 24), (x + 7, 43), (x + 2, 47), (x - 2, 44))
+        p(d, 'leather', (x + 1, 24), (x + 4, 26), (x + 5, 42), (x + 1, 44))
+    p(d, 'outline', (13, 17), (34, 16), (41, 26), (37, 43), (11, 43), (7, 28))
+    p(d, 'moss_dark', (14, 19), (33, 18), (38, 27), (35, 41), (13, 41), (10, 28))
+    p(d, 'moss', (15, 20), (31, 20), (36, 28), (33, 35), (15, 35), (12, 29))
+    p(d, 'outline', (5, 16), (8, 5), (22, 2), (38, 5), (44, 16), (39, 23), (11, 22))
+    p(d, 'ember_dark', (7, 16), (11, 8), (24, 5), (36, 8), (41, 16), (38, 20), (11, 20))
+    p(d, 'ember', (12, 10), (23, 6), (34, 10), (36, 13), (10, 14))
+    for x, y in ((15, 11), (24, 9), (32, 13)):
+        d.rectangle((x, y, x + 3, y + 2), fill=COLORS['ember_light'])
+    r(d, 'cyan', (15, 26, 19, 29))
+    r(d, 'cyan', (29, 25, 33, 28))
+    r(d, 'outline', (16, 27, 17, 28))
+    r(d, 'outline', (30, 26, 31, 27))
+    p(d, 'violet', (22, 32), (27, 32), (24, 38), (21, 36))
+    px(d, 'ice', 24, 34)
+    return im
+
+
+NPC_THEMES = {
+    'eldamar': ('navy', 'blue', 'gold_light', 'scribe'),
+    'mireya': ('navy', 'steel_light', 'gold', 'crest'),
+    'rustal': ('leather', 'gold_dark', 'cyan', 'rune'),
+    'cebios': ('violet_dark', 'violet', 'ice', 'star'),
+    'estres': ('ember_dark', 'violet_dark', 'ember_light', 'fracture'),
+    'curador': ('moss_dark', 'moss', 'gold_light', 'crest'),
+    'sentinela': ('navy', 'blue', 'sun', 'crest'),
+    'gladiador': ('steel', 'leather', 'gold', 'shield'),
+    'batedor': ('moss_dark', 'moss', 'ice', 'arrow'),
+    'forjador': ('leather', 'ember_dark', 'gold_light', 'hammer'),
+    'inscricoes': ('navy', 'steel', 'cyan', 'rune'),
+    'gravador': ('shade', 'violet_dark', 'violet_light', 'fracture'),
+    'astrologo': ('violet_dark', 'violet', 'sun', 'star'),
+    'profeta': ('violet_dark', 'blue', 'cyan', 'eye'),
+    'cacador': ('moss_dark', 'navy', 'ice', 'arrow'),
+    'canalizador': ('ember_dark', 'ember', 'violet_light', 'fracture'),
+    'ruptura': ('steel', 'violet_dark', 'ember_light', 'shield'),
+    'ruina': ('shade', 'ember_dark', 'ember', 'rune'),
+}
+
+
+def npc_portrait(key: str):
+    """32x32 half-turn portrait. Tunic, headgear and crest vary by identity."""
+    primary, secondary, accent, sigil = NPC_THEMES[key]
+    im = character(graphite=True)
+    # Recolor only the tunic palette, retaining the neutral face and outline.
+    replacements = {
+        tuple(bytes.fromhex(COLORS['steel'][1:])): COLORS[primary],
+        tuple(bytes.fromhex(COLORS['steel_light'][1:])): COLORS[secondary],
+    }
+    im.putdata([tuple(bytes.fromhex(replacements[(r, g, b)][1:])) + (a,)
+                if a and (r, g, b) in replacements else (r, g, b, a)
+                for r, g, b, a in im.getdata()])
+    d = ImageDraw.Draw(im)
+    index = list(NPC_THEMES).index(key)
+    if index % 3 == 0:
+        # Scholar hood/cap.
+        p(d, primary, (10, 8), (12, 2), (18, 0), (24, 5), (23, 10), (21, 6), (13, 6), (12, 12))
+        r(d, accent, (13, 3, 20, 3))
+    elif index % 3 == 1:
+        # Crest helm or hairband.
+        r(d, 'outline', (13, 2, 21, 5))
+        r(d, secondary, (14, 2, 20, 4))
+        r(d, accent, (17, 1, 18, 4))
+    else:
+        # Long hair and a high collar.
+        r(d, primary, (11, 6, 12, 16))
+        r(d, primary, (21, 6, 22, 15))
+        r(d, accent, (12, 4, 14, 4))
+    r(d, accent, (16, 17, 18, 19))
+    if sigil == 'star':
+        px(d, 'ice', 17, 16)
+        px(d, 'ice', 15, 18)
+        px(d, 'ice', 20, 18)
+    elif sigil == 'arrow':
+        p(d, accent, (15, 16), (21, 19), (16, 19))
+    elif sigil == 'fracture':
+        d.line([(16, 16), (18, 18), (16, 21)], fill=COLORS[accent], width=1)
+    elif sigil == 'shield':
+        p(d, accent, (15, 16), (20, 16), (19, 21), (17, 23), (15, 21))
+    elif sigil == 'rune':
+        r(d, accent, (15, 16, 15, 21))
+        r(d, accent, (19, 16, 19, 21))
+    elif sigil == 'eye':
+        d.ellipse((15, 16, 20, 20), outline=COLORS[accent])
+    elif sigil == 'hammer':
+        d.line([(16, 16), (19, 21)], fill=COLORS[accent], width=2)
+        r(d, accent, (14, 15, 19, 16))
+    else:
+        r(d, accent, (15, 18, 20, 18))
+    return im
+
+
+def mystic_tunic():
+    im, d = sheet()
+    p(d, 'outline', (4, 2), (6, 1), (11, 1), (14, 4), (15, 9), (12, 10), (12, 15), (3, 15), (3, 10), (0, 9), (1, 4))
+    p(d, 'violet_dark', (4, 3), (7, 3), (11, 3), (13, 5), (13, 9), (11, 9), (11, 14), (4, 14), (4, 9), (2, 9), (2, 5))
+    r(d, 'violet', (5, 5, 10, 12))
+    p(d, 'cyan', (8, 6), (10, 8), (8, 11), (6, 8))
+    px(d, 'ice', 8, 8)
+    return im
+
+
+def star_mantle():
+    im, d = sheet()
+    p(d, 'outline', (6, 1), (10, 1), (14, 5), (15, 15), (1, 15), (2, 5))
+    p(d, 'navy', (6, 2), (10, 2), (13, 6), (14, 14), (2, 14), (3, 6))
+    p(d, 'violet_dark', (6, 3), (10, 3), (11, 8), (8, 10), (5, 8))
+    r(d, 'gold', (7, 8, 9, 9))
+    for x, y in ((5, 6), (11, 5), (5, 12), (11, 12)):
+        px(d, 'ice', x, y)
+    d.line([(8, 3), (8, 7)], fill=COLORS['gold_light'])
+    return im
+
+
+def enchanted_vestments():
+    im = mystic_tunic()
+    d = ImageDraw.Draw(im)
+    p(d, 'blue', (5, 5), (10, 5), (11, 12), (4, 12))
+    r(d, 'gold', (4, 13, 11, 14))
+    r(d, 'cyan', (7, 7, 9, 10))
+    px(d, 'ice', 8, 8)
+    return im
+
+
+def chain_mail():
+    im, d = sheet()
+    p(d, 'outline', (4, 2), (6, 1), (11, 1), (14, 4), (15, 10), (12, 11), (12, 15), (3, 15), (3, 11), (0, 10), (1, 4))
+    p(d, 'steel', (4, 3), (11, 3), (13, 5), (13, 10), (11, 10), (11, 14), (4, 14), (4, 10), (2, 10), (2, 5))
+    r(d, 'steel_light', (5, 4, 10, 13))
+    for y in range(5, 13, 2):
+        for x in range(5 + (y % 4 == 1), 11, 3):
+            px(d, 'ice', x, y)
+    r(d, 'gold_dark', (7, 3, 9, 4))
+    return im
+
+
 # Equipment catalog: manual weapon archetypes and four families of visual concepts.
 # Each design is an actual 16x16 matrix, never a resized illustration.
 def sword_long():
@@ -405,6 +635,10 @@ ASSETS = {
     "equipment/catalog/shield_arcane.png": arcane_shield,
     "equipment/catalog/armor_leather.png": leather_armor,
     "equipment/catalog/armor_plate.png": armor,
+    "equipment/catalog/armor_mystic_tunic.png": mystic_tunic,
+    "equipment/catalog/armor_star_mantle.png": star_mantle,
+    "equipment/catalog/armor_enchanted_vestments.png": enchanted_vestments,
+    "equipment/catalog/armor_chain.png": chain_mail,
     "equipment/catalog/necklace_moon.png": moon_necklace,
     "equipment/catalog/necklace_rune.png": necklace,
     "equipment/catalog/bracelet_leather.png": leather_bracelet,
@@ -414,8 +648,154 @@ ASSETS = {
     "items/item_minor_tonic.png": tonic,
     "items/item_mycelial_fragment.png": mycelial_fragment,
     "items/item_astravel_record.png": record,
-    "gems/gem_emerald_growth.png": growth_gem,
+    "gems/gem_emerald_growth.png": lambda: gem_variant('moss', 'moss_light', 'moss_dark', 'leaf'),
+    "gems/gem_sapphire_tides.png": lambda: gem_variant('blue', 'cyan', 'navy', 'wave'),
+    "gems/gem_ruby_wrath.png": lambda: gem_variant('ember', 'ember_light', 'ember_dark', 'bolt'),
+    "gems/gem_onyx_shadow.png": lambda: gem_variant('shade', 'steel', 'outline', 'fracture'),
+    "gems/gem_amethyst_mind.png": lambda: gem_variant('violet', 'violet_light', 'violet_dark', 'star'),
+    "gems/gem_topaz_lightning.png": lambda: gem_variant('gold', 'sun', 'gold_dark', 'bolt'),
+    "gems/gem_diamond_celestial.png": lambda: gem_variant('steel_light', 'ice', 'steel', 'star'),
+    "gems/gem_opal_chaos.png": lambda: gem_variant('violet', 'cyan', 'violet_dark', 'fracture'),
+    "gems/gem_jade_eternity.png": lambda: gem_variant('moss', 'moss_light', 'moss_dark', 'leaf'),
+    "gems/gem_kethzar_heart.png": lambda: gem_variant('ember', 'ember_light', 'ember_dark', 'heart'),
+    "essences/essence_fungal_weak.png": lambda: essence_bottle('fungal'),
+    "essences/essence_mycelial.png": lambda: essence_bottle('mycelial'),
+    "enemies/fungorros/enemy_fungorro_crawler_idle.png": fungorro_crawler,
+    "enemies/fungorros/enemy_spore_sower_idle.png": spore_sower,
+    "enemies/bosses/enemy_colossus_mycelium_idle.png": mycelium_colossus,
+    "npcs/npc_eldamar_portrait.png": lambda: npc_portrait('eldamar'),
+    "npcs/npc_mireya_dunavar_portrait.png": lambda: npc_portrait('mireya'),
+    "npcs/npc_master_rustal_portrait.png": lambda: npc_portrait('rustal'),
+    "npcs/npc_observador_cebios_portrait.png": lambda: npc_portrait('cebios'),
+    "npcs/npc_guardador_estres_portrait.png": lambda: npc_portrait('estres'),
+    "npcs/npc_curador_nexo_portrait.png": lambda: npc_portrait('curador'),
+    **{f"npcs/npc_master_{key}_portrait.png": (lambda key=key: npc_portrait(key))
+       for key in ('sentinela', 'gladiador', 'batedor', 'forjador', 'inscricoes',
+                   'gravador', 'astrologo', 'profeta', 'cacador', 'canalizador',
+                   'ruptura', 'ruina')},
 }
+
+
+ITEM_IDS = {
+    'items/item_fungal_nucleus.png': 'item.fungal-nucleus',
+    'items/item_spore_cluster.png': 'item.spore-cluster',
+    'items/item_minor_tonic.png': 'item.minor-tonic',
+    'items/item_mycelial_fragment.png': 'item.mycelial-fragment',
+    'items/item_astravel_record.png': 'item.quest-record',
+}
+ENEMY_IDS = {
+    'enemy_fungorro_crawler_idle': 'enemy.fungorro-crawler',
+    'enemy_spore_sower_idle': 'enemy.spore-sower',
+    'enemy_colossus_mycelium_idle': 'enemy.colossus-mycelium',
+}
+NPC_IDS = {
+    'npc_eldamar': 'npc.eldamar.portrait',
+    'npc_mireya_dunavar': 'npc.mireya.portrait',
+    'npc_master_rustal': 'npc.rustal.portrait',
+    'npc_observador_cebios': 'npc.cebios.portrait',
+    'npc_guardador_estres': 'npc.estres.portrait',
+    'npc_curador_nexo': 'npc.curador.nexo.portrait',
+}
+
+
+def sprite_identity(path: str):
+    """Return registry key and asset family; no gameplay rules live here."""
+    file_name = Path(path).stem
+    if path.startswith('characters/'):
+        return ('character.terririan.default' if file_name == 'player_default' else
+                'character.terririan.sigil'), 'player'
+    if path.startswith('equipment/catalog/'):
+        return 'equipment.catalog.' + file_name, 'item'
+    if path.startswith('equipment/slot-previews/'):
+        return 'equipment.slot-preview.' + file_name, 'item'
+    if path.startswith('equipment/weapon/'):
+        return 'equipment.weapon.prologue.' + file_name.rsplit('_', 1)[-1], 'item'
+    if path.startswith('items/'):
+        return ITEM_IDS[path], 'item'
+    if path.startswith('gems/'):
+        return 'gem.' + file_name.removeprefix('gem_').replace('_', '-'), 'item'
+    if path.startswith('essences/'):
+        return 'essence.' + file_name.removeprefix('essence_').replace('_', '-'), 'item'
+    if path.startswith('enemies/'):
+        return ENEMY_IDS[file_name], 'monster'
+    if path.startswith('npcs/'):
+        npc_id = file_name.removesuffix('_portrait')
+        return NPC_IDS.get(npc_id, npc_id + '.portrait'), 'npc'
+    raise ValueError(path)
+
+
+def build_atlas(images: dict[str, Image.Image], family: str, cell: int, columns: int):
+    paths = [p for p in images if sprite_identity(p)[1] == family and images[p].size == (cell, cell)]
+    rows = (len(paths) + columns - 1) // columns
+    atlas = Image.new('RGBA', (columns * cell, rows * cell), (0, 0, 0, 0))
+    positions = {}
+    for i, path in enumerate(paths):
+        x, y = (i % columns) * cell, (i // columns) * cell
+        atlas.alpha_composite(images[path], (x, y))
+        positions[path] = {'path': f'/assets/atlas/terrunia-{family}-v0.1.png',
+                           'x': x, 'y': y, 'width': cell, 'height': cell}
+    output = ROOT / 'atlas' / f'terrunia-{family}-v0.1.png'
+    output.parent.mkdir(parents=True, exist_ok=True)
+    atlas.save(output)
+    return positions
+
+
+def build_sprite_manifest(images: dict[str, Image.Image]):
+    item_positions = build_atlas(images, 'item', 16, 8)
+    npc_positions = build_atlas(images, 'npc', 32, 6)
+    records = []
+    for path, img in images.items():
+        asset_id, family = sprite_identity(path)
+        records.append({
+            'assetId': asset_id, 'path': '/assets/' + path,
+            'family': family, 'width': img.width, 'height': img.height,
+            'perspective': '3/4 superior', 'pixelArt': True,
+            'status': 'VISUAL_DRAFT',
+            'atlas': item_positions.get(path) or npc_positions.get(path),
+        })
+    assert len(set(record['assetId'] for record in records)) == len(records)
+    payload = {'schemaVersion': '0.1', 'grid': {'item': [16, 16], 'npc': [32, 32],
+                                             'monster': [32, 32], 'boss': [48, 48]},
+               'entries': records}
+    output = ROOT / 'manifests' / 'terrunia-sprites-v0.1.json'
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf8')
+
+
+def build_sprite_preview(images: dict[str, Image.Image], family: str):
+    sprites = [(path, im) for path, im in images.items() if sprite_identity(path)[1] == family]
+    columns = 8 if family == 'item' else 6
+    cell_width, cell_height = (170, 160) if family == 'item' else (210, 210)
+    rows = (len(sprites) + columns - 1) // columns
+    board = Image.new('RGB', (columns * cell_width + 32, rows * cell_height + 142), '#11131A')
+    d = ImageDraw.Draw(board)
+    font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'
+    font = ImageFont.truetype(font_path, 14) if Path(font_path).exists() else ImageFont.load_default()
+    id_font = ImageFont.truetype(font_path, 11) if Path(font_path).exists() else font
+    title = ImageFont.truetype(font_path, 25) if Path(font_path).exists() else font
+    d.text((30, 30), 'TERRUNIA / ' + family.upper() + ' / SPRITES v0.1',
+           font=title, fill=COLORS['gold_light'])
+    d.text((32, 78), 'GRADE NATIVA - PNG RGBA - AMPLIACAO NEAREST NEIGHBOR / VISUAL_DRAFT',
+           font=font, fill=COLORS['steel_light'])
+    for i, (path, im) in enumerate(sprites):
+        x = 20 + (i % columns) * cell_width
+        y = 120 + (i // columns) * cell_height
+        d.rectangle((x, y, x + cell_width - 10, y + cell_height - 10),
+                    fill='#202936', outline=COLORS['gold_dark'], width=1)
+        scale = 6 if family == 'item' else 4
+        if im.width == 48:
+            scale = 3
+        sample = im.resize((im.width * scale, im.height * scale), Image.Resampling.NEAREST)
+        board.paste(sample, (x + (cell_width - 10 - sample.width) // 2, y + 7), sample)
+        label = Path(path).stem
+        d.text((x + 9, y + cell_height - 41), label[:23], font=id_font, fill=COLORS['skin_light'])
+        if len(label) > 23:
+            d.text((x + 9, y + cell_height - 28), label[23:46], font=id_font,
+                   fill=COLORS['skin_light'])
+        d.text((x + 9, y + cell_height - 15), f'{im.width}x{im.height}', font=id_font,
+               fill=COLORS['steel_light'])
+    output = ROOT.parents[1] / 'docs' / 'reference' / f'terrunia-sprites-{family}-v0.1.png'
+    board.save(output)
 
 
 def build_reference_board(images: dict[str, Image.Image]):
@@ -463,8 +843,8 @@ def build_reference_board(images: dict[str, Image.Image]):
     for i, (path, label) in enumerate(icons):
         col, row = i % 3, i // 3
         display(path, 1154 + col * 133, 220 + row * 242, 7, label)
-    d.text((43, 763), 'PALETA 16 CORES', font=small, fill=COLORS['skin_light'])
-    for i, color in enumerate(COLORS.values()):
+    d.text((43, 763), 'PALETA BASE 16 CORES', font=small, fill=COLORS['skin_light'])
+    for i, color in enumerate(list(COLORS.values())[:16]):
         x = 258 + i * 80
         d.rectangle((x, 758, x + 66, 804), fill=color, outline='#7D8691')
     output = ROOT.parents[1] / 'docs' / 'reference' / 'terrunia-pixel-art-v0.1.png'
@@ -514,7 +894,9 @@ def build():
     for relative_path, generator in ASSETS.items():
         im = generator()
         images[relative_path] = im
-        expected = (32, 32) if relative_path.startswith("characters/") else (16, 16)
+        expected = ((48, 48) if 'enemy_colossus' in relative_path else
+                    (32, 32) if relative_path.startswith(('characters/', 'npcs/', 'enemies/'))
+                    else (16, 16))
         assert im.mode == "RGBA" and im.size == expected, relative_path
         assert im.getbbox(), relative_path
         opaque_colors = {rgba[:3] for rgba in im.getdata() if rgba[3] > 0}
@@ -528,6 +910,9 @@ def build():
         print(f"{relative_path}: {im.width}x{im.height} / {len(opaque_colors)} colors")
     build_reference_board(images)
     build_catalog_board(images)
+    build_sprite_manifest(images)
+    for family in ('item', 'monster', 'npc'):
+        build_sprite_preview(images, family)
 
 
 if __name__ == "__main__":

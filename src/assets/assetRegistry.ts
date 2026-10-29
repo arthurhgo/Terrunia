@@ -1,5 +1,7 @@
 import type { BoundSlot } from '../domain/shared/types'
 import { visualEquipmentCatalog } from '../content/visualEquipment'
+import { gemComponentDefinitions } from '../content/gems'
+import { npcDefinitions } from '../content/npcs'
 
 export type AssetEntry = {
   id: string
@@ -34,29 +36,33 @@ const entries: AssetEntry[] = [
     alt: 'Spritesheet opcional de quatro direções do Terrírian (4 colunas × 4 linhas, quadros 32×32)',
     pixelArt: true,
   },
-  {
-    id: 'npc.eldamar.portrait',
-    path: '/assets/npcs/npc_eldamar_portrait.png',
+  ...npcDefinitions.map((npc) => ({
+    id: npc.portraitAssetId,
+    path: `/assets/npcs/${npc.id}_portrait.png`,
     fallback: '/assets/placeholders/npc.svg',
-    alt: 'Retrato de Eldamar',
-  },
+    alt: `Retrato pixel art de ${npc.name}`,
+    pixelArt: true,
+  })),
   {
     id: 'enemy.fungorro-crawler',
     path: '/assets/enemies/fungorros/enemy_fungorro_crawler_idle.png',
     fallback: '/assets/placeholders/enemy.svg',
     alt: 'Fungorro Rastejante',
+    pixelArt: true,
   },
   {
     id: 'enemy.spore-sower',
     path: '/assets/enemies/fungorros/enemy_spore_sower_idle.png',
     fallback: '/assets/placeholders/enemy.svg',
     alt: 'Semeador de Esporos',
+    pixelArt: true,
   },
   {
     id: 'enemy.colossus-mycelium',
     path: '/assets/enemies/bosses/enemy_colossus_mycelium_idle.png',
     fallback: '/assets/placeholders/enemy.svg',
     alt: 'Colosso Micélio',
+    pixelArt: true,
   },
   {
     id: 'equipment.weapon.prologue.g1',
@@ -114,13 +120,20 @@ const entries: AssetEntry[] = [
     alt: 'Fragmento de Essência Micelial',
     pixelArt: true,
   },
-  {
-    id: 'gem.emerald-growth',
-    path: '/assets/gems/gem_emerald_growth.png',
+  ...gemComponentDefinitions.map((gem) => ({
+    id: gem.iconAssetId,
+    path: `/assets/gems/gem_${gem.iconAssetId.slice(4).replaceAll('-', '_')}.png`,
     fallback: '/assets/placeholders/item.svg',
-    alt: 'Esmeralda do Crescimento',
+    alt: gem.name,
     pixelArt: true,
-  },
+  })),
+  ...(['fungal_weak', 'mycelial'] as const).map((essence) => ({
+    id: `essence.${essence.replaceAll('_', '-')}`,
+    path: `/assets/essences/essence_${essence}.png`,
+    fallback: '/assets/placeholders/item.svg',
+    alt: `Estudo visual da Essência ${essence}`,
+    pixelArt: true,
+  })),
   {
     id: 'item.quest-record',
     path: '/assets/items/item_astravel_record.png',
