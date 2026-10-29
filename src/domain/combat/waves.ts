@@ -7,8 +7,13 @@ import { createBattle } from './engine'
 /** BALANCE_DRAFT — endless, deterministic enemy roster, no boss or story-node replay. */
 export const waveEncounter = (catalog: ContentCatalog, requestedWave: number): EncounterDefinition => {
   const wave = Number.isSafeInteger(requestedWave) && requestedWave > 0 ? requestedWave : 1
+  const pool = wave < 4
+    ? ['enemy_fungorro_crawler', 'enemy_spore_sower']
+    : wave < 8
+      ? ['enemy_fungorro_crawler', 'enemy_spore_sower', 'enemy_fungal_slime']
+      : ['enemy_fungorro_crawler', 'enemy_spore_sower', 'enemy_fungal_slime', 'enemy_fungal_horror']
   const enemyIds = Array.from({ length: Math.min(4, 1 + Math.floor(wave / 3)) },
-    (_, index) => (index + wave) % 3 === 0 ? 'enemy_spore_sower' : 'enemy_fungorro_crawler')
+    (_, index) => pool[(index + wave - 1) % pool.length])
   const baseXp = enemyIds.reduce((sum, id) => sum + catalog.enemies[id].xpReward, 0)
   const baseGold = enemyIds.reduce((sum, id) => sum + catalog.enemies[id].goldReward, 0)
   const baseResonance = enemyIds.reduce((sum, id) => sum + catalog.enemies[id].boundResonanceReward, 0)

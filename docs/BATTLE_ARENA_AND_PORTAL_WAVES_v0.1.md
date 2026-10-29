@@ -25,3 +25,8 @@
 Custos/efeitos de arremessáveis, magia, runas e Essências ativas; parâmetros finais de ondas e drops; arte final de derrota; diversidade narrativa de secundárias; novos sprites de monstros.
 
 Não modifica equipamentos permanentes vinculados nem concede Pontos de Essência diretamente por kills ou níveis.
+
+## Criaturas VISUAL_DRAFT adicionadas
+- `enemy_fungal_slime`: Bola de Gosma Fúngica, 32×32 RGBA, desbloqueável a partir da onda 4. Mecânica de divisão antiga **não** implementada.
+- `enemy_fungal_horror`: Horror Esporulante, 32×32 RGBA, desbloqueável a partir da onda 8. Usa Explosão de Esporos atual, sem nova infecção canônica.
+- A arte e a dificuldade são provisórias. As criaturas foram adicionadas ao registro/manifesto de assets, gerador e teste de integridade.

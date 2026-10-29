@@ -1314,6 +1314,28 @@
         "width": 32,
         "height": 32
       }
+    },
+    {
+      "assetId": "enemy.fungal-slime",
+      "path": "/assets/enemies/fungorros/enemy_fungal_slime_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "enemy.fungal-horror",
+      "path": "/assets/enemies/fungorros/enemy_fungal_horror_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
     }
   ]
 }

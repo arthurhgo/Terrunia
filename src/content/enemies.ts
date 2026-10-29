@@ -52,4 +52,21 @@ export const enemyDefinitions = [
     assetId: 'enemy.colossus-mycelium',
     status: 'BALANCE_DRAFT',
   },
+  {
+    id: 'enemy_fungal_slime', name: 'Bola de Gosma Fúngica',
+    level: 3, maxHp: 12, mitigation: 1, attackPower: 4,
+    xpReward: 50, goldReward: 11, boundResonanceReward: 18,
+    lootDefinitionIds: ['drop_spore_cluster'],
+    skillIds: [], weaknessTags: ['light', 'fire'],
+    assetId: 'enemy.fungal-slime', status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'enemy_fungal_horror', name: 'Horror Esporulante',
+    level: 4, maxHp: 15, mitigation: 2, attackPower: 5,
+    xpReward: 100, goldReward: 19, boundResonanceReward: 28,
+    lootDefinitionIds: ['drop_fungal_nucleus'],
+    skillIds: ['skill_spore_burst'], aiSkillEveryRounds: 3,
+    weaknessTags: ['light', 'fire'],
+    assetId: 'enemy.fungal-horror', status: 'BALANCE_DRAFT',
+  },
 ] satisfies EnemyDefinition[]

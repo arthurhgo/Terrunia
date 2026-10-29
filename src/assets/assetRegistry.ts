@@ -58,6 +58,20 @@ const entries: AssetEntry[] = [
     pixelArt: true,
   },
   {
+    id: 'enemy.fungal-slime',
+    path: '/assets/enemies/fungorros/enemy_fungal_slime_idle.png',
+    fallback: '/assets/placeholders/enemy.svg',
+    alt: 'Bola de Gosma Fúngica',
+    pixelArt: true,
+  },
+  {
+    id: 'enemy.fungal-horror',
+    path: '/assets/enemies/fungorros/enemy_fungal_horror_idle.png',
+    fallback: '/assets/placeholders/enemy.svg',
+    alt: 'Horror Esporulante',
+    pixelArt: true,
+  },
+  {
     id: 'enemy.colossus-mycelium',
     path: '/assets/enemies/bosses/enemy_colossus_mycelium_idle.png',
     fallback: '/assets/placeholders/enemy.svg',
