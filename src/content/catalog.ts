@@ -118,6 +118,11 @@ for (const base of Object.values(content.boundItemBases)) {
 }
 
 for (const item of Object.values(content.items)) {
+  for (const effect of item.combatEffects) {
+    if (effect.type === 'applyStatus') {
+      assertReference(content.statusEffects[effect.statusId], `${item.id} → ${effect.statusId}`)
+    }
+  }
   if (item.infusionComponentId) {
     assertReference(
       content.essences[item.infusionComponentId],

@@ -121,6 +121,16 @@ export const statusEffectDefinitions = [
     mitigationModifier: 0,
     status: 'BALANCE_DRAFT',
   },
+  {
+    id: 'status_rune_ward',
+    name: 'Guarda Rúnica',
+    description: 'Uma inscrição de campo reforça temporariamente a defesa.',
+    tone: 'beneficial',
+    startTurnDamage: 0,
+    attackModifier: 0,
+    mitigationModifier: 2,
+    status: 'BALANCE_DRAFT',
+  },
 ] satisfies StatusEffectDefinition[]
 
 export const encounterDefinitions = [

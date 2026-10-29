@@ -32,8 +32,13 @@ export const trailDefinitions = [
         position: { x: 31, y: 48 },
         interaction: {
           actionLabel: 'Vasculhar acampamento',
-          completionMessage: 'Um Tônico de Campo foi preservado para o próximo encontro.',
-          grantItemDefinitionIds: ['consumable_minor_tonic'],
+          completionMessage: 'Tônico, arremessável, runa e essência de campo foram preservados.',
+          grantItemDefinitionIds: [
+            'consumable_minor_tonic',
+            'consumable_resonance_flask',
+            'consumable_field_rune',
+            'consumable_vital_essence',
+          ],
           worldFlag: 'astravel_camp_supplies_found',
         },
       },

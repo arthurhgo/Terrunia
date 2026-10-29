@@ -16,6 +16,7 @@ import type {
   BattleCommand,
   BattleLogEntry,
   BattlePhase,
+  BattlePresentationEvent,
   BattleState,
   Combatant,
 } from './types'
@@ -29,13 +30,24 @@ const addLog = (
   state: BattleState,
   message: string,
   tone: BattleLogEntry['tone'] = 'neutral',
+  event?: BattlePresentationEvent,
 ) => {
   state.log.push({
     id: `${state.id}_log_${state.log.length + 1}`,
     round: state.round,
     message,
     tone,
+    ...(event ? { event } : {}),
   })
+}
+
+const addTurnLog = (state: BattleState, actor: Combatant) => {
+  addLog(
+    state,
+    actor.side === 'player' ? `Turno de ${actor.name}.` : `Turno inimigo: ${actor.name}.`,
+    'system',
+    { type: 'turnStarted', actorId: actor.id, side: actor.side },
+  )
 }
 
 const rollChance = (state: BattleState, chance: number) => {
@@ -164,12 +176,22 @@ const applyCombatEffects = (
       target.hp = Math.max(0, target.hp - damage)
       target.alive = target.hp > 0
       target.defending = false
-      addLog(state, `${actor.name} causa ${damage} de dano em ${target.name}.`, 'damage')
+      addLog(
+        state,
+        `${actor.name} causa ${damage} de dano em ${target.name}.`,
+        'damage',
+        { type: 'damage', sourceId: actor.id, targetId: target.id, value: damage },
+      )
     }
     if (effect.type === 'restoreHp') {
       const restored = Math.min(effect.value, target.maxHp - target.hp)
       target.hp += restored
-      addLog(state, `${target.name} recupera ${restored} de Vida.`, 'reward')
+      addLog(
+        state,
+        `${target.name} recupera ${restored} de Vida.`,
+        'reward',
+        { type: 'heal', sourceId: actor.id, targetId: target.id, value: restored },
+      )
     }
     if (effect.type === 'applyStatus' && target.alive) {
       applyStatus(state, actor, target, effect, catalog)
@@ -201,7 +223,12 @@ const resolveSkill = (
   addPhase(state, 'SelectingTarget')
   addPhase(state, 'ResolvingAction')
   actor.mp -= skill.mpCost
-  addLog(state, `${actor.name} usa ${skill.name}.`, 'system')
+  addLog(
+    state,
+    `${actor.name} usa ${skill.name}.`,
+    'system',
+    { type: 'skillUsed', actorId: actor.id, targetId: target.id, skillId: skill.id },
+  )
   applyCombatEffects(state, actor, target, skill.effects, catalog)
   addPhase(state, 'ResolvingReactions')
   addPhase(state, 'ApplyingStatuses')
@@ -217,7 +244,12 @@ const resolveItem = (
 ) => {
   addPhase(state, 'SelectingTarget')
   addPhase(state, 'ResolvingAction')
-  addLog(state, `${actor.name} usa ${item.name}.`, 'system')
+  addLog(
+    state,
+    `${actor.name} usa ${item.name}.`,
+    'system',
+    { type: 'itemUsed', actorId: actor.id, targetId: target.id, itemDefinitionId: item.id },
+  )
   applyCombatEffects(state, actor, target, item.combatEffects, catalog)
   addPhase(state, 'ResolvingReactions')
   addPhase(state, 'ApplyingStatuses')
@@ -239,6 +271,12 @@ const applyStartStatuses = (
       state,
       `${definition.name} causa ${definition.startTurnDamage} de dano em ${actor.name}.`,
       'damage',
+      {
+        type: 'damage',
+        sourceId: active.sourceId,
+        targetId: actor.id,
+        value: definition.startTurnDamage,
+      },
     )
   }
 }
@@ -302,6 +340,7 @@ const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
     if (!actor?.alive) continue
 
     addPhase(state, 'TurnStart')
+    addTurnLog(state, actor)
     applyStartStatuses(state, actor, catalog)
     addPhase(state, 'CheckEndConditions')
     if (checkBattleEnd(state)) return
@@ -329,9 +368,11 @@ export const createBattle = (
     deriveEnemyCombatant(definitionId, index, catalog),
   )
   const combatants = [player, ...enemies]
-  const initiativeOrder = combatants
+  // BALANCE_DRAFT — the requested cadence is always player → enemy party → player.
+  // Initiative still orders the enemy party and remains available for future reactions.
+  const initiativeOrder = [player.id, ...enemies
     .sort((a, b) => b.initiative - a.initiative || a.id.localeCompare(b.id))
-    .map((combatant) => combatant.id)
+    .map((combatant) => combatant.id)]
   const actorId = initiativeOrder[0]
 
   const state: BattleState = {
@@ -356,6 +397,7 @@ export const createBattle = (
   addLog(state, `${encounter.name} bloqueia o avanço em Astravél.`, 'system')
   const actor = state.combatants[state.actorId]
   addPhase(state, 'TurnStart')
+  addTurnLog(state, actor)
   applyStartStatuses(state, actor, catalog)
   if (actor.side === 'player') {
     addPhase(state, 'AwaitingAction')
@@ -432,14 +474,20 @@ export const submitBattleCommand = (
     if (
       !lookup.instance ||
       !item ||
-      item.category !== 'consumable' ||
+      !item.combatKind ||
       item.combatEffects.length === 0 ||
       battle.consumedItemInstanceIds.includes(command.itemInstanceId)
     ) {
-      return fail('ITEM_UNAVAILABLE', 'Este consumível não está disponível para uso em combate.')
+      return fail('ITEM_UNAVAILABLE', 'Este item não está disponível para uso em combate.')
     }
-    if (!target || !validTarget(currentPlayer, target, 'self')) {
-      return fail('INVALID_TARGET', 'O consumível deve ser usado no Terrírian ativo.')
+    const itemTarget = item.combatTarget ?? 'self'
+    if (!target || !validTarget(currentPlayer, target, itemTarget)) {
+      return fail(
+        'INVALID_TARGET',
+        itemTarget === 'self'
+          ? 'Este item deve ser usado no Terrírian ativo.'
+          : 'Escolha um alvo inimigo válido para este item.',
+      )
     }
   }
 
@@ -450,7 +498,12 @@ export const submitBattleCommand = (
   if (command.type === 'defend') {
     addPhase(state, 'ResolvingAction')
     player.defending = true
-    addLog(state, `${player.name} assume uma postura defensiva.`, 'defense')
+    addLog(
+      state,
+      `${player.name} assume uma postura defensiva.`,
+      'defense',
+      { type: 'defend', actorId: player.id },
+    )
     addPhase(state, 'ResolvingReactions')
     addPhase(state, 'ApplyingStatuses')
     addPhase(state, 'CheckEndConditions')

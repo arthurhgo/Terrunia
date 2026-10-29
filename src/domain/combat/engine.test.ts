@@ -29,6 +29,8 @@ describe('máquina de estados de combate', () => {
 
   it('não inclui IA indefinida no Fungorro Rastejante ao montar a batalha', () => {
     const battle = createBattle(makeSave(), firstEncounter, content, 'battle_firestore_safe')
+    expect(battle.actorId).toBe('combatant_player')
+    expect(battle.phase).toBe('AwaitingAction')
     expect(battle.combatants[firstTargetId]).not.toHaveProperty('aiSkillEveryRounds')
     const sporeBattle = createBattle(makeSave(), content.encounters.encounter_spore_ambush_01, content)
     const sower = Object.values(sporeBattle.combatants).find(
@@ -47,6 +49,28 @@ describe('máquina de estados de combate', () => {
     expect(first.ok).toBe(true)
     if (!first.ok) return
     expect(first.value.phase).toBe('AwaitingAction')
+    const presentationSequence = first.value.log
+      .slice(battle.log.length)
+      .flatMap((entry) => entry.event ? [entry.event] : [])
+    expect(presentationSequence.map((event) => event.type)).toEqual([
+      'damage',
+      'turnStarted',
+      'damage',
+      'turnStarted',
+    ])
+    expect(presentationSequence.at(1)).toMatchObject({ side: 'enemy' })
+    expect(presentationSequence.at(-1)).toMatchObject({ side: 'player' })
+    expect(first.value.log).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        event: expect.objectContaining({ type: 'damage', targetId: firstTargetId }),
+      }),
+      expect.objectContaining({
+        event: expect.objectContaining({ type: 'turnStarted', side: 'enemy' }),
+      }),
+      expect.objectContaining({
+        event: expect.objectContaining({ type: 'turnStarted', side: 'player' }),
+      }),
+    ]))
     const second = submitBattleCommand(
       first.value,
       { type: 'attack', targetId: firstTargetId },
@@ -131,6 +155,38 @@ describe('máquina de estados de combate', () => {
     expect(result.value.log.some((entry) => entry.message.includes('recupera 8'))).toBe(true)
     expect(result.value.consumedItemInstanceIds).toContain('tonic_1')
     expect(inventory).toHaveLength(1)
+  })
+
+  it('arremessável data-driven exige e atinge um alvo inimigo', () => {
+    const inventory: InventoryItemInstance[] = [{
+      instanceId: 'flask_1',
+      definitionId: 'consumable_resonance_flask',
+      quantity: 1,
+      rarity: 'common',
+      locked: false,
+      favorite: false,
+      acquiredAt: '2026-08-10T12:05:00.000Z',
+    }]
+    const battle = createBattle(makeSave(), firstEncounter, content, 'battle_throwable')
+    battle.combatants[firstTargetId].hp = 20
+    battle.combatants[firstTargetId].maxHp = 20
+    const result = submitBattleCommand(
+      battle,
+      { type: 'item', itemInstanceId: 'flask_1', targetId: firstTargetId },
+      content,
+      inventory,
+    )
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.combatants[firstTargetId].hp).toBeLessThan(20)
+    expect(result.value.log).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        event: expect.objectContaining({
+          type: 'itemUsed',
+          itemDefinitionId: 'consumable_resonance_flask',
+        }),
+      }),
+    ]))
   })
 
   it('IA usa Esporos Nocivos no segundo turno de combate', () => {

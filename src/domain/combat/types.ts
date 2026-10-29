@@ -43,7 +43,20 @@ export type BattleLogEntry = {
   round: number
   message: string
   tone: 'neutral' | 'damage' | 'defense' | 'reward' | 'system'
+  event?: BattlePresentationEvent
 }
+
+/**
+ * Structured facts emitted by the domain machine for audiovisual presentation.
+ * React may replay them, but never decides their order or combat result.
+ */
+export type BattlePresentationEvent =
+  | { type: 'turnStarted'; actorId: string; side: CombatantSide }
+  | { type: 'damage'; sourceId: string; targetId: string; value: number }
+  | { type: 'heal'; sourceId: string; targetId: string; value: number }
+  | { type: 'defend'; actorId: string }
+  | { type: 'skillUsed'; actorId: string; targetId: string; skillId: string }
+  | { type: 'itemUsed'; actorId: string; targetId: string; itemDefinitionId: string }
 
 export type BattleRewards = {
   characterXp: number

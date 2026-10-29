@@ -159,7 +159,11 @@ describe('vertical slice integrada', () => {
       targetId: 'combatant_enemy_fungorro_crawler_3',
     })
     expect(useGameStore.getState().save?.battle?.phase).toBe('Victory')
-    expect(useGameStore.getState().save?.inventory).toHaveLength(0)
+    expect(useGameStore.getState().save?.inventory.map((item) => item.definitionId)).toEqual([
+      'consumable_resonance_flask',
+      'consumable_field_rune',
+      'consumable_vital_essence',
+    ])
 
     useGameStore.getState().claimBattleRewards()
     useGameStore.getState().returnToTerran()
@@ -256,7 +260,7 @@ describe('vertical slice integrada', () => {
     expect(reloaded?.world.worldFlags).toContain('fungal_chambers_threshold_discovered')
     expect(reloaded?.world.worldFlags).toContain('dungeon-room-discovered:fungal_core')
     expect(reloaded?.world.unlockedLocationIds).toContain('dungeon_fungal_chambers')
-    expect(reloaded?.inventory[0]?.definitionId).toBe('drop_spore_cluster')
+    expect(reloaded?.inventory.map((item) => item.definitionId)).toContain('drop_spore_cluster')
     expect(reloaded?.boundItems[weaponId]).toMatchObject({
       grade: 3,
       components: {

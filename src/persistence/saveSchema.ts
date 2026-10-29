@@ -205,6 +205,15 @@ const combatantSchema = z.object({
   aiSkillEveryRounds: positiveInteger.optional(),
 })
 
+const battlePresentationEventSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('turnStarted'), actorId: idSchema, side: z.enum(['player', 'enemy']) }),
+  z.object({ type: z.literal('damage'), sourceId: idSchema, targetId: idSchema, value: nonnegativeNumber }),
+  z.object({ type: z.literal('heal'), sourceId: idSchema, targetId: idSchema, value: nonnegativeNumber }),
+  z.object({ type: z.literal('defend'), actorId: idSchema }),
+  z.object({ type: z.literal('skillUsed'), actorId: idSchema, targetId: idSchema, skillId: idSchema }),
+  z.object({ type: z.literal('itemUsed'), actorId: idSchema, targetId: idSchema, itemDefinitionId: idSchema }),
+])
+
 const battleSchema = z.object({
   id: idSchema,
   encounterId: idSchema,
@@ -221,6 +230,7 @@ const battleSchema = z.object({
     round: positiveInteger,
     message: z.string(),
     tone: z.enum(['neutral', 'damage', 'defense', 'reward', 'system']),
+    event: battlePresentationEventSchema.optional(),
   })),
   rewards: z.object({
     characterXp: nonnegativeNumber,

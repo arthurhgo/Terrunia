@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import type { WorldScene } from '../../domain/world/worldScene'
 
 type Transition = {
@@ -39,7 +39,7 @@ export function SceneTransitionOverlay({ scene, reducedMotion }: { scene: WorldS
     sequenceRef.current += 1
     const next = { id: sequenceRef.current, from: previous, to: scene.kind }
     setTransition(next)
-    const timer = window.setTimeout(() => setTransition((current) => current?.id === next.id ? null : current), 720)
+    const timer = window.setTimeout(() => setTransition((current) => current?.id === next.id ? null : current), 900)
     return () => window.clearTimeout(timer)
   }, [reducedMotion, scene.kind])
 
@@ -47,9 +47,14 @@ export function SceneTransitionOverlay({ scene, reducedMotion }: { scene: WorldS
   const copy = transitionCopy(transition.from, transition.to)
   return (
     <div className="world-scene-transition" role="status" aria-live="polite">
-      <span>{copy.eyebrow}</span>
-      <strong>{copy.title}</strong>
-      <i aria-hidden="true" />
+      <div className="world-scene-transition__pixels" aria-hidden="true">
+        {Array.from({ length: 48 }, (_, index) => <i key={index} style={{ '--pixel-index': index } as CSSProperties} />)}
+      </div>
+      <div className="world-scene-transition__copy">
+        <span>{copy.eyebrow}</span>
+        <strong>{copy.title}</strong>
+        <b aria-hidden="true" />
+      </div>
     </div>
   )
 }
