@@ -63,6 +63,8 @@ export type BattleState = {
   id: string
   encounterId: string
   trailNodeId: string
+  /** Present only on repeatable Portal waves; absent for campaign encounters. */
+  waveIndex?: number
   phase: BattlePhase
   phaseHistory: BattlePhase[]
   round: number

@@ -1,5 +1,6 @@
 import type { QuestDefinition, QuestProgressionOutcome } from './types'
 import { clanDefinitions, classDefinitions } from './progression'
+import { sideQuestDefinitions } from './sidequests'
 
 const mainLoreClassVariants = Object.fromEntries(classDefinitions.map((classDefinition) => [
   classDefinition.id,
@@ -161,4 +162,5 @@ export const questDefinitions = [
   classTrial('class_canalizador_trial', 'Canalizador do Caos', 'Redirecione fluxos instáveis sem sobrecarga.', 'npc_master_canalizador', 'estres_do_et', 'canalizador_do_caos'),
   classTrial('class_ruptura_trial', 'Guardador da Ruptura', 'Mantenha várias fissuras sob controle.', 'npc_master_ruptura', 'estres_do_et', 'guardador_da_ruptura'),
   classTrial('class_ruina_trial', 'Mago da Ruína', 'Destrua partes instáveis sem provocar colapso.', 'npc_master_ruina', 'estres_do_et', 'mago_da_ruina'),
+  ...sideQuestDefinitions,
 ] satisfies QuestDefinition[]

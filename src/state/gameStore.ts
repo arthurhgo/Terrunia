@@ -6,6 +6,7 @@ import {
   performGradeTwoRite,
 } from '../domain/bond/boundItems'
 import { createBattle, submitBattleCommand } from '../domain/combat/engine'
+import { createWaveBattle } from '../domain/combat/waves'
 import type { BattleCommand } from '../domain/combat/types'
 import {
   completeTrailNode,
@@ -99,6 +100,8 @@ type GameState = {
   exitFungalChambers: () => void
   resolveCurrentTrailNode: () => void
   startBattle: (nodeId?: string) => void
+  startPortalWaves: () => void
+  continuePortalWave: () => void
   submitBattleCommand: (command: BattleCommand) => void
   claimBattleRewards: () => void
   finishBattleIntoExpedition: () => void
@@ -576,6 +579,38 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(next)
     },
 
+    startPortalWaves: () => {
+      const save = get().save
+      if (!save || save.battle) return failAction('Termine o encontro atual antes de iniciar as ondas.')
+      if (save.world.currentLocationId !== 'location_terran_portal_plaza') {
+        return failAction('O Modo Ondas só pode ser iniciado na Praça do Portal.')
+      }
+      if (save.world.trailNodeStates.astravel_fungorro_01 !== 'completed') {
+        return failAction('Conclua o primeiro encontro em Astravél para liberar o Modo Ondas.')
+      }
+      if (save.vitals.hp <= 0) return failAction('Recupere Vida na Casa de Daeryn antes de combater.')
+      const next = structuredClone(save)
+      next.battle = createWaveBattle(next, content, 1)
+      next.updatedAt = nowIso()
+      next.revision += 1
+      next.eventLog.push('PortalWaveStarted:1')
+      commit(next)
+    },
+
+    continuePortalWave: () => {
+      const save = get().save
+      const old = save?.battle
+      if (!save || !old?.waveIndex || old.phase !== 'Victory' || !old.claimed) {
+        return failAction('Recolha as recompensas da onda antes de continuar.')
+      }
+      const next = structuredClone(save)
+      next.battle = createWaveBattle(next, content, old.waveIndex + 1)
+      next.updatedAt = nowIso()
+      next.revision += 1
+      next.eventLog.push('PortalWaveStarted:' + (old.waveIndex + 1))
+      commit(next)
+    },
+
     submitBattleCommand: (command) => {
       const save = get().save
       if (!save?.battle) return failAction('Nenhuma batalha está ativa.')
@@ -648,13 +683,15 @@ export const useGameStore = create<GameState>((set, get) => {
         if (!next.world.worldFlags.includes(flag)) next.world.worldFlags.push(flag)
       }
       next.battle = { ...battle, claimed: true }
-      const trail = getTrailByNodeId(content, battle.trailNodeId)
-      if (!trail) return failAction('A trilha deste encontro não foi encontrada.')
-      const trailResult = completeTrailNode(next, trail, battle.trailNodeId, acquiredAt)
-      if (!trailResult.ok) return failAction(trailResult.message)
-      next = trailResult.value.save
-      if (!next.world.completedEncounterIds.includes(battle.encounterId)) {
-        next.world.completedEncounterIds.push(battle.encounterId)
+      if (!battle.waveIndex) {
+        const trail = getTrailByNodeId(content, battle.trailNodeId)
+        if (!trail) return failAction('A trilha deste encontro não foi encontrada.')
+        const trailResult = completeTrailNode(next, trail, battle.trailNodeId, acquiredAt)
+        if (!trailResult.ok) return failAction(trailResult.message)
+        next = trailResult.value.save
+        if (!next.world.completedEncounterIds.includes(battle.encounterId)) {
+          next.world.completedEncounterIds.push(battle.encounterId)
+        }
       }
       next.eventLog.push(`BattleWon:${battle.encounterId}`, `DropReceived:${loot.length}`)
       next.updatedAt = acquiredAt
@@ -671,9 +708,11 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(next)
       show(
         'Vitória',
-        loot.length > 0
-          ? `${loot.length} drop entrou no inventário. A trilha avançou para o próximo nó.`
-          : 'A trilha avançou para o próximo nó.',
+        battle.waveIndex
+          ? `Onda ${battle.waveIndex} concluída: ${loot.length} itens recebidos. Você pode continuar ou retornar a Terran.`
+          : loot.length > 0
+            ? `${loot.length} drop entrou no inventário. A trilha avançou para o próximo nó.`
+            : 'A trilha avançou para o próximo nó.',
         'success',
       )
     },

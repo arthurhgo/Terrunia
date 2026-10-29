@@ -699,6 +699,43 @@ def terran_inscriber():
     return im
 
 
+def fungal_slime():
+    im, d = sheet(32, 32)
+    d.ellipse((2, 12, 29, 29), fill=COLORS['outline'])
+    p(d, 'moss_dark', (3, 19), (8, 11), (14, 8), (19, 9), (26, 13), (29, 22), (27, 28), (7, 28))
+    p(d, 'moss', (5, 19), (10, 13), (15, 11), (23, 13), (27, 19), (26, 26), (8, 26))
+    p(d, 'moss_light', (8, 18), (12, 14), (20, 14), (24, 17), (21, 22), (11, 22))
+    for x, y in ((10, 11), (16, 6), (24, 12), (5, 24)):
+        r(d, 'cyan', (x, y, x + 2, y + 2))
+    for x, y in ((11, 18), (20, 18)):
+        r(d, 'outline', (x, y, x + 2, y + 2))
+    r(d, 'moss_dark', (15, 23, 18, 24))
+    px(d, 'ice', 15, 17)
+    r(d, 'moss_dark', (8, 26, 10, 29))
+    r(d, 'moss_dark', (23, 26, 25, 29))
+    return im
+
+
+def fungal_horror():
+    im, d = sheet(32, 32)
+    p(d, 'outline', (13, 16), (19, 15), (24, 21), (28, 30), (4, 30), (8, 22))
+    p(d, 'violet_dark', (11, 18), (20, 17), (23, 25), (24, 29), (7, 29), (9, 23))
+    p(d, 'violet', (13, 19), (19, 18), (19, 28), (14, 28))
+    p(d, 'outline', (5, 15), (11, 6), (20, 5), (28, 15), (27, 20), (6, 20))
+    p(d, 'ember_dark', (6, 15), (12, 7), (21, 7), (27, 15), (25, 18), (8, 18))
+    p(d, 'ember', (10, 12), (14, 8), (20, 8), (24, 13))
+    for x, y in ((12, 11), (19, 10), (23, 14)):
+        r(d, 'ember_light', (x, y, x + 2, y + 1))
+    r(d, 'outline', (12, 18, 19, 22))
+    r(d, 'cyan', (13, 19, 14, 20))
+    r(d, 'cyan', (18, 19, 19, 20))
+    d.line(((9, 22), (5, 25), (3, 29)), fill=COLORS['violet'], width=3)
+    d.line(((23, 22), (27, 24), (29, 29)), fill=COLORS['violet'], width=3)
+    r(d, 'outline', (11, 29, 14, 31))
+    r(d, 'outline', (20, 29, 23, 31))
+    return im
+
+
 ASSETS = {
     "characters/terririan/player_default.png": lambda: character(False),
     "characters/terririan/player_sigil.png": lambda: character(True),
@@ -755,6 +792,8 @@ ASSETS = {
     "essences/essence_mycelial.png": lambda: essence_bottle('mycelial'),
     "enemies/fungorros/enemy_fungorro_crawler_idle.png": fungorro_crawler,
     "enemies/fungorros/enemy_spore_sower_idle.png": spore_sower,
+    "enemies/fungorros/enemy_fungal_slime_idle.png": fungal_slime,
+    "enemies/fungorros/enemy_fungal_horror_idle.png": fungal_horror,
     "enemies/bosses/enemy_colossus_mycelium_idle.png": mycelium_colossus,
     "npcs/npc_eldamar_portrait.png": lambda: npc_portrait('eldamar'),
     "npcs/npc_mireya_dunavar_portrait.png": lambda: npc_portrait('mireya'),
@@ -782,6 +821,8 @@ ITEM_IDS = {
 ENEMY_IDS = {
     'enemy_fungorro_crawler_idle': 'enemy.fungorro-crawler',
     'enemy_spore_sower_idle': 'enemy.spore-sower',
+    'enemy_fungal_slime_idle': 'enemy.fungal-slime',
+    'enemy_fungal_horror_idle': 'enemy.fungal-horror',
     'enemy_colossus_mycelium_idle': 'enemy.colossus-mycelium',
 }
 NPC_IDS = {

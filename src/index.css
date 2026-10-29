@@ -1985,3 +1985,8 @@ code {
 .terran-quest-dialog__actions button, .terran-quest-dialog > button:first-child { border: 1px solid #76674f; padding: 8px; color: #f0dfbb; background: #1d292a; cursor: pointer; }
 .terran-quest-dialog__actions button:disabled { opacity: .45; cursor: not-allowed; }
 .battle-game__consumable-select { min-width: 105px; max-width: 170px; border: 1px solid #746746; padding: 6px 4px; color: #ecd3a8; background: #14252b; font-size: .67rem; }
+
+/* Portal de ondas — UI lateral, sem mudar as instituições de Terran */
+.portal-wave-mode{margin-top:12px;padding:12px;border:1px solid #b18a3b;background:linear-gradient(135deg,#0b1d2e,#09101c);color:#dacba8}
+.portal-wave-mode p{margin:4px 0 9px;line-height:1.45}
+.world-scene-transition{image-rendering:pixelated;animation-timing-function:steps(8,end)!important}
