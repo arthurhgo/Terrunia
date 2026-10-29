@@ -85,4 +85,4 @@ export const npcDefinitions = [
     id, name, title, settlementId: 'terran', roles: ['classTrainer', 'questGiver'] as NPCDefinition['roles'],
     questIds: [questId], portraitAssetId: `${id}.portrait`, dialogue: [`A prova de ${title} exige ação, não uma escolha de menu.`], status: 'CONTENT_DRAFT' as const,
   })),
-] satisfies NPCDefinition[]
+].map((npc) => ({ ...npc, questIds: [...npc.questIds, 'side_' + npc.id] })) satisfies NPCDefinition[]

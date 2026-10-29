@@ -28,7 +28,7 @@ describe('save versionado', () => {
     )
     const legacy = { ...save, schemaVersion: 0, eventLog: undefined }
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(8)
+    expect(migrated.schemaVersion).toBe(9)
     expect(migrated.character.name).toBe('Aron')
     expect(migrated.eventLog).toContain('SaveMigrated:0->1')
     expect(migrated.eventLog).toContain('SaveMigrated:1->2')
@@ -67,7 +67,7 @@ describe('save versionado', () => {
       },
     }
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(8)
+    expect(migrated.schemaVersion).toBe(9)
     expect(migrated.wallet.gold).toBe(77)
     expect(migrated.world.trailNodeStates.astravel_camp_03).toBe('current')
     expect(migrated.eventLog).toContain('SaveMigrated:1->2')
@@ -99,7 +99,7 @@ describe('save versionado', () => {
       },
     }
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(8)
+    expect(migrated.schemaVersion).toBe(9)
     expect(migrated.gameVersion).toBe('0.8.0')
     expect(migrated.world.trailNodeStates.astravel_boss_preview).toBe('bossCurrent')
     expect(migrated.eventLog).toContain('SaveMigrated:2->3')
@@ -126,7 +126,7 @@ describe('save versionado', () => {
       schemaVersion: 3,
       gameVersion: '0.3.0',
     })
-    expect(migrated.schemaVersion).toBe(8)
+    expect(migrated.schemaVersion).toBe(9)
     expect(migrated.boundItems.bound_1.resonance).toBe(300)
     expect(migrated.inventory).toEqual(
       expect.arrayContaining([
@@ -155,7 +155,7 @@ describe('save versionado', () => {
     quests.vs_astravel_first_contact.status = 'active'
     delete quests.vs_astravel_first_contact.tracked
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(8)
+    expect(migrated.schemaVersion).toBe(9)
     expect(migrated.character.titleIds).toEqual([])
     expect(migrated.quests.vs_astravel_first_contact.tracked).toBe(true)
     expect(migrated.eventLog).toContain('SaveMigrated:4->5')

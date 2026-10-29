@@ -40,8 +40,8 @@ export const createNewSave = (
   )
 
   const save: GameSave = {
-    schemaVersion: 8,
-    gameVersion: '0.8.0',
+    schemaVersion: 9,
+    gameVersion: '0.8.1',
     saveId: ids.saveId,
     campaignId: campaign.campaignId,
     campaignGeneration: campaign.campaignGeneration,
