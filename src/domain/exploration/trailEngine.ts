@@ -2,6 +2,7 @@ import type { ContentCatalog } from '../../content/catalog'
 import type { TrailDefinition, TrailNodeDefinition } from '../../content/types'
 import type { GameSave, InventoryItemInstance } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
+import { createRandomId } from '../shared/randomId'
 
 export type TrailCompletion = {
   save: GameSave
@@ -55,7 +56,7 @@ export const resolveTrailInteraction = (
   catalog: ContentCatalog,
   now: string,
   createInstanceId: (definitionId: string, index: number) => string = (definitionId) =>
-    `${definitionId}_${crypto.randomUUID()}`,
+    `${definitionId}_${createRandomId()}`,
 ): Result<TrailCompletion & { grantedItems: InventoryItemInstance[] }> => {
   const node = trail.nodes.find((candidate) => candidate.id === nodeId)
   if (!node?.interaction || !['entry', 'event', 'camp', 'npc', 'chest'].includes(node.type)) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getActorMatrix } from './pixelActorArt'
+import { getActorMatrix, WORLD_ACTOR_SCALE } from './pixelActorArt'
 
 describe('matriz dos sprites', () => {
   it('mantém exatamente 16×16 pixels em todas as direções e passos', () => {
@@ -17,5 +17,9 @@ describe('matriz dos sprites', () => {
     expect(getActorMatrix('up', 0)).not.toEqual(getActorMatrix('down', 0))
     expect(getActorMatrix('left', 0)).not.toEqual(getActorMatrix('right', 0))
     expect(getActorMatrix('down', 0)).not.toEqual(getActorMatrix('down', 1))
+  })
+
+  it('usa a mesma escala de mundo para protagonista e NPCs', () => {
+    expect(WORLD_ACTOR_SCALE).toBe(1)
   })
 })

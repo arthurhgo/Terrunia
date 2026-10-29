@@ -4,6 +4,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../state/authStore'
 import { useGameStore } from '../../state/gameStore'
 import { QuestTracker } from './QuestTracker'
+import { WorldJourneyBar } from '../world/WorldJourneyBar'
 
 type GameShellProps = {
   children: ReactNode
@@ -55,6 +56,7 @@ export function GameShell({ children, fluid = false, immersive = false }: GameSh
             </NavLink>
           ))}
         </nav>}
+        {immersive && save ? <WorldJourneyBar save={save} /> : null}
         <div className="header-actions">
           <span className={`save-state save-state--${syncStatus}`} title={`Persistência ${syncMode ?? 'local'}`}>
             <i aria-hidden="true" />

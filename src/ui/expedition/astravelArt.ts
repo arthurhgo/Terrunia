@@ -1,8 +1,8 @@
 import type { TrailDefinition, TrailNodeDefinition } from '../../content/types'
 import type { TrailNodeStatus } from '../../domain/game/types'
-import { ACTOR_PALETTES, drawPixelActor, type ActorFacing } from '../terran/pixelActorArt'
+import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, WORLD_ACTOR_SCALE, type ActorFacing } from '../terran/pixelActorArt'
 import type { WorldPoint } from '../terran/pixelCityArt'
-import { ASTRAVEL_HEIGHT, ASTRAVEL_WIDTH, getAstravelPoint, isAstravelWalkable } from './astravelNavigation'
+import { ASTRAVEL_HEIGHT, ASTRAVEL_WIDTH, getAstravelDecorations, getAstravelPoint } from './astravelNavigation'
 
 type Statuses = Record<string, TrailNodeStatus>
 
@@ -103,12 +103,9 @@ export function drawAstravel(
       if (step % 4 === 0) pixel(ctx, '#82745e', x - 5, y + 2, 5, 3)
     }
   }
-  for (let y = 22; y < ASTRAVEL_HEIGHT; y += 21) {
-    for (let x = 10; x < ASTRAVEL_WIDTH; x += 23) {
-      const seed = (x * 11 + y * 7) % 17
-      if (seed < 7 && !isAstravelWalkable({ x, y }, trail)) tree(ctx, x, y, seed % 3 === 0)
-      else if (seed === 9 && !isAstravelWalkable({ x, y }, trail)) mushroom(ctx, x, y, frame)
-    }
+  for (const decoration of getAstravelDecorations(trail)) {
+    if (decoration.kind === 'tree') tree(ctx, decoration.x, decoration.y, decoration.rune)
+    else mushroom(ctx, decoration.x, decoration.y, frame)
   }
   for (let i = 0; i < 22; i += 1) {
     const x = (i * 53 + Math.floor(frame / 12) * (i % 3 + 1)) % ASTRAVEL_WIDTH
@@ -116,10 +113,11 @@ export function drawAstravel(
     pixel(ctx, i % 2 ? '#8cd7a1' : '#8abbd2', x, y, 2, 2)
   }
   trail.nodes.forEach((node) => landmark(ctx, node, frame, statuses[node.id]))
-  pixel(ctx, '#11282b', player.x - 10, player.y - 3, 20, 4)
+  drawPlayerAura(ctx, player.x, player.y, frame)
+  pixel(ctx, '#11282b', player.x - 5, player.y - 2, 10, 3)
   const stride = walking ? Math.floor(frame / 8) % 3 : 0
   if (sprite?.complete && sprite.naturalWidth >= 128 && sprite.naturalHeight >= 128) {
     const row = { down: 0, left: 1, right: 2, up: 3 }[facing]
-    ctx.drawImage(sprite, stride * 32, row * 32, 32, 32, Math.round(player.x - 16), Math.round(player.y - 32), 32, 32)
-  } else drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[variant], 2)
+    ctx.drawImage(sprite, stride * 32, row * 32, 32, 32, Math.round(player.x - 8), Math.round(player.y - 16), 16, 16)
+  } else drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[variant], WORLD_ACTOR_SCALE)
 }

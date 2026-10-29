@@ -22,6 +22,29 @@ export const ACTOR_PALETTES: Record<string, ActorPalette> = {
   portal: { outline: '#192d3e', hair: '#d1bb9a', skin: '#e2be9b', cloth: '#376985', light: '#80b6c5', accent: '#96e7f7', boots: '#283f51' },
 }
 
+/** The player and city NPCs share the same 16×16 world scale. */
+export const WORLD_ACTOR_SCALE = 1
+
+/** VISUAL_DRAFT — a pixel ring identifies the controlled Terrírian without changing its scale. */
+export function drawPlayerAura(
+  ctx: CanvasRenderingContext2D,
+  centerX: number,
+  footY: number,
+  frame = 0,
+) {
+  const pulse = Math.floor(frame / 18) % 2
+  ctx.save()
+  ctx.globalAlpha = pulse ? 0.9 : 0.68
+  ctx.fillStyle = '#ffe482'
+  ctx.fillRect(Math.round(centerX - 9), Math.round(footY - 3), 18, 1)
+  ctx.fillRect(Math.round(centerX - 6), Math.round(footY - 5), 12, 1)
+  ctx.fillRect(Math.round(centerX - 6), Math.round(footY), 12, 1)
+  ctx.fillStyle = '#c98d22'
+  ctx.fillRect(Math.round(centerX - 10), Math.round(footY - 2), 2, 2)
+  ctx.fillRect(Math.round(centerX + 8), Math.round(footY - 2), 2, 2)
+  ctx.restore()
+}
+
 const cache = new Map<string, readonly string[]>()
 
 function paint(grid: string[][], x: number, y: number, width: number, height: number, pixel: string) {
@@ -71,7 +94,7 @@ export function getActorMatrix(facing: ActorFacing, stride = 0): readonly string
   return matrix
 }
 
-/** A 32px actor uses scale 2; the 16px village silhouettes use scale 1. */
+/** Actors use the exact 16×16 matrix and an integer scale selected by the scene. */
 export function drawPixelActor(
   ctx: CanvasRenderingContext2D, centerX: number, footY: number,
   facing: ActorFacing, stride: number, palette: ActorPalette, scale = 2,

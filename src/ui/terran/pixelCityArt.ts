@@ -2,7 +2,7 @@ import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { CityActor } from './cityCast'
 import type { MovingCityActor } from './cityLife'
-import { ACTOR_PALETTES, drawPixelActor, type ActorFacing } from './pixelActorArt'
+import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, WORLD_ACTOR_SCALE, type ActorFacing } from './pixelActorArt'
 
 export const CITY_WIDTH = 384
 export const CITY_HEIGHT = 256
@@ -105,12 +105,14 @@ export const drawPixelCity = (
   TERRAN_LOCATION_IDS.forEach((id) => drawBuilding(ctx, id, frame))
   const stride = walking ? Math.floor(frame / 8) % 3 : 0
   const renderPlayer = () => {
-    ctx.fillStyle = '#162728'; ctx.fillRect(Math.round(player.x - 9), Math.round(player.y - 3), 18, 4)
+    drawPlayerAura(ctx, player.x, player.y, frame)
+    ctx.fillStyle = '#162728'; ctx.fillRect(Math.round(player.x - 5), Math.round(player.y - 2), 10, 3)
     if (playerSprite?.complete && playerSprite.naturalWidth >= 128 && playerSprite.naturalHeight >= 128) {
       const row = { down: 0, left: 1, right: 2, up: 3 }[facing]
-      ctx.drawImage(playerSprite, stride * 32, row * 32, 32, 32, Math.round(player.x - 16), Math.round(player.y - 32), 32, 32)
+      ctx.drawImage(playerSprite, stride * 32, row * 32, 32, 32, Math.round(player.x - 8), Math.round(player.y - 16), 16, 16)
     } else {
-      drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[playerPalette] ?? ACTOR_PALETTES.terririan)
+      drawPixelActor(ctx, player.x, player.y, facing, stride,
+        ACTOR_PALETTES[playerPalette] ?? ACTOR_PALETTES.terririan, WORLD_ACTOR_SCALE)
     }
   }
   const actors = [...cityCast].sort((a, b) => a.point.y - b.point.y)

@@ -1,5 +1,17 @@
 # Registro de implementação
 
+## Terran v0.5 — escala, livre navegação e combate contextual
+
+- igualada a escala do Terrírian à dos NPCs em 16×16 em Terran, Astravél, Câmaras e combate;
+- adicionada aura amarela pixelada compartilhada para identificação do jogador sem alterar atributos ou colisão;
+- liberado o deslocamento por toda a área de Astravél, com colisão determinística nas bordas e árvores visíveis e progressão ainda exclusiva dos marcos;
+- transformado o shell imersivo em viewport `100dvh`, sem rolagem vertical do documento e com rolagem interna nos drawers;
+- adicionado percurso persistente da base até o contexto atual no cabeçalho;
+- mantido o mapa da instância como fundo do combate por turnos, sem desmontar `/play`;
+- incluído fallback UUID v4 para origens locais sem `crypto.randomUUID`, preservando Web Crypto;
+- validado em navegador o fluxo Terran → Portal → Astravél → batalha → retorno à instância, incluindo um turno real, recompensa e ausência de scroll;
+- ampliados testes de escala, navegação livre, colisão visível e percurso da viewport unificada.
+
 ## Terran v0.4 — viewport única de exploração e combate
 
 - criada rota persistente `/play` para Terran, Astravél, Câmaras Fúngicas e combate;
