@@ -28,7 +28,7 @@ export const loadSynchronizedSave = async (ownerId: string, saveId?: string) => 
   if (!cloudId) return null
   const cloud = await getCloudSave(ownerId, cloudId)
   if (!cloud) {
-    if (localMatchesActive) await putCloudSave(ownerId, local)
+    if (localMatchesActive && local) await putCloudSave(ownerId, local)
     return localMatchesActive ? local : null
   }
   if (!localMatchesActive || !local) {
