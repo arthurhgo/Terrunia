@@ -97,16 +97,17 @@ function QuestDrawer({ save }: { save: GameSave }) {
   )
 }
 
-function LocationDrawer({ save, location, onTalk, onVisit }: {
+function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
   save: GameSave
   location: TerranLocationDefinition
   onTalk: (presence: Presence) => void
   onVisit: (id: TerranLocationId) => void
+  unified?: boolean
 }) {
   return (
     <div className="terran-drawer__section">
       <p>{location.description}</p>
-      {location.viewKind === 'portal' && <PortalPanel save={save} onGoToEldamar={() => onVisit('location_terran_eldamar_house')} />}
+      {location.viewKind === 'portal' && <PortalPanel save={save} navigateOnEnter={!unified} onGoToEldamar={() => onVisit('location_terran_eldamar_house')} />}
       {location.viewKind === 'workshop' && <><BoundItemsPanel save={save} /><InventoryPanel save={save} /></>}
       {location.viewKind === 'clanHall' && <ClanHallPanel save={save} />}
       <h3>Moradores e representantes</h3>
@@ -126,7 +127,7 @@ function LocationDrawer({ save, location, onTalk, onVisit }: {
   )
 }
 
-export function TerranScreen() {
+export function TerranScene({ unified = false }: { unified?: boolean }) {
   const save = useGameStore((state) => state.save)
   const travel = useGameStore((state) => state.travelInTerran)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
@@ -171,9 +172,8 @@ export function TerranScreen() {
   const activeTitle = drawer === 'location' ? location.name : drawer === 'nexus' ? 'Personagem e Vínculos'
     : drawer === 'inventory' ? 'Mochila e Arsenal' : drawer === 'quests' ? 'Diário de Missões' : 'Evolução do Vínculo'
 
-  return (
-    <GameShell fluid immersive>
-      <div className="terran-game">
+  const sceneContent = (
+    <div className="terran-game">
         <header className="terran-game__topbar">
           <div><span className="eyebrow">HOME · CIDADE-BASE DO JOGADOR</span><h1>Terran</h1></div>
           <div className="terran-game__readout"><MapPin size={16} /> TERRAN &gt; {currentLabel.toUpperCase()}<span>{discovered}/{TERRAN_LOCATION_IDS.length} descobertos</span></div>
@@ -209,7 +209,7 @@ export function TerranScreen() {
               <button type="button" onClick={() => setDrawer(null)} aria-label="Fechar painel"><X size={19} /></button>
             </header>
             <div className="terran-game__drawer-content">
-              {drawer === 'location' && <LocationDrawer save={save} location={location} onTalk={talk} onVisit={openLocation} />}
+              {drawer === 'location' && <LocationDrawer save={save} location={location} onTalk={talk} onVisit={openLocation} unified={unified} />}
               {drawer === 'inventory' && <><InventoryPanel save={save} /><EquipmentCatalog /></>}
               {drawer === 'nexus' && <><div className="terran-game__identity"><AssetImage assetId={save.character.portraitAssetId} /><span><strong>{save.character.name}</strong><small>Nível {save.character.level} · {save.character.clan.clanId ?? 'Sem Clã'} · {save.character.classProgression.classId ?? 'Sem Classe'}</small></span></div><ProgressBar value={save.character.xp} max={save.character.xpRequired} label="Experiência" /><ProgressBar value={save.essence.current} max={save.essence.required} label="Essência" tone="essence" /><BoundItemsPanel save={save} /></>}
               {drawer === 'quests' && <QuestDrawer save={save} />}
@@ -221,7 +221,12 @@ export function TerranScreen() {
         <SocialQuestDialog questId={socialQuestId} save={save} onClose={() => setSocialQuestId(null)} />
         {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId}
           reducedMotion={save.settings.reducedMotion} onComplete={() => recordCutsceneViewed(scene.id)} />}
-      </div>
-    </GameShell>
+    </div>
   )
+
+  return unified ? sceneContent : <GameShell fluid immersive>{sceneContent}</GameShell>
+}
+
+export function TerranScreen() {
+  return <TerranScene />
 }

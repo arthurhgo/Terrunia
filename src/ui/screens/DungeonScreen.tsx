@@ -13,7 +13,7 @@ import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 type Drawer = 'rooms' | 'room' | 'inventory' | 'quests' | null
 const dungeon = content.dungeons.dungeon_fungal_chambers
 
-export function DungeonScreen() {
+export function DungeonScene({ unified = false }: { unified?: boolean }) {
   const save = useGameStore((state) => state.save)
   const discoverFungalRoom = useGameStore((state) => state.discoverFungalRoom)
   const exitFungalChambers = useGameStore((state) => state.exitFungalChambers)
@@ -43,15 +43,17 @@ export function DungeonScreen() {
     setSelectedId(roomId)
     setDrawer('room')
   }
-  const leave = () => { exitFungalChambers(); navigate('/expedition') }
+  const leave = () => {
+    exitFungalChambers()
+    if (!unified) navigate('/expedition')
+  }
   const battle = () => {
     if (!selectedRoom || selectedRoom.kind !== 'boss' || !bossAvailable || !discoveredFlags.includes(dungeonRoomFlag(selectedRoom.id))) return
     startBattle(dungeon.bossTrailNodeId)
-    navigate('/battle')
+    if (!unified) navigate('/battle')
   }
 
-  return <GameShell fluid immersive>
-    <div className="terran-game dungeon-game">
+  const sceneContent = <div className="terran-game dungeon-game">
       <header className="terran-game__topbar">
         <div><span className="eyebrow">RUÍNAS DA ENTROPIA · NÍVEL I</span><h1>Câmaras Fúngicas</h1></div>
         <div className="terran-game__readout"><MapPin size={16} /> ASTRAVÉL &gt; RUÍNA <span>{completed}/{dungeon.rooms.length} salas descobertas</span></div>
@@ -113,5 +115,10 @@ export function DungeonScreen() {
       {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId}
         reducedMotion={save.settings.reducedMotion} onComplete={() => recordCutsceneViewed(scene.id)} />}
     </div>
-  </GameShell>
+
+  return unified ? sceneContent : <GameShell fluid immersive>{sceneContent}</GameShell>
+}
+
+export function DungeonScreen() {
+  return <DungeonScene />
 }

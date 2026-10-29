@@ -13,14 +13,21 @@ import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { GameButton } from '../components/GameButton'
 
-export function PortalPanel({ save, onGoToEldamar }: { save: GameSave; onGoToEldamar: () => void }) {
+export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
+  save: GameSave
+  onGoToEldamar: () => void
+  navigateOnEnter?: boolean
+}) {
   const enterAstravel = useGameStore((state) => state.enterAstravel)
   const navigate = useNavigate()
   const trail = content.trails.trail_astravel_entry
   const quest = save.quests.vs_astravel_first_contact
   const currentNode = getActiveTrailNode(save, trail)
 
-  const enter = () => { enterAstravel(); navigate('/expedition') }
+  const enter = () => {
+    enterAstravel()
+    if (navigateOnEnter) navigate('/expedition')
+  }
 
   const action = (() => {
     if (save.world.trailNodeStates.astravel_entry === 'completed' && currentNode) {

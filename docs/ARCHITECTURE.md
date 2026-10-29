@@ -56,13 +56,17 @@ O schema v4 migra saves anteriores, preserva progresso permanente e reconcilia a
 Terran usa um catálogo próprio de localizações. A UI resolve nomes, serviços, NPCs e coordenadas pelo conteúdo; o domínio valida IDs, registra primeira descoberta, persiste `currentLocationId` e calcula o destino urbano da missão.
 
 ```mermaid
-flowchart TD
-    Home["/terran · mapa/Home"] --> Area["/terran/:locationId"]
-    Area --> Houses["Seis instituições"]
-    Area --> Plaza["Praça do Portal"]
-    Houses --> Plaza
-    Plaza --> Instance["Instância externa"]
-    Instance --> Plaza
+stateDiagram-v2
+    [*] --> Terran
+    Terran --> Expedition: Portal autorizado
+    Expedition --> Dungeon: limiar concluído
+    Expedition --> Combat: encontro alcançado
+    Dungeon --> Combat: núcleo alcançado
+    Combat --> Expedition: vitória/continuação
+    Combat --> Dungeon: vitória no núcleo
+    Expedition --> Terran: retorno registrado
 ```
+
+`/play` mantém `GameShell` e rota montados. `getWorldScene` deriva a cena exclusivamente de `GameSave`: batalha ativa tem prioridade; depois dungeon, nó da expedição e Terran. Cada cena usa a mesma gramática 384×256 com HUD e painel lateral. Transições são apresentação; não criam localização, encontro, recompensa ou evento de domínio.
 
 O Portal não é a Home. A entrada externa exige a Praça; o retorno grava a Praça. A Oficina dos Vínculos é o gate espacial dos Ritos. Coordenadas e tons são apresentação, não regra de domínio.

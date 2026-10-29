@@ -3,16 +3,18 @@ import {
   Backpack,
   Crosshair,
   Footprints,
+  ScrollText,
   Shield,
   Sparkles,
   Swords,
+  UserRound,
+  X,
 } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import type { Combatant } from '../../domain/combat/types'
 import { useGameStore } from '../../state/gameStore'
-import { ArcanePanel } from '../components/ArcanePanel'
 import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
 import { GameShell } from '../components/GameShell'
@@ -34,7 +36,7 @@ function StatusList({ combatant }: { combatant: Combatant }) {
   )
 }
 
-export function BattleScreen() {
+export function BattleScene({ unified = false }: { unified?: boolean }) {
   const save = useGameStore((state) => state.save)
   const submit = useGameStore((state) => state.submitBattleCommand)
   const claim = useGameStore((state) => state.claimBattleRewards)
@@ -51,6 +53,7 @@ export function BattleScreen() {
   )
   const firstLivingEnemyId = enemies.find((enemy) => enemy.alive)?.id ?? ''
   const [selectedTargetId, setSelectedTargetId] = useState(firstLivingEnemyId)
+  const [drawer, setDrawer] = useState<'status' | 'log' | null>('status')
 
   useEffect(() => {
     const selected = enemies.find((enemy) => enemy.id === selectedTargetId)
@@ -88,11 +91,11 @@ export function BattleScreen() {
 
   const leave = () => {
     returnToTerran()
-    navigate('/terran')
+    if (!unified) navigate('/terran')
   }
   const continueExpedition = () => {
     finishBattleIntoExpedition()
-    navigate(save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon' : '/expedition')
+    if (!unified) navigate(save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon' : '/expedition')
   }
 
   const attack = () => {
@@ -113,31 +116,16 @@ export function BattleScreen() {
     }
   }
 
-  return (
-    <GameShell fluid immersive>
-      <div className="battle-screen">
-        <header className="battle-topline">
-          <div><span>Local</span><strong>{encounter?.locationLabel ?? 'Astravél'}</strong></div>
-          <div><span>Encontro</span><strong>{encounter?.name ?? activeBattle.encounterId}</strong></div>
-          <div><span>Rodada</span><strong>{activeBattle.round}</strong></div>
-          <div><span>Estado</span><strong>{activeBattle.phase}</strong></div>
-        </header>
+  const sceneContent = (
+    <div className="terran-game battle-game">
+      <header className="terran-game__topbar">
+        <div><span className="eyebrow">ENCONTRO · COMBATE POR TURNOS</span><h1>{encounter?.name ?? 'Combate'}</h1></div>
+        <div className="terran-game__readout"><Crosshair size={16} /> {encounter?.locationLabel ?? 'ASTRAVÉL'}<span>Rodada {activeBattle.round} · {activeBattle.phase}</span></div>
+      </header>
 
-        <div className="battle-layout">
-          <ArcanePanel title={player.name} eyebrow="TERRÍRIAN" className="combatant-panel combatant-panel--player">
-            <AssetImage assetId={save.character.portraitAssetId} />
-            <ProgressBar value={player.hp} max={player.maxHp} label="Vida" tone="health" />
-            <ProgressBar value={player.mp} max={player.maxMp} label="Mana" />
-            <dl className="combat-stats">
-              <div><dt>Ataque</dt><dd>{player.attackPower}</dd></div>
-              <div><dt>Mitigação</dt><dd>{player.mitigation}</dd></div>
-              <div><dt>Iniciativa</dt><dd>{player.initiative}</dd></div>
-            </dl>
-            <StatusList combatant={player} />
-            <div className="active-bound-mini"><Swords size={19} /><span>Arma vinculada<strong>Grau {activeWeapon?.grade ?? 1} · {activeWeapon?.resonance ?? 0} R</strong></span></div>
-          </ArcanePanel>
-
-          <section className="battlefield" aria-label="Campo de batalha">
+      <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
+        <section className="terran-game__stage battle-game__stage" aria-label="Viewport unificada de combate">
+          <section className="battlefield battle-game__field" aria-label="Campo de batalha">
             <div className="battlefield__mist" aria-hidden="true" />
             <div className="battle-character battle-character--player">
               <AssetImage assetId={save.character.portraitAssetId} />
@@ -145,128 +133,100 @@ export function BattleScreen() {
             </div>
             <div className={`battle-enemy-party battle-enemy-party--${enemies.length}`}>
               {enemies.map((enemy, index) => (
-                <button
-                  key={enemy.id}
-                  type="button"
+                <button key={enemy.id} type="button"
                   className={`battle-enemy ${content.enemies[enemy.definitionId]?.boss ? 'battle-enemy--boss' : ''} ${!enemy.alive ? 'defeated' : ''} ${selectedEnemy?.id === enemy.id ? 'selected' : ''}`}
-                  onClick={() => enemy.alive && setSelectedTargetId(enemy.id)}
-                  disabled={!enemy.alive}
-                  aria-label={`Selecionar alvo ${enemy.name} ${index + 1}`}
-                  aria-pressed={selectedEnemy?.id === enemy.id}
-                >
+                  onClick={() => enemy.alive && setSelectedTargetId(enemy.id)} disabled={!enemy.alive}
+                  aria-label={`Selecionar alvo ${enemy.name} ${index + 1}`} aria-pressed={selectedEnemy?.id === enemy.id}>
                   <AssetImage assetId={content.enemies[enemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} />
                   <span>{enemy.name}</span>
                   <i><b style={{ width: `${(enemy.hp / enemy.maxHp) * 100}%` }} /></i>
-                  {selectedEnemy?.id === enemy.id && enemy.alive && <Crosshair size={18} />}
+                  {selectedEnemy?.id === enemy.id && enemy.alive ? <Crosshair size={18} /> : null}
                 </button>
               ))}
             </div>
             <div className="turn-orbit"><span>{activeBattle.round}</span><small>RODADA</small></div>
           </section>
 
-          <ArcanePanel title="Inimigos" eyebrow="ALVOS E INICIATIVA" className="combatant-panel enemy-roster-panel">
-            <div className="enemy-roster">
-              {enemies.map((enemy, index) => (
-                <button
-                  key={enemy.id}
-                  type="button"
-                  className={selectedEnemy?.id === enemy.id ? 'selected' : ''}
-                  onClick={() => enemy.alive && setSelectedTargetId(enemy.id)}
-                  disabled={!enemy.alive}
-                >
-                  <span>{index + 1}</span>
-                  <div><strong>{enemy.name}</strong><small>{enemy.hp}/{enemy.maxHp} Vida</small></div>
-                  {enemy.alive ? <Crosshair size={15} /> : <span>×</span>}
-                </button>
-              ))}
-            </div>
-            {selectedEnemy && (
-              <div className="target-inspector">
-                <AssetImage assetId={content.enemies[selectedEnemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} />
-                <p className="eyebrow">ALVO SELECIONADO</p>
-                <strong>{selectedEnemy.name}</strong>
-                <ProgressBar value={selectedEnemy.hp} max={selectedEnemy.maxHp} label="Vida" tone="health" />
-                <StatusList combatant={selectedEnemy} />
-              </div>
-            )}
-            <div className="initiative-strip" aria-label="Ordem de iniciativa">
-              {activeBattle.initiativeOrder.map((combatantId, index) => {
-                const combatant = activeBattle.combatants[combatantId]
-                return (
-                  <span key={combatantId} className={activeBattle.actorId === combatantId ? 'active' : ''}>
-                    {index + 1}. {combatant.name}
-                  </span>
-                )
-              })}
-            </div>
-          </ArcanePanel>
-        </div>
+          <div className="terran-game__hud battle-game__menu" aria-label="Informações do combate">
+            <button type="button" className={drawer === 'status' ? 'active' : ''} aria-label="Abrir Status de combate"
+              aria-pressed={drawer === 'status'} onClick={() => setDrawer(drawer === 'status' ? null : 'status')}>
+              <UserRound size={19} /><span>Status</span>
+            </button>
+            <button type="button" className={drawer === 'log' ? 'active' : ''} aria-label="Abrir Registro de batalha"
+              aria-pressed={drawer === 'log'} onClick={() => setDrawer(drawer === 'log' ? null : 'log')}>
+              <ScrollText size={19} /><span>Registro</span>
+            </button>
+          </div>
 
-        {activeBattle.phase === 'AwaitingAction' && (
-          <div className="battle-command-bar">
-            <GameButton variant="primary" onClick={attack} disabled={!selectedEnemy?.alive}>
-              <Swords size={18} /> Atacar
-            </GameButton>
-            <GameButton
-              variant="secondary"
-              onClick={useSkill}
-              disabled={!activeSkill || player.mp < (activeSkill?.mpCost ?? 0) || !selectedEnemy?.alive}
-              title={activeSkill?.description}
-            >
+          <div className="battle-game__vitals battle-game__vitals--player">
+            <strong>{player.name}</strong><span>{player.hp}/{player.maxHp} PV · {player.mp}/{player.maxMp} MP</span>
+            <i><b style={{ width: `${player.hp / player.maxHp * 100}%` }} /></i>
+          </div>
+          {selectedEnemy ? <div className="battle-game__vitals battle-game__vitals--enemy">
+            <strong>{selectedEnemy.name}</strong><span>{selectedEnemy.hp}/{selectedEnemy.maxHp} PV</span>
+            <i><b style={{ width: `${selectedEnemy.hp / selectedEnemy.maxHp * 100}%` }} /></i>
+          </div> : null}
+
+          {activeBattle.phase === 'AwaitingAction' ? <div className="battle-command-bar battle-game__commands">
+            <GameButton variant="primary" onClick={attack} disabled={!selectedEnemy?.alive}><Swords size={18} /> Atacar</GameButton>
+            <GameButton variant="secondary" onClick={useSkill}
+              disabled={!activeSkill || player.mp < (activeSkill?.mpCost ?? 0) || !selectedEnemy?.alive} title={activeSkill?.description}>
               <Sparkles size={18} /> {activeSkill ? `${activeSkill.name} · ${activeSkill.mpCost} MP` : 'Habilidade bloqueada'}
             </GameButton>
-            <GameButton variant="secondary" onClick={() => submit({ type: 'defend' })}>
-              <Shield size={18} /> Defender
-            </GameButton>
-            <GameButton
-              variant="ghost"
-              onClick={useItem}
-              disabled={!activeConsumable || player.hp >= player.maxHp}
-              title={activeConsumableDefinition?.description}
-            >
-              <Backpack size={18} /> {activeConsumableDefinition?.name ?? 'Sem consumível'}
-            </GameButton>
-            <GameButton variant="ghost" onClick={() => submit({ type: 'flee' })} disabled={!activeBattle.canFlee}>
-              <Footprints size={18} /> Fugir
-            </GameButton>
-          </div>
-        )}
+            <GameButton variant="secondary" onClick={() => submit({ type: 'defend' })}><Shield size={18} /> Defender</GameButton>
+            <GameButton variant="ghost" onClick={useItem} disabled={!activeConsumable || player.hp >= player.maxHp}
+              title={activeConsumableDefinition?.description}><Backpack size={18} /> {activeConsumableDefinition?.name ?? 'Sem consumível'}</GameButton>
+            <GameButton variant="ghost" onClick={() => submit({ type: 'flee' })} disabled={!activeBattle.canFlee}><Footprints size={18} /> Fugir</GameButton>
+          </div> : null}
 
-        {activeBattle.phase === 'Victory' && (
-          <div className="battle-result battle-result--victory">
+          {activeBattle.phase === 'Victory' ? <div className="battle-result battle-result--victory battle-game__result">
             <Sparkles size={26} />
             <div><p className="eyebrow">VITÓRIA</p><h2>{encounter?.victoryTitle ?? 'A rota foi preservada'}</h2><p>{encounter?.victorySummary}</p><p>+{activeBattle.rewards.characterXp} XP · +{activeBattle.rewards.gold} Ouro · +{activeBattle.rewards.boundResonance} Ressonância · {activeBattle.rewards.lootDefinitionIds.length} drop</p></div>
-            {!activeBattle.claimed ? (
-              <GameButton variant="primary" onClick={claim}>Receber recompensas</GameButton>
-            ) : (
-              <>
-                <GameButton variant="primary" onClick={continueExpedition}>Continuar expedição</GameButton>
-                <GameButton variant="ghost" onClick={leave}>Retornar a Terran</GameButton>
-              </>
-            )}
-          </div>
-        )}
+            {!activeBattle.claimed ? <GameButton variant="primary" onClick={claim}>Receber recompensas</GameButton> : <>
+              <GameButton variant="primary" onClick={continueExpedition}>Continuar expedição</GameButton>
+              <GameButton variant="ghost" onClick={leave}>Retornar a Terran</GameButton>
+            </>}
+          </div> : null}
 
-        {activeBattle.phase === 'Defeat' && (
-          <div className="battle-result battle-result--defeat">
-            <Shield size={26} />
-            <div><p className="eyebrow">DERROTA</p><h2>Retirada necessária</h2><p>A punição final de derrota permanece OWNER_DECISION.</p></div>
+          {activeBattle.phase === 'Defeat' ? <div className="battle-result battle-result--defeat battle-game__result">
+            <Shield size={26} /><div><p className="eyebrow">DERROTA</p><h2>Retirada necessária</h2><p>A punição final de derrota permanece OWNER_DECISION.</p></div>
             <GameButton variant="secondary" onClick={leave}>Retornar a Terran</GameButton>
-          </div>
-        )}
+          </div> : null}
+        </section>
 
-        <ArcanePanel title="Registro de batalha" eyebrow="MÁQUINA DE ESTADOS" className="battle-log-panel">
-          <div className="battle-log" aria-live="polite">
-            {activeBattle.log.slice(-10).map((entry) => (
-              <p key={entry.id} className={`battle-log__${entry.tone}`}><span>[R{entry.round}]</span> {entry.message}</p>
-            ))}
+        {drawer ? <aside className="terran-game__drawer battle-game__drawer" aria-label={`Painel lateral: ${drawer === 'status' ? 'Status de combate' : 'Registro de batalha'}`}>
+          <header><span className="eyebrow">MÁQUINA DE ESTADOS · {activeBattle.phase}</span><h2>{drawer === 'status' ? 'Status de combate' : 'Registro de batalha'}</h2>
+            <button type="button" onClick={() => setDrawer(null)} aria-label="Fechar painel"><X size={19} /></button>
+          </header>
+          <div className="terran-game__drawer-content">
+            {drawer === 'status' ? <>
+              <div className="battle-game__identity"><AssetImage assetId={save.character.portraitAssetId} /><div><span className="eyebrow">TERRÍRIAN</span><strong>{player.name}</strong><small>Arma G{activeWeapon?.grade ?? 1} · {activeWeapon?.resonance ?? 0} R</small></div></div>
+              <ProgressBar value={player.hp} max={player.maxHp} label="Vida" tone="health" />
+              <ProgressBar value={player.mp} max={player.maxMp} label="Mana" />
+              <dl className="combat-stats"><div><dt>Ataque</dt><dd>{player.attackPower}</dd></div><div><dt>Mitigação</dt><dd>{player.mitigation}</dd></div><div><dt>Iniciativa</dt><dd>{player.initiative}</dd></div></dl>
+              <StatusList combatant={player} />
+              <div className="enemy-roster">{enemies.map((enemy, index) => <button key={enemy.id} type="button"
+                className={selectedEnemy?.id === enemy.id ? 'selected' : ''} onClick={() => enemy.alive && setSelectedTargetId(enemy.id)} disabled={!enemy.alive}>
+                <span>{index + 1}</span><div><strong>{enemy.name}</strong><small>{enemy.hp}/{enemy.maxHp} Vida</small></div>{enemy.alive ? <Crosshair size={15} /> : <span>×</span>}
+              </button>)}</div>
+              {selectedEnemy ? <div className="target-inspector"><AssetImage assetId={content.enemies[selectedEnemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} />
+                <p className="eyebrow">ALVO SELECIONADO</p><strong>{selectedEnemy.name}</strong><ProgressBar value={selectedEnemy.hp} max={selectedEnemy.maxHp} label="Vida" tone="health" /><StatusList combatant={selectedEnemy} /></div> : null}
+              <div className="initiative-strip" aria-label="Ordem de iniciativa">{activeBattle.initiativeOrder.map((combatantId, index) => {
+                const combatant = activeBattle.combatants[combatantId]
+                return <span key={combatantId} className={activeBattle.actorId === combatantId ? 'active' : ''}>{index + 1}. {combatant.name}</span>
+              })}</div>
+            </> : <div className="battle-log-panel"><div className="battle-log" aria-live="polite">
+              {activeBattle.log.slice(-14).map((entry) => <p key={entry.id} className={`battle-log__${entry.tone}`}><span>[R{entry.round}]</span> {entry.message}</p>)}
+            </div><details><summary>Inspecionar fases resolvidas</summary><code>{activeBattle.phaseHistory.join(' → ')}</code></details></div>}
           </div>
-          <details>
-            <summary>Inspecionar fases resolvidas</summary>
-            <code>{activeBattle.phaseHistory.join(' → ')}</code>
-          </details>
-        </ArcanePanel>
+        </aside> : null}
       </div>
-    </GameShell>
+    </div>
   )
+
+  return unified ? sceneContent : <GameShell fluid immersive>{sceneContent}</GameShell>
+}
+
+export function BattleScreen() {
+  return <BattleScene />
 }

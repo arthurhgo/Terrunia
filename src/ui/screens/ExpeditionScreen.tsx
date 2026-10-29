@@ -38,7 +38,7 @@ function NodeDrawer({ node, status, onAction }: { node: TrailNodeDefinition; sta
   </article>
 }
 
-export function ExpeditionScreen() {
+export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const save = useGameStore((state) => state.save)
   const resolveCurrentTrailNode = useGameStore((state) => state.resolveCurrentTrailNode)
   const startBattle = useGameStore((state) => state.startBattle)
@@ -61,17 +61,20 @@ export function ExpeditionScreen() {
   const quest = save.quests.vs_astravel_first_contact
   const questDefinition = content.quests.vs_astravel_first_contact
 
-  const leave = () => { returnToTerran(); navigate('/terran') }
+  const leave = () => {
+    returnToTerran()
+    if (!unified) navigate('/terran')
+  }
   const inspect = (nodeId: string) => { setSelectedId(nodeId); setDrawer('node') }
   const act = () => {
     if (!selectedNode || !['current', 'bossCurrent'].includes(save.world.trailNodeStates[selectedNode.id] ?? '')
       && !(selectedNode.type === 'boss' && save.world.trailNodeStates[selectedNode.id] === 'completed')) return
     if (selectedNode.type === 'boss') {
       enterFungalChambers()
-      navigate('/dungeon')
+      if (!unified) navigate('/dungeon')
     } else if (selectedNode.type === 'battle') {
       startBattle(selectedNode.id)
-      navigate('/battle')
+      if (!unified) navigate('/battle')
     } else if (selectedNode.type === 'camp' || selectedNode.type === 'event') {
       resolveCurrentTrailNode()
       setSelectedId(null)
@@ -81,8 +84,7 @@ export function ExpeditionScreen() {
 
   const title = drawer === 'node' ? selectedNode?.label ?? 'Trilha' : drawer === 'inventory' ? 'Mochila' : drawer === 'quests' ? 'Missões' : 'Rota de Astravél'
 
-  return <GameShell fluid immersive>
-    <div className="terran-game expedition-game">
+  const sceneContent = <div className="terran-game expedition-game">
       <header className="terran-game__topbar">
         <div><span className="eyebrow">EXPEDIÇÃO · INSTÂNCIA EXTERNA</span><h1>Astravél</h1></div>
         <div className="terran-game__readout"><MapPin size={16} /> FLORESTA &gt; {activeNode?.label.toUpperCase() ?? 'CÂMARAS FÚNGICAS'}<span>{completed}/{trail.nodes.length} marcos</span></div>
@@ -138,5 +140,10 @@ export function ExpeditionScreen() {
       {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId}
         reducedMotion={save.settings.reducedMotion} onComplete={() => recordCutsceneViewed(scene.id)} />}
     </div>
-  </GameShell>
+
+  return unified ? sceneContent : <GameShell fluid immersive>{sceneContent}</GameShell>
+}
+
+export function ExpeditionScreen() {
+  return <ExpeditionScene />
 }

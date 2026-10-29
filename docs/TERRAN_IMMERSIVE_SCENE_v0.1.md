@@ -69,3 +69,14 @@ O `eventLog` permanece dentro do save local/cloud já versionado. Não exige mig
 - Sprites de NPC agora exibem passo e orientação durante deslocamentos, ainda na matriz 16×16. A implementação de patrulha é exclusivamente visual; não cria progresso de missões, encontros ou flags.
 - `clan_oath` e `class_awakening` são cutscenes `CONTENT_DRAFT`/`VISUAL_DRAFT`, com arte de salão e rito em pixel art. Dependem respectivamente de `character.clan.clanId` e `character.classProgression.classId` já presentes no save. São vistas uma vez por campanha, ordenadas Clã → Classe, e usam o mesmo marcador persistido `CutsceneViewed:*`; não alteram a identidade do Terrírian.
 - Limites intencionais: moradores patrulham apenas a área de suas instituições; não há rotina econômica, IA social, colisor dinâmico com o jogador, câmera de mundo expandido ou persistência de coordenadas transitórias.
+
+## Incremento de viewport unificada v0.4 — 2026-10-28
+
+- `/play` é a raiz persistente da experiência gamificada. Terran, Astravél, Câmaras Fúngicas e combate são selecionados por `getWorldScene(GameSave)` sem trocar a rota nem desmontar o `GameShell`.
+- A prioridade é `battle → dungeon → expedition → Terran`: combate é um estado temporário sobre o local de origem, não uma nova localização no mundo.
+- Entrar em instância, alcançar um encontro, vencer e retornar produzem transições visuais na mesma viewport. `reducedMotion` remove a animação, preservando a troca funcional.
+- O combate usa a mesma proporção lógica **384 × 256**, topbar, HUD e painel lateral da exploração. Comandos ficam sobre o campo; status, alvos, iniciativa e registro abrem ao lado.
+- A máquina de estados de combate continua inteiramente no domínio. A viewport somente envia comandos e apresenta `BattleState`; nenhuma regra foi movida para React.
+- As sete instituições de Terran funcionam como nodes urbanos clicáveis com caminho até a entrada. O termo “node” é técnico/visual e não converte instituições em nós de trilha nem altera o cânone da cidade.
+- Rotas antigas `/terran`, `/expedition`, `/dungeon` e `/battle` redirecionam à raiz unificada na aplicação. Os componentes isolados continuam disponíveis para testes e compatibilidade interna.
+- Velocidade final, aceleração, colisão com moradores e encontros aleatórios permanecem `OWNER_DECISION`. O movimento atual é parametrização técnica `VISUAL_DRAFT`; encontros continuam apenas nos nodes definidos em conteúdo.

@@ -12,7 +12,7 @@ type GameShellProps = {
 }
 
 const navItems = [
-  { to: '/terran', label: 'Terran', icon: Landmark },
+  { to: '/play', label: 'Terran', icon: Landmark },
   { to: '/nexus', label: 'Nexo', icon: Link2 },
   { to: '/inventory', label: 'Inventário', icon: Package },
   { to: '/character', label: 'Personagem', icon: CircleUserRound },
@@ -40,7 +40,7 @@ export function GameShell({ children, fluid = false, immersive = false }: GameSh
   return (
     <div className={`game-shell ${immersive ? 'game-shell--immersive' : ''}`}>
       <header className="game-header">
-        <NavLink to="/terran" className="brand" aria-label="Terrúnia — Terran">
+        <NavLink to="/play" className="brand" aria-label="Terrúnia — Terran">
           <img src="/assets/ui/terrunia-mark.svg" alt="" />
           <span>
             <strong>Terrúnia</strong>

@@ -1762,3 +1762,57 @@ code {
   .dungeon-field__node span { display: none; }
   .expedition-game__retreat { top: 4px; right: 4px; padding: 5px; font-size: .55rem; }
 }
+
+/* Persistent world viewport: Terran → expedition → combat → return */
+.world-scene { position: relative; min-height: calc(100vh - 104px); overflow: hidden; }
+.world-scene__content { animation: worldSceneReveal 360ms ease-out both; }
+.world-scene-transition { position: absolute; z-index: 850; inset: 0; display: grid; place-items: center; align-content: center; gap: 8px; color: #f4d89d; background: radial-gradient(circle at 50% 50%, rgb(31 68 78 / 82%), rgb(5 10 14 / 97%) 65%); font-family: var(--display); text-align: center; pointer-events: none; animation: worldSceneVeil 720ms ease-in-out both; }
+.world-scene-transition span { color: #79cbe0; font-size: clamp(.58rem, 1vw, .75rem); letter-spacing: .18em; }
+.world-scene-transition strong { font-size: clamp(1.1rem, 3vw, 2rem); text-transform: uppercase; }
+.world-scene-transition i { width: min(260px, 42vw); height: 2px; background: linear-gradient(90deg, transparent, #e1be73, transparent); box-shadow: 0 0 14px #e2bd6b; }
+@keyframes worldSceneReveal { from { opacity: .35; transform: scale(.995); } }
+@keyframes worldSceneVeil { 0% { opacity: 0; } 18%, 62% { opacity: 1; } 100% { opacity: 0; } }
+
+/* Combat occupies the same 384:256 stage and side-drawer grammar as exploration. */
+.battle-game__stage { aspect-ratio: 384 / 256; overflow: hidden; }
+.battle-game__field { position: absolute; inset: 0; min-height: 0; border: 0; }
+.battle-game__menu { z-index: 12; }
+.battle-game__field .battle-character--player { bottom: 84px; left: 7%; }
+.battle-game__field .battle-enemy-party { right: 3%; bottom: 82px; }
+.battle-game__field .turn-orbit { z-index: 7; top: 13px; }
+.battle-game__vitals { position: absolute; z-index: 9; top: 13px; display: grid; min-width: 155px; gap: 3px; border: 1px solid #5b513e; padding: 7px 9px; color: #ebd4a8; background: #091116e8; box-shadow: 0 4px 15px #0008; font-family: var(--display); }
+.battle-game__vitals strong { overflow: hidden; font-size: .67rem; text-overflow: ellipsis; white-space: nowrap; }
+.battle-game__vitals span { color: #a29b8d; font-size: .52rem; }
+.battle-game__vitals > i { display: block; height: 5px; overflow: hidden; border: 1px solid #3e2023; background: #16090c; }
+.battle-game__vitals > i > b { display: block; height: 100%; background: linear-gradient(90deg, #762e35, #d6656e); }
+.battle-game__vitals--player { left: 124px; }
+.battle-game__vitals--enemy { right: 12px; text-align: right; }
+.battle-game__commands { position: absolute; z-index: 14; right: 8px; bottom: 8px; left: 8px; padding: 7px; background: #071015eb; box-shadow: 0 0 24px #000b; }
+.battle-game__commands .game-button { min-height: 40px; padding: 7px 6px; font-size: clamp(.52rem, .75vw, .67rem); }
+.battle-game__result { position: absolute; z-index: 15; right: 12px; bottom: 12px; left: 12px; box-shadow: 0 0 34px #000d; }
+.battle-game__drawer .terran-game__drawer-content { align-content: start; }
+.battle-game__identity { display: grid; align-items: center; gap: 10px; border: 1px solid #4b3b26; padding: 9px; background: #0b1218; grid-template-columns: 74px 1fr; }
+.battle-game__identity > img { width: 74px; height: 74px; object-fit: contain; image-rendering: pixelated; }
+.battle-game__identity > div { display: grid; min-width: 0; gap: 4px; }
+.battle-game__identity strong { overflow: hidden; color: #ecd09a; font-family: var(--display); text-overflow: ellipsis; white-space: nowrap; }
+.battle-game__identity small { color: #8aaec0; font-size: .62rem; }
+.battle-game__drawer .target-inspector > img { height: 105px; }
+.battle-game__drawer .battle-log { max-height: calc(100vh - 260px); }
+
+@media (max-width: 760px) {
+  .world-scene { min-height: calc(100vh - 92px); }
+  .battle-game__stage { min-height: 430px; aspect-ratio: auto; }
+  .battle-game__field .battle-character--player { bottom: 118px; left: 1%; }
+  .battle-game__field .battle-enemy-party { bottom: 118px; }
+  .battle-game__vitals { top: 4px; min-width: 118px; padding: 5px; }
+  .battle-game__vitals--player { left: 48px; }
+  .battle-game__vitals--enemy { right: 4px; }
+  .battle-game__field .turn-orbit { top: 57px; width: 43px; height: 43px; }
+  .battle-game__commands { position: absolute; right: 4px; bottom: 4px; left: 4px; transform: none; grid-template-columns: repeat(3, 1fr); }
+  .battle-game__commands .game-button { min-height: 40px; padding: 4px; font-size: .52rem; }
+  .battle-game__result { right: 4px; bottom: 4px; left: 4px; max-height: 55%; overflow-y: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world-scene__content, .world-scene-transition { animation: none; }
+}

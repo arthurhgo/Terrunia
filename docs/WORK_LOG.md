@@ -1,5 +1,16 @@
 # Registro de implementação
 
+## Terran v0.4 — viewport única de exploração e combate
+
+- criada rota persistente `/play` para Terran, Astravél, Câmaras Fúngicas e combate;
+- centralizada a seleção da cena em função pura com prioridade para batalha ativa;
+- mantido o `GameShell` montado durante Portal, deslocamento, encontro, vitória e retorno;
+- adaptado o combate para a mesma moldura 384×256, HUD sobre o cenário e painel lateral da cidade;
+- adicionadas transições visuais entre exploração, dungeon e combate com suporte a movimento reduzido;
+- mantidos pathfinding, nodes urbanos, NPCs, painéis e canvas de Terran já implementados;
+- preservada a máquina de estados de combate e toda a persistência local/cloud;
+- adicionados testes para seleção de cena e troca exploração→combate sem mudança de rota.
+
 ## Hotfix — Firestore e carregamento de batalha
 
 - identificado erro público de `Transaction.set()` provocado por `battle.combatants.*.aiSkillEveryRounds: undefined` em saves com Fungorro Rastejante;
