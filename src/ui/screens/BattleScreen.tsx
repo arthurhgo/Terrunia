@@ -36,6 +36,13 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const [showLog, setShowLog] = useState(false)
   const previous = useRef<{ id: string; hp: Record<string, number> } | null>(null)
   const reducedMotion = Boolean(save?.settings.reducedMotion)
+  const defeated = battle?.phase === 'Defeat' && player?.hp === 0
+
+  useEffect(() => {
+    if (!defeated) return
+    const timer = window.setTimeout(() => returnToTerran(), reducedMotion ? 600 : 2800)
+    return () => window.clearTimeout(timer)
+  }, [battle?.id, defeated, reducedMotion, returnToTerran])
 
   useEffect(() => {
     if (!enemies.some((enemy) => enemy.id === targetId && enemy.alive)) {
@@ -135,7 +142,16 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             title={actor.name}>{actor.side === 'player' ? '★' : '✦'}</span>
         })}
       </div>
-      {turnCue && <div className="pixel-battle__turn-cue" role="status">TURNO DOS INIMIGOS</div>}
+      {turnCue && !defeated && <div className="pixel-battle__turn-cue" role="status">TURNO DOS INIMIGOS</div>}
+      {defeated && <div className="pixel-battle__death" role="status" aria-label="Terrírian derrotado">
+        <div className="pixel-battle__death-aura" aria-hidden="true" />
+        <div className="pixel-battle__death-character">
+          <AssetImage assetId={save.character.portraitAssetId} alt="Personagem caindo ao perder toda a Vida" />
+        </div>
+        <strong>O TERRÍRIAN CAIU</strong>
+        <small>Seu Nexo desperta na Base de Terran...</small>
+        <button type="button" onClick={() => end(true)}>ACORDAR NA BASE</button>
+      </div>}
       {battle.phase === 'Victory' && !battle.claimed && <div className="pixel-battle__drops" aria-label="Espólios disponíveis">
         <strong>CLIQUE PARA RECOLHER OS ESPÓLIOS</strong>
         {drops.map((id, index) => <button type="button" key={index} className={collected.includes(index) ? 'is-picked' : ''}
@@ -205,8 +221,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               <button onClick={() => end(false)}>CONTINUAR EXPEDIÇÃO</button>}
             <button onClick={() => end(true)}>RETORNAR A TERRAN</button>
           </>}
-        </div> : <div className="pixel-battle__result"><p>O Terrírian caiu. A penalidade definitiva continua OWNER_DECISION.</p>
-          <button onClick={() => end(true)}>RETORNAR A TERRAN</button></div>}
+        </div> : <div className="pixel-battle__result"><p>O Nexo retorna à Base. Sem perda de XP, Ouro ou equipamentos nesta versão.</p>
+          <button onClick={() => end(true)}>DESPERTAR NA BASE</button></div>}
       </section>
       <section className="pixel-battle__panel pixel-battle__target">
         <h2>ALVO <button type="button" onClick={() => setShowLog(!showLog)} aria-expanded={showLog} aria-label="Abrir registro de combate"><ScrollText size={16} /></button></h2>

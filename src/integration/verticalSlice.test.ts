@@ -128,7 +128,9 @@ describe('vertical slice integrada', () => {
     useGameStore.getState().acceptQuest('main_terran_first_home')
     useGameStore.getState().preparePlayerHome()
     useGameStore.getState().turnInQuest('main_terran_first_home', 'npc_daeryn')
+    useGameStore.getState().enterBase()
     useGameStore.getState().restAtHome()
+    useGameStore.getState().leaveBase()
     expect(useGameStore.getState().save?.world.worldFlags).toContain('player_home_unlocked')
     useGameStore.getState().travelInTerran('location_terran_bond_workshop')
     useGameStore.getState().convertItems([firstDrop!])
@@ -172,7 +174,9 @@ describe('vertical slice integrada', () => {
 
     useGameStore.getState().claimBattleRewards()
     useGameStore.getState().returnToTerran()
+    useGameStore.getState().enterBase()
     useGameStore.getState().restAtHome()
+    useGameStore.getState().leaveBase()
     expect(useGameStore.getState().save?.world.trailNodeStates.astravel_ruin_threshold_05).toBe(
       'current',
     )

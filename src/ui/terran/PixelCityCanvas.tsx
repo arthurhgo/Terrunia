@@ -247,8 +247,8 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
         })}
         <button type="button" className={`pixel-city__site pixel-city__home ${!homeUnlocked ? 'is-locked' : ''}`}
           style={{ left: `${PLAYER_HOME_CENTER.x / CITY_WIDTH * 100}%`, top: `${(PLAYER_HOME_CENTER.y - 31) / CITY_HEIGHT * 100}%` }}
-          aria-label="Ir para Casa do Terrírian" title={homeUnlocked ? 'Casa do Terrírian · entrar' : 'Casa ainda fechada · missão de Daeryn'}
-          onClick={walkToHome} disabled={!enabled}>{homeUnlocked ? 'Minha Casa' : 'Casa Fechada'}</button>
+          aria-label="Ir para Base do Terrírian" title="Base do Terrírian · entrar"
+          onClick={walkToHome} disabled={!enabled}>Base</button>
         {actors.map((actor) => <button key={actor.id} type="button" className="pixel-city__npc"
           ref={(button) => { if (button) npcButtonsRef.current.set(actor.id, button); else npcButtonsRef.current.delete(actor.id) }}
           style={{ left: `${actor.point.x / CITY_WIDTH * 100}%`, top: `${(actor.point.y - 9) / CITY_HEIGHT * 100}%` }}

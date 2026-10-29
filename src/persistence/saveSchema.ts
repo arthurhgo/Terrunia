@@ -6,7 +6,7 @@ import type { GameSave } from '../domain/game/types'
 import { MAX_ACTIVE_QUESTS, SLOT_OCCUPYING_QUEST_STATUSES } from '../domain/quests/questEngine'
 import { deriveCharacterStats } from '../domain/character/derivedStats'
 
-export const CURRENT_SAVE_SCHEMA = 10
+export const CURRENT_SAVE_SCHEMA = 11
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -259,6 +259,7 @@ export const gameSaveSchema = z.object({
   boundItems: z.record(z.string(), boundItemSchema),
   skillTrees: z.record(z.string(), treeProgressSchema.omit({ treeId: true })),
   inventory: z.array(inventoryItemSchema),
+  baseStorage: z.array(inventoryItemSchema),
   wallet: z.object({ gold: nonnegativeNumber }),
   vitals: z.object({ hp: nonnegativeNumber, mp: nonnegativeNumber }),
   quests: z.record(z.string(), questProgressSchema),
@@ -310,6 +311,16 @@ export const gameSaveSchema = z.object({
         path: ['inventory', index, 'definitionId'],
         message: 'O item do inventário precisa existir no catálogo de conteúdo.',
       })
+    }
+  }
+
+  for (const [index, item] of save.baseStorage.entries()) {
+    if (inventoryIds.has(item.instanceId)) {
+      context.addIssue({ code: 'custom', path: ['baseStorage', index, 'instanceId'], message: 'O baú e a mochila não podem compartilhar IDs de instância.' })
+    }
+    inventoryIds.add(item.instanceId)
+    if (!content.items[item.definitionId]) {
+      context.addIssue({ code: 'custom', path: ['baseStorage', index, 'definitionId'], message: 'O item do baú deve existir no catálogo.' })
     }
   }
 
@@ -709,6 +720,18 @@ const migrateV9ToV10 = (legacy: Record<string, unknown>): unknown => {
   return refreshQuestAvailability(next, content, previous.updatedAt)
 }
 
+const migrateV10ToV11 = (legacy: Record<string, unknown>): unknown => {
+  const previous = legacy as unknown as GameSave
+  return {
+    ...previous,
+    schemaVersion: 11,
+    gameVersion: '0.8.3',
+    baseStorage: previous.baseStorage ?? [],
+    revision: previous.revision + 1,
+    eventLog: [...previous.eventLog, 'SaveMigrated:10->11'],
+  }
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -755,6 +778,10 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 9) {
     candidate = migrateV9ToV10(candidate as Record<string, unknown>)
     version = 10
+  }
+  if (version === 10) {
+    candidate = migrateV10ToV11(candidate as Record<string, unknown>)
+    version = 11
   }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)

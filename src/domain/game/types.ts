@@ -170,6 +170,7 @@ export type GameSave = {
     }
   >
   inventory: InventoryItemInstance[]
+  baseStorage: InventoryItemInstance[]
   wallet: { gold: number }
   // Vida/Mana atuais persistem; máximos continuam derivados do personagem.
   vitals: { hp: number; mp: number }

@@ -2161,3 +2161,19 @@ code {
 @media (prefers-reduced-motion: reduce) {
   .terran-game__hud button, .terran-game__hud button span { transition: none; }
 }
+
+/* Player Base v0.1 - personal chest, waking and rest UI. */
+.base-chest{display:grid;gap:11px;color:#d9d2bf}
+.base-chest h3,.base-chest h4{margin:0;color:#e6c788;font-family:var(--display)}
+.base-chest p{margin:0;font-size:.77rem;line-height:1.5;color:#b4b7b2}
+.base-chest h4{border-bottom:1px solid #77613b;padding-bottom:6px}
+.base-chest__item{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:8px;align-items:center;border:1px solid #46575a;background:#101e29;padding:6px}
+.base-chest__item .asset-image{width:40px;height:40px;image-rendering:pixelated}
+.base-chest__item div{display:grid;gap:3px;min-width:0}
+.base-chest__item strong{color:#e5d2a9;font-size:.72rem}
+.base-chest__item small{color:#87b5c6}
+.base-chest__item button{display:flex;gap:4px;align-items:center;border:1px solid #aa8d56;background:#18252b;color:#efd59c;padding:6px;cursor:pointer;font-size:.65rem}
+.base-chest__item button:disabled{opacity:.4;cursor:not-allowed}
+.terran-base__waking{position:absolute;z-index:22;inset:0;display:grid;place-items:center;text-align:center;padding:30px;background:#081423dd;color:#efcf92;font-family:var(--display);font-size:clamp(.8rem,1.8vw,1.5rem);animation:base-waking 1.85s steps(9,end) both;pointer-events:none}
+@keyframes base-waking{0%{opacity:1;filter:brightness(.5)}75%{opacity:1;filter:none}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.terran-base__waking{animation:none;display:none}}

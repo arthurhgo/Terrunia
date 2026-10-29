@@ -6,6 +6,7 @@ import { createNewSave } from '../game/createSave'
 import { acceptQuest, applyQuestEvent, offerQuest, refreshQuestAvailability, turnInQuest } from '../quests/questEngine'
 import { migrateAndValidateSave } from '../../persistence/saveSchema'
 import { buyFromSylwen, PLAYER_HOME_FLAG, PREPARE_HOME_OBJECTIVE, receiveDaerynAid, restAtHome } from './services'
+import { BASE_LOCATION_ID } from './base'
 
 const now = '2026-10-29T14:00:00.000Z'
 const fresh = () => createNewSave('tester', 'Terial', 'character.terririan.default', content, now)
@@ -45,7 +46,7 @@ describe('serviços de Terran e progressão da casa', () => {
 
   it('disponibiliza a casa apenas depois da missão aceita e entregue a Daeryn', () => {
     const save = fresh()
-    expect(restAtHome(save, content, now)).toMatchObject({ ok: false, code: 'HOME_LOCKED' })
+    expect(restAtHome(save, content, now)).toMatchObject({ ok: false, code: 'REST_UNAVAILABLE' })
     save.quests.vs_astravel_first_contact.status = 'completed'
     const available = refreshQuestAvailability(save, content, now)
     expect(available.quests.main_terran_first_home.status).toBe('available')
@@ -81,6 +82,7 @@ describe('serviços de Terran e progressão da casa', () => {
     expect(battle.combatants.combatant_player.hp).toBeLessThanOrEqual(5)
     expect(battle.combatants.combatant_player.mp).toBe(2)
     save.world.worldFlags.push(PLAYER_HOME_FLAG)
+    save.world.currentLocationId = BASE_LOCATION_ID
     const healed = restAtHome(save, content, now)
     expect(healed.ok).toBe(true)
     if (!healed.ok) return

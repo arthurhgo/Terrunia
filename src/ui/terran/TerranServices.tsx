@@ -1,4 +1,4 @@
-import { BedDouble, Check, Coins, HeartPulse, ShoppingBasket } from 'lucide-react'
+import { BedDouble, Check, Coins, HeartPulse, ShoppingBasket, Archive, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react'
 import { content } from '../../content/catalog'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import type { GameSave } from '../../domain/game/types'
@@ -38,18 +38,43 @@ export function HomeRoomPixels() {
 
 export function HomeDrawer({ save, canRest = false }: { save: GameSave; canRest?: boolean }) {
   const rest = useGameStore((state) => state.restAtHome)
-  const unlocked = save.world.worldFlags.includes(PLAYER_HOME_FLAG)
+  const prepared = save.world.worldFlags.includes(PLAYER_HOME_FLAG)
   const stats = deriveCharacterStats(save, content)
   return <div className="terran-drawer__section">
     <HomeRoomPixels />
-    <p><BedDouble size={17} /> <strong>Alojamento do Terrírian</strong></p>
-    <p>{unlocked ? 'Seu quarto em Terran. Repouso gratuito fora de combate, sem perder progresso.' : 'Alojamento ainda fechado. Daeryn poderá oferecê-lo após sua primeira investigação em Astravél.'}</p>
+    <p><BedDouble size={17} /> <strong>Base do Terrírian</strong></p>
+    <p>Seu refúgio particular em Terran. É possível entrar desde o início, guardar materiais no baú e recuperar Vida e Mana na cama.</p>
+    <small>{prepared ? 'Alojamento preparado com Daeryn.' : 'A missão de Daeryn permite preparar e reconhecer seu alojamento, sem bloquear a entrada.'}</small>
     <ProgressBar value={save.vitals.hp} max={stats.life.value} label="Vida atual" tone="health" />
     <ProgressBar value={save.vitals.mp} max={stats.mana.value} label="Mana atual" />
-    <button type="button" className="terran-service-action" disabled={!unlocked || Boolean(save.battle) || !canRest} onClick={rest}>
-      <BedDouble size={17} /> {!unlocked ? 'Conclua “Um Lugar em Terran”' : canRest ? 'Descansar · Recuperar PV e MP' : 'Entre na sua casa para descansar'}
+    <button type="button" className="terran-service-action" disabled={Boolean(save.battle) || !canRest} onClick={rest}>
+      <BedDouble size={17} /> {canRest ? 'Descansar · Recuperar PV e MP' : 'Entre na Base para descansar'}
     </button>
   </div>
+}
+
+export function BaseChest({ save }: { save: GameSave }) {
+  const transfer = useGameStore((state) => state.transferBaseItem)
+  const renderList = (items: GameSave['inventory'], direction: 'deposit' | 'withdraw') =>
+    items.length ? items.map((item) => {
+      const definition = content.items[item.definitionId]
+      return <div className="base-chest__item" key={item.instanceId}>
+        <AssetImage assetId={definition?.iconAssetId ?? 'item.fungal-nucleus'} />
+        <div><strong>{definition?.name ?? item.definitionId}</strong><small>×{item.quantity}{item.locked ? ' · travado' : ''}</small></div>
+        <button type="button" disabled={item.locked && direction === 'deposit'}
+          aria-label={`${direction === 'deposit' ? 'Guardar' : 'Retirar'} ${definition?.name ?? item.definitionId}`}
+          onClick={() => transfer(direction, item.instanceId, item.quantity)}>
+          {direction === 'deposit' ? <ArrowDownToLine size={16} /> : <ArrowUpFromLine size={16} />}
+          {direction === 'deposit' ? 'Guardar' : 'Retirar'}
+        </button>
+      </div>
+    }) : <p>{direction === 'deposit' ? 'A mochila está vazia.' : 'O baú está vazio.'}</p>
+  return <section className="base-chest" aria-label="Baú pessoal da Base">
+    <h3><Archive size={20} /> Baú da Base</h3>
+    <p>Itens e materiais temporários são armazenados apenas neste personagem. Os cinco itens vinculados permanecem equipados.</p>
+    <h4>Mochila</h4>{renderList(save.inventory, 'deposit')}
+    <h4>Armazenado na Base</h4>{renderList(save.baseStorage, 'withdraw')}
+  </section>
 }
 
 export function SylwenShop({ save }: { save: GameSave }) {
