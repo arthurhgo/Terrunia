@@ -1604,3 +1604,215 @@ code {
     transition-duration: 0.01ms !important;
   }
 }
+/* Terran v0.3 — continuous pixel city, in-world HUD and narrative panels. */
+.game-shell--immersive .game-header { justify-content: space-between; }
+.game-shell--immersive .game-footer { display: none; }
+.game-shell--immersive .game-main--fluid { width: 100%; padding: 8px 14px 14px; }
+.terran-game { max-width: 1680px; margin: 0 auto; }
+.terran-game__topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 5px 12px; }
+.terran-game__topbar h1 { margin: 2px 0 0; color: #e8c88f; font-family: var(--display); font-size: 1.75rem; line-height: 1; }
+.terran-game__readout { display: flex; align-items: center; gap: 7px; border: 1px solid #4a3a29; padding: 9px 12px; color: #e9d9ba; background: #0b1115; font-family: var(--display); font-size: 0.69rem; }
+.terran-game__readout span { border-left: 1px solid #50483c; padding-left: 9px; color: #80b5cd; }
+.terran-game__layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
+.terran-game__layout.has-drawer { grid-template-columns: minmax(0, 1fr) minmax(335px, 390px); }
+.terran-game__stage { position: relative; min-width: 0; border: 3px solid #705530; background: #102328; box-shadow: inset 0 0 0 3px #28353a, 0 8px 35px #0009; }
+.pixel-city { position: relative; width: 100%; aspect-ratio: 384 / 256; overflow: hidden; background: #273f38; }
+.pixel-city__canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; touch-action: none; cursor: crosshair; }
+.pixel-city__sites { position: absolute; inset: 0; pointer-events: none; }
+.pixel-city__site { position: absolute; z-index: 2; transform: translate(-50%, -50%); min-width: 46px; border: 1px solid #8a7758; padding: 3px 5px; color: #f2dec2; background: #14252ce8; box-shadow: 0 2px 0 #0a1317; font-family: var(--display); font-size: clamp(.56rem, .8vw, .7rem); font-weight: 800; cursor: pointer; pointer-events: auto; }
+.pixel-city__site:hover, .pixel-city__site:focus-visible { border-color: #6fcbef; color: #d5f6ff; outline: 1px solid #67bad7; }
+.pixel-city__site.is-objective { border-color: #e3bd6e; box-shadow: 0 0 0 2px #f7d17166; }
+.pixel-city__site b { position: absolute; top: -13px; right: -8px; display: grid; width: 16px; height: 16px; place-items: center; border: 1px solid #53350b; color: #211401; background: #ffdc74; font-size: 0.68rem; }
+.pixel-city__npc { position: absolute; z-index: 3; transform: translate(-50%, -50%); display: grid; width: 22px; height: 24px; place-items: center; border: 1px solid transparent; padding: 0; background: transparent; color: #f4d394; cursor: pointer; pointer-events: auto; }
+.pixel-city__npc span { position: absolute; top: -7px; right: -3px; display: grid; width: 12px; height: 12px; place-items: center; border: 1px solid #53665c; background: #1a3038db; font-size: .58rem; line-height: 1; }
+.pixel-city__npc:hover, .pixel-city__npc:focus-visible { border-color: #e8c888; outline: 2px solid #73c5d6; outline-offset: 1px; }
+.pixel-city__npc:hover span, .pixel-city__npc:focus-visible span { border-color: #ffdf99; background: #384b4b; }
+.terran-game__hud { position: absolute; top: 14px; left: 14px; z-index: 5; display: grid; gap: 5px; width: 95px; }
+.terran-game__hud button { display: flex; align-items: center; gap: 7px; border: 1px solid #4d6d77; padding: 7px; color: #d9e9ed; background: #101b25ef; font-family: var(--display); font-size: .62rem; cursor: pointer; }
+.terran-game__hud button.active, .terran-game__hud button:hover { border-color: #e1c17e; color: #ffdfa5; background: #20303c; }
+.terran-game__quest { position: absolute; right: 8px; bottom: 8px; z-index: 5; display: flex; align-items: center; gap: 8px; max-width: 60%; border: 1px solid #735a32; padding: 7px 10px; color: #f6de9f; background: #0c151ce8; font-family: var(--display); font-size: .7rem; }
+.terran-game__quest > span { display: grid; gap: 3px; }
+.terran-game__quest small { color: #9bb5b9; font-family: sans-serif; font-size: .6rem; }
+.pixel-city__dpad { position: absolute; bottom: 12px; left: 13px; z-index: 4; display: grid; gap: 3px; grid-template-columns: repeat(3, 30px); grid-template-rows: repeat(2, 30px); }
+.pixel-city__dpad button { display: grid; place-items: center; border: 1px solid #82918b; color: #e7e1cb; background: #101f28bd; font-size: .75rem; touch-action: none; user-select: none; cursor: pointer; }
+.pixel-city__direction--up { grid-column: 2; grid-row: 1; }
+.pixel-city__direction--left { grid-column: 1; grid-row: 2; }
+.pixel-city__direction--down { grid-column: 2; grid-row: 2; }
+.pixel-city__direction--right { grid-column: 3; grid-row: 2; }
+.pixel-city__interact { grid-column: 3; grid-row: 1; }
+.terran-game__drawer { position: relative; z-index: 10; min-width: 0; max-height: calc(100vh - 138px); overflow-y: auto; border: 2px solid #725431; background: #080d12; box-shadow: inset 0 0 30px #182736; }
+.terran-game__drawer > header { position: sticky; top: 0; z-index: 2; border-bottom: 1px solid #6e5536; padding: 14px 39px 12px 13px; background: #131b24; }
+.terran-game__drawer > header h2 { margin: 4px 0 0; color: #ead19f; font-family: var(--display); font-size: 1.05rem; }
+.terran-game__drawer > header button { position: absolute; top: 13px; right: 11px; border: 1px solid #795d42; padding: 5px; color: #e8d3a9; background: #181c21; cursor: pointer; }
+.terran-game__drawer-content { display: grid; gap: 12px; padding: 12px; }
+.terran-game__drawer .arcane-panel { min-width: 0; }
+.terran-game__drawer .bound-items-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.terran-game__drawer .inventory-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.terran-game__drawer .inventory-actions { align-items: start; flex-direction: column; }
+.terran-game__drawer .inventory-actions > div { flex-wrap: wrap; }
+.terran-game__drawer .equipment-catalog__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.terran-game__drawer .bound-card__visual { height: 84px; }
+.terran-game__drawer .bound-card__visual img { width: 55px; height: 55px; }
+.terran-game__drawer .trail-map { min-height: 285px; }
+.terran-drawer__section { display: grid; gap: 11px; }
+.terran-drawer__section > p { margin: 0; color: #afa89a; font-size: .75rem; line-height: 1.6; }
+.terran-drawer__section > h3 { margin: 5px 0 0; color: #e6c78f; font-family: var(--display); font-size: .85rem; }
+.terran-drawer__notice { border-left: 2px solid #7393a8; padding: 10px; color: #b4b3a7; background: #101923; font-size: .75rem; }
+.terran-drawer__residents { display: grid; gap: 5px; }
+.terran-drawer__residents button { display: flex; align-items: center; gap: 9px; min-width: 0; border: 1px solid #3b3f3b; padding: 9px; color: #e3d4b7; background: #0b131b; text-align: left; cursor: pointer; }
+.terran-drawer__residents button:hover { border-color: #78adbc; }
+.terran-drawer__residents button > span:nth-child(2) { display: grid; flex: 1; min-width: 0; gap: 3px; }
+.terran-drawer__residents small, .terran-drawer__services small { color: #9a9387; font-size: .65rem; }
+.terran-drawer__residents i { color: #75bcd5; font-size: .64rem; font-style: normal; }
+.terran-npc-avatar { color: #e3c37e; font-size: 1.25rem; }
+.terran-drawer__services { display: grid; gap: 5px; }
+.terran-drawer__services > div { display: grid; gap: 4px; border-left: 2px solid #627c86; padding: 8px; background: #131b21; }
+.terran-game__identity { display: flex; align-items: center; gap: 12px; }
+.terran-game__identity .asset-image { width: 70px; height: 70px; image-rendering: pixelated; }
+.terran-game__identity span { display: grid; gap: 5px; }
+.terran-game__identity strong { color: #ebcf9a; font-family: var(--display); }
+.terran-game__identity small { color: #9fa29d; font-size: .67rem; }
+.terran-points { display: flex; align-items: center; gap: 8px; color: #9ed8ff; font-family: var(--display); }
+.terran-skill { display: grid; gap: 5px; border: 1px solid #637654; padding: 10px; color: #e1d7bc; background: #16231a; text-align: left; cursor: pointer; }
+.terran-skill:disabled { border-color: #403e38; color: #817d74; background: #101418; cursor: default; }
+.terran-skill small { font-size: .65rem; }
+.terran-quest { display: grid; gap: 7px; border: 1px solid #604d31; padding: 12px; background: #111820; }
+.terran-quest small { color: #7fc5dc; font-size: .65rem; }
+.terran-quest strong { color: #eed39e; }
+.terran-quest p { margin: 0; color: #b8b2a7; font-size: .72rem; line-height: 1.5; }
+.terran-quest button { justify-self: start; border: 1px solid #6c8c9e; padding: 6px 8px; color: #c5ebf4; background: #192d38; cursor: pointer; }
+.terran-dialogue { position: absolute; right: 16px; bottom: 54px; left: 140px; z-index: 20; display: flex; align-items: center; gap: 15px; border: 3px solid #b59153; padding: 13px; background: #0c131bf2; box-shadow: 0 5px 30px #000a; }
+.terran-dialogue__portrait { display: grid; width: 70px; flex: none; place-items: center; }
+.terran-dialogue__portrait .asset-image { width: 65px; height: 65px; image-rendering: pixelated; }
+.terran-dialogue__text { flex: 1; min-width: 0; }
+.terran-dialogue__text strong { display: block; color: #ead19d; font-family: var(--display); }
+.terran-dialogue__text p { color: #ddd4c3; font-size: .82rem; line-height: 1.5; }
+.terran-dialogue button { border: 1px solid #c5a35c; padding: 8px; color: #ffda8d; background: #19232a; cursor: pointer; }
+.astravel-field { background: #183734; }
+.astravel-field__nodes { position: absolute; inset: 0; pointer-events: none; }
+.astravel-field__node { position: absolute; z-index: 3; display: grid; min-width: 62px; gap: 2px; justify-items: center; transform: translate(-50%, -50%); border: 1px solid #7e735b; padding: 3px 5px; color: #e7d5aa; background: #101e24eb; font-family: var(--display); text-align: center; cursor: pointer; pointer-events: auto; }
+.astravel-field__node strong { display: grid; width: 14px; height: 14px; place-items: center; color: #192b2b; background: #bea97c; font-size: .6rem; }
+.astravel-field__node span { max-width: 90px; font-size: clamp(.47rem, .7vw, .61rem); line-height: 1.2; }
+.astravel-field__node--current, .astravel-field__node--bossCurrent { border-color: #e2c07d; box-shadow: 0 0 0 2px #f7d4794a; }
+.astravel-field__node--current strong, .astravel-field__node--bossCurrent strong { background: #f2ce83; }
+.astravel-field__node--completed { border-color: #649d81; color: #a2dfc0; }
+.astravel-field__node--completed strong { background: #89be99; }
+.astravel-field__node:disabled { border-color: #3a514b; color: #778781; background: #17242ac9; cursor: default; pointer-events: none; }
+.astravel-field__node:disabled strong { background: #556b64; }
+.astravel-field__node:not(:disabled):hover, .astravel-field__node:not(:disabled):focus-visible { z-index: 5; outline: 2px solid #9ce1d0; border-color: #c5efda; }
+.dungeon-field { background: #182a32; }
+.dungeon-field__nodes { position: absolute; inset: 0; pointer-events: none; }
+.dungeon-field__node { position: absolute; z-index: 3; display: grid; gap: 2px; min-width: 62px; justify-items: center; transform: translate(-50%, -50%); border: 1px solid #bba06d; padding: 4px 5px; color: #ffe4af; background: #131c27eb; font-family: var(--display); text-align: center; cursor: pointer; pointer-events: auto; }
+.dungeon-field__node strong { display: grid; width: 15px; height: 15px; place-items: center; color: #17252b; background: #e1bf7d; font-size: .6rem; }
+.dungeon-field__node span { max-width: 90px; font-size: clamp(.47rem, .7vw, .61rem); line-height: 1.25; }
+.dungeon-field__node--discovered { border-color: #77bba7; color: #a7dfc5; }
+.dungeon-field__node--discovered strong { background: #8bd0af; }
+.dungeon-field__node:hover, .dungeon-field__node:focus-visible { z-index: 5; outline: 2px solid #c5efda; }
+.dungeon-field__node:disabled { cursor: default; opacity: .5; }
+.expedition-game__retreat { position: absolute; top: 12px; right: 12px; z-index: 6; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #869c88; padding: 8px 10px; color: #deebcf; background: #132a2bd9; font-family: var(--display); font-size: .67rem; cursor: pointer; }
+.expedition-game__retreat:hover { border-color: #e9c885; color: #fce5b3; }
+.expedition-node-detail { display: grid; gap: 12px; border: 1px solid #695a46; padding: 14px; background: #111d22; }
+.expedition-node-detail h3 { margin: 0; color: #e8d19e; font-family: var(--display); font-size: 1.1rem; }
+.expedition-node-detail p, .expedition-route-list p { margin: 0; color: #bab7a7; font-size: .78rem; line-height: 1.6; }
+.expedition-node-detail__action { display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: 1px solid #c6a469; padding: 10px; color: #ffe3ac; background: #283b32; font-family: var(--display); cursor: pointer; }
+.expedition-node-detail__action:hover { background: #395143; }
+.expedition-node-detail__done { color: #9dd3b9; font-size: .75rem; }
+.expedition-route-list { display: grid; gap: 9px; }
+.expedition-route-list h3 { margin: 0; color: #dfcb9f; font-family: var(--display); }
+.expedition-route-list > small { color: #89caba; }
+.expedition-route-list__item { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-left: 3px solid #485a53; padding: 9px; background: #152127; }
+.expedition-route-list__item strong { color: #c6c7b4; font-size: .76rem; }
+.expedition-route-list__item small { color: #99aca5; font-size: .63rem; text-align: right; }
+.expedition-route-list__item--current, .expedition-route-list__item--bossCurrent { border-color: #d6bb7b; }
+.expedition-route-list__item--completed { border-color: #83c2a0; }
+.terran-cutscene { position: fixed; z-index: 900; inset: 0; display: grid; place-items: center; padding: 20px; background: #05080bf2; }
+.terran-cutscene__scene { position: relative; width: min(840px, 94vw); aspect-ratio: 384 / 160; overflow: hidden; border: 3px solid #8e7049; background: #192d38; }
+.terran-cutscene__canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.terran-cutscene__script { width: min(800px, 94vw); border: 2px solid #8e7049; border-top: 0; padding: 20px 24px; background: #101920; }
+.terran-cutscene__script h2 { margin: 7px 0; color: #f0d398; font-family: var(--display); font-size: clamp(1rem, 2.5vw, 1.5rem); }
+.terran-cutscene__script p { min-height: 60px; margin: 10px 0; color: #e1e5e6; font-size: clamp(.85rem, 1.7vw, 1.1rem); line-height: 1.6; }
+.terran-cutscene__actions { display: flex; justify-content: space-between; gap: 9px; }
+.terran-cutscene__actions button { display: inline-flex; align-items: center; gap: 7px; border: 1px solid #8f7153; padding: 10px 13px; color: #ecd19e; background: #172633; cursor: pointer; }
+.terran-cutscene__actions button:last-child { border-color: #e2b45b; color: #fff0d0; }
+@media (max-width: 1040px) {
+  .terran-game__layout.has-drawer { grid-template-columns: minmax(0, 1fr) minmax(295px, 345px); }
+  .terran-game__hud { width: 40px; }
+  .terran-game__hud button span { display: none; }
+  .pixel-city__site { font-size: .55rem; }
+}
+@media (max-width: 760px) {
+  .terran-game__topbar { flex-wrap: wrap; }
+  .terran-game__readout { width: 100%; justify-content: space-between; font-size: .58rem; }
+  .terran-game__layout.has-drawer { position: relative; display: block; }
+  .terran-game__drawer { position: absolute; top: 0; right: 0; bottom: 0; width: min(86vw, 390px); max-height: none; background: #080d12f7; }
+  .terran-game__hud { top: 4px; left: 4px; }
+  .terran-game__hud button { padding: 5px; }
+  .pixel-city__site { min-width: 32px; padding: 2px; font-size: .48rem; }
+  .terran-game__quest { right: 3px; bottom: 2px; max-width: 64%; padding: 4px; font-size: .55rem; }
+  .terran-game__quest small { display: none; }
+  .pixel-city__dpad { bottom: 4px; left: 4px; grid-template-columns: repeat(3, 25px); grid-template-rows: repeat(2, 25px); }
+  .terran-dialogue { right: 4px; bottom: 38px; left: 4px; gap: 5px; padding: 6px; }
+  .terran-dialogue__portrait { width: 46px; }
+  .terran-dialogue__portrait .asset-image { width: 40px; height: 40px; }
+  .terran-dialogue__text p { margin: 4px 0; font-size: .67rem; }
+  .terran-dialogue button { padding: 5px; font-size: .6rem; }
+  .astravel-field__node { min-width: 27px; padding: 2px; }
+  .astravel-field__node span { display: none; }
+  .dungeon-field__node { min-width: 27px; padding: 2px; }
+  .dungeon-field__node span { display: none; }
+  .expedition-game__retreat { top: 4px; right: 4px; padding: 5px; font-size: .55rem; }
+}
+
+/* Persistent world viewport: Terran → expedition → combat → return */
+.world-scene { position: relative; min-height: calc(100vh - 104px); overflow: hidden; }
+.world-scene__content { animation: worldSceneReveal 360ms ease-out both; }
+.world-scene-transition { position: absolute; z-index: 850; inset: 0; display: grid; place-items: center; align-content: center; gap: 8px; color: #f4d89d; background: radial-gradient(circle at 50% 50%, rgb(31 68 78 / 82%), rgb(5 10 14 / 97%) 65%); font-family: var(--display); text-align: center; pointer-events: none; animation: worldSceneVeil 720ms ease-in-out both; }
+.world-scene-transition span { color: #79cbe0; font-size: clamp(.58rem, 1vw, .75rem); letter-spacing: .18em; }
+.world-scene-transition strong { font-size: clamp(1.1rem, 3vw, 2rem); text-transform: uppercase; }
+.world-scene-transition i { width: min(260px, 42vw); height: 2px; background: linear-gradient(90deg, transparent, #e1be73, transparent); box-shadow: 0 0 14px #e2bd6b; }
+@keyframes worldSceneReveal { from { opacity: .35; transform: scale(.995); } }
+@keyframes worldSceneVeil { 0% { opacity: 0; } 18%, 62% { opacity: 1; } 100% { opacity: 0; } }
+
+/* Combat occupies the same 384:256 stage and side-drawer grammar as exploration. */
+.battle-game__stage { aspect-ratio: 384 / 256; overflow: hidden; }
+.battle-game__field { position: absolute; inset: 0; min-height: 0; border: 0; }
+.battle-game__menu { z-index: 12; }
+.battle-game__field .battle-character--player { bottom: 84px; left: 7%; }
+.battle-game__field .battle-enemy-party { right: 3%; bottom: 82px; }
+.battle-game__field .turn-orbit { z-index: 7; top: 13px; }
+.battle-game__vitals { position: absolute; z-index: 9; top: 13px; display: grid; min-width: 155px; gap: 3px; border: 1px solid #5b513e; padding: 7px 9px; color: #ebd4a8; background: #091116e8; box-shadow: 0 4px 15px #0008; font-family: var(--display); }
+.battle-game__vitals strong { overflow: hidden; font-size: .67rem; text-overflow: ellipsis; white-space: nowrap; }
+.battle-game__vitals span { color: #a29b8d; font-size: .52rem; }
+.battle-game__vitals > i { display: block; height: 5px; overflow: hidden; border: 1px solid #3e2023; background: #16090c; }
+.battle-game__vitals > i > b { display: block; height: 100%; background: linear-gradient(90deg, #762e35, #d6656e); }
+.battle-game__vitals--player { left: 124px; }
+.battle-game__vitals--enemy { right: 12px; text-align: right; }
+.battle-game__commands { position: absolute; z-index: 14; right: 8px; bottom: 8px; left: 8px; padding: 7px; background: #071015eb; box-shadow: 0 0 24px #000b; }
+.battle-game__commands .game-button { min-height: 40px; padding: 7px 6px; font-size: clamp(.52rem, .75vw, .67rem); }
+.battle-game__result { position: absolute; z-index: 15; right: 12px; bottom: 12px; left: 12px; box-shadow: 0 0 34px #000d; }
+.battle-game__drawer .terran-game__drawer-content { align-content: start; }
+.battle-game__identity { display: grid; align-items: center; gap: 10px; border: 1px solid #4b3b26; padding: 9px; background: #0b1218; grid-template-columns: 74px 1fr; }
+.battle-game__identity > img { width: 74px; height: 74px; object-fit: contain; image-rendering: pixelated; }
+.battle-game__identity > div { display: grid; min-width: 0; gap: 4px; }
+.battle-game__identity strong { overflow: hidden; color: #ecd09a; font-family: var(--display); text-overflow: ellipsis; white-space: nowrap; }
+.battle-game__identity small { color: #8aaec0; font-size: .62rem; }
+.battle-game__drawer .target-inspector > img { height: 105px; }
+.battle-game__drawer .battle-log { max-height: calc(100vh - 260px); }
+
+@media (max-width: 760px) {
+  .world-scene { min-height: calc(100vh - 92px); }
+  .battle-game__stage { min-height: 430px; aspect-ratio: auto; }
+  .battle-game__field .battle-character--player { bottom: 118px; left: 1%; }
+  .battle-game__field .battle-enemy-party { bottom: 118px; }
+  .battle-game__vitals { top: 4px; min-width: 118px; padding: 5px; }
+  .battle-game__vitals--player { left: 48px; }
+  .battle-game__vitals--enemy { right: 4px; }
+  .battle-game__field .turn-orbit { top: 57px; width: 43px; height: 43px; }
+  .battle-game__commands { position: absolute; right: 4px; bottom: 4px; left: 4px; transform: none; grid-template-columns: repeat(3, 1fr); }
+  .battle-game__commands .game-button { min-height: 40px; padding: 4px; font-size: .52rem; }
+  .battle-game__result { right: 4px; bottom: 4px; left: 4px; max-height: 55%; overflow-y: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world-scene__content, .world-scene-transition { animation: none; }
+}

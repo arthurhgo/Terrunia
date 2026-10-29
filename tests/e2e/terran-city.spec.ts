@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('Terran é a Home e as sete áreas possuem interface e localização persistente', async ({ page }) => {
+test('Terran é uma cidade pixelada com sete instituições e painéis sem trocar o cenário', async ({ page }) => {
   test.setTimeout(60_000)
   const browserErrors: string[] = []
   page.on('pageerror', (error) => browserErrors.push(error.message))
@@ -16,6 +16,11 @@ test('Terran é a Home e as sete áreas possuem interface e localização persis
 
   await expect(page.getByRole('heading', { name: 'Terran', exact: true })).toBeVisible()
   await expect(page.getByText('HOME · CIDADE-BASE DO JOGADOR')).toBeVisible()
+  await expect(page.getByRole('dialog', { name: /TERRAN · O PRIMEIRO PASSO/ })).toBeVisible()
+  await page.getByRole('button', { name: 'Pular cena' }).click()
+  const city = page.getByRole('img', { name: /Terran vista superior 3\/4/ })
+  await expect(city).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Navegação principal' })).toHaveCount(0)
 
   const locations = [
     'Casa de Eldamar',
@@ -28,12 +33,13 @@ test('Terran é a Home e as sete áreas possuem interface e localização persis
   ]
 
   for (const location of locations) {
-    await page.getByRole('link', { name: new RegExp(`Ir para ${location}`) }).click()
-    await expect(page.getByRole('heading', { name: location, exact: true })).toBeVisible()
+    await page.getByRole('button', { name: new RegExp(`Ir para ${location}`) }).click()
+    await expect(page.getByRole('complementary', { name: `Painel lateral: ${location}` })).toBeVisible()
     await expect(page.getByText(`TERRAN > ${location.toUpperCase()}`)).toBeVisible()
-    await page.getByRole('link', { name: 'Mapa de Terran', exact: true }).click()
+    await expect(city).toBeVisible()
+    await page.getByRole('button', { name: 'Fechar painel' }).click()
   }
 
-  await expect(page.getByText('7/7 locais')).toBeVisible()
+  await expect(page.getByText('7/7 descobertos')).toBeVisible()
   expect(browserErrors).toEqual([])
 })

@@ -1,4 +1,20 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
+
+async function visitTerran(page: Page, location: string) {
+  const skip = page.getByRole('button', { name: 'Pular cena' })
+  if (await skip.isVisible()) await skip.click()
+  await page.getByRole('button', { name: `Ir para ${location}` }).click()
+  await expect(page.getByRole('complementary', { name: `Painel lateral: ${location}` })).toBeVisible()
+}
+
+async function exploreAstravel(page: Page, node: string, action: string) {
+  const skip = page.getByRole('button', { name: 'Pular cena' })
+  if (await skip.isVisible()) await skip.click()
+  await page.getByRole('button', { name: `Aproximar-se de ${node}` }).click()
+  const detail = page.getByRole('complementary', { name: `Painel lateral: ${node}` })
+  await expect(detail).toBeVisible({ timeout: 15_000 })
+  await detail.getByRole('button', { name: action }).click()
+}
 
 test('vertical slice: criação, combate, Essência, node e reload', async ({ page }) => {
   test.setTimeout(60_000)
@@ -17,12 +33,13 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: 'Confirmar Terrírian' }).click()
   await page.getByRole('button', { name: /Executar Vínculo da Arma/ }).click()
 
-  await page.getByRole('link', { name: /Ir para Casa de Eldamar/ }).click()
+  await visitTerran(page, 'Casa de Eldamar')
   await page.getByRole('button', { name: 'Falar com Eldamar' }).click()
   await page.getByRole('button', { name: 'Aceitar missão' }).click()
-  await page.getByRole('link', { name: /Ir para Praça do Portal/ }).click()
+  await visitTerran(page, 'Praça do Portal')
   await page.getByRole('button', { name: 'Entrar em Astravél' }).click()
-  await page.getByRole('button', { name: 'Enfrentar Fungorro' }).click()
+  await expect(page.getByRole('heading', { name: 'Astravél' })).toBeVisible()
+  await exploreAstravel(page, 'Presença Fungorra', 'Enfrentar Fungorro')
 
   await page.getByRole('button', { name: 'Atacar' }).click()
   await page.getByRole('button', { name: 'Atacar' }).click()
@@ -30,7 +47,7 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: 'Receber recompensas' }).click()
   await page.getByRole('button', { name: 'Retornar a Terran' }).click()
   await expect(page.getByText('TERRAN > PRAÇA DO PORTAL')).toBeVisible()
-  await page.getByRole('link', { name: /Ir para Oficina dos Vínculos/ }).click()
+  await visitTerran(page, 'Oficina dos Vínculos')
 
   const lootSlot = page.locator('.inventory-slot').filter({ hasText: 'Núcleo Fúngico' }).first()
   await lootSlot.click()
@@ -41,20 +58,22 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: 'Confirmar +100' }).click()
   await expect(page.getByText('Pontos').locator('..').getByText('1')).toBeVisible()
 
-  await page.getByRole('link', { name: 'Skill Tree', exact: true }).click()
-  await page.getByRole('button', { name: /Núcleo do Vínculo: Disponível/ }).click()
-  await page.getByRole('button', { name: 'Desbloquear node' }).click()
-  await expect(page.getByRole('button', { name: 'Node ativo' })).toBeVisible()
+  await page.getByRole('button', { name: 'Abrir Evolução' }).click()
+  const initialNode = page.locator('.terran-skill').filter({ hasText: 'Núcleo do Vínculo' })
+  await initialNode.click()
+  await expect(initialNode).toContainText('Desbloqueado')
 
   await page.reload()
-  await expect(page.getByRole('button', { name: /Núcleo do Vínculo: Desbloqueado/ })).toBeVisible()
-  await expect(page.getByText('Pontos de Essência').locator('..').getByText('0')).toBeVisible()
+  await page.getByRole('button', { name: 'Abrir Evolução' }).click()
+  await expect(page.locator('.terran-skill').filter({ hasText: 'Núcleo do Vínculo' })).toContainText('Desbloqueado')
+  await expect(page.getByText('0 ponto(s) disponíveis')).toBeVisible()
 
-  await page.getByRole('link', { name: 'Terran', exact: true }).click()
-  await page.getByRole('link', { name: /Ir para Praça do Portal/ }).click()
-  await page.getByRole('button', { name: 'Vasculhar acampamento' }).click()
+  await visitTerran(page, 'Praça do Portal')
+  await page.getByRole('button', { name: 'Retomar exploração em Astravél' }).click()
+  await exploreAstravel(page, 'Acampamento Abandonado', 'Vasculhar acampamento')
+  await page.getByRole('button', { name: 'Abrir Mochila' }).click()
   await expect(page.locator('.inventory-slot').filter({ hasText: 'Tônico de Campo' })).toBeVisible()
-  await page.getByRole('button', { name: 'Emboscada de Esporos' }).click()
+  await exploreAstravel(page, 'Emboscada de Esporos', 'Emboscada de Esporos')
   await expect(page.getByRole('button', { name: /Selecionar alvo/ })).toHaveCount(3)
 
   await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
@@ -63,12 +82,20 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
   await expect(page.getByRole('heading', { name: 'A rota foi preservada' })).toBeVisible()
   await page.getByRole('button', { name: 'Receber recompensas' }).click()
-  await page.getByRole('button', { name: 'Retornar a Terran' }).click()
-  await page.getByRole('button', { name: 'Investigar o limiar' }).click()
-  await expect(page.getByRole('button', { name: 'Enfrentar Colosso Micélio' })).toBeEnabled()
+  await page.getByRole('button', { name: 'Continuar expedição' }).click()
+  await exploreAstravel(page, 'Limiar da Ruína', 'Investigar o limiar')
+  await expect(page.getByRole('button', { name: 'Aproximar-se de Câmaras Fúngicas' })).toBeEnabled()
   if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v03-portal-desktop.png', fullPage: true })
 
-  await page.getByRole('button', { name: 'Enfrentar Colosso Micélio' }).click()
+  await exploreAstravel(page, 'Câmaras Fúngicas', 'Adentrar Câmaras Fúngicas')
+  await expect(page.getByRole('heading', { name: 'Câmaras Fúngicas' })).toBeVisible()
+  const descent = page.getByRole('button', { name: 'Pular cena' })
+  if (await descent.isVisible()) await descent.click()
+  await page.getByRole('button', { name: 'Aproximar-se de Núcleo da Ruína' }).click()
+  const nucleus = page.getByRole('complementary', { name: 'Painel lateral: Núcleo da Ruína' })
+  await expect(nucleus).toBeVisible({ timeout: 15_000 })
+  if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v05-dungeon-desktop.png', fullPage: true })
+  await nucleus.getByRole('button', { name: 'Enfrentar Colosso Micélio' }).click()
   await expect(page.getByText('Câmaras Fúngicas de Astravél')).toBeVisible()
   if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v03-boss-desktop.png', fullPage: true })
   await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
@@ -77,8 +104,13 @@ test('vertical slice: criação, combate, Essência, node e reload', async ({ pa
   await page.getByRole('button', { name: 'Atacar' }).click()
   await expect(page.getByRole('heading', { name: 'O núcleo da Ruína cedeu' })).toBeVisible()
   await page.getByRole('button', { name: 'Receber recompensas' }).click()
-  await page.getByRole('button', { name: 'Retornar a Terran' }).click()
-  await page.getByRole('link', { name: /Ir para Oficina dos Vínculos/ }).click()
+  await page.getByRole('button', { name: 'Continuar expedição' }).click()
+  await expect(page.getByRole('heading', { name: 'Câmaras Fúngicas' })).toBeVisible()
+  const aftermath = page.getByRole('button', { name: 'Pular cena' })
+  if (await aftermath.isVisible()) await aftermath.click()
+  await page.getByRole('button', { name: 'Sair das Câmaras para Astravél' }).click()
+  await page.getByRole('button', { name: 'Retornar a Terran pelo Portal' }).click()
+  await visitTerran(page, 'Oficina dos Vínculos')
   await expect(page.locator('.inventory-slot').filter({ hasText: 'Fragmento de Essência Micelial' })).toBeVisible()
   await expect(page.locator('.inventory-slot').filter({ hasText: 'Esmeralda do Crescimento' })).toBeVisible()
 

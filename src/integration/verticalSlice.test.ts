@@ -3,6 +3,43 @@ import { getLatestLocalSave } from '../persistence/localSaveRepository'
 import { flushPersistence, useGameStore } from '../state/gameStore'
 
 describe('vertical slice integrada', () => {
+  it('continua a expedição após o combate e a retoma sem duplicar a entrada', async () => {
+    const ownerId = 'integration-expedition-continuity'
+    await useGameStore.getState().boot(ownerId)
+    useGameStore.getState().createGame('Nira', 'character.terririan.default')
+    useGameStore.getState().bindPrologueWeapon()
+    useGameStore.getState().travelInTerran('location_terran_eldamar_house')
+    useGameStore.getState().discoverEldamar()
+    useGameStore.getState().offerQuest('vs_astravel_first_contact')
+    useGameStore.getState().acceptQuest('vs_astravel_first_contact')
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
+    useGameStore.getState().enterAstravel()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_entry')
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_entry')
+    expect(useGameStore.getState().notification?.message).toContain('Registre o retorno')
+    useGameStore.getState().startBattle('astravel_fungorro_01')
+    const enemy = 'combatant_enemy_fungorro_crawler_1'
+    useGameStore.getState().submitBattleCommand({ type: 'attack', targetId: enemy })
+    useGameStore.getState().submitBattleCommand({ type: 'attack', targetId: enemy })
+    expect(useGameStore.getState().save?.battle?.phase).toBe('Victory')
+    useGameStore.getState().finishBattleIntoExpedition()
+    expect(useGameStore.getState().notification?.message).toContain('Receba as recompensas')
+    expect(useGameStore.getState().save?.battle?.claimed).toBe(false)
+    useGameStore.getState().claimBattleRewards()
+    useGameStore.getState().finishBattleIntoExpedition()
+    expect(useGameStore.getState().save?.battle).toBeNull()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_fungorro_01')
+    expect(useGameStore.getState().save?.world.trailNodeStates.astravel_camp_03).toBe('current')
+
+    useGameStore.getState().returnToTerran()
+    useGameStore.getState().enterAstravel()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_camp_03')
+    expect(useGameStore.getState().save?.world.trailNodeStates.astravel_entry).toBe('completed')
+    expect(useGameStore.getState().save?.eventLog.filter((event) => event === 'TrailNodeCompleted:astravel_entry')).toHaveLength(1)
+    expect(useGameStore.getState().save?.eventLog).toContain('ExpeditionResumed:trail_astravel_entry')
+  })
+
   it('impede acesso à instância fora da Praça do Portal', async () => {
     const ownerId = 'integration-portal-gate-user'
     await useGameStore.getState().boot(ownerId)
@@ -129,6 +166,7 @@ describe('vertical slice integrada', () => {
     expect(useGameStore.getState().save?.world.trailNodeStates.astravel_ruin_threshold_05).toBe(
       'current',
     )
+    useGameStore.getState().enterAstravel()
     useGameStore.getState().resolveCurrentTrailNode()
     expect(useGameStore.getState().save?.world.trailNodeStates.astravel_boss_preview).toBe(
       'bossCurrent',
@@ -137,6 +175,17 @@ describe('vertical slice integrada', () => {
       'fungal_chambers_threshold_discovered',
     )
 
+    useGameStore.getState().startBattle('astravel_boss_preview')
+    expect(useGameStore.getState().save?.battle).toBeNull()
+    expect(useGameStore.getState().notification?.message).toContain('Alcance o Núcleo')
+    useGameStore.getState().enterFungalChambers()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('dungeon_fungal_chambers')
+    expect(useGameStore.getState().save?.world.worldFlags).toContain('dungeon-room-discovered:fungal_vestibule')
+    useGameStore.getState().startBattle('astravel_boss_preview')
+    expect(useGameStore.getState().save?.battle).toBeNull()
+    for (const roomId of ['fungal_spore_gallery', 'fungal_root_sanctum', 'fungal_core']) {
+      useGameStore.getState().discoverFungalRoom(roomId)
+    }
     useGameStore.getState().startBattle('astravel_boss_preview')
     expect(useGameStore.getState().save?.battle?.encounterId).toBe(
       'encounter_colossus_mycelium_01',
@@ -155,6 +204,9 @@ describe('vertical slice integrada', () => {
     expect(useGameStore.getState().save?.world.worldFlags).toContain(
       'colossus_mycelium_defeated',
     )
+    useGameStore.getState().finishBattleIntoExpedition()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('dungeon_fungal_chambers')
+    expect(useGameStore.getState().save?.battle).toBeNull()
     const weaponId = useGameStore.getState().save!.character.bondedEquipment.weapon!
     expect(useGameStore.getState().save?.boundItems[weaponId].memories).toEqual(
       expect.arrayContaining([
@@ -169,6 +221,8 @@ describe('vertical slice integrada', () => {
     )?.instanceId
     expect(fragmentId).toBeTruthy()
     expect(gemId).toBeTruthy()
+    useGameStore.getState().exitFungalChambers()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_ruin_threshold_05')
     useGameStore.getState().returnToTerran()
     useGameStore.getState().travelInTerran('location_terran_bond_workshop')
     expect(useGameStore.getState().save?.boundItems[weaponId].resonance).toBeGreaterThanOrEqual(
@@ -200,6 +254,8 @@ describe('vertical slice integrada', () => {
     await flushPersistence()
     const reloaded = await getLatestLocalSave(ownerId)
     expect(reloaded?.world.worldFlags).toContain('fungal_chambers_threshold_discovered')
+    expect(reloaded?.world.worldFlags).toContain('dungeon-room-discovered:fungal_core')
+    expect(reloaded?.world.unlockedLocationIds).toContain('dungeon_fungal_chambers')
     expect(reloaded?.inventory[0]?.definitionId).toBe('drop_spore_cluster')
     expect(reloaded?.boundItems[weaponId]).toMatchObject({
       grade: 3,
@@ -208,5 +264,13 @@ describe('vertical slice integrada', () => {
         gems: ['esmeralda_crescimento'],
       },
     })
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
+    const lootCount = useGameStore.getState().save?.inventory.length
+    useGameStore.getState().enterAstravel()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_boss_preview')
+    useGameStore.getState().enterFungalChambers()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('dungeon_fungal_chambers')
+    expect(useGameStore.getState().save?.inventory.length).toBe(lootCount)
+    expect(useGameStore.getState().save?.eventLog).toContain('ExpeditionRevisited:trail_astravel_entry')
   })
 })

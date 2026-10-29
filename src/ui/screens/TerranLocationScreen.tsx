@@ -219,14 +219,19 @@ export function TerranLocationScreen() {
   const currentLocationId = save?.world.currentLocationId
   const resolvedLocationId = location?.id
   const hasSave = Boolean(save)
+  const inExpedition = Boolean(save && content.trails.trail_astravel_entry.nodes.some((node) => node.id === save.world.currentLocationId))
+  const inDungeon = save?.world.currentLocationId === content.dungeons.dungeon_fungal_chambers.id
 
   useEffect(() => {
-    if (hasSave && resolvedLocationId && currentLocationId !== resolvedLocationId) {
+    if (hasSave && !save?.battle && !inExpedition && !inDungeon && resolvedLocationId && currentLocationId !== resolvedLocationId) {
       travel(resolvedLocationId)
     }
-  }, [currentLocationId, hasSave, resolvedLocationId, travel])
+  }, [currentLocationId, hasSave, inExpedition, inDungeon, resolvedLocationId, save?.battle, travel])
 
   if (!save) return <Navigate to="/character/create" replace />
+  if (save.battle) return <Navigate to="/battle" replace />
+  if (inDungeon) return <Navigate to="/dungeon" replace />
+  if (inExpedition) return <Navigate to="/expedition" replace />
   if (!location || !isTerranLocationId(locationId)) return <Navigate to="/terran" replace />
 
   const goTo = (targetId: string) => {

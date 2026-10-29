@@ -27,6 +27,14 @@ const entries: AssetEntry[] = [
     pixelArt: true,
   },
   {
+    id: 'character.terririan.map',
+    // Defaults to the existing portrait; while not a 128×128 sheet, canvas uses the pixel-matrix actor.
+    path: '/assets/characters/terririan/player_default.png',
+    fallback: '/assets/placeholders/character.svg',
+    alt: 'Spritesheet opcional de quatro direções do Terrírian (4 colunas × 4 linhas, quadros 32×32)',
+    pixelArt: true,
+  },
+  {
     id: 'npc.eldamar.portrait',
     path: '/assets/npcs/npc_eldamar_portrait.png',
     fallback: '/assets/placeholders/npc.svg',
