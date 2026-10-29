@@ -24,8 +24,11 @@ IndexedDB — save/cache local
 → consultar save cloud
 → migrar schema
 → resolver versão mais nova
-→ carregar jogo
+→ se existe Terrírian: perguntar Continuar ou Criar outro
+→ carregar jogo ou invalidar a geração anterior antes da nova criação
 ```
+
+Cada `uid` mantém exatamente um `activeSaveId` e um Terrírian ativo. Um novo acesso inicia em `/character/access`; escolher **Continuar** libera o save carregado. Escolher **Criar outro** reutiliza o fluxo crítico `CampaignReset`, com duas confirmações e a palavra `RESETAR`, antes de abrir `/character/create`.
 
 ## 4. Variáveis de ambiente
 
@@ -87,6 +90,8 @@ Estratégia draft:
 4. revisions diferentes → usar `updatedAt` e manter backup do perdedor;
 5. schema antigo → migrar antes de carregar.
 
+Na mesma `campaignGeneration`, o Firestore rejeita uma gravação cujo `saveId` seja diferente do `activeSaveId` já registrado. Um novo personagem só pode assumir a conta após o reset incrementar a geração, invalidar o save anterior e limpar a referência ativa.
+
 A política final de conflito é `OWNER_DECISION`.
 
 ## 8. Logout
@@ -114,3 +119,5 @@ Nunca commitar:
 ## 11. UI
 
 A tela `/login` deve manter identidade Terrúnia, mas o controle de login Google deve seguir o fluxo oficial do provider. Não criar um botão falso que coleta email/senha Google.
+
+Após autenticação e sincronização, `/character/access` sempre apresenta o Terrírian da conta em um novo carregamento da aplicação. A escolha vale apenas para a sessão atual; reload ou novo login exige nova decisão.

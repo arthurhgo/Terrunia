@@ -47,6 +47,7 @@ Registro das ambiguidades encontradas durante a implementação do vertical slic
 | Desbloqueio de Classe | Menus antigos sugeriam escolher Classe por seleção. | Somente as três Classes do Clã ativo aparecem; cada uma exige oferta de NPC, aceitação, prova, entrega, elegibilidade e confirmação. |
 | Main Lore pós-Classe | A Main Lore precisava reagir à identidade conquistada. | `quest core + clan context + class variant`: a definição permanece única e o texto é resolvido pela Classe ativa após `ClanJoined` + `ClassUnlocked`. |
 | Reset de campanha | Limpar apenas IndexedDB permitiria que Firestore restaurasse a campanha apagada. | `CampaignReset` incrementa `campaignGeneration`, invalida o save cloud em transação, limpa o local e retorna à criação preservando autenticação e preferências. |
+| Personagem único por conta v0.6 | Permitir abrir diretamente a criação ou gravar outro `saveId` na mesma geração produziria personagens concorrentes para o mesmo usuário. | Cada `uid` possui um único Terrírian ativo. Todo novo acesso pede Continuar ou Criar outro; continuar libera a sessão, enquanto criar outro exige o `CampaignReset` oficial antes da criação. Firestore rejeita um segundo `saveId` ativo na mesma geração. |
 
 ## OWNER_DECISION pendente
 

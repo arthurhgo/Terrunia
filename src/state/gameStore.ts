@@ -48,6 +48,7 @@ import { cutscenes, type CutsceneId } from '../domain/terran/cutscenes'
 
 type GameStatus = 'idle' | 'loading' | 'ready' | 'error'
 type SyncStatus = 'idle' | 'saving' | 'saved' | 'error'
+export type CharacterAccessStatus = 'idle' | 'required' | 'granted' | 'creating'
 
 export type GameNotification = {
   id: number
@@ -62,12 +63,14 @@ type GameState = {
   syncMode: SyncMode | null
   ownerId: string | null
   save: GameSave | null
+  characterAccess: CharacterAccessStatus
   campaignSeed: CampaignSeed | null
   preservedSettings: GameSave['settings'] | null
   error: string | null
   notification: GameNotification | null
   boot: (ownerId: string) => Promise<void>
-  createGame: (name: string, portraitAssetId: string) => void
+  continueCharacter: () => void
+  createGame: (name: string, portraitAssetId: string) => Promise<boolean>
   bindPrologueWeapon: () => void
   discoverEldamar: () => void
   discoverClan: (clanId: string) => void
@@ -134,11 +137,12 @@ export const useGameStore = create<GameState>((set, get) => {
         })
       }
     })
+    return persistenceQueue
   }
 
   const commit = (save: GameSave) => {
     set({ save, status: 'ready', error: null })
-    persist(save)
+    return persist(save)
   }
 
   const failAction = (message: string) => show('Ação indisponível', message, 'warning')
@@ -149,6 +153,7 @@ export const useGameStore = create<GameState>((set, get) => {
     syncMode: null,
     ownerId: null,
     save: null,
+    characterAccess: 'idle',
     campaignSeed: null,
     preservedSettings: null,
     error: null,
@@ -168,6 +173,7 @@ export const useGameStore = create<GameState>((set, get) => {
             ? { campaignId: save.campaignId, campaignGeneration: save.campaignGeneration }
             : campaignSeed,
           preservedSettings: save?.settings ?? loadAccountSettings(ownerId),
+          characterAccess: save ? 'required' : 'creating',
           error: null,
           syncStatus: save ? 'saved' : 'idle',
         })
@@ -175,19 +181,36 @@ export const useGameStore = create<GameState>((set, get) => {
         set({
           status: 'error',
           save: null,
+          characterAccess: 'idle',
           error: error instanceof Error ? error.message : 'Falha ao carregar o save.',
         })
       }
     },
 
-    createGame: (name, portraitAssetId) => {
+    continueCharacter: () => {
+      const { ownerId, save } = get()
+      if (!ownerId || !save || save.ownerId !== ownerId) {
+        return failAction('Nenhum Terrírian desta conta está disponível para continuar.')
+      }
+      set({ characterAccess: 'granted' })
+    },
+
+    createGame: async (name, portraitAssetId) => {
       const ownerId = get().ownerId
       const campaignSeed = get().campaignSeed
       const preservedSettings = get().preservedSettings
       const cleanName = name.trim()
-      if (!ownerId) return failAction('Nenhum usuário ativo.')
+      if (!ownerId) {
+        failAction('Nenhum usuário ativo.')
+        return false
+      }
+      if (get().save) {
+        failAction('Esta conta já possui um Terrírian ativo. Use “Criar outro” para substituir a campanha atual.')
+        return false
+      }
       if (cleanName.length < 2 || cleanName.length > 28) {
-        return failAction('O nome deve possuir entre 2 e 28 caracteres.')
+        failAction('O nome deve possuir entre 2 e 28 caracteres.')
+        return false
       }
       const save = createNewSave(
         ownerId,
@@ -199,8 +222,10 @@ export const useGameStore = create<GameState>((set, get) => {
         campaignSeed ?? { campaignId: createRandomId(), campaignGeneration: 0 },
       )
       if (preservedSettings) save.settings = preservedSettings
-      commit(save)
+      await commit(save)
+      set({ characterAccess: 'granted' })
       show('Terrírian criado', 'Você começa sem Clã, sem Classe e sem build pronta.', 'success')
+      return true
     },
 
     bindPrologueWeapon: () => {
@@ -723,6 +748,7 @@ export const useGameStore = create<GameState>((set, get) => {
           save: null,
           campaignSeed,
           preservedSettings: save.settings,
+          characterAccess: 'creating',
           status: 'ready',
           syncStatus: 'saved',
           syncMode: mode,
@@ -746,6 +772,7 @@ export const useGameStore = create<GameState>((set, get) => {
         syncMode: null,
         ownerId: null,
         save: null,
+        characterAccess: 'idle',
         campaignSeed: null,
         preservedSettings: null,
         error: null,
