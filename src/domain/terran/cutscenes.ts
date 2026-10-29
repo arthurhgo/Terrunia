@@ -1,6 +1,6 @@
 import type { GameSave } from '../game/types'
 
-export type CutsceneId = 'terran_arrival' | 'astravel_call' | 'ruins_threshold' | 'fungal_descent' | 'colossus_aftermath' | 'clan_oath' | 'class_awakening'
+export type CutsceneId = 'terran_arrival' | 'astravel_call' | 'ruins_threshold' | 'fungal_descent' | 'colossus_aftermath' | 'clan_oath' | 'class_awakening' | 'home_claimed'
 export type Cutscene = {
   id: CutsceneId
   title: string
@@ -14,6 +14,11 @@ export const cutscenes: readonly Cutscene[] = [
     'As pedras de Terran guardam mais histórias do que seus caminhos revelam.',
     'Sete lugares cercam a Praça do Portal. Cada encontro pode alterar seu destino.',
     'Caminhe, aproxime-se dos moradores e descubra sua própria jornada.',
+  ] },
+  { id: 'home_claimed', title: 'TERRAN · UM LUGAR PARA VOLTAR', tone: 'arrival', lines: [
+    'Daeryn entrega a chave do pequeno quarto preparado por suas mãos.',
+    'A cama é simples; ainda assim, o descanso ali devolve Vida e Mana depois das expedições.',
+    'O mundo continua além da porta. Agora existe um lugar ao qual regressar.',
   ] },
   { id: 'astravel_call', title: 'ASTRAVÉL · O CHAMADO', tone: 'portal', lines: [
     'A investigação de Eldamar deixa os registros e alcança o mundo.',
@@ -55,6 +60,9 @@ export const getNextCutscene = (save: GameSave): Cutscene | null => {
     ? 'clan_oath'
     : save.character.classProgression.classId && !seen(save, 'class_awakening') ? 'class_awakening' : null
   if (socialId) return cutscenes.find((scene) => scene.id === socialId) ?? null
+  if (save.world.worldFlags.includes('player_home_unlocked') && !seen(save, 'home_claimed')) {
+    return cutscenes.find((scene) => scene.id === 'home_claimed') ?? null
+  }
   const quest = save.quests.vs_astravel_first_contact?.status
   const id: CutsceneId | null = save.world.worldFlags.includes('colossus_mycelium_defeated')
     ? 'colossus_aftermath'

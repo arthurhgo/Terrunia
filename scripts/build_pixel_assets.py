@@ -613,6 +613,92 @@ def weapon_grade(grade: int):
     return im
 
 
+def sylwen_ether():
+    im, d = sheet()
+    r(d, 'outline', (5, 1, 10, 3))
+    r(d, 'gold', (6, 1, 9, 2))
+    r(d, 'outline', (3, 4, 12, 14))
+    r(d, 'blue', (4, 6, 11, 13))
+    r(d, 'cyan', (5, 7, 10, 12))
+    r(d, 'ice', (6, 8, 7, 9))
+    r(d, 'steel_light', (6, 3, 9, 5))
+    return im
+
+
+def field_compress():
+    im, d = sheet()
+    r(d, 'outline', (1, 4, 14, 11))
+    r(d, 'leather', (2, 5, 13, 10))
+    r(d, 'skin_light', (3, 6, 12, 9))
+    r(d, 'skin', (6, 4, 9, 11))
+    r(d, 'gold_light', (7, 6, 8, 9))
+    return im
+
+
+def sylwen_antidote():
+    im, d = sheet()
+    r(d, 'outline', (6, 1, 9, 4))
+    r(d, 'leather_light', (6, 1, 9, 2))
+    p(d, 'outline', (5, 3), (10, 3), (13, 8), (10, 14), (5, 14), (2, 8))
+    p(d, 'steel', (5, 4), (10, 4), (12, 8), (10, 13), (5, 13), (3, 8))
+    r(d, 'cyan', (4, 8, 11, 11))
+    r(d, 'ice', (7, 8, 8, 11))
+    r(d, 'ice', (5, 9, 10, 10))
+    return im
+
+
+def terran_healer():
+    im, d = sheet()
+    r(d, 'outline', (5, 1, 10, 7))
+    r(d, 'skin', (5, 3, 10, 7))
+    r(d, 'leather', (4, 1, 10, 3))
+    r(d, 'gold_light', (5, 2, 9, 2))
+    r(d, 'outline', (3, 8, 12, 15))
+    r(d, 'blue', (4, 9, 11, 14))
+    r(d, 'skin_light', (7, 9, 8, 14))
+    px(d, 'outline', 9, 5)
+    return im
+
+
+def terran_alchemist():
+    im, d = sheet()
+    r(d, 'outline', (5, 2, 10, 8))
+    r(d, 'skin', (5, 4, 10, 8))
+    r(d, 'shade', (4, 2, 11, 4))
+    r(d, 'gold', (5, 3, 10, 3))
+    r(d, 'outline', (3, 9, 12, 15))
+    r(d, 'leather_light', (4, 10, 11, 14))
+    r(d, 'blue', (7, 10, 8, 13))
+    px(d, 'outline', 9, 6)
+    return im
+
+
+def terran_tracker():
+    im, d = sheet()
+    r(d, 'outline', (5, 2, 10, 8))
+    r(d, 'skin', (5, 4, 10, 8))
+    r(d, 'leather', (3, 2, 12, 3))
+    r(d, 'gold_dark', (6, 1, 9, 2))
+    r(d, 'outline', (2, 9, 13, 15))
+    r(d, 'leather_light', (3, 10, 12, 14))
+    r(d, 'navy', (7, 10, 8, 14))
+    px(d, 'outline', 9, 5)
+    return im
+
+
+def terran_inscriber():
+    im, d = sheet()
+    r(d, 'outline', (5, 2, 10, 8))
+    r(d, 'skin_light', (5, 4, 10, 8))
+    r(d, 'steel', (4, 1, 11, 3))
+    r(d, 'cyan', (7, 2, 8, 2))
+    r(d, 'outline', (2, 9, 13, 15))
+    r(d, 'navy', (3, 10, 12, 14))
+    r(d, 'steel_light', (6, 10, 9, 14))
+    px(d, 'outline', 9, 5)
+    return im
+
+
 ASSETS = {
     "characters/terririan/player_default.png": lambda: character(False),
     "characters/terririan/player_sigil.png": lambda: character(True),
@@ -646,6 +732,13 @@ ASSETS = {
     "items/item_fungal_nucleus.png": fungal_nucleus,
     "items/item_spore_cluster.png": spores,
     "items/item_minor_tonic.png": tonic,
+    "items/item_simple_ether.png": sylwen_ether,
+    "items/item_field_compress.png": field_compress,
+    "items/item_antidote.png": sylwen_antidote,
+    "npcs/npc_daeryn_portrait.png": lambda: terran_healer().resize((32, 32), Image.Resampling.NEAREST),
+    "npcs/npc_sylwen_portrait.png": lambda: terran_alchemist().resize((32, 32), Image.Resampling.NEAREST),
+    "npcs/npc_vorren_portrait.png": lambda: terran_tracker().resize((32, 32), Image.Resampling.NEAREST),
+    "npcs/npc_lithwynn_portrait.png": lambda: terran_inscriber().resize((32, 32), Image.Resampling.NEAREST),
     "items/item_mycelial_fragment.png": mycelial_fragment,
     "items/item_astravel_record.png": record,
     "gems/gem_emerald_growth.png": lambda: gem_variant('moss', 'moss_light', 'moss_dark', 'leaf'),
@@ -680,6 +773,9 @@ ITEM_IDS = {
     'items/item_fungal_nucleus.png': 'item.fungal-nucleus',
     'items/item_spore_cluster.png': 'item.spore-cluster',
     'items/item_minor_tonic.png': 'item.minor-tonic',
+    'items/item_simple_ether.png': 'item.simple-ether',
+    'items/item_field_compress.png': 'item.field-compress',
+    'items/item_antidote.png': 'item.antidote',
     'items/item_mycelial_fragment.png': 'item.mycelial-fragment',
     'items/item_astravel_record.png': 'item.quest-record',
 }
@@ -690,6 +786,10 @@ ENEMY_IDS = {
 }
 NPC_IDS = {
     'npc_eldamar': 'npc.eldamar.portrait',
+    'npc_daeryn': 'npc.daeryn.portrait',
+    'npc_sylwen': 'npc.sylwen.portrait',
+    'npc_vorren': 'npc.vorren.portrait',
+    'npc_lithwynn': 'npc.lithwynn.portrait',
     'npc_mireya_dunavar': 'npc.mireya.portrait',
     'npc_master_rustal': 'npc.rustal.portrait',
     'npc_observador_cebios': 'npc.cebios.portrait',

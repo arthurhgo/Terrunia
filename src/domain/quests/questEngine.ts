@@ -165,6 +165,9 @@ const applyQuestRewards = (save: GameSave, definition: QuestDefinition) => {
     if (outcome.type === 'clanReputation' && save.character.clan.knownClanIds.includes(outcome.clanId)) {
       save.character.clan.reputation += outcome.value
     }
+    if (outcome.type === 'worldFlag' && !save.world.worldFlags.includes(outcome.flag)) {
+      save.world.worldFlags.push(outcome.flag)
+    }
   }
 }
 

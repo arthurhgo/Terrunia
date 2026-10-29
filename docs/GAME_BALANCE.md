@@ -18,6 +18,12 @@ Todos os números abaixo são `BALANCE_DRAFT`. Eles existem para tornar o fluxo 
 | Fratura Ressonante | −1 mitigação | Valida modificador temporário sem fixar fórmula final. |
 | Esporos Nocivos | 1 dano por 2 turnos | Valida efeito no início do turno. |
 | Tônico de Campo | +8 Vida | Consumível técnico da trilha, não item canônico final. |
+| Éter Simples | 18 ouro; +6 Mana | Balcão de Sylwen; restaurar Mana em batalha. `BALANCE_DRAFT`. |
+| Antídoto | 16 ouro; limpa estados prejudiciais em combate | Uso pontual; aflições persistentes ainda não implementadas. `BALANCE_DRAFT`. |
+| Compressa de Campo | 8 ouro; +4 Vida | Consumível barato do balcão; `BALANCE_DRAFT`. |
+| Tônico de Campo na loja | 20 ouro; +8 Vida | Mesma definição do consumível da trilha, sem transformar em equipamento. |
+| Quest Daeryn → Vorren → Lithwynn | 30/40/55 XP; 10/20/25 ouro; 40 Essência na última | Cadeia tutorial de serviços `CONTENT_DRAFT` e recompensas `BALANCE_DRAFT`. |
+| Alojamento | Recuperação total gratuita de PV/MP fora de combate | Deve dar sentido à persistência; desbloqueado pela missão de Daeryn. |
 | Emboscada de Esporos | 3 inimigos; 55 XP, 20 ouro, 32 Ressonância | Valida alvo, timeline e IA multi-inimigo. |
 | Aglomerado de Esporos | 55 Essência ou 20 ouro | Segundo dilema econômico do protótipo. |
 | Colosso Micélio | Nv 6, 24 Vida, 2 mitigação, 4 ataque | Boss técnico vencível com o kit atual; stats finais são `OWNER_DECISION`. |

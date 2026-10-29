@@ -34,6 +34,7 @@ import {
   unlockClass as unlockClassDomain,
 } from '../domain/progression/progressionEngine'
 import { visitTerranLocation } from '../domain/terran/cityEngine'
+import { buyFromSylwen, receiveDaerynAid, restAtHome } from '../domain/terran/services'
 import {
   loadCampaignSeed,
   loadSynchronizedSave,
@@ -46,6 +47,7 @@ import { loadAccountSettings, saveAccountSettings } from '../services/settings/a
 import { createRandomId } from '../domain/shared/randomId'
 import { cutscenes, type CutsceneId } from '../domain/terran/cutscenes'
 import { adjustCharacterAttribute, gainCharacterXp } from '../domain/character/attributeProgression'
+import { deriveCharacterStats } from '../domain/character/derivedStats'
 
 type GameStatus = 'idle' | 'loading' | 'ready' | 'error'
 type SyncStatus = 'idle' | 'saving' | 'saved' | 'error'
@@ -85,6 +87,11 @@ type GameState = {
   joinClan: (clanId: string) => void
   unlockClass: (classId: string) => void
   travelInTerran: (locationId: string) => void
+  preparePlayerHome: () => void
+  performTerranQuestTask: (questId: string) => void
+  restAtHome: () => void
+  receiveDaerynAid: () => void
+  buyFromSylwen: (itemId: string, quantity?: number) => void
   recordCutsceneViewed: (sceneId: CutsceneId) => void
   enterAstravel: () => void
   enterFungalChambers: () => void
@@ -251,6 +258,9 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!save) return failAction('Nenhum Terrírian ativo.')
       const result = adjustCharacterAttribute(save, attributeId, direction, nowIso())
       if (!result.ok) return failAction(result.message)
+      const stats = deriveCharacterStats(result.value, content)
+      result.value.vitals.hp = Math.min(result.value.vitals.hp, stats.life.value)
+      result.value.vitals.mp = Math.min(result.value.vitals.mp, stats.mana.value)
       commit(result.value)
     },
 
@@ -383,6 +393,51 @@ export const useGameStore = create<GameState>((set, get) => {
       }
     },
 
+    performTerranQuestTask: (questId) => {
+      const save = get().save
+      const definition = content.quests[questId]
+      const objective = definition?.objectives.find((entry) => entry.type === 'interact')
+      if (!save || !definition || definition.category !== 'main' || !objective) return failAction('Interação indisponível.')
+      if (definition.terranFlow?.active !== save.world.currentLocationId) {
+        return failAction('Este objetivo precisa ser realizado no local indicado pela missão.')
+      }
+      if (save.quests[questId]?.status !== 'active') return failAction('Aceite primeiro esta missão.')
+      const next = applyQuestEvent(save, { type: 'interact', targetId: objective.targetId }, content, nowIso())
+      commit(next)
+      show('Objetivo realizado', `Retorne a ${content.npcs[definition.turnInNpcId]?.name ?? 'quem entregou a missão'} para receber a recompensa.`, 'success')
+    },
+
+    preparePlayerHome: () => {
+      get().performTerranQuestTask('main_terran_first_home')
+    },
+
+    restAtHome: () => {
+      const save = get().save
+      if (!save) return
+      const result = restAtHome(save, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      if (result.value !== save) commit(result.value)
+      show('Descanso concluído', 'Vida e Mana restauradas. Experiência e Vínculos preservados.', 'success')
+    },
+
+    receiveDaerynAid: () => {
+      const save = get().save
+      if (!save) return
+      const result = receiveDaerynAid(save, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+      show('Socorro de Daeryn', 'Você pode voltar a explorar. Seu quarto oferecerá repouso completo.', 'success')
+    },
+
+    buyFromSylwen: (itemId, quantity = 1) => {
+      const save = get().save
+      if (!save) return
+      const result = buyFromSylwen(save, itemId, quantity, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+      show('Compra realizada', `${quantity}× ${content.items[itemId].name} adicionado à mochila.`, 'success')
+    },
+
     recordCutsceneViewed: (sceneId) => {
       const save = get().save
       if (!save || !cutscenes.some((scene) => scene.id === sceneId)) return
@@ -489,6 +544,7 @@ export const useGameStore = create<GameState>((set, get) => {
     startBattle: (nodeId) => {
       const save = get().save
       if (!save) return
+      if (save.vitals.hp <= 0) return failAction('Você precisa receber socorro na Casa de Daeryn antes de combater.')
       const trail = content.trails.trail_astravel_entry
       const node = nodeId
         ? trail.nodes.find((candidate) => candidate.id === nodeId)
@@ -511,6 +567,8 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!encounter) return failAction('Conteúdo do encontro não encontrado.')
       const next = structuredClone(save)
       next.battle = createBattle(next, encounter, content)
+      const startingPlayer = next.battle.combatants.combatant_player
+      next.vitals = { hp: startingPlayer.hp, mp: startingPlayer.mp }
       if (next.world.currentLocationId !== FUNGAL_DUNGEON_ID) next.world.currentLocationId = node.id
       next.updatedAt = nowIso()
       next.revision += 1
@@ -521,14 +579,14 @@ export const useGameStore = create<GameState>((set, get) => {
     submitBattleCommand: (command) => {
       const save = get().save
       if (!save?.battle) return failAction('Nenhuma batalha está ativa.')
-      const consumedBefore = new Set(save.battle.consumedItemInstanceIds)
+      const consumedCount = save.battle.consumedItemInstanceIds.length
       const result = submitBattleCommand(save.battle, command, content, save.inventory)
       if (!result.ok) return failAction(result.message)
       const next = structuredClone(save)
       next.battle = result.value
-      const consumedNow = result.value.consumedItemInstanceIds.filter(
-        (instanceId) => !consumedBefore.has(instanceId),
-      )
+      const player = result.value.combatants.combatant_player
+      next.vitals = { hp: player.hp, mp: player.mp }
+      const consumedNow = result.value.consumedItemInstanceIds.slice(consumedCount)
       for (const instanceId of consumedNow) {
         const index = next.inventory.findIndex((item) => item.instanceId === instanceId)
         if (index < 0) continue
@@ -636,6 +694,9 @@ export const useGameStore = create<GameState>((set, get) => {
     returnToTerran: () => {
       const save = get().save
       if (!save) return
+      if (save.battle && save.battle.phase !== 'Defeat' && !(save.battle.phase === 'Victory' && save.battle.claimed)) {
+        return failAction('Finalize o combate e receba as recompensas antes de retornar.')
+      }
       const next = structuredClone(save)
       next.battle = null
       next.world.currentLocationId = 'location_terran_portal_plaza'

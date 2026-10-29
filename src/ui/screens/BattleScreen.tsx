@@ -55,6 +55,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const firstLivingEnemyId = enemies.find((enemy) => enemy.alive)?.id ?? ''
   const [selectedTargetId, setSelectedTargetId] = useState(firstLivingEnemyId)
   const [drawer, setDrawer] = useState<'status' | 'log' | null>('status')
+  const [selectedConsumableId, setSelectedConsumableId] = useState('')
 
   useEffect(() => {
     const selected = enemies.find((enemy) => enemy.id === selectedTargetId)
@@ -84,10 +85,15 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     const definition = content.items[instance.definitionId]
     return definition?.category === 'consumable' && definition.combatEffects.length > 0
   })
-  const activeConsumable = usableConsumables[0]
+  const activeConsumable = usableConsumables.find((item) => item.instanceId === selectedConsumableId) ?? usableConsumables[0]
   const activeConsumableDefinition = activeConsumable
     ? content.items[activeConsumable.definitionId]
     : undefined
+  const canUseConsumable = Boolean(activeConsumableDefinition?.combatEffects.some((effect) =>
+    effect.type === 'restoreHp' && player.hp < player.maxHp
+    || effect.type === 'restoreMp' && player.mp < player.maxMp
+    || effect.type === 'cleanseHarmful' && player.statusEffects.some((status) => content.statusEffects[status.definitionId]?.tone === 'harmful'),
+  ))
 
   const leave = () => {
     returnToTerran()
@@ -175,7 +181,11 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               </GameButton>
             )) : <GameButton variant="secondary" disabled><Sparkles size={18} /> Habilidade bloqueada</GameButton>}
             <GameButton variant="secondary" onClick={() => submit({ type: 'defend' })}><Shield size={18} /> Defender</GameButton>
-            <GameButton variant="ghost" onClick={useItem} disabled={!activeConsumable || player.hp >= player.maxHp}
+            <select className="battle-game__consumable-select" aria-label="Selecionar consumível" value={activeConsumable?.instanceId ?? ''} onChange={(event) => setSelectedConsumableId(event.target.value)} disabled={usableConsumables.length === 0}>
+              {usableConsumables.length === 0 && <option value="">Sem consumíveis</option>}
+              {usableConsumables.map((instance) => <option key={instance.instanceId} value={instance.instanceId}>{content.items[instance.definitionId]?.name} ×{instance.quantity}</option>)}
+            </select>
+            <GameButton variant="ghost" onClick={useItem} disabled={!activeConsumable || !canUseConsumable}
               title={activeConsumableDefinition?.description}><Backpack size={18} /> {activeConsumableDefinition?.name ?? 'Sem consumível'}</GameButton>
             <GameButton variant="ghost" onClick={() => submit({ type: 'flee' })} disabled={!activeBattle.canFlee}><Footprints size={18} /> Fugir</GameButton>
           </div> : null}

@@ -57,6 +57,23 @@ afterEach(() => {
 })
 
 describe('interfaces de Terran', () => {
+  it('mostra o alojamento pixelado e o balcão de Sylwen sem sair da cidade', () => {
+    loadSave('location_terran_daeryn_house')
+    const save = useGameStore.getState().save!
+    save.wallet.gold = 40
+    useGameStore.setState({ save })
+    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Alojamento' }))
+    expect(screen.getByRole('img', { name: /Quarto pixelado/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Conclua “Um Lugar em Terran”/ })).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Daeryn' }))
+    expect(screen.getByRole('heading', { name: /Balcão de Sylwen/ })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Comprar Éter Simples por 18 ouro' }))
+    expect(useGameStore.getState().save?.wallet.gold).toBe(22)
+    expect(useGameStore.getState().save?.inventory.some((item) => item.definitionId === 'consumable_simple_ether')).toBe(true)
+    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+  })
+
   it('mantém a cidade pixelada e abre painéis adjacentes sem navegação por abas', () => {
     loadSave()
     render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)

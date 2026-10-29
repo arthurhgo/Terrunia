@@ -113,6 +113,13 @@ const entries: AssetEntry[] = [
     alt: 'Tônico de Campo',
     pixelArt: true,
   },
+  ...(['simple-ether', 'field-compress', 'antidote'] as const).map((item) => ({
+    id: `item.${item}`,
+    path: `/assets/items/item_${item.replaceAll('-', '_')}.png`,
+    fallback: '/assets/placeholders/item.svg',
+    alt: `Ícone de ${item}`,
+    pixelArt: true,
+  })),
   {
     id: 'item.mycelial-fragment',
     path: '/assets/items/item_mycelial_fragment.png',

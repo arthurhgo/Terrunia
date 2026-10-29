@@ -77,9 +77,9 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     definitionId: character.id,
     name: character.name,
     side: 'player',
-    hp: maxHp,
+    hp: Math.min(maxHp, Math.max(0, save.vitals.hp)),
     maxHp,
-    mp: maxMp,
+    mp: Math.min(maxMp, Math.max(0, save.vitals.mp)),
     maxMp,
     attackPower: stats.primaryAttack.value,
     mitigation: stats.defense.value,
@@ -170,6 +170,16 @@ const applyCombatEffects = (
       const restored = Math.min(effect.value, target.maxHp - target.hp)
       target.hp += restored
       addLog(state, `${target.name} recupera ${restored} de Vida.`, 'reward')
+    }
+    if (effect.type === 'restoreMp') {
+      const restored = Math.min(effect.value, target.maxMp - target.mp)
+      target.mp += restored
+      addLog(state, `${target.name} recupera ${restored} de Mana.`, 'reward')
+    }
+    if (effect.type === 'cleanseHarmful') {
+      const oldLength = target.statusEffects.length
+      target.statusEffects = target.statusEffects.filter((status) => catalog.statusEffects[status.definitionId]?.tone !== 'harmful')
+      addLog(state, `${target.name} remove ${oldLength - target.statusEffects.length} efeito(s) prejudicial(is).`, 'reward')
     }
     if (effect.type === 'applyStatus' && target.alive) {
       applyStatus(state, actor, target, effect, catalog)
@@ -434,7 +444,7 @@ export const submitBattleCommand = (
       !item ||
       item.category !== 'consumable' ||
       item.combatEffects.length === 0 ||
-      battle.consumedItemInstanceIds.includes(command.itemInstanceId)
+      lookup.instance.quantity < 1
     ) {
       return fail('ITEM_UNAVAILABLE', 'Este consumível não está disponível para uso em combate.')
     }

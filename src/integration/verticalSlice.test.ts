@@ -121,6 +121,15 @@ describe('vertical slice integrada', () => {
     useGameStore.getState().claimBattleRewards()
     const firstDrop = useGameStore.getState().save?.inventory[0]?.instanceId
     useGameStore.getState().returnToTerran()
+    useGameStore.getState().travelInTerran('location_terran_eldamar_house')
+    useGameStore.getState().turnInQuest('vs_astravel_first_contact', 'npc_eldamar')
+    useGameStore.getState().travelInTerran('location_terran_daeryn_house')
+    useGameStore.getState().offerQuest('main_terran_first_home')
+    useGameStore.getState().acceptQuest('main_terran_first_home')
+    useGameStore.getState().preparePlayerHome()
+    useGameStore.getState().turnInQuest('main_terran_first_home', 'npc_daeryn')
+    useGameStore.getState().restAtHome()
+    expect(useGameStore.getState().save?.world.worldFlags).toContain('player_home_unlocked')
     useGameStore.getState().travelInTerran('location_terran_bond_workshop')
     useGameStore.getState().convertItems([firstDrop!])
     useGameStore.getState().unlockNode('weapon_bond_core')
@@ -163,6 +172,7 @@ describe('vertical slice integrada', () => {
 
     useGameStore.getState().claimBattleRewards()
     useGameStore.getState().returnToTerran()
+    useGameStore.getState().restAtHome()
     expect(useGameStore.getState().save?.world.trailNodeStates.astravel_ruin_threshold_05).toBe(
       'current',
     )
