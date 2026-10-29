@@ -36,6 +36,7 @@ import {
 } from '../domain/progression/progressionEngine'
 import { visitTerranLocation } from '../domain/terran/cityEngine'
 import { buyFromSylwen, receiveDaerynAid, restAtHome } from '../domain/terran/services'
+import { enterPlayerBase, leavePlayerBase, respawnDefeatedPlayer, transferBaseChestItem } from '../domain/terran/base'
 import {
   loadCampaignSeed,
   loadSynchronizedSave,
@@ -91,6 +92,9 @@ type GameState = {
   preparePlayerHome: () => void
   performTerranQuestTask: (questId: string) => void
   restAtHome: () => void
+  enterBase: () => void
+  leaveBase: () => void
+  transferBaseItem: (direction: 'deposit' | 'withdraw', instanceId: string, quantity: number) => void
   receiveDaerynAid: () => void
   buyFromSylwen: (itemId: string, quantity?: number) => void
   recordCutsceneViewed: (sceneId: CutsceneId) => void
@@ -119,6 +123,7 @@ type GameState = {
 
 const nowIso = () => new Date().toISOString()
 let persistenceQueue = Promise.resolve<void>(undefined)
+let activeBootSequence = 0
 
 export const flushPersistence = () => persistenceQueue
 
@@ -172,12 +177,15 @@ export const useGameStore = create<GameState>((set, get) => {
     notification: null,
 
     boot: async (ownerId) => {
-      set({ status: 'loading', ownerId, error: null })
+      const bootSequence = ++activeBootSequence
+      set({ status: 'loading', ownerId, save: null, campaignSeed: null, characterAccess: 'idle', error: null })
       try {
         const [save, campaignSeed] = await Promise.all([
           loadSynchronizedSave(ownerId),
           loadCampaignSeed(ownerId),
         ])
+        if (bootSequence !== activeBootSequence || get().ownerId !== ownerId) return
+        if (save && save.ownerId !== ownerId) throw new Error('O mundo salvo pertence a outra conta.')
         set({
           status: 'ready',
           save,
@@ -190,6 +198,7 @@ export const useGameStore = create<GameState>((set, get) => {
           syncStatus: save ? 'saved' : 'idle',
         })
       } catch (error) {
+        if (bootSequence !== activeBootSequence || get().ownerId !== ownerId) return
         set({
           status: 'error',
           save: null,
@@ -412,6 +421,30 @@ export const useGameStore = create<GameState>((set, get) => {
 
     preparePlayerHome: () => {
       get().performTerranQuestTask('main_terran_first_home')
+    },
+
+    enterBase: () => {
+      const save = get().save
+      if (!save) return
+      const result = enterPlayerBase(save, nowIso())
+      if (!result.ok) return failAction(result.message)
+      if (result.value !== save) commit(result.value)
+    },
+
+    leaveBase: () => {
+      const save = get().save
+      if (!save) return
+      const result = leavePlayerBase(save, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+    },
+
+    transferBaseItem: (direction, instanceId, quantity) => {
+      const save = get().save
+      if (!save) return
+      const result = transferBaseChestItem(save, direction, instanceId, quantity, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
     },
 
     restAtHome: () => {
@@ -733,7 +766,14 @@ export const useGameStore = create<GameState>((set, get) => {
     returnToTerran: () => {
       const save = get().save
       if (!save) return
-      if (save.battle && save.battle.phase !== 'Defeat' && !(save.battle.phase === 'Victory' && save.battle.claimed)) {
+      if (save.battle?.phase === 'Defeat') {
+        const revived = respawnDefeatedPlayer(save, nowIso())
+        if (!revived.ok) return failAction(revived.message)
+        commit(revived.value)
+        show('Despertar na Base', 'Você acordou com 1 PV. Descanse na cama para recuperar Vida e Mana.', 'info')
+        return
+      }
+      if (save.battle && !(save.battle.phase === 'Victory' && save.battle.claimed)) {
         return failAction('Finalize o combate e receba as recompensas antes de retornar.')
       }
       const next = structuredClone(save)
@@ -884,7 +924,8 @@ export const useGameStore = create<GameState>((set, get) => {
     },
 
     clearNotification: () => set({ notification: null }),
-    resetSession: () =>
+    resetSession: () => {
+      activeBootSequence += 1
       set({
         status: 'idle',
         syncStatus: 'idle',
@@ -896,6 +937,7 @@ export const useGameStore = create<GameState>((set, get) => {
         preservedSettings: null,
         error: null,
         notification: null,
-      }),
+      })
+    },
   }
 })

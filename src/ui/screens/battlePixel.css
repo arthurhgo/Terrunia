@@ -70,3 +70,17 @@
 @media(max-width:850px){.pixel-battle__foot{grid-template-columns:1fr 1fr}.pixel-battle__target{grid-column:1/-1}.pixel-battle__arena{min-height:275px}.pixel-battle__hero{left:7%;width:110px}.pixel-battle__enemies{left:34%;right:2%}.pixel-battle__header{grid-template-columns:1fr 1fr}.pixel-battle__header h1{grid-column:1/-1;grid-row:2}.pixel-battle__header small{grid-row:1;grid-column:2}}
 @media(max-width:560px){.pixel-battle__foot{display:flex;flex-direction:column}.pixel-battle__header{padding:5px}.pixel-battle__arena{min-height:230px}.pixel-battle__hero{left:6%;width:80px}.pixel-battle__enemies{bottom:27%;left:31%;height:43%}.pixel-battle__enemy small{display:none}.pixel-battle__panel{padding:9px}.pixel-battle__commands{gap:4px}.pixel-battle__command{font-size:10px;min-height:43px}.pixel-battle__stat-body{grid-template-columns:65px 1fr}.pixel-battle__turn-order{left:10%;bottom:6px}.pixel-battle__drops{max-width:85%}}
 @media(prefers-reduced-motion:reduce){.pixel-battle *{animation:none!important;transition:none!important}}
+
+/* Centered, pixel-stepped defeat animation. The domain controls HP and respawn. */
+.pixel-battle__death {position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:#020711e8;color:#f5d7a0;text-align:center;isolation:isolate;}
+.pixel-battle__death-character{position:relative;z-index:2;width:clamp(100px,22vw,190px);height:clamp(100px,22vw,190px);transform-origin:50% 85%;animation:terrunia-death 2s steps(9,end) both}
+.pixel-battle__death-character img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;}
+.pixel-battle__death-aura{position:absolute;top:15%;left:50%;width:170px;height:170px;transform:translateX(-50%);background:radial-gradient(circle,#b21e3859,transparent 72%);animation:terrunia-death-aura 2s steps(8,end) both}
+.pixel-battle__death strong{font-family:Georgia,serif;letter-spacing:.14em;font-size:clamp(16px,2vw,26px);color:#e5b86d;animation:terrunia-death-text 1.7s steps(6,end) both}
+.pixel-battle__death small{font-family:Georgia,serif;font-size:clamp(12px,1.4vw,17px);color:#cbdbdd}
+.pixel-battle__death button{background:#0a1b29;border:2px solid #cca35d;color:#f2d5a2;font-family:Georgia,serif;padding:9px 18px;cursor:pointer;z-index:3;}
+.pixel-battle__death button:hover,.pixel-battle__death button:focus-visible{outline:2px solid #7de1e6}
+@keyframes terrunia-death{0%{transform:rotate(0);filter:none;opacity:1}20%{filter:brightness(1.8) sepia(1) saturate(8) hue-rotate(-38deg)}40%{transform:rotate(0);filter:brightness(1.4) sepia(1) saturate(5) hue-rotate(-36deg)}75%{transform:rotate(-85deg) translateY(13px);filter:grayscale(1) brightness(.7);opacity:.85}100%{transform:rotate(-90deg) translateY(20px);filter:grayscale(1) brightness(.3);opacity:.1}}
+@keyframes terrunia-death-aura{0%{opacity:0;scale:.3}55%{opacity:1;scale:1}100%{opacity:0;scale:1.4}}
+@keyframes terrunia-death-text{0%,30%{opacity:0}100%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.pixel-battle__death-character,.pixel-battle__death-aura,.pixel-battle__death strong{animation:none!important}}

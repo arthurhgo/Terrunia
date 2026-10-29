@@ -15,23 +15,23 @@ const chooseNewest = (local: GameSave, cloud: GameSave) => {
 }
 
 export const loadSynchronizedSave = async (ownerId: string, saveId?: string) => {
-  const local = await getLatestLocalSave(ownerId)
+  const localCandidate = await getLatestLocalSave(ownerId)
+  const local = localCandidate?.ownerId === ownerId ? localCandidate : null
   if (!isFirebaseConfigured || ownerId === 'dev-guest') return local
   const reference = await getActiveCampaignReference(ownerId)
-  const localMatchesActive = local && (
-    !reference.activeCampaignId || (
-      local.campaignId === reference.activeCampaignId &&
-      local.campaignGeneration === reference.campaignGeneration
-    )
+  const localMatchesActive = Boolean(local &&
+    (!reference.activeSaveId || local.saveId === reference.activeSaveId) &&
+    (!reference.activeCampaignId || local.campaignId === reference.activeCampaignId) &&
+    local.campaignGeneration === reference.campaignGeneration
   )
-  const cloudId = saveId ?? (localMatchesActive ? local?.saveId : null) ?? reference.activeSaveId ?? (await getActiveCloudSaveId(ownerId))
+  const cloudId = reference.activeSaveId ?? saveId ?? (localMatchesActive ? local?.saveId : null) ?? (await getActiveCloudSaveId(ownerId))
   if (!cloudId) return null
   const cloud = await getCloudSave(ownerId, cloudId)
   if (!cloud) {
     if (localMatchesActive) await putCloudSave(ownerId, local)
     return localMatchesActive ? local : null
   }
-  if (!localMatchesActive) {
+  if (!localMatchesActive || !local) {
     await replaceLocalCampaign(ownerId, cloud)
     return cloud
   }

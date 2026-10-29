@@ -31,7 +31,7 @@ describe('contratos secundários dos NPCs', () => {
     old.wallet.gold = 77
     delete old.quests.side_npc_eldamar
     const migrated = migrateAndValidateSave(old)
-    expect(migrated.schemaVersion).toBe(10)
+    expect(migrated.schemaVersion).toBe(11)
     expect(migrated.wallet.gold).toBe(77)
     expect(migrated.quests.vs_astravel_first_contact.status).toBe('completed')
     expect(migrated.quests.side_npc_eldamar.status).toBe('available')

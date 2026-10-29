@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
+import { BASE_LOCATION_ID } from '../../domain/terran/base'
 import { useAuthStore } from '../../state/authStore'
 import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
@@ -11,6 +12,7 @@ import { GameButton } from '../components/GameButton'
 import { Modal } from '../components/Modal'
 
 const getLocationLabel = (locationId: string) => {
+  if (locationId === BASE_LOCATION_ID) return 'Base do Terrírian'
   const city = content.terranLocations[locationId]
   if (city) return city.name
   const trail = content.trails.trail_astravel_entry.nodes.find((node) => node.id === locationId)

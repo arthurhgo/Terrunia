@@ -3,6 +3,7 @@ import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS } from '../../content/terran'
 import { createNewSave } from '../../domain/game/createSave'
 import { PLAYER_HOME_FLAG, restAtHome } from '../../domain/terran/services'
+import { BASE_LOCATION_ID } from '../../domain/terran/base'
 import { getCityDoor } from './pixelCityArt'
 import { findCityPath, isCityWalkable } from './cityNavigation'
 import { PLAYER_HOME_CENTER, PLAYER_HOME_DOOR, PLAYER_HOME_INTERIOR_ID, getRoomName, roomFurniture } from './roomContent'
@@ -12,7 +13,7 @@ const save = createNewSave('owner', 'Terrírian', 'character.terririan.default',
 
 describe('Casa do Terrírian e interiores temáticos', () => {
   it('a residência adicional não substitui uma das seis instituições', () => {
-    expect(getRoomName(PLAYER_HOME_INTERIOR_ID)).toBe('Casa do Terrírian')
+    expect(getRoomName(PLAYER_HOME_INTERIOR_ID)).toBe('Base do Terrírian')
     expect(Object.keys(content.terranLocations)).toHaveLength(7)
     expect(PLAYER_HOME_CENTER.x).toBe(192)
     expect(isCityWalkable(PLAYER_HOME_CENTER)).toBe(false)
@@ -42,6 +43,7 @@ describe('Casa do Terrírian e interiores temáticos', () => {
     const unlocked = structuredClone(save)
     unlocked.world.worldFlags.push(PLAYER_HOME_FLAG)
     unlocked.vitals.hp = Math.max(1, unlocked.vitals.hp - 3)
+    unlocked.world.currentLocationId = BASE_LOCATION_ID
     const result = restAtHome(unlocked, content, '2026-10-29T18:30:00Z')
     expect(result.ok).toBe(true)
     if (result.ok) expect(result.value.vitals.hp).toBeGreaterThan(unlocked.vitals.hp)

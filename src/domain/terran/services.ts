@@ -1,5 +1,5 @@
 import type { ContentCatalog } from '../../content/catalog'
-import { TERRAN_LOCATION_IDS } from '../../content/terran'
+import { BASE_LOCATION_ID } from './base'
 import { deriveCharacterStats } from '../character/derivedStats'
 import type { GameSave } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
@@ -14,9 +14,6 @@ export const SYLWEN_STOCK = [
 
 export const PLAYER_HOME_FLAG = 'player_home_unlocked'
 export const PREPARE_HOME_OBJECTIVE = 'prepare_player_home'
-
-const inTerran = (save: GameSave) =>
-  save.world.currentLocationId === 'terran' || TERRAN_LOCATION_IDS.includes(save.world.currentLocationId as typeof TERRAN_LOCATION_IDS[number])
 
 export const buyFromSylwen = (
   save: GameSave,
@@ -51,10 +48,7 @@ export const buyFromSylwen = (
 }
 
 export const restAtHome = (save: GameSave, catalog: ContentCatalog, now: string): Result<GameSave> => {
-  if (!save.world.worldFlags.includes(PLAYER_HOME_FLAG)) {
-    return fail('HOME_LOCKED', 'Conclua “Um Lugar em Terran” com Daeryn para receber o alojamento.')
-  }
-  if (save.battle || !inTerran(save)) return fail('REST_UNAVAILABLE', 'Só é possível descansar em Terran, fora de combate.')
+  if (save.battle || save.world.currentLocationId !== BASE_LOCATION_ID) return fail('REST_UNAVAILABLE', 'É necessário estar dentro da Base para descansar.')
 
   const stats = deriveCharacterStats(save, catalog)
   if (save.vitals.hp === stats.life.value && save.vitals.mp === stats.mana.value) return ok(save)

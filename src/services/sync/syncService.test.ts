@@ -69,6 +69,19 @@ describe('sincronização local-first', () => {
     expect(putCloudSave).not.toHaveBeenCalled()
   })
 
+  it('não toma o save local antigo quando o perfil aponta outra campanha ativa', async () => {
+    const old = makeSave('firebase-user', 'old-save', 99)
+    const active = makeSave('firebase-user', 'new-save', 1)
+    vi.mocked(getLatestLocalSave).mockResolvedValue(old)
+    vi.mocked(getActiveCampaignReference).mockResolvedValue({
+      activeSaveId: 'new-save', activeCampaignId: active.campaignId, campaignGeneration: 0,
+    })
+    vi.mocked(getCloudSave).mockResolvedValue(active)
+    await expect(loadSynchronizedSave('firebase-user')).resolves.toEqual(active)
+    expect(getCloudSave).toHaveBeenCalledWith('firebase-user', 'new-save')
+    expect(replaceLocalCampaign).toHaveBeenCalledWith('firebase-user', active)
+  })
+
   it('envia o save local quando ainda não existe cópia na nuvem', async () => {
     const localSave = makeSave('firebase-user', 'local-save', 3)
     vi.mocked(getLatestLocalSave).mockResolvedValue(localSave)

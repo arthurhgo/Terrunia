@@ -11,7 +11,7 @@ export type RoomFurniture = {
   id: string
   name: string
   point: WorldPoint
-  behavior: 'inspect' | 'services' | 'rest'
+  behavior: 'inspect' | 'services' | 'rest' | 'storage'
   description: string
 }
 
@@ -44,12 +44,13 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
   location_terran_portal_plaza: [],
   interior_terririan_home: [
     { id: 'home_memories', name: 'Mesa das Memórias', point: { x: 141, y: 191 }, behavior: 'inspect', description: 'Um lugar reservado a lembranças de suas viagens. O arquivo de memórias será ampliado futuramente.' },
-    { id: 'home_bed', name: 'Cama do Terrírian', point: { x: 249, y: 189 }, behavior: 'rest', description: 'Descanso gratuito para recuperar Vida e Mana fora de combate.' },
+    { id: 'home_bed', name: 'Cama da Base', point: { x: 249, y: 189 }, behavior: 'rest', description: 'Descanso para recuperar Vida e Mana fora de combate.' },
+    { id: 'home_chest', name: 'Baú da Base', point: { x: 190, y: 184 }, behavior: 'storage', description: 'Armazene itens temporários e materiais. Os cinco Vínculos permanecem com o Terrírian.' },
   ],
 }
 
 export const getRoomName = (id: TerranInteriorId) =>
-  id === PLAYER_HOME_INTERIOR_ID ? 'Casa do Terrírian' :
+  id === PLAYER_HOME_INTERIOR_ID ? 'Base do Terrírian' :
   ({
     location_terran_eldamar_house: 'Casa de Eldamar',
     location_terran_vorren_post: 'Posto de Vorren',

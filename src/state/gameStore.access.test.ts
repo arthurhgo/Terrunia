@@ -29,6 +29,20 @@ describe('acesso ao personagem único da conta', () => {
 
   afterEach(() => useGameStore.getState().resetSession())
 
+  it('não aceita a resposta tardia de um boot de outra conta', async () => {
+    const first = makeSave()
+    let deliver!: (save: typeof first) => void
+    vi.mocked(loadSynchronizedSave).mockImplementationOnce(() =>
+      new Promise((resolve) => { deliver = resolve }))
+    vi.mocked(loadSynchronizedSave).mockResolvedValueOnce(null)
+    const oldBoot = useGameStore.getState().boot('account-owner')
+    await useGameStore.getState().boot('new-owner')
+    deliver(first)
+    await oldBoot
+    expect(useGameStore.getState().ownerId).toBe('new-owner')
+    expect(useGameStore.getState().save).toBeNull()
+  })
+
   it('exige uma decisão a cada novo boot quando existe personagem salvo', async () => {
     const save = makeSave()
     vi.mocked(loadSynchronizedSave).mockResolvedValue(save)
