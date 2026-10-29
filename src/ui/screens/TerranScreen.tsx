@@ -28,6 +28,7 @@ import { PixelInteriorCanvas } from '../terran/PixelInteriorCanvas'
 import { hasTerranInterior } from '../terran/interiorLayout'
 import { getRoomName, PLAYER_HOME_DOOR, PLAYER_HOME_INTERIOR_ID, type RoomFurniture, type TerranInteriorId } from '../terran/roomContent'
 import { PLAYER_HOME_FLAG } from '../../domain/terran/services'
+import { streetNpcPlacements } from '../../content/streetNpcs'
 import type { WorldPoint } from '../terran/pixelCityArt'
 import { getCityCast } from '../terran/cityCast'
 import { DaerynServices, HomeDrawer, QuestNpcPanel, VorrenBestiary } from '../terran/TerranServices'
@@ -220,6 +221,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setInspected(null)
   }
   const talk = (presence: Presence, sourceId: TerranLocationId = locationId) => {
+    const isStreetNpc = streetNpcPlacements.some((entry) => entry.id === presence.id)
     travel(sourceId)
     setLocationId(sourceId)
     setDrawer('location')
@@ -235,11 +237,14 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
       return
     }
     if (quest) { setLocalQuestId(quest.id); return }
+    if (isStreetNpc) setDrawer(null)
     setDialogueLine(0)
     setDialogue(presence)
   }
   const currentLabel = interiorId ? getRoomName(interiorId) : content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
-  const activeTitle = drawer === 'location' ? location.name : drawer === 'nexus' ? 'Personagem e Vínculos'
+  const activeTitle = drawer === 'location' ? (
+    localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
+  ) : drawer === 'nexus' ? 'Personagem e Vínculos'
     : drawer === 'inventory' ? 'Mochila e Arsenal' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'home' ? 'Meu Alojamento' : 'Evolução do Vínculo'
 
   const sceneContent = (
@@ -291,7 +296,10 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             </header>
             <div className="terran-game__drawer-content">
               {drawer === 'location' && (localQuestId
-                ? <QuestNpcPanel save={save} questId={localQuestId} onClose={() => setLocalQuestId(null)} />
+                ? <QuestNpcPanel save={save} questId={localQuestId} onClose={() => {
+                  if (content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_')) setDrawer(null)
+                  setLocalQuestId(null)
+                }} />
                 : <LocationDrawer save={save} location={location} onTalk={talk} onVisit={openLocation} unified={unified} />)}
               {drawer === 'inventory' && <><InventoryPanel save={save} /><EquipmentCatalog /></>}
               {drawer === 'nexus' && <><div className="terran-game__identity"><AssetImage assetId={save.character.portraitAssetId} /><span><strong>{save.character.name}</strong><small>Nível {save.character.level} · {save.character.clan.clanId ?? 'Sem Clã'} · {save.character.classProgression.classId ?? 'Sem Classe'}</small></span></div><ProgressBar value={save.vitals.hp} max={stats.life.value} label="Vida" tone="health" /><ProgressBar value={save.vitals.mp} max={stats.mana.value} label="Mana" /><ProgressBar value={save.character.xp} max={save.character.xpRequired} label="Experiência" /><ProgressBar value={save.essence.current} max={save.essence.required} label="Essência" tone="essence" /><BoundItemsPanel save={save} /></>}

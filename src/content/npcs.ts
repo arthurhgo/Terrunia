@@ -1,4 +1,5 @@
 import type { NPCDefinition } from './types'
+import { streetNpcDefinitions } from './streetNpcs'
 
 const baseNpcDefinitions = [
   {
@@ -87,7 +88,10 @@ const baseNpcDefinitions = [
   })),
 ] satisfies NPCDefinition[]
 
-export const npcDefinitions: NPCDefinition[] = baseNpcDefinitions.map((npc) => ({
-  ...npc,
-  questIds: [...npc.questIds, 'side_' + npc.id],
-}))
+export const npcDefinitions: NPCDefinition[] = [
+  ...baseNpcDefinitions.map((npc) => ({
+    ...npc,
+    questIds: [...npc.questIds, 'side_' + npc.id],
+  })),
+  ...streetNpcDefinitions,
+]

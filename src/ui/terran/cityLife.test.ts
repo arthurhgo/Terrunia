@@ -32,7 +32,7 @@ describe('vida ambiental dos moradores de Terran', () => {
 
   it('move moradores em ciclos determinísticos sem atravessar edifícios', () => {
     const actors = [hypotheticalStreetQuestActor]
-    expect(makeCast()).toEqual([])
+    expect(makeCast()).toHaveLength(6)
     let animated = 0
     for (const actor of actors) {
       let changed = false

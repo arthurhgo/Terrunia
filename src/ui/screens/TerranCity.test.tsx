@@ -84,6 +84,8 @@ describe('interfaces de Terran', () => {
     expect(screen.getByText('HOME · CIDADE-BASE DO JOGADOR')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Ir para Casa do Terrírian' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Conversar com Arlen' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Conversar com Liora' })).toBeInTheDocument()
     expect(screen.queryByRole('navigation', { name: 'Navegação principal' })).not.toBeInTheDocument()
     for (const locationId of TERRAN_LOCATION_IDS) {
       expect(

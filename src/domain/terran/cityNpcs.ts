@@ -1,7 +1,8 @@
 import { content } from '../../content/catalog'
-import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
+import type { TerranLocationId } from '../../content/terran'
 import type { TerranNpcPresence } from '../../content/types'
 import type { GameSave } from '../game/types'
+import { streetNpcPresences, streetNpcPlacements } from '../../content/streetNpcs'
 
 export type VisibleNpc = { presence: TerranNpcPresence; locationId: TerranLocationId }
 
@@ -22,19 +23,21 @@ export function getVisibleNpcsInLocation(save: GameSave, locationId: TerranLocat
     .map((presence) => ({ presence, locationId }))
 }
 
-/**
- * Only explicitly assigned secondary-quest characters belong outdoors.
- * Reserved empty until street-sidequest locations/stories are authored.
- * All current institutional and service residents live inside their buildings.
- */
-export const STREET_SIDEQUEST_PRESENCE_IDS: readonly string[] = []
+/** Street residents are separate from institutional locations by design. */
+export const STREET_SIDEQUEST_PRESENCE_IDS: readonly string[] = streetNpcPresences.map((entry) => entry.id)
 
 export function getOutdoorCityNpcs(save: GameSave): VisibleNpc[] {
-  return TERRAN_LOCATION_IDS.flatMap((id) => getVisibleNpcsInLocation(save, id))
-    .filter(({ presence }) => STREET_SIDEQUEST_PRESENCE_IDS.includes(presence.id)
-      && Boolean(presence.npcId && content.npcs[presence.npcId]?.questIds.some((id) =>
-        content.quests[id]?.category === 'secondary')))
+  return streetNpcPresences
+    .filter((presence) => isNpcVisible(save, presence) && Boolean(presence.npcId &&
+      content.npcs[presence.npcId]?.questIds.some((id) => content.quests[id]?.category === 'secondary')))
+    .map((presence) => {
+      const placement = streetNpcPlacementsById[presence.id]
+      return { presence, locationId: placement.locationId }
+    })
 }
+
+const streetNpcPlacementsById = Object.fromEntries(streetNpcPlacements.map((entry) => [entry.id, entry])) as
+  Record<string, (typeof streetNpcPlacements)[number]>
 
 export function getNpcQuestMarker(save: GameSave, presence: TerranNpcPresence): '!' | '✓' | null {
   const npc = presence.npcId ? content.npcs[presence.npcId] : null

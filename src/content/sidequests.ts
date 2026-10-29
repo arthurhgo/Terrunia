@@ -1,6 +1,7 @@
 import type { QuestDefinition, QuestPrerequisite } from './types'
 import { npcDefinitions } from './npcs'
 import { clanDefinitions, classDefinitions } from './progression'
+import { streetQuestDefinitions } from './streetNpcs'
 
 /**
  * CONTENT_DRAFT / BALANCE_DRAFT: secondary NPC contracts.
@@ -47,7 +48,7 @@ const prerequisitesForNpc = (npcId: string): QuestPrerequisite[] => {
   return [{ type: 'questCompleted', questId: storyGate[npcId] ?? 'vs_astravel_first_contact' }]
 }
 
-export const sideQuestDefinitions: QuestDefinition[] = npcDefinitions.map((npc, index) => {
+const baseSideQuestDefinitions: QuestDefinition[] = npcDefinitions.filter((npc) => !npc.id.startsWith('npc_street_')).map((npc, index) => {
   const targetId = index % 3 === 0 ? 'enemy_spore_sower' : 'enemy_fungorro_crawler'
   const required = 2 + index % 3
   return {
@@ -74,3 +75,8 @@ export const sideQuestDefinitions: QuestDefinition[] = npcDefinitions.map((npc, 
     status: 'CONTENT_DRAFT',
   }
 })
+
+export const sideQuestDefinitions: QuestDefinition[] = [
+  ...baseSideQuestDefinitions,
+  ...streetQuestDefinitions,
+]
