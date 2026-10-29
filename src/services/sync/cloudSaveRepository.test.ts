@@ -19,7 +19,10 @@ vi.mock('firebase/firestore', () => ({
 }))
 
 describe('gravação do save no Firestore', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    firestore.get.mockResolvedValue({ data: () => ({ campaignGeneration: 0 }) })
+  })
 
   it('recupera sincronização de save legado com campo indefinido dentro da batalha', async () => {
     const save = createNewSave('owner_1', 'Aren', 'character.terririan.default', content)
@@ -38,5 +41,22 @@ describe('gravação do save no Firestore', () => {
     expect(savedDocument.payload.saveId).toBe(playable.saveId)
     expect(crawler).toHaveProperty('aiSkillEveryRounds') // Local save untouched.
     expect(firestore.update).toHaveBeenCalledOnce()
+  })
+
+  it('rejeita um segundo personagem ativo na mesma conta e geração', async () => {
+    const save = createNewSave('owner_1', 'Aren', 'character.terririan.default', content)
+    firestore.get.mockResolvedValue({
+      data: () => ({
+        activeSaveId: 'outro-save',
+        activeCampaignId: save.campaignId,
+        campaignGeneration: save.campaignGeneration,
+      }),
+    })
+
+    await expect(putCloudSave(save.ownerId, save)).rejects.toThrow(
+      'Esta conta já possui outro Terrírian ativo nesta geração de campanha.',
+    )
+    expect(firestore.set).not.toHaveBeenCalled()
+    expect(firestore.update).not.toHaveBeenCalled()
   })
 })

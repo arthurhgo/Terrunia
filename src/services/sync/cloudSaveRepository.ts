@@ -38,6 +38,10 @@ export const putCloudSave = async (uid: string, save: GameSave) => {
     if (activeCampaignId && activeGeneration === save.campaignGeneration && activeCampaignId !== save.campaignId) {
       throw new Error('A campanha local não corresponde à campanha ativa na nuvem.')
     }
+    const activeSaveId = profile.data()?.activeSaveId
+    if (activeSaveId && activeGeneration === save.campaignGeneration && activeSaveId !== save.saveId) {
+      throw new Error('Esta conta já possui outro Terrírian ativo nesta geração de campanha.')
+    }
     transaction.set(doc(database, 'users', uid, 'saves', save.saveId), {
       schemaVersion: save.schemaVersion,
       gameVersion: save.gameVersion,

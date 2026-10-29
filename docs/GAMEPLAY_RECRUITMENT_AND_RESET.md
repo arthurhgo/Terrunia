@@ -41,4 +41,6 @@ O reset:
 - retorna a `/character/create` com a nova geração pronta para receber o novo Terrírian;
 - rejeita gravações de gerações antigas e impede restauração do progresso resetado.
 
+O comando **Criar outro Terrírian** na entrada da conta é uma origem adicional para o mesmo `CampaignReset`; não cria slot paralelo. A conta mantém um personagem ativo, e o novo Terrírian só pode ser criado depois das duas confirmações e da invalidação bem-sucedida da geração anterior.
+
 Os dados da campanha anterior não são apagados fisicamente pelo cliente: ficam invalidados para garantir auditabilidade e impedir ressurreição. Exclusão definitiva e política de conquistas globais futuras permanecem decisões separadas.

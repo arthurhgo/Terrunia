@@ -7,6 +7,7 @@ import { LoadingScreen } from './ui/screens/LoadingScreen'
 import { LoginScreen } from './ui/screens/LoginScreen'
 
 const BoundItemScreen = lazy(() => import('./ui/screens/BoundItemScreen').then((module) => ({ default: module.BoundItemScreen })))
+const CharacterAccessScreen = lazy(() => import('./ui/screens/CharacterAccessScreen').then((module) => ({ default: module.CharacterAccessScreen })))
 const CharacterCreationScreen = lazy(() => import('./ui/screens/CharacterCreationScreen').then((module) => ({ default: module.CharacterCreationScreen })))
 const NpcsScreen = lazy(() => import('./ui/screens/NpcsScreen').then((module) => ({ default: module.NpcsScreen })))
 const NexusScreen = lazy(() => import('./ui/screens/NexusScreen').then((module) => ({ default: module.NexusScreen })))
@@ -20,11 +21,13 @@ const TerranLocationScreen = lazy(() => import('./ui/screens/TerranLocationScree
 const WorldScreen = lazy(() => import('./ui/screens/WorldScreen').then((module) => ({ default: module.WorldScreen })))
 const UnifiedWorldScreen = lazy(() => import('./ui/screens/UnifiedWorldScreen').then((module) => ({ default: module.UnifiedWorldScreen })))
 
-function GameBoot({ children }: { children: ReactNode }) {
+function GameBoot({ children, allowCharacterAccess = false }: { children: ReactNode; allowCharacterAccess?: boolean }) {
   const authStatus = useAuthStore((state) => state.status)
   const user = useAuthStore((state) => state.user)
   const gameStatus = useGameStore((state) => state.status)
   const ownerId = useGameStore((state) => state.ownerId)
+  const save = useGameStore((state) => state.save)
+  const characterAccess = useGameStore((state) => state.characterAccess)
   const error = useGameStore((state) => state.error)
   const boot = useGameStore((state) => state.boot)
 
@@ -40,12 +43,17 @@ function GameBoot({ children }: { children: ReactNode }) {
   if (gameStatus === 'error') {
     return <main className="fatal-screen"><h1>O save não pôde ser carregado</h1><p>{error}</p></main>
   }
+  if (save && characterAccess === 'required' && !allowCharacterAccess) {
+    return <Navigate to="/character/access" replace />
+  }
   return children
 }
 
 function EntryRouter() {
   const save = useGameStore((state) => state.save)
+  const characterAccess = useGameStore((state) => state.characterAccess)
   if (!save) return <Navigate to="/character/create" replace />
+  if (characterAccess === 'required') return <Navigate to="/character/access" replace />
   if (!save.character.bondedEquipment.weapon) return <Navigate to="/new-game" replace />
   return <Navigate to="/play" replace />
 }
@@ -61,6 +69,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/" element={<GameBoot><EntryRouter /></GameBoot>} />
+          <Route path="/character/access" element={<GameBoot allowCharacterAccess><CharacterAccessScreen /></GameBoot>} />
           <Route path="/character/create" element={<GameBoot><CharacterCreationScreen /></GameBoot>} />
           <Route path="/new-game" element={<GameBoot><PrologueScreen /></GameBoot>} />
           <Route path="/play" element={<GameBoot><UnifiedWorldScreen /></GameBoot>} />

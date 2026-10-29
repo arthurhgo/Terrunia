@@ -17,14 +17,17 @@ export function CharacterCreationScreen() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [portrait, setPortrait] = useState(portraits[0].id)
+  const [submitting, setSubmitting] = useState(false)
 
-  if (save) return <Navigate to="/" replace />
+  if (save) return <Navigate to="/character/access" replace />
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    if (name.trim().length < 2) return
-    createGame(name, portrait)
-    navigate('/new-game')
+    if (name.trim().length < 2 || submitting) return
+    setSubmitting(true)
+    void createGame(name, portrait)
+      .then((created) => { if (created) navigate('/new-game') })
+      .finally(() => setSubmitting(false))
   }
 
   return (
@@ -85,8 +88,8 @@ export function CharacterCreationScreen() {
             </div>
           </div>
 
-          <GameButton type="submit" variant="primary" full disabled={name.trim().length < 2}>
-            Confirmar Terrírian <ArrowRight size={18} />
+          <GameButton type="submit" variant="primary" full disabled={name.trim().length < 2 || submitting}>
+            {submitting ? 'Salvando Terrírian…' : 'Confirmar Terrírian'} <ArrowRight size={18} />
           </GameButton>
         </form>
       </ArcanePanel>

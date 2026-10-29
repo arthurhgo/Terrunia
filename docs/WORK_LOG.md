@@ -1,5 +1,17 @@
 # Registro de implementação
 
+## Conta v0.6 — personagem único e retomada explícita
+
+- adicionada tela obrigatória de acesso para contas com Terrírian salvo;
+- exibidos identidade, nível, Clã, Classe, localização, horário e modo de persistência antes de entrar;
+- adicionada escolha entre continuar a campanha e criar outro personagem;
+- reutilizado `CampaignReset` com duas confirmações e texto `RESETAR` para substituir o Terrírian;
+- bloqueada criação direta enquanto existe personagem ativo no store;
+- bloqueado no Firestore um segundo `saveId` ativo na mesma conta e geração;
+- feito o primeiro save aguardar a persistência antes de avançar ao prólogo;
+- preservados Conta Google, autenticação e preferências ao criar nova campanha;
+- adicionados testes de boot, liberação da sessão, bloqueio de duplicidade e confirmação de substituição.
+
 ## Terran v0.5 — escala, livre navegação e combate contextual
 
 - igualada a escala do Terrírian à dos NPCs em 16×16 em Terran, Astravél, Câmaras e combate;
