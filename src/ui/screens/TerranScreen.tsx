@@ -263,6 +263,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
           <div className="terran-game__readout"><MapPin size={16} /> TERRAN &gt; {currentLabel.toUpperCase()}<span>{discovered}/{TERRAN_LOCATION_IDS.length} descobertos</span></div>
         </header>
         <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
+          <div className="terran-game__frame" data-testid="terran-centered-gameplay">
           <nav className="terran-game__hud" aria-label="Menu de Terran">
             {hud.map(({ id, label, icon: Icon }) => (
               <button key={id} type="button" className={drawer === id ? 'active' : ''}
@@ -294,6 +295,16 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               else setDialogue(null)
             }} />}
           </section>
+          {!drawer && <nav className="terran-game__right-rail" aria-label="Ações contextuais de Terran">
+            <button type="button" onClick={() => setDrawer(interiorId === PLAYER_HOME_INTERIOR_ID ? 'home' : 'location')}
+              aria-label="Abrir informações do local" title="Informações do local">
+              <MapPin size={20} aria-hidden="true" /><span>Local</span>
+            </button>
+            <button type="button" onClick={() => setDrawer('quests')}
+              aria-label="Abrir diário contextual" title="Missões">
+              <BookOpen size={20} aria-hidden="true" /><span>Missões</span>
+            </button>
+          </nav>}
           {drawer && <aside className="terran-game__drawer" aria-label={`Painel lateral: ${activeTitle}`}>
             <header><span className="eyebrow">NEXO · INTERAÇÃO CONTÍNUA</span><h2>{activeTitle}</h2>
               <button type="button" onClick={() => { setDrawer(null); setLocalQuestId(null) }} aria-label="Fechar painel"><X size={19} /></button>
@@ -313,6 +324,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               {drawer === 'chest' && <BaseChest save={save} />}
             </div>
           </aside>}
+          </div>
         </div>
         <NpcDialog open={eldamarOpen} onClose={() => setEldamarOpen(false)} save={save} />
         <SocialQuestDialog questId={socialQuestId} save={save} onClose={() => setSocialQuestId(null)} />

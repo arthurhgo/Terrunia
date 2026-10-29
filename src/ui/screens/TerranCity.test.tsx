@@ -90,14 +90,28 @@ describe('interfaces de Terran', () => {
     const rail = screen.getByRole('navigation', { name: 'Menu de Terran' })
     expect(rail).toBeInTheDocument()
     expect(rail.querySelectorAll('button')).toHaveLength(5)
+    const frame = screen.getByTestId('terran-centered-gameplay')
+    const scene = screen.getByRole('region', { name: 'Cenário contínuo de Terran' })
+    expect(scene.parentElement).toBe(frame)
+    expect(rail.parentElement).toBe(frame)
+    const rightRail = screen.getByRole('navigation', { name: 'Ações contextuais de Terran' })
+    expect(rightRail.parentElement).toBe(frame)
+    expect(rightRail.querySelectorAll('button')).toHaveLength(2)
     expect(screen.queryByText(/Você está em/)).not.toBeInTheDocument()
     for (const locationId of TERRAN_LOCATION_IDS) {
       expect(
         screen.getByRole('button', { name: new RegExp(`Ir para ${content.terranLocations[locationId].name}`) }),
       ).toBeInTheDocument()
     }
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir informações do local' }))
+    const contextual = screen.getByRole('complementary', { name: 'Painel lateral: Praça do Portal' })
+    expect(contextual.parentElement).toBe(frame)
+    expect(screen.getByRole('region', { name: 'Cenário contínuo de Terran' })).toBe(scene)
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
+    expect(screen.getByRole('navigation', { name: 'Ações contextuais de Terran' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Mochila' }))
     expect(screen.getByRole('complementary', { name: 'Painel lateral: Mochila e Arsenal' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Cenário contínuo de Terran' })).toBe(scene)
     expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
     expect(screen.queryByRole('complementary', { name: /Painel lateral/ })).not.toBeInTheDocument()
