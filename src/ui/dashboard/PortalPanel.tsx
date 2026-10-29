@@ -9,6 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { getActiveTrailNode } from '../../domain/exploration/trailEngine'
+import { PORTAL_HUNT_IDS } from '../../domain/combat/portalHunts'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
@@ -21,6 +22,7 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
 }) {
   const enterAstravel = useGameStore((state) => state.enterAstravel)
   const startPortalWaves = useGameStore((state) => state.startPortalWaves)
+  const startPortalHunt = useGameStore((state) => state.startPortalHunt)
   const navigate = useNavigate()
   const trail = content.trails.trail_astravel_entry
   const quest = save.quests.vs_astravel_first_contact
@@ -106,12 +108,31 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
       {save.world.trailNodeStates.astravel_fungorro_01 === 'completed' && !save.battle && (
         <div className="portal-wave-mode">
           <p className="eyebrow">MODO ONDAS · BALANCE_DRAFT</p>
-          <p>Encontros progressivos com até quatro criaturas, recompensas únicas por onda e saída entre vitórias.</p>
+          <p>Encontros progressivos com até quatro criaturas, sentinela a cada cinco ondas e saída entre vitórias.</p>
+          <p>Recorde pessoal: <strong>{save.world.portalWaveBest ?? 0} ondas</strong></p>
           <GameButton variant="secondary" full onClick={() => {
             startPortalWaves()
             if (navigateOnEnter) navigate('/battle')
           }}><Swords size={17} /> Entrar no Modo Ondas</GameButton>
         </div>
+      )}
+
+      {save.world.trailNodeStates.astravel_fungorro_01 === 'completed' && !save.battle && (
+        <section className="portal-hunts" aria-label="Caçadas repetíveis do Portal">
+          <p className="eyebrow">CAÇADAS DO PORTAL · CONTENT_DRAFT</p>
+          <p>Três encontros de combate independentes da trilha principal. Os materiais encontrados podem ser vendidos ou convertidos em Essência.</p>
+          {PORTAL_HUNT_IDS.map((id) => {
+            const encounter = content.encounters[id]
+            return <div className="portal-hunts__entry" key={id}>
+              <strong>{encounter.name}</strong>
+              <small>{encounter.enemyDefinitionIds.map((enemyId) => content.enemies[enemyId].name).join(' · ')}</small>
+              <GameButton variant="secondary" full onClick={() => {
+                startPortalHunt(id)
+                if (navigateOnEnter) navigate('/battle')
+              }}><Swords size={16} /> Enfrentar caçada</GameButton>
+            </div>
+          })}
+        </section>
       )}
     </ArcanePanel>
   )

@@ -214,4 +214,25 @@ describe('máquina de estados de combate', () => {
     expect(result.ok).toBe(false)
     expect(battle).toEqual(before)
   })
+  it('arremessáveis atingem inimigos e runas de campo respeitam alvo, sem trocar o Vínculo', () => {
+    const supplies: InventoryItemInstance[] = [
+      { instanceId: 'throw-1', definitionId: 'consumable_resonance_flask', quantity: 1, rarity: 'common', locked: false, favorite: false, acquiredAt: '2026-10-29T22:00:00Z' },
+      { instanceId: 'rune-1', definitionId: 'consumable_field_rune', quantity: 1, rarity: 'uncommon', locked: false, favorite: false, acquiredAt: '2026-10-29T22:00:00Z' },
+    ]
+    const battle = createBattle(makeSave(), firstEncounter, content)
+    battle.combatants[firstTargetId].hp = 40
+    battle.combatants[firstTargetId].maxHp = 40
+    const wrong = submitBattleCommand(battle, { type: 'item', itemInstanceId: 'throw-1', targetId: 'combatant_player' }, content, supplies)
+    expect(wrong.ok).toBe(false)
+    const thrown = submitBattleCommand(battle, { type: 'item', itemInstanceId: 'throw-1', targetId: firstTargetId }, content, supplies)
+    expect(thrown.ok).toBe(true)
+    if (!thrown.ok) return
+    expect(thrown.value.combatants[firstTargetId].hp).toBeLessThan(40)
+    expect(thrown.value.consumedItemInstanceIds).toContain('throw-1')
+    const guarded = submitBattleCommand(thrown.value, { type: 'item', itemInstanceId: 'rune-1', targetId: 'combatant_player' }, content, supplies)
+    expect(guarded.ok).toBe(true)
+    if (!guarded.ok) return
+    expect(guarded.value.combatants.combatant_player.statusEffects.some((effect) => effect.definitionId === 'status_rune_ward')).toBe(true)
+  })
+
 })

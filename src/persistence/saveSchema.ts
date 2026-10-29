@@ -167,6 +167,7 @@ const worldSchema = z.object({
     z.enum(['completed', 'current', 'locked', 'boss', 'bossCurrent']),
   ),
   completedEncounterIds: z.array(idSchema),
+  portalWaveBest: nonnegativeInteger.optional(),
   worldFlags: z.array(z.string()),
 })
 
@@ -212,6 +213,7 @@ const battleSchema = z.object({
   encounterId: idSchema,
   trailNodeId: idSchema,
   waveIndex: positiveInteger.optional(),
+  portalHuntId: idSchema.optional(),
   phase: battlePhaseSchema,
   phaseHistory: z.array(battlePhaseSchema).min(1),
   round: positiveInteger,

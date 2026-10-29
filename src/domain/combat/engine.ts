@@ -448,8 +448,8 @@ export const submitBattleCommand = (
     ) {
       return fail('ITEM_UNAVAILABLE', 'Este consumível não está disponível para uso em combate.')
     }
-    if (!target || !validTarget(currentPlayer, target, 'self')) {
-      return fail('INVALID_TARGET', 'O consumível deve ser usado no Terrírian ativo.')
+    if (!target || !validTarget(currentPlayer, target, item.combatTarget ?? 'self')) {
+      return fail('INVALID_TARGET', 'Este consumível não pode ser usado no alvo escolhido.')
     }
   }
 

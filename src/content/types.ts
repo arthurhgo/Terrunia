@@ -24,6 +24,8 @@ export type ItemDefinition = {
   infusionComponentId?: string
   gemComponentId?: string
   combatEffects: CombatEffectDefinition[]
+  combatKind?: 'throwable' | 'rune' | 'essence'
+  combatTarget?: 'self' | 'enemy'
   affinityTags: string[]
   iconAssetId: string
   status: DraftStatus

@@ -122,6 +122,7 @@ export const createNewSave = (
         astravel_boss_preview: 'boss',
       },
       completedEncounterIds: [],
+      portalWaveBest: 0,
       worldFlags: [],
     },
     battle: null,

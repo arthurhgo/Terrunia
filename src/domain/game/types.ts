@@ -139,6 +139,8 @@ export type WorldProgress = {
   unlockedLocationIds: string[]
   trailNodeStates: Record<string, TrailNodeStatus>
   completedEncounterIds: string[]
+  /** Personal best of the repeatable Portal waves. BALANCE_DRAFT. */
+  portalWaveBest?: number
   worldFlags: string[]
 }
 

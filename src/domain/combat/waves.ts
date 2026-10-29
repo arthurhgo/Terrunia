@@ -10,10 +10,14 @@ export const waveEncounter = (catalog: ContentCatalog, requestedWave: number): E
   const pool = wave < 4
     ? ['enemy_fungorro_crawler', 'enemy_spore_sower']
     : wave < 8
-      ? ['enemy_fungorro_crawler', 'enemy_spore_sower', 'enemy_fungal_slime']
-      : ['enemy_fungorro_crawler', 'enemy_spore_sower', 'enemy_fungal_slime', 'enemy_fungal_horror']
+      ? ['enemy_fungorro_crawler', 'enemy_spore_sower', 'enemy_fungal_slime', 'enemy_luminous_slime', 'enemy_void_moth']
+      : ['enemy_fungorro_crawler', 'enemy_spore_sower', 'enemy_fungal_slime', 'enemy_fungal_horror',
+        'enemy_luminous_slime', 'enemy_void_moth', 'enemy_spore_mantis', 'enemy_ruin_sentinel']
   const enemyIds = Array.from({ length: Math.min(4, 1 + Math.floor(wave / 3)) },
     (_, index) => pool[(index + wave - 1) % pool.length])
+  // Encounter instance, not the unique Colossus story boss or its grade-changing loot.
+  if (wave % 5 === 0) enemyIds[0] = 'enemy_ruin_sentinel'
+  else if (wave >= 8 && !enemyIds.includes('enemy_spore_sower')) enemyIds[0] = 'enemy_spore_sower'
   const baseXp = enemyIds.reduce((sum, id) => sum + catalog.enemies[id].xpReward, 0)
   const baseGold = enemyIds.reduce((sum, id) => sum + catalog.enemies[id].goldReward, 0)
   const baseResonance = enemyIds.reduce((sum, id) => sum + catalog.enemies[id].boundResonanceReward, 0)
