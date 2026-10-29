@@ -1,6 +1,6 @@
 import type { NPCDefinition } from './types'
 
-export const npcDefinitions = [
+const baseNpcDefinitions = [
   {
     id: 'npc_eldamar',
     name: 'Eldamar',
@@ -85,4 +85,9 @@ export const npcDefinitions = [
     id, name, title, settlementId: 'terran', roles: ['classTrainer', 'questGiver'] as NPCDefinition['roles'],
     questIds: [questId], portraitAssetId: `${id}.portrait`, dialogue: [`A prova de ${title} exige ação, não uma escolha de menu.`], status: 'CONTENT_DRAFT' as const,
   })),
-].map((npc) => ({ ...npc, questIds: [...npc.questIds, 'side_' + npc.id] })) satisfies NPCDefinition[]
+] satisfies NPCDefinition[]
+
+export const npcDefinitions: NPCDefinition[] = baseNpcDefinitions.map((npc) => ({
+  ...npc,
+  questIds: [...npc.questIds, 'side_' + npc.id],
+}))
