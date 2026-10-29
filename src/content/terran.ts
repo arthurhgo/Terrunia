@@ -58,7 +58,7 @@ export const terranLocationDefinitions = [
       { id: 'service_vorren_mapping', name: 'Cartografia', description: 'Rotas, trilhas e descobertas de exploração.', state: 'available', route: '/world' },
     ],
     npcPresences: [
-      { id: 'presence_vorren', label: 'Vorren', presence: 'resident', roleLabel: 'Caçador e rastreador' },
+      { id: 'presence_vorren', label: 'Vorren', npcId: 'npc_vorren', presence: 'resident', roleLabel: 'Caçador e rastreador' },
       { id: 'presence_elric', label: 'Elric', presence: 'resident', roleLabel: 'Caçador gentil' },
       { id: 'presence_draelis', label: 'Draelis', presence: 'resident', roleLabel: 'Rotas e acesso' },
       { id: 'presence_keldron', label: 'Keldron', presence: 'conditional', roleLabel: 'Caçador sombrio' },
@@ -85,7 +85,7 @@ export const terranLocationDefinitions = [
       { id: 'service_bond_rites', name: 'Ritos de Evolução', description: 'Avanço de Grau mediante requisitos aprovados.', state: 'available' },
     ],
     npcPresences: [
-      { id: 'presence_lithwynn', label: 'Lithwynn', presence: 'resident', roleLabel: 'Análise de corrupção' },
+      { id: 'presence_lithwynn', label: 'Lithwynn', npcId: 'npc_lithwynn', presence: 'resident', roleLabel: 'Análise de corrupção' },
       { id: 'presence_valmira', label: 'Valmira', presence: 'resident', roleLabel: 'Artífice rúnica' },
       { id: 'presence_talia', label: 'Talia', presence: 'resident', roleLabel: 'Mestra do cristal' },
       { id: 'presence_edran', label: 'Edran', presence: 'resident', roleLabel: 'Gravador de símbolos' },
@@ -169,8 +169,8 @@ export const terranLocationDefinitions = [
       { id: 'service_daeryn_preparation', name: 'Preparação', description: 'Resistências temporárias para uma expedição.', state: 'progressive' },
     ],
     npcPresences: [
-      { id: 'presence_daeryn', label: 'Daeryn', presence: 'resident', roleLabel: 'Curandeira' },
-      { id: 'presence_sylwen', label: 'Sylwen', presence: 'resident', roleLabel: 'Criadora de poções' },
+      { id: 'presence_daeryn', label: 'Daeryn', npcId: 'npc_daeryn', presence: 'resident', roleLabel: 'Curandeira' },
+      { id: 'presence_sylwen', label: 'Sylwen', npcId: 'npc_sylwen', presence: 'resident', roleLabel: 'Criadora de poções' },
       { id: 'presence_briana', label: 'Briana', presence: 'resident', roleLabel: 'Herbalista' },
       { id: 'presence_orlan', label: 'Orlan', presence: 'conditional', roleLabel: 'Herbalista solitário' },
     ],

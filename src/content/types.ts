@@ -5,6 +5,8 @@ import type { AttributeDie, AttributeId } from '../domain/game/types'
 export type CombatEffectDefinition =
   | { type: 'damage'; powerBonus: number }
   | { type: 'restoreHp'; value: number }
+  | { type: 'restoreMp'; value: number }
+  | { type: 'cleanseHarmful' }
   | { type: 'applyStatus'; statusId: string; durationTurns: number; chance: number }
 
 export type ItemDefinition = {
@@ -223,6 +225,7 @@ export type QuestProgressionOutcome =
   | { type: 'clanEligibility'; clanId: string }
   | { type: 'classEligibility'; classId: string }
   | { type: 'clanReputation'; clanId: string; value: number }
+  | { type: 'worldFlag'; flag: string }
 
 export type QuestDefinition = {
   id: string

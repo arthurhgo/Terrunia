@@ -171,6 +171,8 @@ export type GameSave = {
   >
   inventory: InventoryItemInstance[]
   wallet: { gold: number }
+  // Vida/Mana atuais persistem; máximos continuam derivados do personagem.
+  vitals: { hp: number; mp: number }
   quests: Record<string, QuestProgress>
   relationships: Record<string, NPCRelationshipState>
   world: WorldProgress

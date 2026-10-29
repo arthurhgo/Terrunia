@@ -133,6 +133,25 @@ describe('máquina de estados de combate', () => {
     expect(inventory).toHaveLength(1)
   })
 
+  it('permite escolher Éter ou Antídoto conforme recurso e estados atuais', () => {
+    const inventory: InventoryItemInstance[] = [
+      { instanceId: 'ether_1', definitionId: 'consumable_simple_ether', quantity: 1, rarity: 'common', locked: false, favorite: false, acquiredAt: '2026-10-29T10:00:00Z' },
+      { instanceId: 'antidote_1', definitionId: 'consumable_antidote', quantity: 1, rarity: 'common', locked: false, favorite: false, acquiredAt: '2026-10-29T10:00:00Z' },
+    ]
+    let battle = createBattle(makeSave(), firstEncounter, content)
+    battle.combatants.combatant_player.mp = 1
+    battle.combatants.combatant_player.statusEffects.push({ definitionId: 'status_spore_poison', sourceId: 'enemy', remainingTurns: 6 })
+    const ether = submitBattleCommand(battle, { type: 'item', itemInstanceId: 'ether_1', targetId: 'combatant_player' }, content, inventory)
+    expect(ether.ok).toBe(true)
+    if (!ether.ok) return
+    expect(ether.value.combatants.combatant_player.mp).toBeGreaterThan(1)
+    battle = ether.value
+    const antidote = submitBattleCommand(battle, { type: 'item', itemInstanceId: 'antidote_1', targetId: 'combatant_player' }, content, inventory)
+    expect(antidote.ok).toBe(true)
+    if (!antidote.ok) return
+    expect(antidote.value.combatants.combatant_player.statusEffects.some((effect) => effect.definitionId === 'status_spore_poison')).toBe(false)
+  })
+
   it('IA usa Esporos Nocivos no segundo turno de combate', () => {
     let battle = createBattle(
       makeSave(),

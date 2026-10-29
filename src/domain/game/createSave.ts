@@ -6,6 +6,7 @@ import { createQuestProgress } from '../quests/questEngine'
 import { fail, ok, type Result } from '../shared/types'
 import { createRandomId } from '../shared/randomId'
 import { evaluateEquipmentRequirements } from '../bond/equipmentLoadout'
+import { deriveCharacterStats } from '../character/derivedStats'
 
 const createDefaultAttributes = (): Record<AttributeId, AttributeValue> => ({
   cunning: { die: BALANCE.defaultAttributeDie, bonus: 0 },
@@ -38,9 +39,9 @@ export const createNewSave = (
     {},
   )
 
-  return {
-    schemaVersion: 7,
-    gameVersion: '0.7.0',
+  const save: GameSave = {
+    schemaVersion: 8,
+    gameVersion: '0.8.0',
     saveId: ids.saveId,
     campaignId: campaign.campaignId,
     campaignGeneration: campaign.campaignGeneration,
@@ -94,6 +95,7 @@ export const createNewSave = (
     },
     inventory: [],
     wallet: { gold: BALANCE.initialGold },
+    vitals: { hp: 0, mp: 0 },
     quests,
     relationships: Object.fromEntries(Object.values(catalog.npcs).map((npc) => [
       npc.id,
@@ -129,6 +131,9 @@ export const createNewSave = (
     },
     eventLog: ['CharacterCreated'],
   }
+  const stats = deriveCharacterStats(save, catalog)
+  save.vitals = { hp: stats.life.value, mp: stats.mana.value }
+  return save
 }
 
 export const bindPrologueWeapon = (
