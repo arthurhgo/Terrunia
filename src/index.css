@@ -2005,3 +2005,8 @@ code {
 .pixel-interior__service:hover,.pixel-interior__exit:hover,.pixel-interior__service:focus-visible,.pixel-interior__exit:focus-visible{outline:2px solid #72d5df;border-color:#ebca76}
 .pixel-interior__service:disabled,.pixel-interior__exit:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:700px){.pixel-interior__name{left:31%;top:4%}.pixel-interior__service{right:2%;bottom:24%}.pixel-interior__exit{bottom:1%}}
+
+/* Pixel-step dissolve entering a building; respects both device and save preferences. */
+.pixel-interior:not(.pixel-interior--static){animation:terran-enter-room .24s steps(6,end) both}
+@keyframes terran-enter-room{from{opacity:.2;filter:contrast(2) brightness(.55)}to{opacity:1;filter:none}}
+@media(prefers-reduced-motion:reduce){.pixel-interior{animation:none!important}}

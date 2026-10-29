@@ -1,5 +1,6 @@
 import { useEffect, useRef, type PointerEvent } from 'react'
 import { resolveAsset } from '../../assets/assetRegistry'
+import { content } from '../../content/catalog'
 import type { TerranLocationId } from '../../content/terran'
 import type { TerranNpcPresence } from '../../content/types'
 import { findInteriorPath, getInteriorResidents, INTERIOR_EXIT, INTERIOR_SERVICES, INTERIOR_SPAWN, isInteriorWalkable, type InteriorResident } from './interiorLayout'
@@ -184,12 +185,12 @@ export function PixelInteriorCanvas({
     else walkTo(point)
   }
 
-  return <div className="pixel-interior" aria-label="Interior explorável de Terran">
+  return <div className={`pixel-interior ${save.settings.reducedMotion ? 'pixel-interior--static' : ''}`} aria-label="Interior explorável de Terran">
     <canvas ref={canvasRef} width={384} height={256} role="img" tabIndex={0}
       className="pixel-interior__canvas" onPointerDown={pointerWalk}
-      aria-label={`Interior pixelado de ${locationId}; caminhe, aproxime-se dos NPCs e pressione E`} />
+      aria-label={`Interior pixelado de ${content.terranLocations[locationId].name}; caminhe, aproxime-se dos NPCs e pressione E`} />
     <div className="pixel-interior__locations">
-      <strong className="pixel-interior__name">INTERIOR · {locationId.split('_').slice(2).join(' ').toUpperCase()}</strong>
+      <strong className="pixel-interior__name">INTERIOR · {content.terranLocations[locationId].name.toUpperCase()}</strong>
       {residents.map((resident) =>
         <button type="button" key={resident.presence.id} disabled={!enabled}
           className="pixel-interior__npc"
