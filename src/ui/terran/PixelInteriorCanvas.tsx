@@ -202,7 +202,7 @@ export function PixelInteriorCanvas({
       <button type="button" disabled={!enabled}
         className="pixel-interior__service"
         aria-label="Abrir serviços do local"
-        onClick={() => { servicesRef.current() }}>
+        onClick={onServices}>
         Serviços
       </button>
       <button type="button" disabled={!enabled}

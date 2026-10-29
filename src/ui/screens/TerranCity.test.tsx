@@ -67,6 +67,8 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('img', { name: /Quarto pixelado/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Conclua “Um Lugar em Terran”/ })).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Daeryn' }))
+    expect(screen.getByRole('img', { name: /Interior pixelado de location_terran_daeryn_house/ })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir serviços do local' }))
     expect(screen.getByRole('heading', { name: /Balcão de Sylwen/ })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Comprar Éter Simples por 18 ouro' }))
     expect(useGameStore.getState().save?.wallet.gold).toBe(22)
@@ -94,6 +96,12 @@ describe('interfaces de Terran', () => {
     expect(screen.queryByRole('complementary', { name: /Painel lateral/ })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Praça do Portal' }))
     expect(screen.getByRole('complementary', { name: 'Painel lateral: Praça do Portal' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Eldamar' }))
+    expect(screen.getByRole('img', { name: /Interior pixelado de location_terran_eldamar_house/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Falar com Eldamar dentro do local' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Sair do interior para as ruas de Terran' }))
+    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
   })
 
   it('exibe a cutscene de chegada sobre a mesma cidade e permite encerrá-la', () => {
