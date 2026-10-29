@@ -2,7 +2,8 @@ import { useEffect, useRef, type PointerEvent } from 'react'
 import { resolveAsset } from '../../assets/assetRegistry'
 import { getRoomName, roomFurniture, type RoomFurniture, type TerranInteriorId, PLAYER_HOME_INTERIOR_ID } from './roomContent'
 import type { TerranNpcPresence } from '../../content/types'
-import { findInteriorPath, getInteriorResidents, INTERIOR_EXIT, INTERIOR_SERVICES, INTERIOR_SPAWN, isInteriorWalkable, type InteriorResident } from './interiorLayout'
+import { findInteriorPath, getInteriorResidents, isInteriorWalkable, type InteriorResident } from './interiorLayout'
+import { getRoomPlan } from './roomGeometry'
 import { drawTerranInterior } from './interiorArt'
 import type { WorldPoint } from './pixelCityArt'
 import type { ActorFacing } from './pixelActorArt'
@@ -36,8 +37,9 @@ export function PixelInteriorCanvas({
 }) {
   const residents = getInteriorResidents(save, locationId)
   const furniture = roomFurniture[locationId]
+  const plan = getRoomPlan(locationId)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const playerRef = useRef<WorldPoint>({ ...INTERIOR_SPAWN })
+  const playerRef = useRef<WorldPoint>({ ...plan.spawn })
   const faceRef = useRef<Direction>('up')
   const keysRef = useRef(new Set<Direction>())
   const destinationRef = useRef<Destination | null>(null)
@@ -70,14 +72,14 @@ export function PixelInteriorCanvas({
     if (resident) return resident.presence.id
     const item = roomFurniture[locationId].find((entry) => distance(entry.point, playerRef.current) < 21)
     if (item) return item.id
-    if (distance(INTERIOR_EXIT, playerRef.current) < 21) return 'exit'
-    if (distance(INTERIOR_SERVICES, playerRef.current) < 22) return 'services'
+    if (distance(plan.exit, playerRef.current) < 21) return 'exit'
+    if (distance(plan.service, playerRef.current) < 22) return 'services'
     return null
   }
   const walkTo = (point: WorldPoint, interaction: Interaction = null) => {
     if (!enabledRef.current) return
     const next: Destination = {
-      path: findInteriorPath(playerRef.current, point),
+      path: findInteriorPath(playerRef.current, point, locationId),
       interaction, target: point,
     }
     if (distance(playerRef.current, point) < (interaction ? 21 : 4)) {
@@ -159,9 +161,9 @@ export function PixelInteriorCanvas({
             x: playerRef.current.x + dx / length * speed,
             y: playerRef.current.y + dy / length * speed,
           }
-          if (isInteriorWalkable(next)) { playerRef.current = next; walking = true }
-          else if (isInteriorWalkable({ x: next.x, y: playerRef.current.y })) { playerRef.current.x = next.x; walking = true }
-          else if (isInteriorWalkable({ x: playerRef.current.x, y: next.y })) { playerRef.current.y = next.y; walking = true }
+          if (isInteriorWalkable(next, locationId)) { playerRef.current = next; walking = true }
+          else if (isInteriorWalkable({ x: next.x, y: playerRef.current.y }, locationId)) { playerRef.current.x = next.x; walking = true }
+          else if (isInteriorWalkable({ x: playerRef.current.x, y: next.y }, locationId)) { playerRef.current.y = next.y; walking = true }
           else if (destinationRef.current) destinationRef.current = null
         }
       }
@@ -195,8 +197,8 @@ export function PixelInteriorCanvas({
     else {
       const item = roomFurniture[locationId].find((entry) => distance(point, entry.point) < 23)
       if (item) { walkTo(item.point, item.id); return }
-      if (distance(point, INTERIOR_EXIT) < 25) walkTo(INTERIOR_EXIT, 'exit')
-      else if (distance(point, INTERIOR_SERVICES) < 27) walkTo(INTERIOR_SERVICES, 'services')
+      if (distance(point, plan.exit) < 25) walkTo(plan.exit, 'exit')
+      else if (distance(point, plan.service) < 27) walkTo(plan.service, 'services')
       else walkTo(point)
     }
   }
@@ -225,12 +227,14 @@ export function PixelInteriorCanvas({
       </button>)}
       <button type="button" disabled={!enabled}
         className="pixel-interior__service"
+        style={{ left: `${plan.service.x / 384 * 100}%`, top: `${plan.service.y / 256 * 100}%` }}
         aria-label={locationId === PLAYER_HOME_INTERIOR_ID ? 'Abrir serviços da casa' : 'Abrir serviços do local'}
         onClick={onServices}>
         {locationId === PLAYER_HOME_INTERIOR_ID ? 'Casa' : 'Serviços'}
       </button>
       <button type="button" disabled={!enabled}
         className="pixel-interior__exit"
+        style={{ left: `${plan.exit.x / 384 * 100}%`, top: `${plan.exit.y / 256 * 100}%` }}
         aria-label="Sair do interior para as ruas de Terran"
         onClick={() => { exitRef.current() }}>
         ↧ Sair para Terran

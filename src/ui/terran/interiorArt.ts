@@ -1,20 +1,20 @@
-import { content } from '../../content/catalog'
-import { PLAYER_HOME_INTERIOR_ID, type TerranInteriorId } from './roomContent'
+import { PLAYER_HOME_INTERIOR_ID, roomFurniture, type TerranInteriorId } from './roomContent'
+import { getRoomPlan } from './roomGeometry'
 import type { InteriorResident } from './interiorLayout'
 import type { WorldPoint } from './pixelCityArt'
 import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, type ActorFacing } from './pixelActorArt'
 
-const tones: Record<string, { wall: string; trim: string; curtain: string }> = {
-  knowledge: { wall: '#34415e', trim: '#b89e63', curtain: '#6880ad' },
-  exploration: { wall: '#374a3c', trim: '#ba975d', curtain: '#84966f' },
-  bond: { wall: '#344e54', trim: '#d1a86d', curtain: '#6cb5b5' },
-  defense: { wall: '#554245', trim: '#c9a26d', curtain: '#a97470' },
-  clan: { wall: '#4c3b58', trim: '#d8b479', curtain: '#9a7ba6' },
-  healing: { wall: '#33534d', trim: '#d2b781', curtain: '#77b3a1' },
-  home: { wall: '#293e53', trim: '#e2c17b', curtain: '#567f9e' },
-}
+/** Seven distinctive interiors, rendered from one geometry and furniture registry. VISUAL_DRAFT. */
+const palettes = {
+  slate: { wall: '#25344b', floor: '#555d69', light: '#778399', trim: '#bfa77c', glow: '#87b5db' },
+  moss: { wall: '#293d34', floor: '#566857', light: '#879677', trim: '#c1a879', glow: '#83dbb0' },
+  arcane: { wall: '#213e49', floor: '#52606a', light: '#879ca3', trim: '#e0b76d', glow: '#49e1df' },
+  stone: { wall: '#3d3940', floor: '#626267', light: '#8c898c', trim: '#c8a17b', glow: '#dba77d' },
+  ceremony: { wall: '#362d48', floor: '#655473', light: '#987ca7', trim: '#e0bd83', glow: '#c7a2ff' },
+  wood: { wall: '#35514b', floor: '#947959', light: '#b79b75', trim: '#ddc091', glow: '#92dfbd' },
+  home: { wall: '#293d55', floor: '#856d56', light: '#b09a79', trim: '#d9b87a', glow: '#7cdce5' },
+} as const
 
-/** Decorative tilemap VISUAL_DRAFT. No interactive trigger is derived from colors. */
 export function drawTerranInterior(
   ctx: CanvasRenderingContext2D,
   locationId: TerranInteriorId,
@@ -26,104 +26,123 @@ export function drawTerranInterior(
   portraitId: string,
   residents: readonly InteriorResident[],
 ) {
+  const plan = getRoomPlan(locationId)
+  const theme = palettes[plan.tile]
+  const { floor, obstacles } = plan
   ctx.imageSmoothingEnabled = false
-  const tone = locationId === PLAYER_HOME_INTERIOR_ID ? 'home' : content.terranLocations[locationId].tone
-  const theme = tones[tone] ?? tones.knowledge
-  ctx.fillStyle = '#091522'; ctx.fillRect(0, 0, 384, 256)
-  ctx.fillStyle = theme.wall; ctx.fillRect(12, 13, 360, 82)
-  ctx.fillStyle = '#182735'; ctx.fillRect(12, 88, 360, 157)
-  ctx.fillStyle = '#ad9470'; ctx.fillRect(20, 91, 344, 148)
-  for (let y = 94; y < 241; y += 16) {
-    for (let x = 25; x < 361; x += 16) {
-      const n = (x * 5 + y * 11) % 5
-      ctx.fillStyle = n < 2 ? '#947958' : '#a68a65'
-      ctx.fillRect(x, y, 15, 15)
-      ctx.fillStyle = '#b09b7b'; ctx.fillRect(x, y, 14, 1)
+
+  const block = (x: number, y: number, w: number, h: number, color: string) => {
+    ctx.fillStyle = color
+    ctx.fillRect(Math.round(x), Math.round(y), w, h)
+  }
+
+  // The shape itself is different in every home; unused canvas is dark exterior.
+  block(0, 0, 384, 256, '#08111d')
+  for (const [i, area] of floor.entries()) {
+    block(area.x - 7, area.y - 8, area.w + 14, area.h + 15, '#142431')
+    block(area.x - 3, area.y - 4, area.w + 6, area.h + 8, theme.trim)
+    block(area.x, area.y, area.w, area.h, theme.wall)
+    if (i === 0) {
+      // Rear wall is higher in library/Clan Hall and wider in field buildings.
+      const wallHeight = ['slate', 'ceremony'].includes(plan.tile) ? 38 : 29
+      block(area.x + 4, area.y + 3, area.w - 8, wallHeight, theme.wall)
+      block(area.x + 5, area.y + wallHeight, area.w - 10, 3, theme.trim)
+      for (const x of [area.x + Math.floor(area.w / 4), area.x + Math.floor(area.w * .72)]) {
+        block(x - 10, area.y + 8, 20, 24, '#142734')
+        block(x - 7, area.y + 11, 14, 17, '#32647c')
+        block(x - 4, area.y + 14, 8, 4, theme.glow)
+        block(x - 1, area.y + 11, 2, 17, '#1c3443')
+      }
     }
   }
-  ctx.fillStyle = '#1b2834'; ctx.fillRect(12, 13, 360, 8)
-  ctx.fillStyle = theme.trim; ctx.fillRect(13, 84, 358, 5)
-  // Windows, wall banner and shelves.
-  for (const x of [52, 308]) {
-    ctx.fillStyle = '#19212d'; ctx.fillRect(x, 31, 32, 44)
-    ctx.fillStyle = '#4b95ac'; ctx.fillRect(x + 4, 35, 24, 35)
-    ctx.fillStyle = '#82cbd2'; ctx.fillRect(x + 7, 39, 18, 4)
-    ctx.fillStyle = '#263c52'; ctx.fillRect(x + 15, 35, 3, 36)
-    ctx.fillStyle = theme.curtain; ctx.fillRect(x - 3, 30, 6, 43); ctx.fillRect(x + 29, 30, 6, 43)
-  }
-  ctx.fillStyle = '#1e2d3c'; ctx.fillRect(165, 27, 54, 52)
-  ctx.fillStyle = theme.trim; ctx.fillRect(170, 30, 44, 4)
-  ctx.fillStyle = theme.curtain; ctx.fillRect(183, 39, 17, 30)
-  ctx.fillStyle = '#b6c9c6'; ctx.fillRect(188, 44, 6, 12)
-  // Bookshelf on left and service cabinet on right.
-  for (const x of [25, 333]) {
-    ctx.fillStyle = '#4d3729'; ctx.fillRect(x, 99, 26, 75)
-    for (const y of [108, 131, 154]) {
-      ctx.fillStyle = '#bd8f59'; ctx.fillRect(x + 2, y, 22, 3)
-      ctx.fillStyle = theme.curtain; ctx.fillRect(x + 5, y - 12, 3, 12)
-      ctx.fillStyle = '#c9b88d'; ctx.fillRect(x + 9, y - 16, 4, 16)
-      ctx.fillStyle = '#6e8279'; ctx.fillRect(x + 15, y - 10, 5, 10)
+
+  // Clip to the union of traversable floor shapes: no rectangular template remains.
+  ctx.save()
+  ctx.beginPath()
+  for (const area of floor) ctx.rect(area.x, area.y, area.w, area.h)
+  ctx.clip()
+  block(0, 0, 384, 256, theme.floor)
+  for (let y = 0; y < 256; y += 12) {
+    for (let x = 0; x < 384; x += 16) {
+      const n = (Math.floor(x / 16) * 7 + Math.floor(y / 12) * 13) % 5
+      block(x, y, 15, 11, n === 0 ? theme.light : theme.floor)
+      block(x, y, 14, 1, theme.trim + '55')
     }
   }
-  // Central study table and sigil rug; collision matches interiorLayout.ts.
-  ctx.fillStyle = '#715139'; ctx.fillRect(170, 126, 43, 18)
-  ctx.fillStyle = '#b78a57'; ctx.fillRect(172, 125, 39, 5)
-  ctx.fillStyle = '#c2b59b'; ctx.fillRect(184, 127, 12, 7)
-  ctx.fillStyle = '#31525c'; ctx.fillRect(125, 185, 134, 30)
-  ctx.fillStyle = theme.trim; ctx.fillRect(129, 188, 126, 2)
-  ctx.fillStyle = '#496576'; ctx.fillRect(146, 193, 94, 17)
-  // Unique, replaceable prop silhouettes by room ID (VISUAL_DRAFT).
-  const block = (x: number, y: number, w: number, h: number, c: string) => {
-    ctx.fillStyle = c
-    ctx.fillRect(x, y, w, h)
+  // A room-specific floor feature hints at its use, without acting as collision.
+  if (plan.tile === 'ceremony') {
+    block(182, 155, 20, 60, '#493d68'); block(187, 160, 10, 50, '#9477a8')
+  } else if (plan.tile === 'arcane') {
+    block(121, 177, 140, 21, '#284d59'); block(137, 181, 110, 8, '#3c7783')
+  } else if (plan.tile === 'moss') {
+    block(94, 204, 196, 8, '#405b44')
+    for (let i = 0; i < 8; i++) block(100 + i * 24, 206, 8, 2, '#7a9b78')
+  } else if (plan.tile === 'home') {
+    block(130, 175, 123, 34, '#40687a'); block(133, 178, 117, 28, '#537c81')
+  } else if (plan.tile === 'slate') {
+    for (let i = 0; i < 6; i++) block(144 + i * 13, 190, 9, 13, '#49516b')
+  } else if (plan.tile === 'stone') {
+    block(148, 188, 89, 14, '#4d4548'); block(152, 190, 82, 3, '#937b6a')
+  } else {
+    block(113, 203, 154, 11, '#766c52'); block(117, 205, 145, 3, '#b09b73')
   }
-  if (tone === 'knowledge') {
-    for (let i = 0; i < 5; i++) {
-      block(62 + i * 8, 178, 6, 15 + i % 3 * 3, ['#637cb0', '#c5a470', '#658a86'][i % 3])
+  ctx.restore()
+
+  // Rear walls and windows are painted above floor tile textures.
+  const back = floor[0]
+  if (back) {
+    const wallHeight = ['slate', 'ceremony'].includes(plan.tile) ? 38 : 29
+    block(back.x + 4, back.y + 3, back.w - 8, wallHeight, theme.wall)
+    block(back.x + 5, back.y + wallHeight, back.w - 10, 3, theme.trim)
+    for (const x of [back.x + Math.floor(back.w / 4), back.x + Math.floor(back.w * .72)]) {
+      block(x - 10, back.y + 8, 20, 24, '#142734')
+      block(x - 7, back.y + 11, 14, 17, '#32647c')
+      block(x - 4, back.y + 14, 8, 4, theme.glow)
+      block(x - 1, back.y + 11, 2, 17, '#1c3443')
     }
-    block(294, 178, 35, 14, '#8c6950'); block(298, 180, 27, 9, '#d6c69c')
-    block(310, 182, 4, 7, '#45698b')
-  } else if (tone === 'exploration') {
-    block(54, 178, 52, 16, '#5b4c38'); block(58, 180, 44, 10, '#a99a70')
-    block(62, 184, 24, 2, '#446d75'); block(78, 181, 2, 9, '#b1d5b8')
-    block(294, 177, 38, 17, '#59452e'); block(304, 179, 17, 13, '#e1c991')
-  } else if (tone === 'bond') {
-    block(57, 181, 47, 12, '#31404b'); block(66, 172, 26, 12, '#8199a1')
-    block(74, 170, 8, 6, '#d2b47d'); block(77, 174, 2, 8, '#47d8e0')
-    block(294, 177, 38, 15, '#3c4d5b'); block(300, 180, 26, 6, '#58bdd6')
-  } else if (tone === 'defense') {
-    for (let i = 0; i < 3; i++) {
-      block(59 + i * 13, 172, 7, 22, '#696774')
-      block(62 + i * 13, 167, 2, 13, '#c4c6c2')
-    }
-    block(292, 177, 41, 16, '#604d43'); block(303, 181, 20, 5, '#d1bd8c')
-  } else if (tone === 'clan') {
-    for (let i = 0; i < 4; i++) {
-      block(55 + i * 15, 164, 10, 30, ['#6d8099','#688874','#916681','#a28b5e'][i])
-      block(57 + i * 15, 169, 6, 6, '#e3bd79')
-    }
-    block(292, 179, 43, 14, '#685264'); block(299, 180, 28, 3, '#c7ac79')
-  } else if (tone === 'healing') {
-    block(58, 178, 50, 15, '#56624b')
-    for (let i = 0; i < 5; i++) {
-      block(61 + i * 9, 170, 5, 13, ['#67af7a','#84a78a','#c5ad74'][i % 3])
-    }
-    block(295, 180, 36, 13, '#735543'); block(301, 169, 5, 15, '#a4d4c6')
-    block(314, 174, 9, 9, '#95bbd4')
-  } else if (tone === 'home') {
-    // Bed with pillow and linens: deliberately separate from the restorative state.
-    block(287, 169, 52, 26, '#584633'); block(289, 170, 48, 20, '#385a74')
-    block(294, 172, 16, 9, '#eee1bd'); block(315, 173, 15, 13, '#6e9bb1')
-    block(57, 176, 51, 17, '#74533c'); block(61, 179, 42, 10, '#b99873')
-    block(74, 171, 16, 10, '#536e82'); block(79, 173, 4, 5, '#95dbe4')
   }
-  // Glowing service sigil, exit door.
-  ctx.fillStyle = '#0b2430'; ctx.fillRect(299, 188, 36, 31)
-  ctx.fillStyle = '#42bac1'; ctx.fillRect(314, 190, 8, 20)
-  ctx.fillStyle = '#aadfdc'; ctx.fillRect(317, 194, 2, 14)
-  ctx.fillStyle = '#3d2d25'; ctx.fillRect(166, 231, 52, 25)
-  ctx.fillStyle = '#b78b50'; ctx.fillRect(172, 234, 40, 6)
-  ctx.fillStyle = '#60d0db'; ctx.fillRect(184, 237, 16, 3)
+
+  // Furniture silhouettes and hit targets share their IDs and positions.
+  for (const item of roomFurniture[locationId]) {
+    const { x, y } = item.point
+    if (item.behavior === 'rest') {
+      block(x - 23, y - 16, 46, 21, '#4c3a32')
+      block(x - 20, y - 14, 40, 16, '#49748e')
+      block(x - 17, y - 12, 13, 8, '#f0e6c9')
+    } else if (plan.tile === 'arcane' && item.behavior === 'inspect') {
+      block(x - 14, y - 10, 28, 12, '#384e5c'); block(x - 9, y - 17, 17, 8, '#849fa9')
+      block(x - 2, y - 20, 4, 8, theme.glow)
+    } else if (plan.tile === 'ceremony' && item.behavior === 'inspect') {
+      for (let i = 0; i < 4; i++) {
+        block(x - 19 + i * 12, y - 31, 9, 29, ['#537c93','#53866f','#97668c','#b6a16e'][i])
+        block(x - 17 + i * 12, y - 24, 5, 5, theme.trim)
+      }
+    } else if (item.behavior === 'inspect') {
+      block(x - 17, y - 17, 34, 20, '#453c35')
+      block(x - 14, y - 14, 28, 14, theme.trim)
+      for (let i = 0; i < 4; i++) block(x - 11 + i * 6, y - 12, 3, 10, i % 2 ? theme.wall : theme.glow)
+    } else {
+      block(x - 19, y - 14, 38, 18, '#44382f')
+      block(x - 16, y - 16, 32, 8, theme.trim)
+      block(x - 8, y - 12, 16, 5, theme.glow)
+    }
+  }
+
+  // Solid centerpiece matches the pathfinding obstacles and differs by room.
+  for (const obstacle of obstacles) {
+    block(obstacle.x - 2, obstacle.y + 3, obstacle.w + 4, obstacle.h, '#1a1a22')
+    block(obstacle.x, obstacle.y, obstacle.w, obstacle.h - 2, '#594735')
+    block(obstacle.x + 4, obstacle.y + 3, obstacle.w - 8, 4, theme.trim)
+    if (plan.tile === 'arcane') block(obstacle.x + 12, obstacle.y + 2, obstacle.w - 24, 3, theme.glow)
+  }
+
+  // Room-specific EXIT is authoritative: door location follows navigation geometry.
+  const door = plan.exit
+  block(door.x - 14, door.y - 8, 28, 25, '#292421')
+  block(door.x - 10, door.y - 5, 20, 19, '#5b4434')
+  block(door.x - 7, door.y - 3, 14, 3, theme.trim)
+  block(door.x - 4, door.y + 2, 8, 2, theme.glow)
+
   const drawPlayer = () => {
     drawPlayerAura(ctx, player.x, player.y, frame)
     if (sheet?.complete && sheet.naturalWidth >= 128 && sheet.naturalHeight >= 128) {
@@ -135,17 +154,23 @@ export function drawTerranInterior(
         ACTOR_PALETTES[portraitId.includes('sigil') ? 'sigil' : 'terririan'], 1)
     }
   }
+
   const ordered = [...residents].sort((a, b) => a.position.y - b.position.y)
   let drawn = false
   for (const resident of ordered) {
     if (!drawn && player.y < resident.position.y) { drawPlayer(); drawn = true }
     const { x, y } = resident.position
-    ctx.fillStyle = '#1b2731'; ctx.fillRect(x - 6, y - 2, 12, 3)
+    block(x - 6, y - 2, 12, 3, '#192631')
     drawPixelActor(ctx, x, y, 'down', 0, ACTOR_PALETTES[resident.palette] ?? ACTOR_PALETTES.knowledge, 1)
     if (resident.marker) {
-      ctx.fillStyle = '#f2c86e'; ctx.fillRect(x - 3, y - 23, 7, 7)
-      ctx.fillStyle = '#19212d'; ctx.fillRect(x, y - 22, 2, 4)
+      block(x - 3, y - 23, 7, 7, '#edc575')
+      block(x, y - 22, 2, 4, '#17212b')
     }
   }
   if (!drawn) drawPlayer()
+
+  // Player's home intentionally has no NPC by default.
+  if (locationId === PLAYER_HOME_INTERIOR_ID) {
+    block(145, 112, 92, 3, '#cbb17e')
+  }
 }
