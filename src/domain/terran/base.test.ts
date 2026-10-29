@@ -5,7 +5,8 @@ import { migrateAndValidateSave } from '../../persistence/saveSchema'
 import { BASE_LOCATION_ID, enterPlayerBase, leavePlayerBase, respawnDefeatedPlayer, transferBaseChestItem } from './base'
 
 const now = '2026-10-29T19:34:00.000Z'
-const fresh = (owner = 'player-a') => createNewSave(owner, 'Viajante', 'character.terririan.default', content, now)
+const fresh = (owner = 'player-a') => createNewSave(owner, 'Viajante', 'character.terririan.default', content, now,
+  { saveId: owner + '-save', characterId: owner + '-character' })
 
 describe('Base individual e mundo isolado por campanha', () => {
   it('dois jogadores começam com instâncias e progresso independentes', () => {

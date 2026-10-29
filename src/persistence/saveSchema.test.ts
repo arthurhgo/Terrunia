@@ -100,7 +100,7 @@ describe('save versionado', () => {
     }
     const migrated = migrateAndValidateSave(legacy)
     expect(migrated.schemaVersion).toBe(11)
-    expect(migrated.gameVersion).toBe('0.8.2')
+    expect(migrated.gameVersion).toBe('0.8.3')
     expect(migrated.world.trailNodeStates.astravel_boss_preview).toBe('bossCurrent')
     expect(migrated.eventLog).toContain('SaveMigrated:2->3')
     expect(migrated.eventLog).toContain('SaveMigrated:3->4')
