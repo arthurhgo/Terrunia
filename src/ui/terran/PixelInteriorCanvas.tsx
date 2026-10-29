@@ -85,6 +85,11 @@ export function PixelInteriorCanvas({
     } else if (next.path.length > 0) destinationRef.current = next
   }
 
+  const interactRef = useRef(interact)
+  const nearestRef = useRef(nearestInteraction)
+  interactRef.current = interact
+  nearestRef.current = nearestInteraction
+
   useEffect(() => {
     if (!enabled) { keysRef.current.clear(); destinationRef.current = null }
   }, [enabled])
@@ -108,7 +113,7 @@ export function PixelInteriorCanvas({
         destinationRef.current = null
         event.preventDefault()
       } else if (key === 'e' || key === 'enter') {
-        interact(nearestInteraction())
+        interactRef.current(nearestRef.current())
         event.preventDefault()
       }
     }
@@ -131,7 +136,7 @@ export function PixelInteriorCanvas({
           const next = dest.path[0]
           if (!next) {
             destinationRef.current = null
-            interact(dest.interaction)
+            interactRef.current(dest.interaction)
           } else {
             const d = distance(next, playerRef.current)
             if (d < speed + .4) {
@@ -139,7 +144,7 @@ export function PixelInteriorCanvas({
               dest.path.shift()
               if (dest.interaction && distance(playerRef.current, dest.target) < 21) {
                 destinationRef.current = null
-                interact(dest.interaction)
+                interactRef.current(dest.interaction)
               } else if (!dest.path.length) destinationRef.current = null
             } else {
               dx = (next.x - playerRef.current.x) / d

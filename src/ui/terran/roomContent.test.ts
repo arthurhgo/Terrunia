@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
+import { TERRAN_LOCATION_IDS } from '../../content/terran'
 import { createNewSave } from '../../domain/game/createSave'
 import { PLAYER_HOME_FLAG, restAtHome } from '../../domain/terran/services'
 import { getCityDoor } from './pixelCityArt'
@@ -26,7 +27,7 @@ describe('Casa do Terrírian e interiores temáticos', () => {
     expect(path.every(isCityWalkable)).toBe(true)
   })
   it('cada instituição possui móveis interativos identificáveis sem lógica acoplada à arte', () => {
-    for (const id of Object.keys(content.terranLocations) as Array<keyof typeof content.terranLocations>) {
+    for (const id of TERRAN_LOCATION_IDS) {
       if (id === 'location_terran_portal_plaza') continue
       expect(roomFurniture[id].length).toBeGreaterThanOrEqual(2)
       expect(roomFurniture[id].some((item) => item.behavior === 'services')).toBe(true)
