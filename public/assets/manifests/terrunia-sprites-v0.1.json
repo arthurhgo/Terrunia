@@ -1,0 +1,1200 @@
+{
+  "schemaVersion": "0.1",
+  "grid": {
+    "item": [
+      16,
+      16
+    ],
+    "npc": [
+      32,
+      32
+    ],
+    "monster": [
+      32,
+      32
+    ],
+    "boss": [
+      48,
+      48
+    ]
+  },
+  "entries": [
+    {
+      "assetId": "character.terririan.default",
+      "path": "/assets/characters/terririan/player_default.png",
+      "family": "player",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "character.terririan.sigil",
+      "path": "/assets/characters/terririan/player_sigil.png",
+      "family": "player",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "equipment.slot-preview.weapon",
+      "path": "/assets/equipment/slot-previews/weapon.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 0,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.slot-preview.shield",
+      "path": "/assets/equipment/slot-previews/shield.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 16,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.slot-preview.armor",
+      "path": "/assets/equipment/slot-previews/armor.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 32,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.slot-preview.necklace",
+      "path": "/assets/equipment/slot-previews/necklace.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 48,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.slot-preview.bracelet",
+      "path": "/assets/equipment/slot-previews/bracelet.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 64,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.weapon.prologue.g1",
+      "path": "/assets/equipment/weapon/weapon_prologue_g1.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 80,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.weapon.prologue.g2",
+      "path": "/assets/equipment/weapon/weapon_prologue_g2.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 96,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.weapon.prologue.g3",
+      "path": "/assets/equipment/weapon/weapon_prologue_g3.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 112,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.weapon.prologue.g4",
+      "path": "/assets/equipment/weapon/weapon_prologue_g4.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 0,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.weapon.prologue.g5",
+      "path": "/assets/equipment/weapon/weapon_prologue_g5.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 16,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.weapon.prologue.g6",
+      "path": "/assets/equipment/weapon/weapon_prologue_g6.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 32,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.weapon.prologue.g7",
+      "path": "/assets/equipment/weapon/weapon_prologue_g7.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 48,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.weapon_long_sword",
+      "path": "/assets/equipment/catalog/weapon_long_sword.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 64,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.weapon_war_axe",
+      "path": "/assets/equipment/catalog/weapon_war_axe.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 80,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.weapon_long_bow",
+      "path": "/assets/equipment/catalog/weapon_long_bow.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 96,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.weapon_dagger",
+      "path": "/assets/equipment/catalog/weapon_dagger.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 112,
+        "y": 16,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.weapon_arcane_scepter",
+      "path": "/assets/equipment/catalog/weapon_arcane_scepter.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 0,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.weapon_spellbook",
+      "path": "/assets/equipment/catalog/weapon_spellbook.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 16,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.weapon_conjuration_staff",
+      "path": "/assets/equipment/catalog/weapon_conjuration_staff.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 32,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.shield_round",
+      "path": "/assets/equipment/catalog/shield_round.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 48,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.shield_arcane",
+      "path": "/assets/equipment/catalog/shield_arcane.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 64,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.armor_leather",
+      "path": "/assets/equipment/catalog/armor_leather.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 80,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.armor_plate",
+      "path": "/assets/equipment/catalog/armor_plate.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 96,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.armor_mystic_tunic",
+      "path": "/assets/equipment/catalog/armor_mystic_tunic.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 112,
+        "y": 32,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.armor_star_mantle",
+      "path": "/assets/equipment/catalog/armor_star_mantle.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 0,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.armor_enchanted_vestments",
+      "path": "/assets/equipment/catalog/armor_enchanted_vestments.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 16,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.armor_chain",
+      "path": "/assets/equipment/catalog/armor_chain.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 32,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.necklace_moon",
+      "path": "/assets/equipment/catalog/necklace_moon.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 48,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.necklace_rune",
+      "path": "/assets/equipment/catalog/necklace_rune.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 64,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.bracelet_leather",
+      "path": "/assets/equipment/catalog/bracelet_leather.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 80,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "equipment.catalog.bracelet_resonance",
+      "path": "/assets/equipment/catalog/bracelet_resonance.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 96,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.fungal-nucleus",
+      "path": "/assets/items/item_fungal_nucleus.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 112,
+        "y": 48,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.spore-cluster",
+      "path": "/assets/items/item_spore_cluster.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 0,
+        "y": 64,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.minor-tonic",
+      "path": "/assets/items/item_minor_tonic.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 16,
+        "y": 64,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.mycelial-fragment",
+      "path": "/assets/items/item_mycelial_fragment.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 32,
+        "y": 64,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.quest-record",
+      "path": "/assets/items/item_astravel_record.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 48,
+        "y": 64,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "gem.emerald-growth",
+      "path": "/assets/gems/gem_emerald_growth.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 64,
+        "y": 64,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "gem.sapphire-tides",
+      "path": "/assets/gems/gem_sapphire_tides.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 80,
+        "y": 64,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "gem.ruby-wrath",
+      "path": "/assets/gems/gem_ruby_wrath.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 96,
+        "y": 64,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "gem.onyx-shadow",
+      "path": "/assets/gems/gem_onyx_shadow.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 112,
+        "y": 64,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "gem.amethyst-mind",
+      "path": "/assets/gems/gem_amethyst_mind.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 0,
+        "y": 80,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "gem.topaz-lightning",
+      "path": "/assets/gems/gem_topaz_lightning.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 16,
+        "y": 80,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "gem.diamond-celestial",
+      "path": "/assets/gems/gem_diamond_celestial.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 32,
+        "y": 80,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "gem.opal-chaos",
+      "path": "/assets/gems/gem_opal_chaos.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 48,
+        "y": 80,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "gem.jade-eternity",
+      "path": "/assets/gems/gem_jade_eternity.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 64,
+        "y": 80,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "gem.kethzar-heart",
+      "path": "/assets/gems/gem_kethzar_heart.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 80,
+        "y": 80,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "essence.fungal-weak",
+      "path": "/assets/essences/essence_fungal_weak.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 96,
+        "y": 80,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "essence.mycelial",
+      "path": "/assets/essences/essence_mycelial.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 112,
+        "y": 80,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "enemy.fungorro-crawler",
+      "path": "/assets/enemies/fungorros/enemy_fungorro_crawler_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "enemy.spore-sower",
+      "path": "/assets/enemies/fungorros/enemy_spore_sower_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "enemy.colossus-mycelium",
+      "path": "/assets/enemies/bosses/enemy_colossus_mycelium_idle.png",
+      "family": "monster",
+      "width": 48,
+      "height": 48,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "npc.eldamar.portrait",
+      "path": "/assets/npcs/npc_eldamar_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.mireya.portrait",
+      "path": "/assets/npcs/npc_mireya_dunavar_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 32,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.rustal.portrait",
+      "path": "/assets/npcs/npc_master_rustal_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 64,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.cebios.portrait",
+      "path": "/assets/npcs/npc_observador_cebios_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 96,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.estres.portrait",
+      "path": "/assets/npcs/npc_guardador_estres_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 128,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.curador.nexo.portrait",
+      "path": "/assets/npcs/npc_curador_nexo_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 160,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc_master_sentinela.portrait",
+      "path": "/assets/npcs/npc_master_sentinela_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 0,
+        "y": 32,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc_master_gladiador.portrait",
+      "path": "/assets/npcs/npc_master_gladiador_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 32,
+        "y": 32,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc_master_batedor.portrait",
+      "path": "/assets/npcs/npc_master_batedor_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 64,
+        "y": 32,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc_master_forjador.portrait",
+      "path": "/assets/npcs/npc_master_forjador_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 96,
+        "y": 32,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc_master_inscricoes.portrait",
+      "path": "/assets/npcs/npc_master_inscricoes_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 128,
+        "y": 32,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc_master_gravador.portrait",
+      "path": "/assets/npcs/npc_master_gravador_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 160,
+        "y": 32,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc_master_astrologo.portrait",
+      "path": "/assets/npcs/npc_master_astrologo_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 0,
+        "y": 64,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc_master_profeta.portrait",
+      "path": "/assets/npcs/npc_master_profeta_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 32,
+        "y": 64,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc_master_cacador.portrait",
+      "path": "/assets/npcs/npc_master_cacador_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 64,
+        "y": 64,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc_master_canalizador.portrait",
+      "path": "/assets/npcs/npc_master_canalizador_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 96,
+        "y": 64,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc_master_ruptura.portrait",
+      "path": "/assets/npcs/npc_master_ruptura_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 128,
+        "y": 64,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc_master_ruina.portrait",
+      "path": "/assets/npcs/npc_master_ruina_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 160,
+        "y": 64,
+        "width": 32,
+        "height": 32
+      }
+    }
+  ]
+}

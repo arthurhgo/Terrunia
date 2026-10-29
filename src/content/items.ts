@@ -200,19 +200,19 @@ export const boundItemBaseDefinitions: BoundItemBaseDefinition[] = [
     id: 'bound_armor_mystic_tunic', name: 'Túnica Mística', description: 'Vestimenta leve para canalização.', slot: 'armor',
     archetype: 'mysticArmor', basePower: 1, powerType: 'utility', damageType: 'resonance', weightClass: 'light',
     scalingAttribute: 'spirit', requirements: { level: 2, attributes: { spirit: 6 } }, statBonuses: { mitigation: 1, maxMp: 2 },
-    treeId: 'tree_armor_mystic', assetId: 'equipment.catalog.armor_leather',
+    treeId: 'tree_armor_mystic', assetId: 'equipment.catalog.armor_mystic_tunic',
   }),
   equipment({
     id: 'bound_armor_star_mantle', name: 'Manto das Estrelas', description: 'Manto médio de reserva arcana.', slot: 'armor',
     archetype: 'starMantle', basePower: 2, powerType: 'utility', damageType: 'resonance', weightClass: 'medium',
     scalingAttribute: 'spirit', requirements: { level: 3, attributes: { spirit: 8 } }, statBonuses: { mitigation: 2, maxMp: 3 },
-    treeId: 'tree_armor_star', assetId: 'equipment.catalog.armor_leather',
+    treeId: 'tree_armor_star', assetId: 'equipment.catalog.armor_star_mantle',
   }),
   equipment({
     id: 'bound_armor_enchanted_vestments', name: 'Vestes Encantadas', description: 'Proteção leve contra forças mágicas.', slot: 'armor',
     archetype: 'enchantedVestments', basePower: 3, powerType: 'defensive', damageType: 'protection', weightClass: 'light',
     scalingAttribute: 'cunning', requirements: { level: 4, attributes: { cunning: 8 } }, statBonuses: { mitigation: 3 },
-    treeId: 'tree_armor_enchanted', assetId: 'equipment.catalog.armor_leather',
+    treeId: 'tree_armor_enchanted', assetId: 'equipment.catalog.armor_enchanted_vestments',
   }),
   equipment({
     id: 'bound_armor_leather', name: 'Armadura de Couro', description: 'Armadura leve para mobilidade.', slot: 'armor',
@@ -224,7 +224,7 @@ export const boundItemBaseDefinitions: BoundItemBaseDefinition[] = [
     id: 'bound_armor_chain', name: 'Cota de Malha', description: 'Defesa média com exigência de Vigor.', slot: 'armor',
     archetype: 'chainArmor', basePower: 3, powerType: 'defensive', damageType: 'protection', weightClass: 'medium',
     scalingAttribute: 'vigor', requirements: { level: 3, attributes: { vigor: 8 } }, statBonuses: { mitigation: 3 },
-    treeId: 'tree_armor_chain', assetId: 'equipment.catalog.armor_plate',
+    treeId: 'tree_armor_chain', assetId: 'equipment.catalog.armor_chain',
   }),
   equipment({
     id: 'bound_armor_plate', name: 'Armadura de Placas', description: 'Maior proteção física, limitada por Força e Vigor.', slot: 'armor',
