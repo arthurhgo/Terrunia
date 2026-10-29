@@ -1,5 +1,6 @@
 import { TERRAN_LOCATION_IDS } from '../../content/terran'
 import { CITY_HEIGHT, CITY_WIDTH, getCityPoint, type WorldPoint } from './pixelCityArt'
+import { PLAYER_HOME_CENTER } from './roomContent'
 
 /** VISUAL_DRAFT: collision belongs to the drawn city, never to gameplay rules or asset files. */
 export const NAV_GRID = 8
@@ -8,6 +9,8 @@ const rows = CITY_HEIGHT / NAV_GRID
 
 export function isCityWalkable(point: WorldPoint): boolean {
   if (point.x < 12 || point.x > CITY_WIDTH - 12 || point.y < 28 || point.y > CITY_HEIGHT - 8) return false
+  if (Math.abs(point.x - PLAYER_HOME_CENTER.x) < 24
+    && point.y > PLAYER_HOME_CENTER.y - 25 && point.y < PLAYER_HOME_CENTER.y + 20) return false
   return !TERRAN_LOCATION_IDS.some((id) => {
     const center = getCityPoint(id)
     const portal = id === 'location_terran_portal_plaza'

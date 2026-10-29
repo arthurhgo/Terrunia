@@ -1,7 +1,6 @@
 import { useEffect, useRef, type PointerEvent } from 'react'
 import { resolveAsset } from '../../assets/assetRegistry'
-import { content } from '../../content/catalog'
-import type { TerranLocationId } from '../../content/terran'
+import { getRoomName, roomFurniture, type RoomFurniture, type TerranInteriorId, PLAYER_HOME_INTERIOR_ID } from './roomContent'
 import type { TerranNpcPresence } from '../../content/types'
 import { findInteriorPath, getInteriorResidents, INTERIOR_EXIT, INTERIOR_SERVICES, INTERIOR_SPAWN, isInteriorWalkable, type InteriorResident } from './interiorLayout'
 import { drawTerranInterior } from './interiorArt'
@@ -25,16 +24,18 @@ const distance = (a: WorldPoint, b: WorldPoint) => Math.hypot(a.x - b.x, a.y - b
  * A saved visit remains tied to the official Terran location ID.
  */
 export function PixelInteriorCanvas({
-  save, locationId, enabled, onTalk, onServices, onExit,
+  save, locationId, enabled, onTalk, onServices, onExit, onFurniture,
 }: {
   save: GameSave
-  locationId: TerranLocationId
+  locationId: TerranInteriorId
   enabled: boolean
   onTalk: (presence: TerranNpcPresence) => void
   onServices: () => void
   onExit: () => void
+  onFurniture: (furniture: RoomFurniture) => void
 }) {
   const residents = getInteriorResidents(save, locationId)
+  const furniture = roomFurniture[locationId]
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const playerRef = useRef<WorldPoint>({ ...INTERIOR_SPAWN })
   const faceRef = useRef<Direction>('up')
@@ -46,23 +47,29 @@ export function PixelInteriorCanvas({
   const talkRef = useRef(onTalk)
   const exitRef = useRef(onExit)
   const servicesRef = useRef(onServices)
+  const furnitureRef = useRef(onFurniture)
   enabledRef.current = enabled
   reducedRef.current = save.settings.reducedMotion
   residentsRef.current = residents
   talkRef.current = onTalk
   exitRef.current = onExit
   servicesRef.current = onServices
+  furnitureRef.current = onFurniture
 
   const interact = (interaction: Interaction) => {
     if (!interaction || !enabledRef.current) return
     if (interaction === 'exit') { exitRef.current(); return }
     if (interaction === 'services') { servicesRef.current(); return }
+    const item = roomFurniture[locationId].find((entry) => entry.id === interaction)
+    if (item) { furnitureRef.current(item); return }
     const resident = residentsRef.current.find((entry) => entry.presence.id === interaction)
     if (resident) talkRef.current(resident.presence)
   }
   const nearestInteraction = () => {
     const resident = residentsRef.current.find((entry) => distance(entry.position, playerRef.current) < 21)
     if (resident) return resident.presence.id
+    const item = roomFurniture[locationId].find((entry) => distance(entry.point, playerRef.current) < 21)
+    if (item) return item.id
     if (distance(INTERIOR_EXIT, playerRef.current) < 21) return 'exit'
     if (distance(INTERIOR_SERVICES, playerRef.current) < 22) return 'services'
     return null
@@ -180,17 +187,21 @@ export function PixelInteriorCanvas({
     }
     const resident = residents.find((entry) => distance(point, entry.position) < 17)
     if (resident) walkTo({ x: resident.position.x, y: resident.position.y + 10 }, resident.presence.id)
-    else if (distance(point, INTERIOR_EXIT) < 25) walkTo(INTERIOR_EXIT, 'exit')
-    else if (distance(point, INTERIOR_SERVICES) < 27) walkTo(INTERIOR_SERVICES, 'services')
-    else walkTo(point)
+    else {
+      const item = roomFurniture[locationId].find((entry) => distance(point, entry.point) < 23)
+      if (item) { walkTo(item.point, item.id); return }
+      if (distance(point, INTERIOR_EXIT) < 25) walkTo(INTERIOR_EXIT, 'exit')
+      else if (distance(point, INTERIOR_SERVICES) < 27) walkTo(INTERIOR_SERVICES, 'services')
+      else walkTo(point)
+    }
   }
 
   return <div className={`pixel-interior ${save.settings.reducedMotion ? 'pixel-interior--static' : ''}`} aria-label="Interior explorável de Terran">
     <canvas ref={canvasRef} width={384} height={256} role="img" tabIndex={0}
       className="pixel-interior__canvas" onPointerDown={pointerWalk}
-      aria-label={`Interior pixelado de ${content.terranLocations[locationId].name}; caminhe, aproxime-se dos NPCs e pressione E`} />
+      aria-label={`Interior pixelado de ${getRoomName(locationId)}; caminhe, aproxime-se dos NPCs e pressione E`} />
     <div className="pixel-interior__locations">
-      <strong className="pixel-interior__name">INTERIOR · {content.terranLocations[locationId].name.toUpperCase()}</strong>
+      <strong className="pixel-interior__name">INTERIOR · {getRoomName(locationId).toUpperCase()}</strong>
       {residents.map((resident) =>
         <button type="button" key={resident.presence.id} disabled={!enabled}
           className="pixel-interior__npc"
@@ -200,11 +211,18 @@ export function PixelInteriorCanvas({
           onClick={() => walkTo({ x: resident.position.x, y: resident.position.y + 10 }, resident.presence.id)}>
           {resident.marker ? <span>{resident.marker}</span> : null}
         </button>)}
+      {furniture.map((item) => <button type="button" key={item.id}
+        className="pixel-interior__furniture" disabled={!enabled}
+        aria-label={`Interagir com ${item.name}`} title={item.description}
+        style={{ left: item.point.x / 384 * 100 + '%', top: (item.point.y - 9) / 256 * 100 + '%' }}
+        onClick={() => walkTo(item.point, item.id)}>
+        <span aria-hidden="true">✦</span>
+      </button>)}
       <button type="button" disabled={!enabled}
         className="pixel-interior__service"
-        aria-label="Abrir serviços do local"
+        aria-label={locationId === PLAYER_HOME_INTERIOR_ID ? 'Abrir serviços da casa' : 'Abrir serviços do local'}
         onClick={onServices}>
-        Serviços
+        {locationId === PLAYER_HOME_INTERIOR_ID ? 'Casa' : 'Serviços'}
       </button>
       <button type="button" disabled={!enabled}
         className="pixel-interior__exit"

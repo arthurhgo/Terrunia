@@ -2010,3 +2010,15 @@ code {
 .pixel-interior:not(.pixel-interior--static){animation:terran-enter-room .24s steps(6,end) both}
 @keyframes terran-enter-room{from{opacity:.2;filter:contrast(2) brightness(.55)}to{opacity:1;filter:none}}
 @media(prefers-reduced-motion:reduce){.pixel-interior{animation:none!important}}
+
+/* Distinct houses: visual hit targets, no interaction logic inferred from sprites. */
+.pixel-city__home{border-color:#bd9955;background:#19314fe8;white-space:nowrap}
+.pixel-city__home.is-locked{background:#212631e8;color:#acacb9;border-color:#6c6b70}
+.pixel-interior__furniture{position:absolute;transform:translate(-50%,-50%);width:32px;height:30px;border:1px solid transparent;background:transparent;color:#f9da8f;pointer-events:auto;cursor:pointer;z-index:2}
+.pixel-interior__furniture span{position:absolute;top:-9px;right:2px;background:#1c3440d9;border:1px solid #b89a62;padding:0 4px}
+.pixel-interior__furniture:hover,.pixel-interior__furniture:focus-visible{border-color:#d7ae64;outline:2px solid #5bdddc}
+.pixel-interior__inspection{position:absolute;z-index:24;left:26%;right:7%;bottom:17%;padding:13px 15px;border:2px solid #d8aa65;color:#e7e0ca;background:#091725ef;box-shadow:0 6px 25px #050c17}
+.pixel-interior__inspection strong{display:block;color:#eec681;letter-spacing:.07em;font-family:var(--display)}
+.pixel-interior__inspection p{font-size:.85rem;line-height:1.5}
+.pixel-interior__inspection button{border:1px solid #c5a06d;padding:7px 10px;color:#ebcd8b;background:#192938;cursor:pointer}
+@media(max-width:650px){.pixel-interior__inspection{left:12%;bottom:20%;right:4%}}

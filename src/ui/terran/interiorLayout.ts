@@ -3,6 +3,7 @@ import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran
 import type { TerranNpcPresence } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
 import { getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
+import { PLAYER_HOME_INTERIOR_ID, type TerranInteriorId } from './roomContent'
 import type { WorldPoint } from './pixelCityArt'
 
 export const TERRAN_INTERIOR_IDS: readonly TerranLocationId[] =
@@ -33,8 +34,8 @@ const paletteByTone: Record<string, string> = {
 }
 
 /** Layout is independent of sprite paths and of quest/combat logic. */
-export function getInteriorResidents(save: GameSave, id: TerranLocationId): InteriorResident[] {
-  if (!hasTerranInterior(id)) return []
+export function getInteriorResidents(save: GameSave, id: TerranInteriorId): InteriorResident[] {
+  if (id === PLAYER_HOME_INTERIOR_ID || !hasTerranInterior(id)) return []
   const location = content.terranLocations[id]
   return getVisibleNpcsInLocation(save, id).slice(0, positions.length).map(({ presence }, index) => {
     const npc = presence.npcId ? content.npcs[presence.npcId] : undefined

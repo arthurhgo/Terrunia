@@ -1,5 +1,5 @@
 import { content } from '../../content/catalog'
-import type { TerranLocationId } from '../../content/terran'
+import { PLAYER_HOME_INTERIOR_ID, type TerranInteriorId } from './roomContent'
 import type { InteriorResident } from './interiorLayout'
 import type { WorldPoint } from './pixelCityArt'
 import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, type ActorFacing } from './pixelActorArt'
@@ -11,12 +11,13 @@ const tones: Record<string, { wall: string; trim: string; curtain: string }> = {
   defense: { wall: '#554245', trim: '#c9a26d', curtain: '#a97470' },
   clan: { wall: '#4c3b58', trim: '#d8b479', curtain: '#9a7ba6' },
   healing: { wall: '#33534d', trim: '#d2b781', curtain: '#77b3a1' },
+  home: { wall: '#293e53', trim: '#e2c17b', curtain: '#567f9e' },
 }
 
 /** Decorative tilemap VISUAL_DRAFT. No interactive trigger is derived from colors. */
 export function drawTerranInterior(
   ctx: CanvasRenderingContext2D,
-  locationId: TerranLocationId,
+  locationId: TerranInteriorId,
   player: WorldPoint,
   sheet: HTMLImageElement | null,
   frame: number,
@@ -26,8 +27,8 @@ export function drawTerranInterior(
   residents: readonly InteriorResident[],
 ) {
   ctx.imageSmoothingEnabled = false
-  const location = content.terranLocations[locationId]
-  const theme = tones[location.tone] ?? tones.knowledge
+  const tone = locationId === PLAYER_HOME_INTERIOR_ID ? 'home' : content.terranLocations[locationId].tone
+  const theme = tones[tone] ?? tones.knowledge
   ctx.fillStyle = '#091522'; ctx.fillRect(0, 0, 384, 256)
   ctx.fillStyle = theme.wall; ctx.fillRect(12, 13, 360, 82)
   ctx.fillStyle = '#182735'; ctx.fillRect(12, 88, 360, 157)
@@ -71,6 +72,51 @@ export function drawTerranInterior(
   ctx.fillStyle = '#31525c'; ctx.fillRect(125, 185, 134, 30)
   ctx.fillStyle = theme.trim; ctx.fillRect(129, 188, 126, 2)
   ctx.fillStyle = '#496576'; ctx.fillRect(146, 193, 94, 17)
+  // Unique, replaceable prop silhouettes by room ID (VISUAL_DRAFT).
+  const block = (x: number, y: number, w: number, h: number, c: string) => {
+    ctx.fillStyle = c
+    ctx.fillRect(x, y, w, h)
+  }
+  if (tone === 'knowledge') {
+    for (let i = 0; i < 5; i++) {
+      block(62 + i * 8, 178, 6, 15 + i % 3 * 3, ['#637cb0', '#c5a470', '#658a86'][i % 3])
+    }
+    block(294, 178, 35, 14, '#8c6950'); block(298, 180, 27, 9, '#d6c69c')
+    block(310, 182, 4, 7, '#45698b')
+  } else if (tone === 'exploration') {
+    block(54, 178, 52, 16, '#5b4c38'); block(58, 180, 44, 10, '#a99a70')
+    block(62, 184, 24, 2, '#446d75'); block(78, 181, 2, 9, '#b1d5b8')
+    block(294, 177, 38, 17, '#59452e'); block(304, 179, 17, 13, '#e1c991')
+  } else if (tone === 'bond') {
+    block(57, 181, 47, 12, '#31404b'); block(66, 172, 26, 12, '#8199a1')
+    block(74, 170, 8, 6, '#d2b47d'); block(77, 174, 2, 8, '#47d8e0')
+    block(294, 177, 38, 15, '#3c4d5b'); block(300, 180, 26, 6, '#58bdd6')
+  } else if (tone === 'defense') {
+    for (let i = 0; i < 3; i++) {
+      block(59 + i * 13, 172, 7, 22, '#696774')
+      block(62 + i * 13, 167, 2, 13, '#c4c6c2')
+    }
+    block(292, 177, 41, 16, '#604d43'); block(303, 181, 20, 5, '#d1bd8c')
+  } else if (tone === 'clan') {
+    for (let i = 0; i < 4; i++) {
+      block(55 + i * 15, 164, 10, 30, ['#6d8099','#688874','#916681','#a28b5e'][i])
+      block(57 + i * 15, 169, 6, 6, '#e3bd79')
+    }
+    block(292, 179, 43, 14, '#685264'); block(299, 180, 28, 3, '#c7ac79')
+  } else if (tone === 'healing') {
+    block(58, 178, 50, 15, '#56624b')
+    for (let i = 0; i < 5; i++) {
+      block(61 + i * 9, 170, 5, 13, ['#67af7a','#84a78a','#c5ad74'][i % 3])
+    }
+    block(295, 180, 36, 13, '#735543'); block(301, 169, 5, 15, '#a4d4c6')
+    block(314, 174, 9, 9, '#95bbd4')
+  } else if (tone === 'home') {
+    // Bed with pillow and linens: deliberately separate from the restorative state.
+    block(287, 169, 52, 26, '#584633'); block(289, 170, 48, 20, '#385a74')
+    block(294, 172, 16, 9, '#eee1bd'); block(315, 173, 15, 13, '#6e9bb1')
+    block(57, 176, 51, 17, '#74533c'); block(61, 179, 42, 10, '#b99873')
+    block(74, 171, 16, 10, '#536e82'); block(79, 173, 4, 5, '#95dbe4')
+  }
   // Glowing service sigil, exit door.
   ctx.fillStyle = '#0b2430'; ctx.fillRect(299, 188, 36, 31)
   ctx.fillStyle = '#42bac1'; ctx.fillRect(314, 190, 8, 20)

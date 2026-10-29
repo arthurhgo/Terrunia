@@ -1,0 +1,61 @@
+import type { TerranLocationId } from '../../content/terran'
+import type { WorldPoint } from './pixelCityArt'
+
+export const PLAYER_HOME_INTERIOR_ID = 'interior_terririan_home' as const
+export type TerranInteriorId = TerranLocationId | typeof PLAYER_HOME_INTERIOR_ID
+
+export const PLAYER_HOME_CENTER: WorldPoint = { x: 192, y: 53 }
+export const PLAYER_HOME_DOOR: WorldPoint = { x: 192, y: 80 }
+
+export type RoomFurniture = {
+  id: string
+  name: string
+  point: WorldPoint
+  behavior: 'inspect' | 'services' | 'rest'
+  description: string
+}
+
+/** VISUAL_DRAFT — objects are identified independently from canvas art or sprite paths. */
+export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> = {
+  location_terran_eldamar_house: [
+    { id: 'eldamar_archive', name: 'Estante dos Registros', point: { x: 83, y: 201 }, behavior: 'inspect', description: 'Documentos e inscrições repousam em estantes protegidas. Eldamar orienta a investigação dos registros.' },
+    { id: 'eldamar_desk', name: 'Mesa de Pesquisa', point: { x: 316, y: 202 }, behavior: 'services', description: 'Consulta aos serviços e registros desta instituição.' },
+  ],
+  location_terran_vorren_post: [
+    { id: 'vorren_map', name: 'Mapa de Trilhas', point: { x: 83, y: 201 }, behavior: 'inspect', description: 'Rotas de Astravél estão marcadas junto a anotações de campo e avistamentos.' },
+    { id: 'vorren_bestiary', name: 'Bestiário', point: { x: 316, y: 202 }, behavior: 'services', description: 'Consulta ao Bestiário e aos serviços de Vorren.' },
+  ],
+  location_terran_bond_workshop: [
+    { id: 'bond_anvil', name: 'Bigorna Rúnica', point: { x: 83, y: 201 }, behavior: 'inspect', description: 'Uma bigorna marcada por padrões arcanos. Os Vínculos evoluem, não são substituídos.' },
+    { id: 'bond_station', name: 'Bancada dos Vínculos', point: { x: 316, y: 202 }, behavior: 'services', description: 'Inspeção e desenvolvimento dos cinco itens vinculados.' },
+  ],
+  location_terran_zareth_barracks: [
+    { id: 'zareth_weapons', name: 'Arsenal do Quartel', point: { x: 83, y: 201 }, behavior: 'inspect', description: 'Equipamentos de treinamento e escudos de patrulha permanecem organizados.' },
+    { id: 'zareth_reports', name: 'Relatórios da Guarda', point: { x: 316, y: 202 }, behavior: 'services', description: 'Ordens de patrulha e serviços do Quartel.' },
+  ],
+  location_terran_clan_hall: [
+    { id: 'clan_banners', name: 'Estandartes dos Clãs', point: { x: 83, y: 201 }, behavior: 'inspect', description: 'Os estandartes representam caminhos que devem ser conquistados em jogo.' },
+    { id: 'clan_council', name: 'Mesa dos Representantes', point: { x: 316, y: 202 }, behavior: 'services', description: 'Representantes e mestres apresentam os requisitos de Clã e Classe.' },
+  ],
+  location_terran_daeryn_house: [
+    { id: 'daeryn_herbs', name: 'Jardim de Ervas', point: { x: 83, y: 201 }, behavior: 'inspect', description: 'Ervas e frascos preparados para a recuperação de viajantes.' },
+    { id: 'daeryn_shop', name: 'Balcão de Sylwen', point: { x: 316, y: 202 }, behavior: 'services', description: 'Poções e suprimentos de campo da loja de Sylwen.' },
+  ],
+  location_terran_portal_plaza: [],
+  interior_terririan_home: [
+    { id: 'home_memories', name: 'Mesa das Memórias', point: { x: 83, y: 201 }, behavior: 'inspect', description: 'Um lugar reservado a lembranças de suas viagens. O arquivo de memórias será ampliado futuramente.' },
+    { id: 'home_bed', name: 'Cama do Terrírian', point: { x: 316, y: 202 }, behavior: 'rest', description: 'Descanso gratuito para recuperar Vida e Mana fora de combate.' },
+  ],
+}
+
+export const getRoomName = (id: TerranInteriorId) =>
+  id === PLAYER_HOME_INTERIOR_ID ? 'Casa do Terrírian' :
+  ({
+    location_terran_eldamar_house: 'Casa de Eldamar',
+    location_terran_vorren_post: 'Posto de Vorren',
+    location_terran_bond_workshop: 'Oficina dos Vínculos',
+    location_terran_zareth_barracks: 'Quartel de Zareth',
+    location_terran_clan_hall: 'Salão dos Clãs',
+    location_terran_daeryn_house: 'Casa de Daeryn',
+    location_terran_portal_plaza: 'Praça do Portal',
+  } satisfies Record<TerranLocationId, string>)[id]

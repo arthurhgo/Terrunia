@@ -26,6 +26,9 @@ import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { PixelCityCanvas } from '../terran/PixelCityCanvas'
 import { PixelInteriorCanvas } from '../terran/PixelInteriorCanvas'
 import { hasTerranInterior } from '../terran/interiorLayout'
+import { getRoomName, PLAYER_HOME_DOOR, PLAYER_HOME_INTERIOR_ID, type RoomFurniture, type TerranInteriorId } from '../terran/roomContent'
+import { PLAYER_HOME_FLAG } from '../../domain/terran/services'
+import type { WorldPoint } from '../terran/pixelCityArt'
 import { getCityCast } from '../terran/cityCast'
 import { DaerynServices, HomeDrawer, QuestNpcPanel, VorrenBestiary } from '../terran/TerranServices'
 
@@ -138,9 +141,12 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const save = useGameStore((state) => state.save)
   const travel = useGameStore((state) => state.travelInTerran)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
+  const restAtHome = useGameStore((state) => state.restAtHome)
   const [drawer, setDrawer] = useState<Drawer>(null)
   const [locationId, setLocationId] = useState<TerranLocationId>('location_terran_portal_plaza')
-  const [interiorId, setInteriorId] = useState<TerranLocationId | null>(null)
+  const [interiorId, setInteriorId] = useState<TerranInteriorId | null>(null)
+  const [streetSpawn, setStreetSpawn] = useState<WorldPoint | null>(null)
+  const [inspected, setInspected] = useState<RoomFurniture | null>(null)
   const [eldamarOpen, setEldamarOpen] = useState(false)
   const [socialQuestId, setSocialQuestId] = useState<string | null>(null)
   const [dialogue, setDialogue] = useState<Presence | null>(null)
@@ -160,9 +166,11 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const discovered = getDiscoveredTerranLocationIds(save).length
   const stats = deriveCharacterStats(save, content)
   const location = content.terranLocations[locationId]
-  const gameEnabled = !scene && !eldamarOpen && !socialQuestId && !dialogue
+  const gameEnabled = !scene && !eldamarOpen && !socialQuestId && !dialogue && !inspected
 
   const openLocation = (id: TerranLocationId) => {
+    setStreetSpawn(null)
+    setInspected(null)
     travel(id)
     setLocationId(id)
     setLocalQuestId(null)
@@ -177,6 +185,31 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
       setDrawer('location')
     }
   }
+  const enterHome = () => {
+    if (!save.world.worldFlags.includes(PLAYER_HOME_FLAG)) {
+      setDrawer('home')
+      return
+    }
+    setStreetSpawn({ ...PLAYER_HOME_DOOR })
+    setInteriorId(PLAYER_HOME_INTERIOR_ID)
+    setLocationId('location_terran_daeryn_house')
+    setDrawer(null)
+    setInspected(null)
+  }
+  const openRoomServices = (id: TerranInteriorId) => {
+    setDrawer(id === PLAYER_HOME_INTERIOR_ID ? 'home' : 'location')
+    setLocalQuestId(null)
+  }
+  const inspectFurniture = (furniture: RoomFurniture) => {
+    if (furniture.behavior === 'rest') {
+      restAtHome()
+      setDrawer('home')
+    } else if (furniture.behavior === 'services') {
+      if (interiorId) openRoomServices(interiorId)
+    } else {
+      setInspected(furniture)
+    }
+  }
   const exitInterior = () => {
     // Unmounting the room returns the sprite beside the corresponding city door.
     // No new save location ID is required, preserving older campaigns.
@@ -184,6 +217,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setDrawer(null)
     setDialogue(null)
     setLocalQuestId(null)
+    setInspected(null)
   }
   const talk = (presence: Presence, sourceId: TerranLocationId = locationId) => {
     travel(sourceId)
@@ -204,7 +238,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setDialogueLine(0)
     setDialogue(presence)
   }
-  const currentLabel = content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
+  const currentLabel = interiorId ? getRoomName(interiorId) : content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
   const activeTitle = drawer === 'location' ? location.name : drawer === 'nexus' ? 'Personagem e Vínculos'
     : drawer === 'inventory' ? 'Mochila e Arsenal' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'home' ? 'Meu Alojamento' : 'Evolução do Vínculo'
 
@@ -217,11 +251,13 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
         <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
             {interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
-                onTalk={(presence) => talk(presence, interiorId)}
-                onServices={() => { setLocationId(interiorId); setDrawer('location'); setLocalQuestId(null) }}
+                onTalk={(presence) => { if (interiorId !== PLAYER_HOME_INTERIOR_ID) talk(presence, interiorId) }}
+                onServices={() => openRoomServices(interiorId)}
+                onFurniture={inspectFurniture}
                 onExit={exitInterior} />
               : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} reducedMotion={save.settings.reducedMotion}
-                  currentLocationId={save.world.currentLocationId}
+                  currentLocationId={save.world.currentLocationId} spawnPoint={streetSpawn}
+                  homeUnlocked={save.world.worldFlags.includes(PLAYER_HOME_FLAG)} onEnterHome={enterHome}
                   enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
                   actors={cityCast} onEnter={openLocation} onTalk={(id, presence) => talk(presence, id)} />}
             <div className="terran-game__hud" aria-label="Ações do personagem">
@@ -239,6 +275,10 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 guidance ? `Objetivo: ${content.terranLocations[guidance.locationId].name}` : 'Explore a cidade · visite os edifícios'}
                 <small>WASD / setas · toque ou clique para caminhar · E para interagir{interiorId ? ' · porta inferior para sair' : ' · portas para entrar'}</small></span>
             </div>
+            {inspected && <div className="pixel-interior__inspection" role="dialog" aria-label={`Inspecionar ${inspected.name}`}>
+              <strong>{inspected.name}</strong><p>{inspected.description}</p>
+              <button type="button" onClick={() => setInspected(null)}>Continuar explorando</button>
+            </div>}
             {dialogue && <DialogueBox save={save} presence={dialogue} line={dialogueLine} onNext={() => {
               const length = getTerranDialogue(save, dialogue).length
               if (dialogueLine + 1 < length) setDialogueLine(dialogueLine + 1)
@@ -257,7 +297,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               {drawer === 'nexus' && <><div className="terran-game__identity"><AssetImage assetId={save.character.portraitAssetId} /><span><strong>{save.character.name}</strong><small>Nível {save.character.level} · {save.character.clan.clanId ?? 'Sem Clã'} · {save.character.classProgression.classId ?? 'Sem Classe'}</small></span></div><ProgressBar value={save.vitals.hp} max={stats.life.value} label="Vida" tone="health" /><ProgressBar value={save.vitals.mp} max={stats.mana.value} label="Mana" /><ProgressBar value={save.character.xp} max={save.character.xpRequired} label="Experiência" /><ProgressBar value={save.essence.current} max={save.essence.required} label="Essência" tone="essence" /><BoundItemsPanel save={save} /></>}
               {drawer === 'quests' && <QuestDrawer save={save} />}
               {drawer === 'skills' && <SkillDrawer save={save} />}
-              {drawer === 'home' && <HomeDrawer save={save} />}
+              {drawer === 'home' && <HomeDrawer save={save} canRest={interiorId === PLAYER_HOME_INTERIOR_ID} />}
             </div>
           </aside>}
         </div>
