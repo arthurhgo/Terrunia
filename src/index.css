@@ -2022,3 +2022,142 @@ code {
 .pixel-interior__inspection p{font-size:.85rem;line-height:1.5}
 .pixel-interior__inspection button{border:1px solid #c5a06d;padding:7px 10px;color:#ebcd8b;background:#192938;cursor:pointer}
 @media(max-width:650px){.pixel-interior__inspection{left:12%;bottom:20%;right:4%}}
+
+/* TERRAN UI v0.4 — separate, icon-first left rail and contiguous scene/context columns. */
+.terran-game__layout {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 4px;
+  align-items: start;
+  min-height: 0;
+}
+.terran-game__layout.has-drawer {
+  grid-template-columns: 46px minmax(0, 1fr) minmax(315px, 378px);
+}
+.terran-game__stage {
+  grid-column: 2;
+  justify-self: end;
+  align-self: start;
+  width: min(100%, calc((100dvh - 142px) * 1.5));
+  height: auto;
+  max-height: calc(100dvh - 142px);
+  aspect-ratio: 384 / 256;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0;
+}
+.terran-game__drawer {
+  grid-column: 3;
+  align-self: stretch;
+  height: min(100%, calc(100dvh - 142px));
+  min-height: 0;
+  max-height: calc(100dvh - 142px);
+  margin: 0;
+}
+.terran-game__hud {
+  grid-column: 1;
+  position: relative;
+  top: auto;
+  left: auto;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-self: start;
+  width: 46px;
+  padding-top: 8px;
+  gap: 6px;
+  overflow: visible;
+}
+.terran-game__hud button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 9px 11px;
+  gap: 10px;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  border: 1px solid #6d5a39;
+  border-left: 3px solid #bc8c45;
+  color: #e4d4b2;
+  background: #0b1824f5;
+  box-shadow: inset 0 0 0 1px #213947, 0 3px 5px #0007;
+  font-size: .68rem;
+  transition: width .2s steps(7, end), background-color .16s ease;
+}
+.terran-game__hud button svg { flex: 0 0 20px; }
+.terran-game__hud button span {
+  display: inline-block;
+  flex: 0 0 auto;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .12s ease, visibility .12s ease;
+}
+.terran-game__hud button:is(:hover, :focus-visible) {
+  width: 158px;
+  outline: 2px solid #dec285;
+  outline-offset: 1px;
+  background: #263a43;
+}
+.terran-game__hud button:is(:hover, :focus-visible) span {
+  opacity: 1;
+  visibility: visible;
+}
+.terran-game__hud button.active {
+  border-left-color: #62d8df;
+  background: #152b39;
+  color: #f7d798;
+}
+.terran-game__layout:not(.has-drawer) .terran-game__stage { grid-column: 2; }
+.terran-game__layout.has-drawer .terran-game__stage { grid-column: 2; }
+.pixel-interior__service, .pixel-interior__exit {
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  background: #0c1b29ee;
+}
+@media (max-width: 1120px) {
+  .terran-game__layout.has-drawer { grid-template-columns: 44px minmax(0, 1fr) minmax(275px, 340px); }
+  .terran-game__hud { width: 44px; }
+  .terran-game__hud button { width: 42px; min-width: 42px; }
+  .terran-game__hud button:is(:hover, :focus-visible) { width: 150px; }
+}
+@media (max-width: 760px) {
+  .terran-game__layout, .terran-game__layout.has-drawer {
+    position: relative;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 3px;
+    align-items: start;
+  }
+  .terran-game__stage {
+    width: 100%;
+    height: auto;
+    max-height: none;
+    justify-self: stretch;
+  }
+  .terran-game__hud { grid-column: 1; top: auto; left: auto; padding-top: 4px; }
+  .terran-game__hud button { padding: 8px 10px; }
+  .terran-game__hud button span { display: inline-block; }
+  .terran-game__drawer {
+    position: absolute;
+    grid-column: 2;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(86vw, 390px);
+    height: 100%;
+    max-height: 100%;
+    background: #080d12f8;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .terran-game__hud button, .terran-game__hud button span { transition: none; }
+}

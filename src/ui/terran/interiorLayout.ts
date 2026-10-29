@@ -5,6 +5,7 @@ import type { GameSave } from '../../domain/game/types'
 import { getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
 import { PLAYER_HOME_INTERIOR_ID, type TerranInteriorId } from './roomContent'
 import type { WorldPoint } from './pixelCityArt'
+import { getRoomPlan, isRoomWalkable } from './roomGeometry'
 
 export const TERRAN_INTERIOR_IDS: readonly TerranLocationId[] =
   TERRAN_LOCATION_IDS.filter((id) => content.terranLocations[id].category === 'institution')
@@ -19,14 +20,10 @@ export type InteriorResident = {
   marker: '!' | '✓' | null
 }
 
-export const INTERIOR_EXIT: WorldPoint = { x: 192, y: 231 }
-export const INTERIOR_SERVICES: WorldPoint = { x: 317, y: 202 }
-export const INTERIOR_SPAWN: WorldPoint = { x: 192, y: 214 }
-
-const positions: readonly WorldPoint[] = [
-  { x: 75, y: 116 }, { x: 151, y: 116 }, { x: 233, y: 116 }, { x: 309, y: 116 },
-  { x: 108, y: 167 }, { x: 192, y: 167 }, { x: 276, y: 167 },
-]
+/** Backwards-compatible workshop coordinates for older callers/tests. */
+export const INTERIOR_EXIT = getRoomPlan('location_terran_bond_workshop').exit
+export const INTERIOR_SERVICES = getRoomPlan('location_terran_bond_workshop').service
+export const INTERIOR_SPAWN = getRoomPlan('location_terran_bond_workshop').spawn
 
 const paletteByTone: Record<string, string> = {
   knowledge: 'knowledge', exploration: 'exploration', bond: 'bond',
@@ -37,6 +34,7 @@ const paletteByTone: Record<string, string> = {
 export function getInteriorResidents(save: GameSave, id: TerranInteriorId): InteriorResident[] {
   if (id === PLAYER_HOME_INTERIOR_ID || !hasTerranInterior(id)) return []
   const location = content.terranLocations[id]
+  const positions = getRoomPlan(id).residents
   return getVisibleNpcsInLocation(save, id).slice(0, positions.length).map(({ presence }, index) => {
     const npc = presence.npcId ? content.npcs[presence.npcId] : undefined
     const statuses = npc?.questIds.map((questId) => save.quests[questId]?.status) ?? []
@@ -49,10 +47,9 @@ export function getInteriorResidents(save: GameSave, id: TerranInteriorId): Inte
   })
 }
 
-/** A tiny navigational grid; collision shape follows furniture, never sprite pixels. */
-export function isInteriorWalkable(p: WorldPoint): boolean {
-  if (p.x < 26 || p.x > 358 || p.y < 94 || p.y > 239) return false
-  return !(p.x > 170 && p.x < 213 && p.y > 126 && p.y < 145)
+/** Navigation is calculated from the same data-driven footprint drawn on canvas. */
+export function isInteriorWalkable(p: WorldPoint, roomId: TerranInteriorId = 'location_terran_bond_workshop'): boolean {
+  return isRoomWalkable(roomId, p)
 }
 
 const CELL = 8
@@ -63,7 +60,7 @@ const toPoint = (id: number): WorldPoint => ({
   y: (Math.floor(id / WIDTH) + 0.5) * CELL,
 })
 
-function closestValid(point: WorldPoint): number | null {
+function closestValid(point: WorldPoint, roomId: TerranInteriorId): number | null {
   const cx = Math.max(0, Math.min(WIDTH - 1, Math.floor(point.x / CELL)))
   const cy = Math.max(0, Math.min(HEIGHT - 1, Math.floor(point.y / CELL)))
   for (let radius = 0; radius <= 12; radius++) {
@@ -73,15 +70,15 @@ function closestValid(point: WorldPoint): number | null {
         const x = cx + dx, y = cy + dy
         if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) continue
         const id = y * WIDTH + x
-        if (isInteriorWalkable(toPoint(id))) return id
+        if (isInteriorWalkable(toPoint(id), roomId)) return id
       }
     }
   }
   return null
 }
 
-export function findInteriorPath(start: WorldPoint, goal: WorldPoint): WorldPoint[] {
-  const a = closestValid(start), b = closestValid(goal)
+export function findInteriorPath(start: WorldPoint, goal: WorldPoint, roomId: TerranInteriorId = 'location_terran_bond_workshop'): WorldPoint[] {
+  const a = closestValid(start, roomId), b = closestValid(goal, roomId)
   if (a === null || b === null || a === b) return []
   const visited = new Int32Array(WIDTH * HEIGHT).fill(-1)
   const queue = new Int32Array(WIDTH * HEIGHT)
@@ -94,7 +91,7 @@ export function findInteriorPath(start: WorldPoint, goal: WorldPoint): WorldPoin
       const nx = x + dx, ny = y + dy
       if (nx < 0 || ny < 0 || nx >= WIDTH || ny >= HEIGHT) continue
       const next = ny * WIDTH + nx
-      if (visited[next] !== -1 || !isInteriorWalkable(toPoint(next))) continue
+      if (visited[next] !== -1 || !isInteriorWalkable(toPoint(next), roomId)) continue
       visited[next] = id
       queue[tail++] = next
     }
@@ -109,6 +106,6 @@ export function findInteriorPath(start: WorldPoint, goal: WorldPoint): WorldPoin
     return !next || Math.sign(point.x - prior.x) !== Math.sign(next.x - point.x)
       || Math.sign(point.y - prior.y) !== Math.sign(next.y - point.y)
   })
-  if (isInteriorWalkable(goal)) corners.push(goal)
+  if (isInteriorWalkable(goal, roomId)) corners.push(goal)
   return corners
 }

@@ -1,4 +1,4 @@
-import { BedDouble, BookOpen, CircleUserRound, Gem, GitBranch, MapPin, Package, Sparkles, X } from 'lucide-react'
+import { BedDouble, BookOpen, CircleUserRound, Gem, GitBranch, MapPin, Package, X } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -254,6 +254,15 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
           <div className="terran-game__readout"><MapPin size={16} /> TERRAN &gt; {currentLabel.toUpperCase()}<span>{discovered}/{TERRAN_LOCATION_IDS.length} descobertos</span></div>
         </header>
         <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
+          <nav className="terran-game__hud" aria-label="Menu de Terran">
+            {hud.map(({ id, label, icon: Icon }) => (
+              <button key={id} type="button" className={drawer === id ? 'active' : ''}
+                title={label} aria-label={`Abrir ${label}`} aria-pressed={drawer === id}
+                onClick={() => setDrawer(drawer === id ? null : id)}>
+                <Icon size={20} aria-hidden="true" /><span>{label}</span>
+              </button>
+            ))}
+          </nav>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
             {interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
                 onTalk={(presence) => { if (interiorId !== PLAYER_HOME_INTERIOR_ID) talk(presence, interiorId) }}
@@ -265,21 +274,6 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                   homeUnlocked={save.world.worldFlags.includes(PLAYER_HOME_FLAG)} onEnterHome={enterHome}
                   enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
                   actors={cityCast} onEnter={openLocation} onTalk={(id, presence) => talk(presence, id)} />}
-            <div className="terran-game__hud" aria-label="Ações do personagem">
-              {hud.map(({ id, label, icon: Icon }) => (
-                <button key={id} type="button" className={drawer === id ? 'active' : ''}
-                  aria-label={`Abrir ${label}`} aria-pressed={drawer === id}
-                  onClick={() => setDrawer(drawer === id ? null : id)}>
-                  <Icon size={19} /><span>{label}</span>
-                </button>
-              ))}
-            </div>
-            <div className="terran-game__quest">
-              <Sparkles size={16} />
-              <span>{interiorId ? `Você está em ${content.terranLocations[interiorId].name}` :
-                guidance ? `Objetivo: ${content.terranLocations[guidance.locationId].name}` : 'Explore a cidade · visite os edifícios'}
-                <small>WASD / setas · toque ou clique para caminhar · E para interagir{interiorId ? ' · porta inferior para sair' : ' · portas para entrar'}</small></span>
-            </div>
             {inspected && <div className="pixel-interior__inspection" role="dialog" aria-label={`Inspecionar ${inspected.name}`}>
               <strong>{inspected.name}</strong><p>{inspected.description}</p>
               <button type="button" onClick={() => setInspected(null)}>Continuar explorando</button>
