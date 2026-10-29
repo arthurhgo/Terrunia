@@ -80,7 +80,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const playerSkills = player.skillIds
     .map((skillId) => content.combatSkills[skillId])
     .filter((skill) => Boolean(skill))
-  const activeSkill = playerSkills[0]
   const usableConsumables = save.inventory.filter((instance) => {
     const definition = content.items[instance.definitionId]
     return definition?.category === 'consumable' && definition.combatEffects.length > 0
@@ -102,9 +101,11 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const attack = () => {
     if (selectedEnemy?.alive) submit({ type: 'attack', targetId: selectedEnemy.id })
   }
-  const useSkill = () => {
-    if (activeSkill && selectedEnemy?.alive) {
-      submit({ type: 'skill', skillId: activeSkill.id, targetId: selectedEnemy.id })
+  const handleSkill = (skillId: string) => {
+    const skill = content.combatSkills[skillId]
+    const targetId = skill?.target === 'self' ? player.id : selectedEnemy?.id
+    if (skill && targetId && (skill.target === 'self' || selectedEnemy?.alive)) {
+      submit({ type: 'skill', skillId: skill.id, targetId })
     }
   }
   const useItem = () => {
@@ -167,10 +168,12 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
 
           {activeBattle.phase === 'AwaitingAction' ? <div className="battle-command-bar battle-game__commands">
             <GameButton variant="primary" onClick={attack} disabled={!selectedEnemy?.alive}><Swords size={18} /> Atacar</GameButton>
-            <GameButton variant="secondary" onClick={useSkill}
-              disabled={!activeSkill || player.mp < (activeSkill?.mpCost ?? 0) || !selectedEnemy?.alive} title={activeSkill?.description}>
-              <Sparkles size={18} /> {activeSkill ? `${activeSkill.name} · ${activeSkill.mpCost} MP` : 'Habilidade bloqueada'}
-            </GameButton>
+            {playerSkills.length ? playerSkills.slice(0, 3).map((skill) => (
+              <GameButton key={skill.id} variant="secondary" onClick={() => handleSkill(skill.id)}
+                disabled={player.mp < skill.mpCost || (skill.target === 'enemy' && !selectedEnemy?.alive)} title={skill.description}>
+                <Sparkles size={18} /> {skill.name} · {skill.mpCost} MP
+              </GameButton>
+            )) : <GameButton variant="secondary" disabled><Sparkles size={18} /> Habilidade bloqueada</GameButton>}
             <GameButton variant="secondary" onClick={() => submit({ type: 'defend' })}><Shield size={18} /> Defender</GameButton>
             <GameButton variant="ghost" onClick={useItem} disabled={!activeConsumable || player.hp >= player.maxHp}
               title={activeConsumableDefinition?.description}><Backpack size={18} /> {activeConsumableDefinition?.name ?? 'Sem consumível'}</GameButton>

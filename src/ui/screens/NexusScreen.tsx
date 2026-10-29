@@ -1,4 +1,4 @@
-import { Activity, BookOpen, ShieldCheck, Sparkles, Swords, WandSparkles } from 'lucide-react'
+import { Activity, BookOpen, Gauge, Hammer, ShieldCheck, Swords, WandSparkles } from 'lucide-react'
 import { Link, Navigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { ATTRIBUTE_IDS } from '../../domain/game/types'
@@ -9,6 +9,7 @@ import { ArcanePanel } from '../components/ArcanePanel'
 import { AssetImage } from '../components/AssetImage'
 import { GameShell } from '../components/GameShell'
 import { ProgressBar } from '../components/ProgressBar'
+import { AttributeAllocator } from '../character/AttributeAllocator'
 
 const attributeLabels = { cunning: 'Astúcia', agility: 'Agilidade', strength: 'Força', vigor: 'Vigor', spirit: 'Espírito' }
 
@@ -39,15 +40,19 @@ export function NexusScreen() {
             </div>
             <ProgressBar value={character.xp} max={character.xpRequired} label="Experiência" />
             <div className="nexus-attribute-grid">{ATTRIBUTE_IDS.map((id) => <div key={id}><span>{attributeLabels[id]}</span><strong>d{character.attributes[id].die}{character.attributes[id].bonus ? ` +${character.attributes[id].bonus}` : ''}</strong></div>)}</div>
+            {character.unspentAttributePoints > 0 ? <AttributeAllocator save={save} compact /> : null}
             <div className="nexus-derived-grid">
               <DerivedStatCard label="Vida" stat={stats.life} icon={Activity} />
               <DerivedStatCard label="Mana" stat={stats.mana} icon={WandSparkles} />
               <DerivedStatCard label="Defesa" stat={stats.defense} icon={ShieldCheck} />
+              <DerivedStatCard label="Ataque da arma" stat={stats.primaryAttack} icon={Swords} />
+              <DerivedStatCard label="Iniciativa" stat={stats.initiative} icon={Gauge} />
               <DerivedStatCard label="Ataque físico" stat={stats.physicalAttack} icon={Swords} />
-              <DerivedStatCard label="Ataque mágico" stat={stats.magicalAttack} icon={Sparkles} />
+              <DerivedStatCard label="Ataque mágico" stat={stats.magicalAttack} icon={WandSparkles} />
             </div>
             <div className="nexus-essence"><ProgressBar value={essence.current} max={essence.required} label="Essência atual" tone="essence" /><strong>{essence.essencePoints} Ponto(s) de Essência</strong></div>
             <Link className="panel-link" to="/character">Abrir ficha detalhada <BookOpen size={16} /></Link>
+            <Link className="panel-link" to="/arsenal">Examinar arsenal e requisitos <Hammer size={16} /></Link>
           </ArcanePanel>
           <BoundItemsPanel save={save} />
         </div>

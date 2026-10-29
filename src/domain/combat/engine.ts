@@ -9,7 +9,9 @@ import type {
 import type { GameSave, InventoryItemInstance } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
 import { createRandomId } from '../shared/randomId'
-import { collectActiveEffects, getFlatStatBonus } from '../skillTree/skillTree'
+import { collectActiveEffects } from '../skillTree/skillTree'
+import { deriveCharacterStats } from '../character/derivedStats'
+import { getBoundItemSkillIds } from '../bond/equipmentLoadout'
 import type {
   BattleCommand,
   BattleLogEntry,
@@ -62,18 +64,13 @@ export const calculateDamage = (attackPower: number, mitigation: number) =>
 
 const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combatant => {
   const character = save.character
-  const weaponId = character.bondedEquipment.weapon
-  const boundWeapon = weaponId ? save.boundItems[weaponId] : null
-  const weaponBase = boundWeapon ? catalog.boundItemBases[boundWeapon.baseItemId] : null
   const unlockedSkillIds = collectActiveEffects(save, catalog)
     .filter((effect): effect is Extract<typeof effect, { type: 'unlockSkill' }> => effect.type === 'unlockSkill')
     .map((effect) => effect.skillId)
-  const maxHp =
-    BALANCE.baseHp +
-    character.attributes.vigor.die * BALANCE.vigorHpMultiplier +
-    getFlatStatBonus(save, catalog, 'maxHp')
-  const maxMp =
-    BALANCE.baseMana + character.attributes.spirit.die * BALANCE.spiritManaMultiplier
+  const equipmentSkillIds = getBoundItemSkillIds(save, catalog, 'weapon')
+  const stats = deriveCharacterStats(save, catalog)
+  const maxHp = stats.life.value
+  const maxMp = stats.mana.value
 
   return {
     id: 'combatant_player',
@@ -84,18 +81,12 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     maxHp,
     mp: maxMp,
     maxMp,
-    attackPower:
-      Math.floor(character.attributes.strength.die / 2) +
-      (weaponBase?.basePower ?? 1) +
-      getFlatStatBonus(save, catalog, 'attackPower'),
-    mitigation:
-      Math.floor(character.attributes.vigor.die / 4) +
-      getFlatStatBonus(save, catalog, 'mitigation'),
-    initiative:
-      character.attributes.agility.die + getFlatStatBonus(save, catalog, 'initiative'),
+    attackPower: stats.primaryAttack.value,
+    mitigation: stats.defense.value,
+    initiative: stats.initiative.value,
     alive: true,
     defending: false,
-    skillIds: [...new Set(unlockedSkillIds)],
+    skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds])],
     statusEffects: [],
   }
 }

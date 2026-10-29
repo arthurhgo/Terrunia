@@ -111,6 +111,12 @@ for (const skill of Object.values(content.combatSkills)) {
   }
 }
 
+for (const base of Object.values(content.boundItemBases)) {
+  for (const unlock of base.skillUnlocks) {
+    assertReference(content.combatSkills[unlock.skillId], `${base.id} → ${unlock.skillId}`)
+  }
+}
+
 for (const item of Object.values(content.items)) {
   if (item.infusionComponentId) {
     assertReference(

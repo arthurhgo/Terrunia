@@ -3,6 +3,7 @@ import type { QuestDefinition } from '../../content/types'
 import { addRawEssence } from '../essence/essence'
 import type { GameSave, QuestProgress } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
+import { gainCharacterXp } from '../character/attributeProgression'
 
 export const MAX_ACTIVE_QUESTS = 3
 export const SLOT_OCCUPYING_QUEST_STATUSES = ['active', 'ready_to_turn_in'] as const
@@ -140,7 +141,11 @@ export const setQuestTracked = (
 
 const applyQuestRewards = (save: GameSave, definition: QuestDefinition) => {
   for (const reward of definition.rewards) {
-    if (reward.type === 'characterXp') save.character.xp += reward.value
+    if (reward.type === 'characterXp') {
+      const gain = gainCharacterXp(save.character, reward.value)
+      save.character = gain.character
+      if (gain.levelsGained > 0) save.eventLog.push(`CharacterLevelGained:${gain.levelsGained}`)
+    }
     if (reward.type === 'gold') save.wallet.gold += reward.value
     if (reward.type === 'rawEssence') {
       const gain = addRawEssence(save.essence, reward.value)

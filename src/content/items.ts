@@ -107,23 +107,163 @@ export const itemDefinitions = [
   },
 ] satisfies ItemDefinition[]
 
+const allGrades = (assetId: string): BoundItemBaseDefinition['assetIdByGrade'] => ({
+  1: assetId, 2: assetId, 3: assetId, 4: assetId, 5: assetId, 6: assetId, 7: assetId,
+})
+
+const weapon = (
+  definition: Omit<BoundItemBaseDefinition, 'slot' | 'rank' | 'treeId' | 'assetIdByGrade' | 'status' | 'statBonuses'> & { assetId: string },
+): BoundItemBaseDefinition => {
+  const { assetId, ...base } = definition
+  return {
+    ...base,
+    slot: 'weapon',
+    rank: 1,
+    // All Rank-I weapons share the current foundation tree; their native skill stays archetype-specific.
+    treeId: 'tree_weapon_foundation',
+    assetIdByGrade: allGrades(assetId),
+    statBonuses: {},
+    status: 'BALANCE_DRAFT',
+  }
+}
+
+const equipment = (
+  definition: Omit<BoundItemBaseDefinition, 'rank' | 'assetIdByGrade' | 'status' | 'skillUnlocks'> & { assetId: string },
+): BoundItemBaseDefinition => {
+  const { assetId, ...base } = definition
+  const rank = Math.min(7, Math.max(1, definition.requirements.level)) as BoundItemBaseDefinition['rank']
+  return {
+    ...base,
+    rank,
+    assetIdByGrade: allGrades(assetId),
+    skillUnlocks: [],
+    status: 'BALANCE_DRAFT',
+  }
+}
+
 export const boundItemBaseDefinitions: BoundItemBaseDefinition[] = [
+  weapon({
+    id: 'bound_weapon_long_sword', name: 'Espada Longa', description: 'Lâmina equilibrada de corte e resposta estável.',
+    archetype: 'blade', basePower: 3, powerType: 'physical', damageType: 'cutting', weightClass: 'medium',
+    scalingAttribute: 'strength', requirements: { level: 1, attributes: { strength: 6 } },
+    skillUnlocks: [{ grade: 1, skillId: 'skill_longsword_arc' }], assetId: 'equipment.catalog.weapon_long_sword',
+  }),
+  weapon({
+    id: 'bound_weapon_war_axe', name: 'Machado de Guerra', description: 'Fundação pesada de maior dano e exigência física.',
+    archetype: 'axe', basePower: 4, powerType: 'physical', damageType: 'cutting', weightClass: 'heavy',
+    scalingAttribute: 'strength', requirements: { level: 1, attributes: { strength: 8, vigor: 6 } },
+    skillUnlocks: [{ grade: 1, skillId: 'skill_axe_sunder' }], assetId: 'equipment.catalog.weapon_war_axe',
+  }),
+  weapon({
+    id: 'bound_weapon_long_bow', name: 'Arco Longo', description: 'Arma leve de alcance, precisão e perfuração.',
+    archetype: 'bow', basePower: 2, powerType: 'physical', damageType: 'piercing', weightClass: 'light',
+    scalingAttribute: 'agility', requirements: { level: 1, attributes: { agility: 6 } },
+    skillUnlocks: [{ grade: 1, skillId: 'skill_bow_piercing_shot' }], assetId: 'equipment.catalog.weapon_long_bow',
+  }),
+  weapon({
+    id: 'bound_weapon_dagger', name: 'Adaga', description: 'Lâmina curta, veloz e de baixo custo de ação.',
+    archetype: 'dagger', basePower: 2, powerType: 'physical', damageType: 'piercing', weightClass: 'light',
+    scalingAttribute: 'agility', requirements: { level: 1, attributes: { agility: 6 } },
+    skillUnlocks: [{ grade: 1, skillId: 'skill_dagger_quick_cut' }], assetId: 'equipment.catalog.weapon_dagger',
+  }),
+  weapon({
+    id: 'bound_weapon_arcane_scepter', name: 'Cetro Arcano', description: 'Foco leve para manipulação e descarga de energia.',
+    archetype: 'arcaneFocus', basePower: 2, powerType: 'magical', damageType: 'arcane', weightClass: 'light',
+    scalingAttribute: 'cunning', requirements: { level: 1, attributes: { cunning: 6 } },
+    skillUnlocks: [{ grade: 1, skillId: 'skill_scepter_arc_pulse' }], assetId: 'equipment.catalog.weapon_arcane_scepter',
+  }),
+  weapon({
+    id: 'bound_weapon_spellbook', name: 'Livro de Magias — Projéteis', description: 'Grimório ofensivo de alto poder e alta exigência mental.',
+    archetype: 'grimoire', basePower: 4, powerType: 'magical', damageType: 'arcane', weightClass: 'medium',
+    scalingAttribute: 'cunning', requirements: { level: 1, attributes: { cunning: 8, spirit: 6 } },
+    skillUnlocks: [{ grade: 1, skillId: 'skill_grimoire_projectiles' }], assetId: 'equipment.catalog.weapon_spellbook',
+  }),
+  weapon({
+    id: 'bound_weapon_conjuration_staff', name: 'Cajado de Conjuração', description: 'Canalizador pesado para ondas mágicas estáveis.',
+    archetype: 'staff', basePower: 2, powerType: 'magical', damageType: 'arcane', weightClass: 'heavy',
+    scalingAttribute: 'spirit', requirements: { level: 1, attributes: { spirit: 6, vigor: 6 } },
+    skillUnlocks: [{ grade: 1, skillId: 'skill_staff_convergence' }], assetId: 'equipment.catalog.weapon_conjuration_staff',
+  }),
+  equipment({
+    id: 'bound_shield_round', name: 'Escudo Redondo', description: 'Proteção física equilibrada.', slot: 'shield',
+    archetype: 'shield', basePower: 2, powerType: 'defensive', damageType: 'protection', weightClass: 'medium',
+    scalingAttribute: 'vigor', requirements: { level: 2, attributes: { vigor: 6 } }, statBonuses: { mitigation: 2 },
+    treeId: 'tree_shield_foundation', assetId: 'equipment.catalog.shield_round',
+  }),
+  equipment({
+    id: 'bound_shield_arcane', name: 'Protetor Arcano', description: 'Barreira mágica para portadores de Espírito.', slot: 'shield',
+    archetype: 'arcaneWard', basePower: 1, powerType: 'defensive', damageType: 'protection', weightClass: 'light',
+    scalingAttribute: 'spirit', requirements: { level: 2, attributes: { spirit: 6 } }, statBonuses: { mitigation: 1, maxMp: 2 },
+    treeId: 'tree_shield_arcane', assetId: 'equipment.catalog.shield_arcane',
+  }),
+  equipment({
+    id: 'bound_armor_mystic_tunic', name: 'Túnica Mística', description: 'Vestimenta leve para canalização.', slot: 'armor',
+    archetype: 'mysticArmor', basePower: 1, powerType: 'utility', damageType: 'resonance', weightClass: 'light',
+    scalingAttribute: 'spirit', requirements: { level: 2, attributes: { spirit: 6 } }, statBonuses: { mitigation: 1, maxMp: 2 },
+    treeId: 'tree_armor_mystic', assetId: 'equipment.catalog.armor_leather',
+  }),
+  equipment({
+    id: 'bound_armor_star_mantle', name: 'Manto das Estrelas', description: 'Manto médio de reserva arcana.', slot: 'armor',
+    archetype: 'starMantle', basePower: 2, powerType: 'utility', damageType: 'resonance', weightClass: 'medium',
+    scalingAttribute: 'spirit', requirements: { level: 3, attributes: { spirit: 8 } }, statBonuses: { mitigation: 2, maxMp: 3 },
+    treeId: 'tree_armor_star', assetId: 'equipment.catalog.armor_leather',
+  }),
+  equipment({
+    id: 'bound_armor_enchanted_vestments', name: 'Vestes Encantadas', description: 'Proteção leve contra forças mágicas.', slot: 'armor',
+    archetype: 'enchantedVestments', basePower: 3, powerType: 'defensive', damageType: 'protection', weightClass: 'light',
+    scalingAttribute: 'cunning', requirements: { level: 4, attributes: { cunning: 8 } }, statBonuses: { mitigation: 3 },
+    treeId: 'tree_armor_enchanted', assetId: 'equipment.catalog.armor_leather',
+  }),
+  equipment({
+    id: 'bound_armor_leather', name: 'Armadura de Couro', description: 'Armadura leve para mobilidade.', slot: 'armor',
+    archetype: 'leatherArmor', basePower: 2, powerType: 'defensive', damageType: 'protection', weightClass: 'light',
+    scalingAttribute: 'agility', requirements: { level: 2, attributes: { agility: 6 } }, statBonuses: { mitigation: 2, initiative: 1 },
+    treeId: 'tree_armor_leather', assetId: 'equipment.catalog.armor_leather',
+  }),
+  equipment({
+    id: 'bound_armor_chain', name: 'Cota de Malha', description: 'Defesa média com exigência de Vigor.', slot: 'armor',
+    archetype: 'chainArmor', basePower: 3, powerType: 'defensive', damageType: 'protection', weightClass: 'medium',
+    scalingAttribute: 'vigor', requirements: { level: 3, attributes: { vigor: 8 } }, statBonuses: { mitigation: 3 },
+    treeId: 'tree_armor_chain', assetId: 'equipment.catalog.armor_plate',
+  }),
+  equipment({
+    id: 'bound_armor_plate', name: 'Armadura de Placas', description: 'Maior proteção física, limitada por Força e Vigor.', slot: 'armor',
+    archetype: 'plateArmor', basePower: 5, powerType: 'defensive', damageType: 'protection', weightClass: 'heavy',
+    scalingAttribute: 'vigor', requirements: { level: 5, attributes: { strength: 8, vigor: 8 } }, statBonuses: { mitigation: 5 },
+    treeId: 'tree_armor_plate', assetId: 'equipment.catalog.armor_plate',
+  }),
+  equipment({
+    id: 'bound_necklace_moon', name: 'Colar Lunar', description: 'Talismã leve de Mana e iniciativa.', slot: 'necklace',
+    archetype: 'moonTalisman', basePower: 1, powerType: 'utility', damageType: 'resonance', weightClass: 'light',
+    scalingAttribute: 'spirit', requirements: { level: 3, attributes: { spirit: 6 } }, statBonuses: { maxMp: 3, initiative: 1 },
+    treeId: 'tree_necklace_moon', assetId: 'equipment.catalog.necklace_moon',
+  }),
+  equipment({
+    id: 'bound_necklace_rune', name: 'Colar Rúnico', description: 'Foco de proteção e leitura arcana.', slot: 'necklace',
+    archetype: 'runeTalisman', basePower: 1, powerType: 'utility', damageType: 'resonance', weightClass: 'light',
+    scalingAttribute: 'cunning', requirements: { level: 4, attributes: { cunning: 8 } }, statBonuses: { mitigation: 1, maxMp: 2 },
+    treeId: 'tree_necklace_rune', assetId: 'equipment.catalog.necklace_rune',
+  }),
+  equipment({
+    id: 'bound_bracelet_leather', name: 'Pulseira de Couro', description: 'Bracelete de agilidade e resposta.', slot: 'bracelet',
+    archetype: 'leatherBracelet', basePower: 1, powerType: 'utility', damageType: 'resonance', weightClass: 'light',
+    scalingAttribute: 'agility', requirements: { level: 2, attributes: { agility: 6 } }, statBonuses: { initiative: 2 },
+    treeId: 'tree_bracelet_agility', assetId: 'equipment.catalog.bracelet_leather',
+  }),
+  equipment({
+    id: 'bound_bracelet_resonance', name: 'Pulseira de Ressonância', description: 'Núcleo para sustentar Vida e Mana.', slot: 'bracelet',
+    archetype: 'resonanceBracelet', basePower: 1, powerType: 'utility', damageType: 'resonance', weightClass: 'medium',
+    scalingAttribute: 'vigor', requirements: { level: 4, attributes: { vigor: 8, spirit: 6 } }, statBonuses: { maxHp: 3, maxMp: 2 },
+    treeId: 'tree_bracelet_resonance', assetId: 'equipment.catalog.bracelet_resonance',
+  }),
   {
     id: 'bound_weapon_prologue_base',
     name: 'Arma Básica Vinculada',
-    slot: 'weapon',
-    archetype: 'blade',
-    basePower: 3,
-    treeId: 'tree_weapon_foundation',
-    assetIdByGrade: {
-      1: 'equipment.weapon.prologue.g1',
-      2: 'equipment.weapon.prologue.g2',
-      3: 'equipment.weapon.prologue.g3',
-      4: 'equipment.weapon.prologue.g4',
-      5: 'equipment.weapon.prologue.g5',
-      6: 'equipment.weapon.prologue.g6',
-      7: 'equipment.weapon.prologue.g7',
-    },
+    description: 'Base preservada apenas para saves e testes anteriores à escolha de arsenal.',
+    slot: 'weapon', archetype: 'blade', rank: 1, basePower: 4, powerType: 'physical', damageType: 'cutting', weightClass: 'medium',
+    scalingAttribute: 'strength', requirements: { level: 1, attributes: {} },
+    skillUnlocks: [], statBonuses: {}, treeId: 'tree_weapon_foundation',
+    assetIdByGrade: { 1: 'equipment.weapon.prologue.g1', 2: 'equipment.weapon.prologue.g2', 3: 'equipment.weapon.prologue.g3', 4: 'equipment.weapon.prologue.g4', 5: 'equipment.weapon.prologue.g5', 6: 'equipment.weapon.prologue.g6', 7: 'equipment.weapon.prologue.g7' },
     status: 'CONTENT_DRAFT',
   },
 ]

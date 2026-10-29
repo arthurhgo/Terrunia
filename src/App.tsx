@@ -7,6 +7,7 @@ import { LoadingScreen } from './ui/screens/LoadingScreen'
 import { LoginScreen } from './ui/screens/LoginScreen'
 
 const BoundItemScreen = lazy(() => import('./ui/screens/BoundItemScreen').then((module) => ({ default: module.BoundItemScreen })))
+const ArsenalScreen = lazy(() => import('./ui/screens/ArsenalScreen').then((module) => ({ default: module.ArsenalScreen })))
 const CharacterAccessScreen = lazy(() => import('./ui/screens/CharacterAccessScreen').then((module) => ({ default: module.CharacterAccessScreen })))
 const CharacterCreationScreen = lazy(() => import('./ui/screens/CharacterCreationScreen').then((module) => ({ default: module.CharacterCreationScreen })))
 const NpcsScreen = lazy(() => import('./ui/screens/NpcsScreen').then((module) => ({ default: module.NpcsScreen })))
@@ -77,6 +78,7 @@ export default function App() {
           <Route path="/terran/:locationId" element={<GameBoot><TerranLocationScreen /></GameBoot>} />
           <Route path="/nexus" element={<GameBoot><NexusScreen /></GameBoot>} />
           <Route path="/inventory" element={<GameBoot><InventoryScreen /></GameBoot>} />
+          <Route path="/arsenal" element={<GameBoot><ArsenalScreen /></GameBoot>} />
           <Route path="/character" element={<GameBoot><CharacterScreen /></GameBoot>} />
           <Route path="/skill-tree" element={<GameBoot><SkillTreeScreen /></GameBoot>} />
           <Route path="/battle" element={<GameBoot><Navigate to="/play" replace /></GameBoot>} />

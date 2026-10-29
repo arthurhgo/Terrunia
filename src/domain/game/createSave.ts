@@ -5,6 +5,7 @@ import type { AttributeId, AttributeValue, GameSave, QuestProgress } from './typ
 import { createQuestProgress } from '../quests/questEngine'
 import { fail, ok, type Result } from '../shared/types'
 import { createRandomId } from '../shared/randomId'
+import { evaluateEquipmentRequirements } from '../bond/equipmentLoadout'
 
 const createDefaultAttributes = (): Record<AttributeId, AttributeValue> => ({
   cunning: { die: BALANCE.defaultAttributeDie, bonus: 0 },
@@ -38,8 +39,8 @@ export const createNewSave = (
   )
 
   return {
-    schemaVersion: 6,
-    gameVersion: '0.6.0',
+    schemaVersion: 7,
+    gameVersion: '0.7.0',
     saveId: ids.saveId,
     campaignId: campaign.campaignId,
     campaignGeneration: campaign.campaignGeneration,
@@ -56,6 +57,7 @@ export const createNewSave = (
       level: 1,
       xp: 0,
       xpRequired: 250,
+      unspentAttributePoints: BALANCE.characterCreationAttributePoints,
       attributes: createDefaultAttributes(),
       clan: { clanId: null, rank: 0, reputation: 0, knownClanIds: [], eligibleClanIds: [] },
       classProgression: {
@@ -134,11 +136,18 @@ export const bindPrologueWeapon = (
   catalog: ContentCatalog,
   now = new Date().toISOString(),
   itemId: string = createRandomId(),
+  baseItemId = 'bound_weapon_prologue_base',
 ): Result<GameSave> => {
-  const definition = catalog.boundItemBases.bound_weapon_prologue_base
+  const definition = catalog.boundItemBases[baseItemId]
   if (!definition) return fail('MISSING_BOUND_BASE', 'A peça-base do prólogo não foi cadastrada.')
+  if (definition.slot !== 'weapon') return fail('BOUND_BASE_NOT_WEAPON', 'O primeiro Vínculo deve ser uma Arma.')
   const canBind = canBindSlot(save.character.bondedEquipment, 'weapon')
   if (!canBind.ok) return canBind
+  const eligibility = evaluateEquipmentRequirements(save.character, definition)
+  if (!eligibility.eligible) {
+    const missing = eligibility.requirements.filter((requirement) => !requirement.met).map((requirement) => requirement.label)
+    return fail('BOUND_BASE_REQUIREMENTS', `Requisitos pendentes: ${missing.join(', ')}.`)
+  }
 
   const next = structuredClone(save)
   const item = createBoundItem(next.character.id, definition, now, itemId)
@@ -146,6 +155,6 @@ export const bindPrologueWeapon = (
   next.character.bondedEquipment.weapon = item.id
   next.updatedAt = now
   next.revision += 1
-  next.eventLog.push(`BoundItemCreated:${item.id}`)
+  next.eventLog.push(`BoundItemCreated:${item.id}`, `BoundBaseChosen:${definition.id}`)
   return ok(next)
 }

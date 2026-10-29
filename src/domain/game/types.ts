@@ -19,6 +19,7 @@ export type Character = {
   level: number
   xp: number
   xpRequired: number
+  unspentAttributePoints: number
   attributes: Record<AttributeId, AttributeValue>
   clan: {
     clanId: string | null

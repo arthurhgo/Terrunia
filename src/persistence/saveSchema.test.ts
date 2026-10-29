@@ -28,7 +28,7 @@ describe('save versionado', () => {
     )
     const legacy = { ...save, schemaVersion: 0, eventLog: undefined }
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(6)
+    expect(migrated.schemaVersion).toBe(7)
     expect(migrated.character.name).toBe('Aron')
     expect(migrated.eventLog).toContain('SaveMigrated:0->1')
     expect(migrated.eventLog).toContain('SaveMigrated:1->2')
@@ -36,6 +36,8 @@ describe('save versionado', () => {
     expect(migrated.eventLog).toContain('SaveMigrated:3->4')
     expect(migrated.eventLog).toContain('SaveMigrated:4->5')
     expect(migrated.eventLog).toContain('SaveMigrated:5->6')
+    expect(migrated.eventLog).toContain('SaveMigrated:6->7')
+    expect(migrated.character.unspentAttributePoints).toBe(3)
   })
 
   it('migra schema 1, preserva progresso e libera o acampamento após a primeira vitória', () => {
@@ -64,7 +66,7 @@ describe('save versionado', () => {
       },
     }
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(6)
+    expect(migrated.schemaVersion).toBe(7)
     expect(migrated.wallet.gold).toBe(77)
     expect(migrated.world.trailNodeStates.astravel_camp_03).toBe('current')
     expect(migrated.eventLog).toContain('SaveMigrated:1->2')
@@ -96,8 +98,8 @@ describe('save versionado', () => {
       },
     }
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(6)
-    expect(migrated.gameVersion).toBe('0.6.0')
+    expect(migrated.schemaVersion).toBe(7)
+    expect(migrated.gameVersion).toBe('0.7.0')
     expect(migrated.world.trailNodeStates.astravel_boss_preview).toBe('bossCurrent')
     expect(migrated.eventLog).toContain('SaveMigrated:2->3')
     expect(migrated.eventLog).toContain('SaveMigrated:3->4')
@@ -123,7 +125,7 @@ describe('save versionado', () => {
       schemaVersion: 3,
       gameVersion: '0.3.0',
     })
-    expect(migrated.schemaVersion).toBe(6)
+    expect(migrated.schemaVersion).toBe(7)
     expect(migrated.boundItems.bound_1.resonance).toBe(300)
     expect(migrated.inventory).toEqual(
       expect.arrayContaining([
@@ -152,11 +154,12 @@ describe('save versionado', () => {
     quests.vs_astravel_first_contact.status = 'active'
     delete quests.vs_astravel_first_contact.tracked
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(6)
+    expect(migrated.schemaVersion).toBe(7)
     expect(migrated.character.titleIds).toEqual([])
     expect(migrated.quests.vs_astravel_first_contact.tracked).toBe(true)
     expect(migrated.eventLog).toContain('SaveMigrated:4->5')
     expect(migrated.eventLog).toContain('SaveMigrated:5->6')
+    expect(migrated.eventLog).toContain('SaveMigrated:6->7')
   })
 
   it('valida e recarrega Grau III com exatamente uma Joia', () => {

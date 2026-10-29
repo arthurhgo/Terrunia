@@ -3,10 +3,15 @@ export const BALANCE = {
   essenceThresholds: [100, 125, 150, 180, 215, 255, 300, 350, 405, 465],
   essenceFallbackGrowth: 1.15,
   initialGold: 0,
-  defaultAttributeDie: 6,
-  baseHp: 8,
+  characterCreationAttributePoints: 3,
+  attributePointsPerLevel: 1,
+  defaultAttributeDie: 4,
+  attributeDieOrder: [4, 6, 8, 10, 12] as const,
+  xpThresholds: [0, 250, 750, 1500, 2500, 4000, 6000, 8500, 11500, 15000, 19000, 24000, 30000, 37000] as const,
+  // Rebased with d4 defaults so the vertical slice keeps its previous survivability.
+  baseHp: 12,
   vigorHpMultiplier: 2,
-  baseMana: 5,
+  baseMana: 7,
   spiritManaMultiplier: 1,
   boundGradeResonance: {
     1: 0,

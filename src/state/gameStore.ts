@@ -17,7 +17,7 @@ import {
 import { discoverDungeonRoom, dungeonRoomFlag, enterDungeon, exitDungeon, FUNGAL_DUNGEON_ID } from '../domain/exploration/dungeonEngine'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { requestCampaignReset } from '../domain/game/campaignReset'
-import type { GameSave, InventoryItemInstance } from '../domain/game/types'
+import type { AttributeId, GameSave, InventoryItemInstance } from '../domain/game/types'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
 import {
   acceptQuest as acceptQuestDomain,
@@ -45,6 +45,7 @@ import {
 import { loadAccountSettings, saveAccountSettings } from '../services/settings/accountSettings'
 import { createRandomId } from '../domain/shared/randomId'
 import { cutscenes, type CutsceneId } from '../domain/terran/cutscenes'
+import { adjustCharacterAttribute, gainCharacterXp } from '../domain/character/attributeProgression'
 
 type GameStatus = 'idle' | 'loading' | 'ready' | 'error'
 type SyncStatus = 'idle' | 'saving' | 'saved' | 'error'
@@ -71,7 +72,8 @@ type GameState = {
   boot: (ownerId: string) => Promise<void>
   continueCharacter: () => void
   createGame: (name: string, portraitAssetId: string) => Promise<boolean>
-  bindPrologueWeapon: () => void
+  bindPrologueWeapon: (baseItemId?: string) => boolean
+  adjustAttribute: (attributeId: AttributeId, direction: 1 | -1) => void
   discoverEldamar: () => void
   discoverClan: (clanId: string) => void
   offerQuest: (questId: string) => void
@@ -228,13 +230,28 @@ export const useGameStore = create<GameState>((set, get) => {
       return true
     },
 
-    bindPrologueWeapon: () => {
+    bindPrologueWeapon: (baseItemId = 'bound_weapon_prologue_base') => {
       const save = get().save
-      if (!save) return failAction('Crie um Terrírian antes de iniciar o prólogo.')
-      const result = bindPrologueWeapon(save, content)
+      if (!save) {
+        failAction('Crie um Terrírian antes de iniciar o prólogo.')
+        return false
+      }
+      const result = bindPrologueWeapon(save, content, undefined, undefined, baseItemId)
+      if (!result.ok) {
+        failAction(result.message)
+        return false
+      }
+      commit(result.value)
+      show('Primeiro Vínculo', `${content.boundItemBases[baseItemId]?.name ?? 'A Arma'} alcançou Grau I e agora evolui com o Terrírian.`, 'success')
+      return true
+    },
+
+    adjustAttribute: (attributeId, direction) => {
+      const save = get().save
+      if (!save) return failAction('Nenhum Terrírian ativo.')
+      const result = adjustCharacterAttribute(save, attributeId, direction, nowIso())
       if (!result.ok) return failAction(result.message)
       commit(result.value)
-      show('Primeiro Vínculo', 'A Arma Básica alcançou Grau I. Ela não será substituída por drops.', 'success')
     },
 
     discoverEldamar: () => {
@@ -531,7 +548,9 @@ export const useGameStore = create<GameState>((set, get) => {
         return failAction('Não há recompensas de vitória disponíveis.')
       }
       let next = structuredClone(save)
-      next.character.xp += battle.rewards.characterXp
+      const xpGain = gainCharacterXp(next.character, battle.rewards.characterXp)
+      next.character = xpGain.character
+      if (xpGain.levelsGained > 0) next.eventLog.push(`CharacterLevelGained:${xpGain.levelsGained}`)
       next.wallet.gold += battle.rewards.gold
       const acquiredAt = nowIso()
       const loot: InventoryItemInstance[] = battle.rewards.lootDefinitionIds.map(
