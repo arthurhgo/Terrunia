@@ -1700,6 +1700,15 @@ code {
 .astravel-field__node:disabled { border-color: #3a514b; color: #778781; background: #17242ac9; cursor: default; pointer-events: none; }
 .astravel-field__node:disabled strong { background: #556b64; }
 .astravel-field__node:not(:disabled):hover, .astravel-field__node:not(:disabled):focus-visible { z-index: 5; outline: 2px solid #9ce1d0; border-color: #c5efda; }
+.dungeon-field { background: #182a32; }
+.dungeon-field__nodes { position: absolute; inset: 0; pointer-events: none; }
+.dungeon-field__node { position: absolute; z-index: 3; display: grid; gap: 2px; min-width: 62px; justify-items: center; transform: translate(-50%, -50%); border: 1px solid #bba06d; padding: 4px 5px; color: #ffe4af; background: #131c27eb; font-family: var(--display); text-align: center; cursor: pointer; pointer-events: auto; }
+.dungeon-field__node strong { display: grid; width: 15px; height: 15px; place-items: center; color: #17252b; background: #e1bf7d; font-size: .6rem; }
+.dungeon-field__node span { max-width: 90px; font-size: clamp(.47rem, .7vw, .61rem); line-height: 1.25; }
+.dungeon-field__node--discovered { border-color: #77bba7; color: #a7dfc5; }
+.dungeon-field__node--discovered strong { background: #8bd0af; }
+.dungeon-field__node:hover, .dungeon-field__node:focus-visible { z-index: 5; outline: 2px solid #c5efda; }
+.dungeon-field__node:disabled { cursor: default; opacity: .5; }
 .expedition-game__retreat { position: absolute; top: 12px; right: 12px; z-index: 6; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #869c88; padding: 8px 10px; color: #deebcf; background: #132a2bd9; font-family: var(--display); font-size: .67rem; cursor: pointer; }
 .expedition-game__retreat:hover { border-color: #e9c885; color: #fce5b3; }
 .expedition-node-detail { display: grid; gap: 12px; border: 1px solid #695a46; padding: 14px; background: #111d22; }
@@ -1749,5 +1758,7 @@ code {
   .terran-dialogue button { padding: 5px; font-size: .6rem; }
   .astravel-field__node { min-width: 27px; padding: 2px; }
   .astravel-field__node span { display: none; }
+  .dungeon-field__node { min-width: 27px; padding: 2px; }
+  .dungeon-field__node span { display: none; }
   .expedition-game__retreat { top: 4px; right: 4px; padding: 5px; font-size: .55rem; }
 }

@@ -25,14 +25,14 @@ const vignettes: Record<string, string> = {
 }
 
 function NodeDrawer({ node, status, onAction }: { node: TrailNodeDefinition; status: string; onAction: () => void }) {
-  const actionable = status === 'current' || status === 'bossCurrent'
+  const actionable = status === 'current' || status === 'bossCurrent' || (status === 'completed' && node.type === 'boss')
   return <article className="expedition-node-detail">
     <span className="eyebrow">MARCO {node.index} · {status === 'completed' ? 'CONCLUÍDO' : actionable ? 'DISPONÍVEL' : 'BLOQUEADO'}</span>
     <h3>{node.label}</h3>
     <p>{vignettes[node.id]}</p>
     {actionable && node.type !== 'entry' && <button type="button" onClick={onAction} className="expedition-node-detail__action">
-      {node.type === 'battle' || node.type === 'boss' ? <Swords size={17} /> : <Compass size={17} />}
-      {node.actionLabel ?? node.interaction?.actionLabel ?? 'Explorar'}
+      {node.type === 'battle' ? <Swords size={17} /> : <Compass size={17} />}
+      {node.type === 'boss' ? 'Adentrar Câmaras Fúngicas' : node.actionLabel ?? node.interaction?.actionLabel ?? 'Explorar'}
     </button>}
     {status === 'completed' && <span className="expedition-node-detail__done">✓ Registro preservado na campanha</span>}
   </article>
@@ -42,6 +42,7 @@ export function ExpeditionScreen() {
   const save = useGameStore((state) => state.save)
   const resolveCurrentTrailNode = useGameStore((state) => state.resolveCurrentTrailNode)
   const startBattle = useGameStore((state) => state.startBattle)
+  const enterFungalChambers = useGameStore((state) => state.enterFungalChambers)
   const returnToTerran = useGameStore((state) => state.returnToTerran)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
   const [drawer, setDrawer] = useState<Drawer>(null)
@@ -50,6 +51,7 @@ export function ExpeditionScreen() {
 
   if (!save) return <Navigate to="/character/create" replace />
   if (save.battle) return <Navigate to="/battle" replace />
+  if (save.world.currentLocationId === content.dungeons.dungeon_fungal_chambers.id) return <Navigate to="/dungeon" replace />
   if (!trail.nodes.some((node) => node.id === save.world.currentLocationId)) return <Navigate to="/terran" replace />
 
   const activeNode = getActiveTrailNode(save, trail)
@@ -62,8 +64,12 @@ export function ExpeditionScreen() {
   const leave = () => { returnToTerran(); navigate('/terran') }
   const inspect = (nodeId: string) => { setSelectedId(nodeId); setDrawer('node') }
   const act = () => {
-    if (!selectedNode || !['current', 'bossCurrent'].includes(save.world.trailNodeStates[selectedNode.id] ?? '')) return
-    if (selectedNode.type === 'battle' || selectedNode.type === 'boss') {
+    if (!selectedNode || !['current', 'bossCurrent'].includes(save.world.trailNodeStates[selectedNode.id] ?? '')
+      && !(selectedNode.type === 'boss' && save.world.trailNodeStates[selectedNode.id] === 'completed')) return
+    if (selectedNode.type === 'boss') {
+      enterFungalChambers()
+      navigate('/dungeon')
+    } else if (selectedNode.type === 'battle') {
       startBattle(selectedNode.id)
       navigate('/battle')
     } else if (selectedNode.type === 'camp' || selectedNode.type === 'event') {

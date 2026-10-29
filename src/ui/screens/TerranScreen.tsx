@@ -139,6 +139,7 @@ export function TerranScreen() {
 
   if (!save) return <Navigate to="/character/create" replace />
   if (save.battle) return <Navigate to="/battle" replace />
+  if (save.world.currentLocationId === content.dungeons.dungeon_fungal_chambers.id) return <Navigate to="/dungeon" replace />
   if (content.trails.trail_astravel_entry.nodes.some((node) => node.id === save.world.currentLocationId)) {
     return <Navigate to="/expedition" replace />
   }

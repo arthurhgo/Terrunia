@@ -14,6 +14,7 @@ import {
   getTrailByNodeId,
   resolveTrailInteraction,
 } from '../domain/exploration/trailEngine'
+import { discoverDungeonRoom, dungeonRoomFlag, enterDungeon, exitDungeon, FUNGAL_DUNGEON_ID } from '../domain/exploration/dungeonEngine'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { requestCampaignReset } from '../domain/game/campaignReset'
 import type { GameSave, InventoryItemInstance } from '../domain/game/types'
@@ -80,6 +81,9 @@ type GameState = {
   travelInTerran: (locationId: string) => void
   recordCutsceneViewed: (sceneId: CutsceneId) => void
   enterAstravel: () => void
+  enterFungalChambers: () => void
+  discoverFungalRoom: (roomId: string) => void
+  exitFungalChambers: () => void
   resolveCurrentTrailNode: () => void
   startBattle: (nodeId?: string) => void
   submitBattleCommand: (command: BattleCommand) => void
@@ -321,7 +325,7 @@ export const useGameStore = create<GameState>((set, get) => {
     travelInTerran: (locationId) => {
       const save = get().save
       if (!save) return
-      if (save.battle || content.trails.trail_astravel_entry.nodes.some((node) => node.id === save.world.currentLocationId)) {
+      if (save.battle || save.world.currentLocationId === FUNGAL_DUNGEON_ID || content.trails.trail_astravel_entry.nodes.some((node) => node.id === save.world.currentLocationId)) {
         return failAction('Registre o retorno da expedição antes de circular por Terran.')
       }
       const result = visitTerranLocation(save, locationId, content, nowIso())
@@ -362,14 +366,15 @@ export const useGameStore = create<GameState>((set, get) => {
       const trail = content.trails.trail_astravel_entry
       if (alreadyEntered) {
         const activeNode = getActiveTrailNode(save, trail)
-        if (!activeNode) return failAction('A expedição já foi concluída.')
+        const completedBoss = save.world.trailNodeStates.astravel_boss_preview === 'completed'
+        if (!activeNode && !completedBoss) return failAction('A expedição não possui um marco acessível.')
         const resumed = structuredClone(save)
-        resumed.world.currentLocationId = activeNode.id
+        resumed.world.currentLocationId = activeNode?.id ?? 'astravel_boss_preview'
         resumed.updatedAt = nowIso()
         resumed.revision += 1
-        resumed.eventLog.push('ExpeditionResumed:trail_astravel_entry')
+        resumed.eventLog.push(completedBoss && !activeNode ? 'ExpeditionRevisited:trail_astravel_entry' : 'ExpeditionResumed:trail_astravel_entry')
         commit(resumed)
-        show('Astravél', 'A expedição foi retomada na etapa já alcançada.', 'info')
+        show('Astravél', completedBoss && !activeNode ? 'A ruína concluída pode ser visitada sem repetir recompensas.' : 'A expedição foi retomada na etapa já alcançada.', 'info')
         return
       }
       const visiting = structuredClone(save)
@@ -390,6 +395,34 @@ export const useGameStore = create<GameState>((set, get) => {
       next = applyQuestEvent(next, { type: 'visit', targetId: 'astravel_entry' }, content, now)
       commit(next)
       show('Astravél', 'A presença Fungorra foi localizada no próximo nó.', 'info')
+    },
+
+    enterFungalChambers: () => {
+      const save = get().save
+      if (!save) return
+      const result = enterDungeon(save, content.dungeons.dungeon_fungal_chambers, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.save)
+      show('Câmaras Fúngicas', 'A passagem foi aberta. Explore as salas até o núcleo da Ruína.', 'info')
+    },
+
+    discoverFungalRoom: (roomId) => {
+      const save = get().save
+      if (!save) return
+      const result = discoverDungeonRoom(save, content.dungeons.dungeon_fungal_chambers, roomId, nowIso())
+      if (!result.ok) return failAction(result.message)
+      if (result.save !== save) {
+        commit(result.save)
+        show('Sala descoberta', content.dungeons.dungeon_fungal_chambers.rooms.find((room) => room.id === roomId)?.name ?? 'Câmaras Fúngicas', 'success')
+      }
+    },
+
+    exitFungalChambers: () => {
+      const save = get().save
+      if (!save) return
+      const result = exitDungeon(save, content.dungeons.dungeon_fungal_chambers, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.save)
     },
 
     resolveCurrentTrailNode: () => {
@@ -427,11 +460,15 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!['battle', 'boss'].includes(node.type) || !node.encounterId) {
         return failAction('O nó atual não contém um encontro de combate.')
       }
+      if (node.type === 'boss' && (save.world.currentLocationId !== FUNGAL_DUNGEON_ID
+        || !save.world.worldFlags.includes(dungeonRoomFlag('fungal_core')))) {
+        return failAction('Alcance o Núcleo da Ruína dentro das Câmaras Fúngicas antes de enfrentar o Colosso.')
+      }
       const encounter = content.encounters[node.encounterId]
       if (!encounter) return failAction('Conteúdo do encontro não encontrado.')
       const next = structuredClone(save)
       next.battle = createBattle(next, encounter, content)
-      next.world.currentLocationId = node.id
+      if (next.world.currentLocationId !== FUNGAL_DUNGEON_ID) next.world.currentLocationId = node.id
       next.updatedAt = nowIso()
       next.revision += 1
       next.eventLog.push(`BattleStarted:${encounter.id}`)

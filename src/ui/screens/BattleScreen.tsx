@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
+import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import type { Combatant } from '../../domain/combat/types'
 import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
@@ -56,7 +57,13 @@ export function BattleScreen() {
     if (!selected?.alive && firstLivingEnemyId) setSelectedTargetId(firstLivingEnemyId)
   }, [enemies, firstLivingEnemyId, selectedTargetId])
 
-  if (!save?.battle) return <Navigate to="/terran" replace />
+  if (!save) return <Navigate to="/terran" replace />
+  if (!save.battle) {
+    const destination = save.world.currentLocationId === FUNGAL_DUNGEON_ID
+      ? '/dungeon'
+      : content.trails.trail_astravel_entry.nodes.some((node) => node.id === save.world.currentLocationId) ? '/expedition' : '/terran'
+    return <Navigate to={destination} replace />
+  }
   const activeBattle = save.battle
   const player = Object.values(activeBattle.combatants).find(
     (combatant) => combatant.side === 'player',
@@ -85,7 +92,7 @@ export function BattleScreen() {
   }
   const continueExpedition = () => {
     finishBattleIntoExpedition()
-    navigate('/expedition')
+    navigate(save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon' : '/expedition')
   }
 
   const attack = () => {

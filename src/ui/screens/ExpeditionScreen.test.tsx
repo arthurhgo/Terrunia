@@ -51,4 +51,21 @@ describe('expedição pixelada de Astravél', () => {
     expect(screen.getByText('Combate ativo')).toBeInTheDocument()
     expect(useGameStore.getState().save?.battle?.encounterId).toBe('encounter_fungorro_01')
   })
+
+  it('o marco final abre a dungeon, não dispara o chefe na floresta', () => {
+    seedExpedition('astravel_boss_preview')
+    const save = useGameStore.getState().save!
+    save.world.trailNodeStates.astravel_fungorro_01 = 'completed'
+    save.world.trailNodeStates.astravel_ruin_threshold_05 = 'completed'
+    save.world.trailNodeStates.astravel_boss_preview = 'bossCurrent'
+    render(<MemoryRouter initialEntries={['/expedition']}><Routes>
+      <Route path="/expedition" element={<ExpeditionScreen />} /><Route path="/dungeon" element={<div>Interior das Câmaras</div>} />
+    </Routes></MemoryRouter>)
+    fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Câmaras Fúngicas' }))
+    expect(screen.getByRole('button', { name: 'Adentrar Câmaras Fúngicas' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Adentrar Câmaras Fúngicas' }))
+    expect(screen.getByText('Interior das Câmaras')).toBeInTheDocument()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('dungeon_fungal_chambers')
+    expect(useGameStore.getState().save?.battle).toBeNull()
+  })
 })

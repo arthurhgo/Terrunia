@@ -22,6 +22,7 @@ const TerranScreen = lazy(() => import('./ui/screens/TerranScreen').then((module
 const TerranLocationScreen = lazy(() => import('./ui/screens/TerranLocationScreen').then((module) => ({ default: module.TerranLocationScreen })))
 const WorldScreen = lazy(() => import('./ui/screens/WorldScreen').then((module) => ({ default: module.WorldScreen })))
 const ExpeditionScreen = lazy(() => import('./ui/screens/ExpeditionScreen').then((module) => ({ default: module.ExpeditionScreen })))
+const DungeonScreen = lazy(() => import('./ui/screens/DungeonScreen').then((module) => ({ default: module.DungeonScreen })))
 
 function GameBoot({ children }: { children: ReactNode }) {
   const authStatus = useAuthStore((state) => state.status)
@@ -51,6 +52,7 @@ function EntryRouter() {
   if (!save) return <Navigate to="/character/create" replace />
   if (!save.character.bondedEquipment.weapon) return <Navigate to="/new-game" replace />
   if (save.battle) return <Navigate to="/battle" replace />
+  if (save.world.currentLocationId === content.dungeons.dungeon_fungal_chambers.id) return <Navigate to="/dungeon" replace />
   if (content.trails.trail_astravel_entry.nodes.some((node) => node.id === save.world.currentLocationId)) return <Navigate to="/expedition" replace />
   return <Navigate to="/terran" replace />
 }
@@ -76,6 +78,7 @@ export default function App() {
           <Route path="/skill-tree" element={<GameBoot><SkillTreeScreen /></GameBoot>} />
           <Route path="/battle" element={<GameBoot><BattleScreen /></GameBoot>} />
           <Route path="/expedition" element={<GameBoot><ExpeditionScreen /></GameBoot>} />
+          <Route path="/dungeon" element={<GameBoot><DungeonScreen /></GameBoot>} />
           <Route path="/bound-items/:slot" element={<GameBoot><BoundItemScreen /></GameBoot>} />
           <Route path="/quests" element={<GameBoot><QuestsScreen /></GameBoot>} />
           <Route path="/npcs" element={<GameBoot><NpcsScreen /></GameBoot>} />

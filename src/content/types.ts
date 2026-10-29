@@ -332,3 +332,21 @@ export type TrailDefinition = {
   nodes: TrailNodeDefinition[]
   status: DraftStatus
 }
+
+export type DungeonRoomDefinition = {
+  id: string
+  name: string
+  description: string
+  rect: { x: number; y: number; width: number; height: number }
+  landmark: { x: number; y: number }
+  kind: 'entry' | 'spores' | 'roots' | 'boss'
+}
+
+export type DungeonDefinition = {
+  id: string
+  name: string
+  entryTrailNodeId: string
+  bossTrailNodeId: string
+  rooms: DungeonRoomDefinition[]
+  status: DraftStatus
+}

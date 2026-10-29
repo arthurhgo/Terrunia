@@ -8,6 +8,7 @@ import { npcDefinitions } from './npcs'
 import { questDefinitions } from './quests'
 import { skillTreeNodeDefinitions } from './skillTrees'
 import { trailDefinitions } from './trails'
+import { dungeonDefinitions } from './dungeons'
 import { terranLocationDefinitions } from './terran'
 import { clanDefinitions, classDefinitions } from './progression'
 import type {
@@ -23,6 +24,7 @@ import type {
   SkillTreeNodeDefinition,
   StatusEffectDefinition,
   TrailDefinition,
+  DungeonDefinition,
   TerranLocationDefinition,
   ClanDefinition,
   CharacterClassDefinition,
@@ -51,6 +53,7 @@ validateStableIds('npcs', npcDefinitions)
 validateStableIds('quests', questDefinitions)
 validateStableIds('skillTreeNodes', skillTreeNodeDefinitions)
 validateStableIds('trails', trailDefinitions)
+validateStableIds('dungeons', dungeonDefinitions)
 validateStableIds('terranLocations', terranLocationDefinitions)
 validateStableIds('clans', clanDefinitions)
 validateStableIds('classes', classDefinitions)
@@ -71,6 +74,7 @@ export type ContentCatalog = {
   quests: Record<string, QuestDefinition>
   skillTreeNodes: Record<string, SkillTreeNodeDefinition>
   trails: Record<string, TrailDefinition>
+  dungeons: Record<string, DungeonDefinition>
   terranLocations: Record<string, TerranLocationDefinition>
   clans: Record<string, ClanDefinition>
   classes: Record<string, CharacterClassDefinition>
@@ -89,6 +93,7 @@ export const content: ContentCatalog = {
   quests: indexById(questDefinitions),
   skillTreeNodes: indexById(skillTreeNodeDefinitions),
   trails: indexById(trailDefinitions),
+  dungeons: indexById(dungeonDefinitions),
   terranLocations: indexById(terranLocationDefinitions),
   clans: indexById(clanDefinitions),
   classes: indexById(classDefinitions),
@@ -169,6 +174,13 @@ for (const trail of Object.values(content.trails)) {
       assertReference(content.items[itemId], `${node.id} → ${itemId}`)
     }
   }
+}
+
+for (const dungeon of Object.values(content.dungeons)) {
+  const allNodes = Object.values(content.trails).flatMap((trail) => trail.nodes)
+  assertReference(allNodes.find((node) => node.id === dungeon.entryTrailNodeId), `${dungeon.id} → entrada`)
+  assertReference(allNodes.find((node) => node.id === dungeon.bossTrailNodeId && node.type === 'boss'), `${dungeon.id} → chefe`)
+  validateStableIds(`${dungeon.id} salas`, dungeon.rooms)
 }
 
 for (const location of Object.values(content.terranLocations)) {

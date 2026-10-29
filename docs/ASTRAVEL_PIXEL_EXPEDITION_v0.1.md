@@ -28,7 +28,7 @@ Terran → Praça do Portal → Entrar/Retomar Astravél → /expedition
 
 ## Limites da versão
 
-- A Câmara Fúngica aparece como limiar e espaço do chefe no extremo da trilha. **Ainda não existe um segundo mapa interior completo**, salas individuais, câmera com scrolling ou inimigos com IA livre. Combates continuam em tela própria por serem turn-based.
+- O marco final da trilha agora dá acesso ao **segundo mapa interior das Câmaras Fúngicas**, com quatro salas contínuas (incremento v0.2). Ver `docs/FUNGAL_CHAMBERS_DUNGEON_v0.1.md`. Câmera com scrolling, inimigos com IA livre e encontros adicionais dentro dos corredores ainda não existem. Combates continuam em tela própria por serem turn-based.
 - Coordenadas do movimento não são salvas: após reload, o ator reaparece no último nó registrado/ativo (combate ou interação concluída), preservando o progresso real do `GameSave` e evitando migração de schema.
 - Topografia, animação ambiental, tom narrativo e distribuição de vegetação são `VISUAL_DRAFT`. O conteúdo do acampamento, encontros, chefe e recompensas continua sendo a fonte de verdade já implementada, com marcadores de draft originais.
 

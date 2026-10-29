@@ -29,6 +29,8 @@ describe('cutscenes de progressão', () => {
     expect(getNextCutscene(save)?.id).toBe('astravel_call')
     save.world.worldFlags.push('fungal_chambers_threshold_discovered')
     expect(getNextCutscene(save)?.id).toBe('ruins_threshold')
+    save.world.worldFlags.push('dungeon_fungal_entered')
+    expect(getNextCutscene(save)?.id).toBe('fungal_descent')
     save.world.worldFlags.push('colossus_mycelium_defeated')
     expect(getNextCutscene(save)?.id).toBe('colossus_aftermath')
     save.eventLog.push('CutsceneViewed:colossus_aftermath')

@@ -33,7 +33,7 @@ export function PortalPanel({ save, onGoToEldamar }: { save: GameSave; onGoToEld
       return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Entrar em Astravél</GameButton>
     }
     if (save.world.trailNodeStates.astravel_boss_preview === 'completed') {
-      return <GameButton variant="ghost" full disabled><Skull size={17} /> Expedição concluída</GameButton>
+      return <GameButton variant="secondary" full onClick={enter}><Skull size={17} /> Revisitar Astravél · ruína concluída</GameButton>
     }
     return <GameButton variant="ghost" full disabled><LockKeyhole size={17} /> Aceite a missão para partir</GameButton>
   })()

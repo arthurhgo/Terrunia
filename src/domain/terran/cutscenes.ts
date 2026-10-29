@@ -1,6 +1,6 @@
 import type { GameSave } from '../game/types'
 
-export type CutsceneId = 'terran_arrival' | 'astravel_call' | 'ruins_threshold' | 'colossus_aftermath' | 'clan_oath' | 'class_awakening'
+export type CutsceneId = 'terran_arrival' | 'astravel_call' | 'ruins_threshold' | 'fungal_descent' | 'colossus_aftermath' | 'clan_oath' | 'class_awakening'
 export type Cutscene = {
   id: CutsceneId
   title: string
@@ -23,6 +23,11 @@ export const cutscenes: readonly Cutscene[] = [
   { id: 'ruins_threshold', title: 'CÂMARAS FÚNGICAS · O LIMIAR', tone: 'ruins', lines: [
     'Além dos esporos, algo antigo permanece à espreita.',
     'O caminho adiante exige preparação e decisão.',
+  ] },
+  { id: 'fungal_descent', title: 'CÂMARAS FÚNGICAS · A DESCIDA', tone: 'ruins', lines: [
+    'A pedra cede à matéria viva. Sob Astravél, o silêncio tem o ritmo de milhares de esporos.',
+    'As câmaras se conectam por galerias tomadas de raízes. Cada passagem revela parte da anomalia.',
+    'No núcleo profundo, alguma coisa antiga aguarda — e o Vínculo responde à sua presença.',
   ] },
   { id: 'colossus_aftermath', title: 'RESQUÍCIOS · MEMÓRIA DA VITÓRIA', tone: 'victory', lines: [
     'O Colosso Micélio caiu. A floresta ainda carrega seus vestígios.',
@@ -53,6 +58,8 @@ export const getNextCutscene = (save: GameSave): Cutscene | null => {
   const quest = save.quests.vs_astravel_first_contact?.status
   const id: CutsceneId | null = save.world.worldFlags.includes('colossus_mycelium_defeated')
     ? 'colossus_aftermath'
+    : save.world.worldFlags.includes('dungeon_fungal_entered')
+      ? 'fungal_descent'
     : save.world.worldFlags.includes('fungal_chambers_threshold_discovered')
       ? 'ruins_threshold'
       : quest === 'active'
