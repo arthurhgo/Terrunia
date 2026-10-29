@@ -10,6 +10,9 @@ export const SYLWEN_STOCK = [
   { itemId: 'consumable_simple_ether', price: 18 },
   { itemId: 'consumable_antidote', price: 16 },
   { itemId: 'consumable_field_compress', price: 8 },
+  { itemId: 'consumable_resonance_flask', price: 24 },
+  { itemId: 'consumable_field_rune', price: 30 },
+  { itemId: 'consumable_vital_essence', price: 26 },
 ] as const
 
 export const PLAYER_HOME_FLAG = 'player_home_unlocked'

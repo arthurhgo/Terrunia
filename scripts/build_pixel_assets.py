@@ -773,6 +773,33 @@ def street_portrait(name: str):
     for x0, y0, x1, y1, color in details[prop]: box(x0, y0, x1, y1, color)
     return im
 
+
+def imported_visual(relative_path: str) -> Image.Image:
+    """Read unmerged-PR visual drafts, mapping to the canonical 16-color sprite palette."""
+    image = Image.open(ROOT / relative_path).convert('RGBA')
+    palette = [tuple(bytes.fromhex(value[1:])) for value in COLORS.values()]
+    def nearest(rgba):
+        if rgba[3] == 0:
+            return (0, 0, 0, 0)
+        rgb = min(palette, key=lambda color: sum((a - b) ** 2 for a, b in zip(rgba[:3], color)))
+        return (*rgb, rgba[3])
+    image.putdata([nearest(pixel) for pixel in image.getdata()])
+    return image
+
+IMPORTED_PR17_ASSETS = (
+    'enemies/portal/enemy_luminous_slime_idle.png',
+    'enemies/portal/enemy_void_moth_idle.png',
+    'enemies/portal/enemy_spore_mantis_idle.png',
+    'enemies/portal/enemy_ruin_sentinel_idle.png',
+    'items/item_resonance_flask.png',
+    'items/item_field_rune.png',
+    'items/item_vital_essence.png',
+    'items/item_luminous_gel.png',
+    'items/item_void_dust.png',
+    'items/item_spore_chitin.png',
+    'items/item_ruin_shard.png',
+)
+
 ASSETS = {
     "characters/terririan/player_default.png": lambda: character(False),
     "characters/terririan/player_sigil.png": lambda: character(True),
@@ -844,6 +871,7 @@ ASSETS = {
        for key in ('sentinela', 'gladiador', 'batedor', 'forjador', 'inscricoes',
                    'gravador', 'astrologo', 'profeta', 'cacador', 'canalizador',
                    'ruptura', 'ruina')},
+    **{path: (lambda path=path: imported_visual(path)) for path in IMPORTED_PR17_ASSETS},
 }
 
 
@@ -856,6 +884,10 @@ ITEM_IDS = {
     'items/item_antidote.png': 'item.antidote',
     'items/item_mycelial_fragment.png': 'item.mycelial-fragment',
     'items/item_astravel_record.png': 'item.quest-record',
+    **{f'items/item_{name}.png': f'item.{name.replace("_", "-")}' for name in (
+        'resonance_flask', 'field_rune', 'vital_essence',
+        'luminous_gel', 'void_dust', 'spore_chitin', 'ruin_shard'
+    )},
 }
 ENEMY_IDS = {
     'enemy_fungorro_crawler_idle': 'enemy.fungorro-crawler',
@@ -863,6 +895,9 @@ ENEMY_IDS = {
     'enemy_fungal_slime_idle': 'enemy.fungal-slime',
     'enemy_fungal_horror_idle': 'enemy.fungal-horror',
     'enemy_colossus_mycelium_idle': 'enemy.colossus-mycelium',
+    **{f'enemy_{name}_idle': f'enemy.{name.replace("_", "-")}' for name in (
+        'luminous_slime', 'void_moth', 'spore_mantis', 'ruin_sentinel'
+    )},
 }
 NPC_IDS = {
     'npc_eldamar': 'npc.eldamar.portrait',

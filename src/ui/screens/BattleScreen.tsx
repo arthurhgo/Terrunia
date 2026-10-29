@@ -82,8 +82,12 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((skill) => Boolean(skill))
   const consumables = save.inventory.filter((instance) => {
     const definition = content.items[instance.definitionId]
-    return definition?.category === 'consumable' && definition.combatEffects.length > 0
+    return definition?.category === 'consumable' && definition.combatEffects.length > 0 && !definition.combatKind
   })
+  const categoryItems = (kind: 'throwable' | 'rune' | 'essence') =>
+    save.inventory.filter((instance) => content.items[instance.definitionId]?.combatKind === kind)
+  const magicSkills = skills.filter((skill) =>
+    /scepter|grimoire|staff|spore|arcane|magic|spell/i.test(skill.id))
   const selectedItem = consumables.find((item) => item.instanceId === selectedConsumableId) ?? consumables[0]
   const itemDefinition = selectedItem ? content.items[selectedItem.definitionId] : undefined
   const itemUseful = Boolean(itemDefinition?.combatEffects.some((effect) =>
@@ -212,14 +216,33 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               {consumables.map((item) => <option key={item.instanceId} value={item.instanceId}>{content.items[item.definitionId].name} ×{item.quantity}</option>)}
             </select><button disabled={!itemUseful} onClick={() => selectedItem && send({ type: 'item', itemInstanceId: selectedItem.instanceId, targetId: player.id })}>USAR POÇÃO</button></> :
               <span>Sem consumíveis disponíveis.</span> : null}
-            {menu && !['skills', 'items'].includes(menu) ? <span>{menu.toUpperCase()} — aguardando definição das ações e custos. Nenhum recurso será consumido.</span> : null}
+            {menu === 'magic' ? magicSkills.length ? magicSkills.map((skill) =>
+              <button key={skill.id} disabled={player.mp < skill.mpCost || (skill.target === 'enemy' && !target.alive)}
+                onClick={() => send({ type: 'skill', skillId: skill.id, targetId: skill.target === 'self' ? player.id : target.id })}>
+                {skill.name} · {skill.mpCost} MP</button>) : <span>Desbloqueie habilidades mágicas pelo seu Vínculo para utilizá-las.</span> : null}
+            {(['throwables', 'runes', 'essences'] as const).includes(menu as 'throwables' | 'runes' | 'essences') ? (() => {
+              const kind = menu === 'throwables' ? 'throwable' : menu === 'runes' ? 'rune' : 'essence'
+              const supplies = categoryItems(kind)
+              return supplies.length ? supplies.map((instance) => {
+                const item = content.items[instance.definitionId]
+                const itemTargetId = item.combatTarget === 'enemy' ? target.id : player.id
+                const useful = item.combatEffects.some((effect) =>
+                  (effect.type === 'restoreHp' && player.hp < player.maxHp)
+                  || (effect.type === 'restoreMp' && player.mp < player.maxMp)
+                  || effect.type === 'damage' || effect.type === 'applyStatus' || effect.type === 'cleanseHarmful')
+                return <button key={instance.instanceId} disabled={!useful || (item.combatTarget === 'enemy' && !target.alive)}
+                  onClick={() => send({ type: 'item', itemInstanceId: instance.instanceId, targetId: itemTargetId })}>
+                  {item.name} ×{instance.quantity} · {item.combatTarget === 'enemy' ? target.name : 'Terrírian'}</button>
+              }) : <span>Você não possui {kind === 'throwable' ? 'arremessáveis' : kind === 'rune' ? 'runas de campo' : 'essências de combate'}. Encontre suprimentos em Terran.</span>
+            })() : null}
+
           </div>}
         </> : battle.phase === 'Victory' ? <div className="pixel-battle__result">
           <p>+{battle.rewards.characterXp} XP · +{battle.rewards.gold} Ouro · {drops.length} drops</p>
           {!battle.claimed ? <button disabled={!allPicked} onClick={claim}>{allPicked ? 'CONFIRMAR RECOMPENSAS' : 'RECOLHA TODOS OS ITENS'}</button> : <>
             {battle.waveIndex ? <button onClick={nextWave}>PRÓXIMA ONDA · {battle.waveIndex + 1}</button> :
-              <button onClick={() => end(false)}>CONTINUAR EXPEDIÇÃO</button>}
-            <button onClick={() => end(true)}>RETORNAR A TERRAN</button>
+              battle.portalHuntId ? null : <button onClick={() => end(false)}>CONTINUAR EXPEDIÇÃO</button>}
+            <button onClick={() => end(true)}>{battle.portalHuntId ? 'VOLTAR AO PORTAL' : 'RETORNAR A TERRAN'}</button>
           </>}
         </div> : <div className="pixel-battle__result"><p>O Nexo retorna à Base. Sem perda de XP, Ouro ou equipamentos nesta versão.</p>
           <button onClick={() => end(true)}>DESPERTAR NA BASE</button></div>}

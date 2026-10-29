@@ -7,6 +7,7 @@ import {
 } from '../domain/bond/boundItems'
 import { createBattle, submitBattleCommand } from '../domain/combat/engine'
 import { createWaveBattle } from '../domain/combat/waves'
+import { canStartPortalHunt } from '../domain/combat/portalHunts'
 import type { BattleCommand } from '../domain/combat/types'
 import {
   completeTrailNode,
@@ -105,6 +106,7 @@ type GameState = {
   resolveCurrentTrailNode: () => void
   startBattle: (nodeId?: string) => void
   startPortalWaves: () => void
+  startPortalHunt: (encounterId: string) => void
   continuePortalWave: () => void
   submitBattleCommand: (command: BattleCommand) => void
   claimBattleRewards: () => void
@@ -580,7 +582,7 @@ export const useGameStore = create<GameState>((set, get) => {
     startBattle: (nodeId) => {
       const save = get().save
       if (!save) return
-      if (save.vitals.hp <= 0) return failAction('Você precisa receber socorro na Casa de Daeryn antes de combater.')
+      if (save.vitals.hp <= 0) return failAction('Descanse na Base antes de combater.')
       const trail = content.trails.trail_astravel_entry
       const node = nodeId
         ? trail.nodes.find((candidate) => candidate.id === nodeId)
@@ -621,12 +623,28 @@ export const useGameStore = create<GameState>((set, get) => {
       if (save.world.trailNodeStates.astravel_fungorro_01 !== 'completed') {
         return failAction('Conclua o primeiro encontro em Astravél para liberar o Modo Ondas.')
       }
-      if (save.vitals.hp <= 0) return failAction('Recupere Vida na Casa de Daeryn antes de combater.')
+      if (save.vitals.hp <= 0) return failAction('Descanse na Base antes de combater.')
       const next = structuredClone(save)
       next.battle = createWaveBattle(next, content, 1)
       next.updatedAt = nowIso()
       next.revision += 1
       next.eventLog.push('PortalWaveStarted:1')
+      commit(next)
+    },
+
+    startPortalHunt: (encounterId) => {
+      const save = get().save
+      if (!save) return
+      const permitted = canStartPortalHunt(save, encounterId, content)
+      if (!permitted.ok) return failAction(permitted.message)
+      const next = structuredClone(save)
+      const battle = createBattle(next, content.encounters[encounterId], content)
+      battle.portalHuntId = encounterId
+      next.battle = battle
+      next.vitals = { hp: battle.combatants.combatant_player.hp, mp: battle.combatants.combatant_player.mp }
+      next.updatedAt = nowIso()
+      next.revision += 1
+      next.eventLog.push(`PortalHuntStarted:${encounterId}`)
       commit(next)
     },
 
@@ -716,7 +734,10 @@ export const useGameStore = create<GameState>((set, get) => {
         if (!next.world.worldFlags.includes(flag)) next.world.worldFlags.push(flag)
       }
       next.battle = { ...battle, claimed: true }
-      if (!battle.waveIndex) {
+      if (battle.waveIndex) {
+        next.world.portalWaveBest = Math.max(next.world.portalWaveBest ?? 0, battle.waveIndex)
+      }
+      if (!battle.waveIndex && !battle.portalHuntId) {
         const trail = getTrailByNodeId(content, battle.trailNodeId)
         if (!trail) return failAction('A trilha deste encontro não foi encontrada.')
         const trailResult = completeTrailNode(next, trail, battle.trailNodeId, acquiredAt)
@@ -743,6 +764,7 @@ export const useGameStore = create<GameState>((set, get) => {
         'Vitória',
         battle.waveIndex
           ? `Onda ${battle.waveIndex} concluída: ${loot.length} itens recebidos. Você pode continuar ou retornar a Terran.`
+          : battle.portalHuntId ? `Caçada concluída: ${loot.length} itens recebidos. Retorne ao Portal para outra caçada.`
           : loot.length > 0
             ? `${loot.length} drop entrou no inventário. A trilha avançou para o próximo nó.`
             : 'A trilha avançou para o próximo nó.',

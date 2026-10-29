@@ -1402,6 +1402,127 @@
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
       "atlas": null
+    },
+    {
+      "assetId": "enemy.luminous-slime",
+      "path": "/assets/enemies/portal/enemy_luminous_slime_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "enemy.void-moth",
+      "path": "/assets/enemies/portal/enemy_void_moth_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "enemy.spore-mantis",
+      "path": "/assets/enemies/portal/enemy_spore_mantis_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "enemy.ruin-sentinel",
+      "path": "/assets/enemies/portal/enemy_ruin_sentinel_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "item.resonance-flask",
+      "path": "/assets/items/item_resonance_flask.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "item.field-rune",
+      "path": "/assets/items/item_field_rune.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "item.vital-essence",
+      "path": "/assets/items/item_vital_essence.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "item.luminous-gel",
+      "path": "/assets/items/item_luminous_gel.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "item.void-dust",
+      "path": "/assets/items/item_void_dust.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "item.spore-chitin",
+      "path": "/assets/items/item_spore_chitin.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "item.ruin-shard",
+      "path": "/assets/items/item_ruin_shard.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
     }
   ]
 }

@@ -121,6 +121,17 @@ export const statusEffectDefinitions = [
     mitigationModifier: 0,
     status: 'BALANCE_DRAFT',
   },
+
+  {
+    id: 'status_rune_ward',
+    name: 'Guarda Rúnica',
+    description: 'Uma inscrição de campo reforça temporariamente a defesa.',
+    tone: 'beneficial',
+    startTurnDamage: 0,
+    attackModifier: 0,
+    mitigationModifier: 2,
+    status: 'BALANCE_DRAFT',
+  },
 ] satisfies StatusEffectDefinition[]
 
 export const encounterDefinitions = [
@@ -184,6 +195,43 @@ export const encounterDefinitions = [
         description: 'O primeiro núcleo de uma Ruína derrotado ao lado do Vínculo.',
       },
     },
+    status: 'CONTENT_DRAFT',
+  },
+
+  {
+    id: 'encounter_portal_luminous_nest',
+    name: 'Ninho Luminescente',
+    locationLabel: 'Eco de Astravél',
+    victoryTitle: 'O brilho foi contido',
+    victorySummary: 'O Portal estabilizou o eco e preservou os materiais encontrados.',
+    trailNodeId: 'portal_hunt_luminous',
+    enemyDefinitionIds: ['enemy_luminous_slime', 'enemy_luminous_slime'],
+    canFlee: false,
+    rewards: { characterXp: 28, gold: 14, boundResonance: 18, lootDefinitionIds: ['drop_luminous_gel', 'drop_luminous_gel'] },
+    status: 'CONTENT_DRAFT',
+  },
+  {
+    id: 'encounter_portal_spore_hunt',
+    name: 'Caçada de Esporos',
+    locationLabel: 'Eco Fúngico do Portal',
+    victoryTitle: 'A colônia foi dispersada',
+    victorySummary: 'A ameaça repetível foi contida; novas assinaturas continuam surgindo no Portal.',
+    trailNodeId: 'portal_hunt_spore',
+    enemyDefinitionIds: ['enemy_spore_mantis', 'enemy_void_moth'],
+    canFlee: false,
+    rewards: { characterXp: 48, gold: 25, boundResonance: 30, lootDefinitionIds: ['drop_spore_chitin', 'drop_void_dust'] },
+    status: 'CONTENT_DRAFT',
+  },
+  {
+    id: 'encounter_portal_ruin_watch',
+    name: 'Vigília da Ruína',
+    locationLabel: 'Câmara Instável do Portal',
+    victoryTitle: 'A sentinela silenciou',
+    victorySummary: 'A Lasca da Ruína se desprendeu antes do eco desaparecer.',
+    trailNodeId: 'portal_hunt_ruin',
+    enemyDefinitionIds: ['enemy_ruin_sentinel', 'enemy_void_moth'],
+    canFlee: false,
+    rewards: { characterXp: 66, gold: 34, boundResonance: 44, lootDefinitionIds: ['drop_ruin_shard', 'drop_void_dust'] },
     status: 'CONTENT_DRAFT',
   },
 ] satisfies EncounterDefinition[]

@@ -84,3 +84,9 @@
 @keyframes terrunia-death-aura{0%{opacity:0;scale:.3}55%{opacity:1;scale:1}100%{opacity:0;scale:1.4}}
 @keyframes terrunia-death-text{0%,30%{opacity:0}100%{opacity:1}}
 @media(prefers-reduced-motion:reduce){.pixel-battle__death-character,.pixel-battle__death-aura,.pixel-battle__death strong{animation:none!important}}
+
+.portal-hunts{margin-top:14px;padding:12px;border:1px solid #806137;background:#071522;color:#dfd0ac;display:grid;gap:9px;}
+.portal-hunts>p{margin:0;font-size:.74rem;line-height:1.4;}
+.portal-hunts__entry{display:grid;gap:6px;padding:9px;background:#112330;border:1px solid #485866;}
+.portal-hunts__entry strong{color:#f0d69c;font-family:Georgia,serif;font-size:.83rem}
+.portal-hunts__entry small{font-size:.71rem;color:#9fc5cb}
