@@ -620,6 +620,125 @@
       }
     },
     {
+      "assetId": "item.simple-ether",
+      "path": "/assets/items/item_simple_ether.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 32,
+        "y": 64,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.field-compress",
+      "path": "/assets/items/item_field_compress.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 48,
+        "y": 64,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.antidote",
+      "path": "/assets/items/item_antidote.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 64,
+        "y": 64,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "npc.daeryn.portrait",
+      "path": "/assets/npcs/npc_daeryn_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.sylwen.portrait",
+      "path": "/assets/npcs/npc_sylwen_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 32,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.vorren.portrait",
+      "path": "/assets/npcs/npc_vorren_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 64,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.lithwynn.portrait",
+      "path": "/assets/npcs/npc_lithwynn_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 96,
+        "y": 0,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
       "assetId": "item.mycelial-fragment",
       "path": "/assets/items/item_mycelial_fragment.png",
       "family": "item",
@@ -630,7 +749,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 32,
+        "x": 80,
         "y": 64,
         "width": 16,
         "height": 16
@@ -647,7 +766,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 48,
+        "x": 96,
         "y": 64,
         "width": 16,
         "height": 16
@@ -664,7 +783,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 64,
+        "x": 112,
         "y": 64,
         "width": 16,
         "height": 16
@@ -681,8 +800,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 80,
-        "y": 64,
+        "x": 0,
+        "y": 80,
         "width": 16,
         "height": 16
       }
@@ -698,8 +817,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 96,
-        "y": 64,
+        "x": 16,
+        "y": 80,
         "width": 16,
         "height": 16
       }
@@ -715,8 +834,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 112,
-        "y": 64,
+        "x": 32,
+        "y": 80,
         "width": 16,
         "height": 16
       }
@@ -732,7 +851,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 0,
+        "x": 48,
         "y": 80,
         "width": 16,
         "height": 16
@@ -749,7 +868,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 16,
+        "x": 64,
         "y": 80,
         "width": 16,
         "height": 16
@@ -766,7 +885,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 32,
+        "x": 80,
         "y": 80,
         "width": 16,
         "height": 16
@@ -783,7 +902,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 48,
+        "x": 96,
         "y": 80,
         "width": 16,
         "height": 16
@@ -800,7 +919,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 64,
+        "x": 112,
         "y": 80,
         "width": 16,
         "height": 16
@@ -817,8 +936,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 80,
-        "y": 80,
+        "x": 0,
+        "y": 96,
         "width": 16,
         "height": 16
       }
@@ -834,8 +953,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 96,
-        "y": 80,
+        "x": 16,
+        "y": 96,
         "width": 16,
         "height": 16
       }
@@ -851,8 +970,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-item-v0.1.png",
-        "x": 112,
-        "y": 80,
+        "x": 32,
+        "y": 96,
         "width": 16,
         "height": 16
       }
@@ -901,7 +1020,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 0,
+        "x": 128,
         "y": 0,
         "width": 32,
         "height": 32
@@ -918,7 +1037,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 32,
+        "x": 160,
         "y": 0,
         "width": 32,
         "height": 32
@@ -935,8 +1054,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 64,
-        "y": 0,
+        "x": 0,
+        "y": 32,
         "width": 32,
         "height": 32
       }
@@ -952,8 +1071,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 96,
-        "y": 0,
+        "x": 32,
+        "y": 32,
         "width": 32,
         "height": 32
       }
@@ -969,8 +1088,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 128,
-        "y": 0,
+        "x": 64,
+        "y": 32,
         "width": 32,
         "height": 32
       }
@@ -986,8 +1105,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 160,
-        "y": 0,
+        "x": 96,
+        "y": 32,
         "width": 32,
         "height": 32
       }
@@ -1003,7 +1122,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 0,
+        "x": 128,
         "y": 32,
         "width": 32,
         "height": 32
@@ -1020,7 +1139,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 32,
+        "x": 160,
         "y": 32,
         "width": 32,
         "height": 32
@@ -1037,8 +1156,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 64,
-        "y": 32,
+        "x": 0,
+        "y": 64,
         "width": 32,
         "height": 32
       }
@@ -1054,8 +1173,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 96,
-        "y": 32,
+        "x": 32,
+        "y": 64,
         "width": 32,
         "height": 32
       }
@@ -1071,8 +1190,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 128,
-        "y": 32,
+        "x": 64,
+        "y": 64,
         "width": 32,
         "height": 32
       }
@@ -1088,8 +1207,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 160,
-        "y": 32,
+        "x": 96,
+        "y": 64,
         "width": 32,
         "height": 32
       }
@@ -1105,7 +1224,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 0,
+        "x": 128,
         "y": 64,
         "width": 32,
         "height": 32
@@ -1122,7 +1241,7 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 32,
+        "x": 160,
         "y": 64,
         "width": 32,
         "height": 32
@@ -1139,8 +1258,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 64,
-        "y": 64,
+        "x": 0,
+        "y": 96,
         "width": 32,
         "height": 32
       }
@@ -1156,8 +1275,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 96,
-        "y": 64,
+        "x": 32,
+        "y": 96,
         "width": 32,
         "height": 32
       }
@@ -1173,8 +1292,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 128,
-        "y": 64,
+        "x": 64,
+        "y": 96,
         "width": 32,
         "height": 32
       }
@@ -1190,8 +1309,8 @@
       "status": "VISUAL_DRAFT",
       "atlas": {
         "path": "/assets/atlas/terrunia-npc-v0.1.png",
-        "x": 160,
-        "y": 64,
+        "x": 96,
+        "y": 96,
         "width": 32,
         "height": 32
       }
