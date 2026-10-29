@@ -105,10 +105,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     </button>
   )
 
-  const scene = <div className="pixel-battle">
+  const scene = <section className="pixel-battle" role="region" aria-label="Viewport unificada de combate">
     <header className="pixel-battle__header" aria-label="Encontro de combate">
       <strong>TERRÚNIA</strong>
-      <span>{battle.waveIndex ? 'PORTAL · ONDAS DA RUÍNA' : encounter?.locationLabel ?? 'ASTRAVÉL'} · {encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}</span>
+      <h1>{battle.waveIndex ? 'PORTAL · ONDAS DA RUÍNA' : encounter?.locationLabel ?? 'ASTRAVÉL'} · {encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}</h1>
       <small>{battle.waveIndex ? 'ONDA ' + battle.waveIndex + ' · ' : ''}RODADA {battle.round} · {turnCue ? 'TURNO DOS INIMIGOS' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'TURNO DO JOGADOR'}</small>
     </header>
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
@@ -220,7 +220,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         <p className="pixel-battle__hint"><Crosshair size={14} /> {battle.phase === 'Victory' ? 'Recolha os espólios antes de sair.' : battle.phase === 'Defeat' ? 'A expedição foi interrompida.' : 'Selecione um inimigo e escolha sua ação.'}</p>
       </section>
     </div>
-  </div>
+  </section>
 
   return unified ? scene : <GameShell fluid immersive>{scene}</GameShell>
 }
