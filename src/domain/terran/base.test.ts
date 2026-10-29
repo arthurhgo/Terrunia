@@ -66,6 +66,29 @@ describe('Base individual e mundo isolado por campanha', () => {
     expect(migrateAndValidateSave(withdrawn.value).baseStorage).toHaveLength(1)
     expect(transferBaseChestItem(save, 'withdraw', 'drop-1', 1, content, now).ok).toBe(false)
   })
+
+  it('migra campanha antiga para v11 sem apagar marcos nem o inventário', () => {
+    const save = fresh()
+    save.schemaVersion = 10
+    save.world.trailNodeStates.astravel_entry = 'completed'
+    save.quests.vs_astravel_first_contact.status = 'completed'
+    save.wallet.gold = 73
+    save.inventory.push({
+      instanceId: 'old-drop', definitionId: 'drop_spore_cluster', quantity: 2,
+      rarity: 'common', locked: false, favorite: false, acquiredAt: now,
+    })
+    const legacy = structuredClone(save) as unknown as Record<string, unknown>
+    delete legacy.baseStorage
+    const migrated = migrateAndValidateSave(legacy)
+    expect(migrated.schemaVersion).toBe(11)
+    expect(migrated.baseStorage).toEqual([])
+    expect(migrated.world.trailNodeStates.astravel_entry).toBe('completed')
+    expect(migrated.quests.vs_astravel_first_contact.status).toBe('completed')
+    expect(migrated.wallet.gold).toBe(73)
+    expect(migrated.inventory[0].quantity).toBe(2)
+    expect(migrated.eventLog).toContain('SaveMigrated:10->11')
+  })
+
   it('bloqueia o baú fora da Base e protege itens travados', () => {
     const save = fresh()
     expect(transferBaseChestItem(save, 'deposit', 'missing', 1, content, now).ok).toBe(false)
