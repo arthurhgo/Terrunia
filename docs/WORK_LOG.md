@@ -1,5 +1,16 @@
 # Registro de implementação
 
+## Terran v0.8 — cadeia inicial, alojamento e comércio
+
+- adicionadas três etapas progressivas após Eldamar: Daeryn (casa), Vorren (bestiário) e Lithwynn (inscrições), com objetivo, aceite, entrega e recompensas declarativas;
+- preservadas as seis instituições e a Praça; o quarto do jogador é propriedade privada mostrada na mesma viewport, sem rota/instituição extra;
+- criada persistência de PV/MP atuais com schema 8, migração de saves existentes e atualização durante os turnos;
+- implementados repouso gratuito fora de combate, socorro emergencial após derrota e bloqueio de novas batalhas com PV zero;
+- montado o Balcão de Sylwen dentro de Daeryn com quatro produtos e economia validada no domínio;
+- criados sprites nativos 16×16 e painel da casa em grade 20×12, com fallback por registro central;
+- adicionados seleção de consumível e efeitos de restauração de Mana/antídoto, sem mudar os cinco Vínculos;
+- registrados limites, drafts e próximas missões em `docs/TERRAN_PROGRESSION_AND_SERVICES_v0.1.md`.
+
 ## Conta v0.6 — personagem único e retomada explícita
 
 - adicionada tela obrigatória de acesso para contas com Terrírian salvo;
