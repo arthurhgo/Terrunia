@@ -88,6 +88,20 @@ export function drawTerranInterior(
   }
   ctx.restore()
 
+  // Rear walls and windows are painted above floor tile textures.
+  const back = floor[0]
+  if (back) {
+    const wallHeight = ['slate', 'ceremony'].includes(plan.tile) ? 38 : 29
+    block(back.x + 4, back.y + 3, back.w - 8, wallHeight, theme.wall)
+    block(back.x + 5, back.y + wallHeight, back.w - 10, 3, theme.trim)
+    for (const x of [back.x + Math.floor(back.w / 4), back.x + Math.floor(back.w * .72)]) {
+      block(x - 10, back.y + 8, 20, 24, '#142734')
+      block(x - 7, back.y + 11, 14, 17, '#32647c')
+      block(x - 4, back.y + 14, 8, 4, theme.glow)
+      block(x - 1, back.y + 11, 2, 17, '#1c3443')
+    }
+  }
+
   // Furniture silhouettes and hit targets share their IDs and positions.
   for (const item of roomFurniture[locationId]) {
     const { x, y } = item.point

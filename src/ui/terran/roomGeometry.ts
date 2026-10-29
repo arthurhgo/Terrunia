@@ -20,7 +20,7 @@ export const ROOM_PLANS: Record<TerranInteriorId, RoomPlan> = {
   location_terran_eldamar_house: {
     floor: [rect(103, 67, 178, 173), rect(72, 108, 240, 106)],
     obstacles: [rect(173, 127, 42, 18)],
-    spawn: point(192, 219), exit: point(192, 233), service: point(274, 181),
+    spawn: point(149, 219), exit: point(149, 233), service: point(274, 181),
     residents: [point(134, 109), point(192, 101), point(249, 110), point(135, 153),
       point(192, 160), point(247, 152), point(190, 193)],
     tile: 'slate',
@@ -28,7 +28,7 @@ export const ROOM_PLANS: Record<TerranInteriorId, RoomPlan> = {
   location_terran_vorren_post: {
     floor: [rect(41, 110, 302, 130), rect(94, 72, 195, 44)],
     obstacles: [rect(167, 159, 49, 18)],
-    spawn: point(192, 219), exit: point(192, 233), service: point(301, 197),
+    spawn: point(263, 219), exit: point(263, 233), service: point(301, 197),
     residents: [point(73, 142), point(130, 136), point(192, 130), point(254, 138),
       point(310, 144), point(131, 185), point(254, 183)],
     tile: 'moss',
@@ -44,7 +44,7 @@ export const ROOM_PLANS: Record<TerranInteriorId, RoomPlan> = {
   location_terran_zareth_barracks: {
     floor: [rect(109, 61, 166, 179), rect(43, 113, 298, 78)],
     obstacles: [rect(170, 122, 42, 18)],
-    spawn: point(192, 219), exit: point(192, 233), service: point(291, 169),
+    spawn: point(236, 219), exit: point(236, 233), service: point(291, 169),
     residents: [point(151, 91), point(233, 91), point(83, 142), point(146, 155),
       point(237, 153), point(299, 141), point(192, 193)],
     tile: 'stone',
@@ -60,7 +60,7 @@ export const ROOM_PLANS: Record<TerranInteriorId, RoomPlan> = {
   location_terran_daeryn_house: {
     floor: [rect(44, 94, 295, 146), rect(60, 60, 103, 51), rect(248, 76, 73, 46)],
     obstacles: [rect(170, 142, 43, 16)],
-    spawn: point(192, 220), exit: point(192, 233), service: point(297, 194),
+    spawn: point(150, 220), exit: point(150, 233), service: point(297, 194),
     residents: [point(93, 111), point(146, 113), point(193, 115), point(259, 118),
       point(314, 135), point(144, 180), point(236, 181)],
     tile: 'wood',

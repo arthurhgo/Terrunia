@@ -28,7 +28,7 @@ describe('Interiores de Terran', () => {
     expect(isInteriorWalkable(INTERIOR_EXIT)).toBe(true)
     const path = findInteriorPath(INTERIOR_SPAWN, { x: 151, y: 128 })
     expect(path.length).toBeGreaterThan(0)
-    expect(path.every(isInteriorWalkable)).toBe(true)
+    expect(path.every((point) => isInteriorWalkable(point))).toBe(true)
     const exitPath = findInteriorPath({ x: 75, y: 116 }, INTERIOR_EXIT)
     expect(exitPath.length).toBeGreaterThan(0)
   })

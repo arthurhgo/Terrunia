@@ -87,6 +87,10 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('button', { name: 'Conversar com Arlen' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Conversar com Liora' })).toBeInTheDocument()
     expect(screen.queryByRole('navigation', { name: 'Navegação principal' })).not.toBeInTheDocument()
+    const rail = screen.getByRole('navigation', { name: 'Menu de Terran' })
+    expect(rail).toBeInTheDocument()
+    expect(rail.querySelectorAll('button')).toHaveLength(5)
+    expect(screen.queryByText(/Você está em/)).not.toBeInTheDocument()
     for (const locationId of TERRAN_LOCATION_IDS) {
       expect(
         screen.getByRole('button', { name: new RegExp(`Ir para ${content.terranLocations[locationId].name}`) }),
