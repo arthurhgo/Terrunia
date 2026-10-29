@@ -22,9 +22,18 @@ export function getVisibleNpcsInLocation(save: GameSave, locationId: TerranLocat
     .map((presence) => ({ presence, locationId }))
 }
 
-/** The outdoor scene shows a compact cast; the location panel lists every eligible resident. */
+/**
+ * Only explicitly assigned secondary-quest characters belong outdoors.
+ * Reserved empty until street-sidequest locations/stories are authored.
+ * All current institutional and service residents live inside their buildings.
+ */
+export const STREET_SIDEQUEST_PRESENCE_IDS: readonly string[] = []
+
 export function getOutdoorCityNpcs(save: GameSave): VisibleNpc[] {
-  return TERRAN_LOCATION_IDS.flatMap((id) => getVisibleNpcsInLocation(save, id).slice(0, 3))
+  return TERRAN_LOCATION_IDS.flatMap((id) => getVisibleNpcsInLocation(save, id))
+    .filter(({ presence }) => STREET_SIDEQUEST_PRESENCE_IDS.includes(presence.id)
+      && Boolean(presence.npcId && content.npcs[presence.npcId]?.questIds.some((id) =>
+        content.quests[id]?.category === 'secondary')))
 }
 
 export function getNpcQuestMarker(save: GameSave, presence: TerranNpcPresence): '!' | '✓' | null {

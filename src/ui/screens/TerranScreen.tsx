@@ -24,6 +24,8 @@ import { GameShell } from '../components/GameShell'
 import { ProgressBar } from '../components/ProgressBar'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { PixelCityCanvas } from '../terran/PixelCityCanvas'
+import { PixelInteriorCanvas } from '../terran/PixelInteriorCanvas'
+import { hasTerranInterior } from '../terran/interiorLayout'
 import { getCityCast } from '../terran/cityCast'
 import { DaerynServices, HomeDrawer, QuestNpcPanel, VorrenBestiary } from '../terran/TerranServices'
 
@@ -138,6 +140,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
   const [drawer, setDrawer] = useState<Drawer>(null)
   const [locationId, setLocationId] = useState<TerranLocationId>('location_terran_portal_plaza')
+  const [interiorId, setInteriorId] = useState<TerranLocationId | null>(null)
   const [eldamarOpen, setEldamarOpen] = useState(false)
   const [socialQuestId, setSocialQuestId] = useState<string | null>(null)
   const [dialogue, setDialogue] = useState<Presence | null>(null)
@@ -162,18 +165,42 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const openLocation = (id: TerranLocationId) => {
     travel(id)
     setLocationId(id)
-    setDrawer('location')
+    setLocalQuestId(null)
+    setDialogue(null)
+    setDialogueLine(0)
+    // Six official institutions are walkable interiors; the Portal remains outdoors.
+    if (hasTerranInterior(id)) {
+      setInteriorId(id)
+      setDrawer(null)
+    } else {
+      setInteriorId(null)
+      setDrawer('location')
+    }
+  }
+  const exitInterior = () => {
+    // Unmounting the room returns the sprite beside the corresponding city door.
+    // No new save location ID is required, preserving older campaigns.
+    setInteriorId(null)
+    setDrawer(null)
+    setDialogue(null)
+    setLocalQuestId(null)
   }
   const talk = (presence: Presence, sourceId: TerranLocationId = locationId) => {
     travel(sourceId)
     setLocationId(sourceId)
     setDrawer('location')
     setLocalQuestId(null)
-    if (presence.npcId === 'npc_eldamar') { setEldamarOpen(true); return }
     const quest = Object.values(content.quests).find((candidate) => candidate.giverNpcId === presence.npcId &&
       ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[candidate.id]?.status ?? 'locked'))
-    if (quest && content.terranLocations[sourceId].viewKind === 'clanHall') { setSocialQuestId(quest.id); return }
-    if (quest && ['npc_daeryn', 'npc_vorren', 'npc_lithwynn'].includes(presence.npcId ?? '')) { setLocalQuestId(quest.id); return }
+    if (presence.npcId === 'npc_eldamar' && (!quest || quest.id === 'vs_astravel_first_contact')) {
+      setEldamarOpen(true)
+      return
+    }
+    if (quest && (quest.category === 'clan' || quest.category === 'class')) {
+      setSocialQuestId(quest.id)
+      return
+    }
+    if (quest) { setLocalQuestId(quest.id); return }
     setDialogueLine(0)
     setDialogue(presence)
   }
@@ -189,10 +216,14 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
         </header>
         <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
-            <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} reducedMotion={save.settings.reducedMotion}
-              currentLocationId={save.world.currentLocationId}
-              enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
-              actors={cityCast} onEnter={openLocation} onTalk={(id, presence) => talk(presence, id)} />
+            {interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
+                onTalk={(presence) => talk(presence, interiorId)}
+                onServices={() => { setLocationId(interiorId); setDrawer('location'); setLocalQuestId(null) }}
+                onExit={exitInterior} />
+              : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} reducedMotion={save.settings.reducedMotion}
+                  currentLocationId={save.world.currentLocationId}
+                  enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
+                  actors={cityCast} onEnter={openLocation} onTalk={(id, presence) => talk(presence, id)} />}
             <div className="terran-game__hud" aria-label="Ações do personagem">
               {hud.map(({ id, label, icon: Icon }) => (
                 <button key={id} type="button" className={drawer === id ? 'active' : ''}
@@ -204,8 +235,9 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             </div>
             <div className="terran-game__quest">
               <Sparkles size={16} />
-              <span>{guidance ? `Objetivo: ${content.terranLocations[guidance.locationId].name}` : 'Explore a cidade · converse com Eldamar'}
-                <small>WASD / setas para andar · toque ou clique para caminhar · E para interagir</small></span>
+              <span>{interiorId ? `Você está em ${content.terranLocations[interiorId].name}` :
+                guidance ? `Objetivo: ${content.terranLocations[guidance.locationId].name}` : 'Explore a cidade · visite os edifícios'}
+                <small>WASD / setas · toque ou clique para caminhar · E para interagir{interiorId ? ' · porta inferior para sair' : ' · portas para entrar'}</small></span>
             </div>
             {dialogue && <DialogueBox save={save} presence={dialogue} line={dialogueLine} onNext={() => {
               const length = getTerranDialogue(save, dialogue).length

@@ -1,7 +1,7 @@
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { TerranNpcPresence } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
-import { getNpcQuestMarker, getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
+import { getNpcQuestMarker, getOutdoorCityNpcs } from '../../domain/terran/cityNpcs'
 import { getCityPoint, type WorldPoint } from './pixelCityArt'
 
 export type CityActor = {
@@ -21,7 +21,7 @@ const spots: readonly WorldPoint[] = [
 export function getCityCast(save: GameSave): CityActor[] {
   return TERRAN_LOCATION_IDS.flatMap((locationId) => {
     const institution = getCityPoint(locationId)
-    return getVisibleNpcsInLocation(save, locationId).slice(0, spots.length).map(({ presence }, index) => ({
+    return getOutdoorCityNpcs(save).filter((npc) => npc.locationId === locationId).slice(0, spots.length).map(({ presence }, index) => ({
       id: presence.id,
       presence,
       locationId,

@@ -23,6 +23,6 @@ describe('presença condicional de NPCs de Terran', () => {
     const members = getVisibleNpcsInLocation(save, 'location_terran_clan_hall').map((npc) => npc.presence.id)
     expect(members).not.toContain('presence_class_masters')
     expect(members).not.toContain('presence_main_lore_council')
-    expect(getOutdoorCityNpcs(save).length).toBeGreaterThanOrEqual(7)
+    expect(getOutdoorCityNpcs(save)).toEqual([])
   })
 })

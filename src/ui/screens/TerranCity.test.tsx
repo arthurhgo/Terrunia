@@ -71,7 +71,7 @@ describe('interfaces de Terran', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Comprar Éter Simples por 18 ouro' }))
     expect(useGameStore.getState().save?.wallet.gold).toBe(22)
     expect(useGameStore.getState().save?.inventory.some((item) => item.definitionId === 'consumable_simple_ether')).toBe(true)
-    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Interior pixelado de location_terran_daeryn_house/ })).toBeInTheDocument()
   })
 
   it('mantém a cidade pixelada e abre painéis adjacentes sem navegação por abas', () => {
