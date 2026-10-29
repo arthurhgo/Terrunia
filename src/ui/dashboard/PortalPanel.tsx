@@ -4,6 +4,7 @@ import {
   MapPinned,
   Skull,
   Trees,
+  Swords,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -19,6 +20,7 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
   navigateOnEnter?: boolean
 }) {
   const enterAstravel = useGameStore((state) => state.enterAstravel)
+  const startPortalWaves = useGameStore((state) => state.startPortalWaves)
   const navigate = useNavigate()
   const trail = content.trails.trail_astravel_entry
   const quest = save.quests.vs_astravel_first_contact
@@ -101,6 +103,16 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
         </div>
       </div>
       {action}
+      {save.world.trailNodeStates.astravel_fungorro_01 === 'completed' && !save.battle && (
+        <div className="portal-wave-mode">
+          <p className="eyebrow">MODO ONDAS · BALANCE_DRAFT</p>
+          <p>Encontros progressivos com até quatro criaturas, recompensas únicas por onda e saída entre vitórias.</p>
+          <GameButton variant="secondary" full onClick={() => {
+            startPortalWaves()
+            if (navigateOnEnter) navigate('/battle')
+          }}><Swords size={17} /> Entrar no Modo Ondas</GameButton>
+        </div>
+      )}
     </ArcanePanel>
   )
 }

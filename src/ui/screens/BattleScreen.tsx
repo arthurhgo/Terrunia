@@ -1,243 +1,229 @@
-import { useEffect, useMemo, useState } from 'react'
-import {
-  Backpack,
-  Crosshair,
-  Footprints,
-  ScrollText,
-  Shield,
-  Sparkles,
-  Swords,
-  UserRound,
-  X,
-} from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Backpack, Bomb, Crosshair, Footprints, Gem, ScrollText, Shield, Sparkles, Swords, WandSparkles, Zap } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
+import { boundSlotPreviewAssetIds } from '../../assets/assetRegistry'
+import { BOUND_SLOTS } from '../../domain/shared/types'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import type { Combatant } from '../../domain/combat/types'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
-import { GameButton } from '../components/GameButton'
 import { GameShell } from '../components/GameShell'
-import { ProgressBar } from '../components/ProgressBar'
-import { WorldBattleBackdrop } from '../world/WorldBattleBackdrop'
+import { BattleArenaBackdrop } from '../battle/BattleArenaBackdrop'
+import './battlePixel.css'
 
-const statusName = (definitionId: string) =>
-  content.statusEffects[definitionId]?.name ?? definitionId
-
-function StatusList({ combatant }: { combatant: Combatant }) {
-  if (combatant.statusEffects.length === 0) return <span className="status-empty">Sem efeitos</span>
-  return (
-    <div className="battle-status-list" aria-label={`Efeitos de ${combatant.name}`}>
-      {combatant.statusEffects.map((status) => (
-        <span key={status.definitionId} title={content.statusEffects[status.definitionId]?.description}>
-          {statusName(status.definitionId)} · {status.remainingTurns}T
-        </span>
-      ))}
-    </div>
-  )
-}
+type Menu = 'skills' | 'items' | 'throwables' | 'magic' | 'runes' | 'essences' | null
+const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
 
 export function BattleScene({ unified = false }: { unified?: boolean }) {
   const save = useGameStore((state) => state.save)
   const submit = useGameStore((state) => state.submitBattleCommand)
   const claim = useGameStore((state) => state.claimBattleRewards)
+  const nextWave = useGameStore((state) => state.continuePortalWave)
   const finishBattleIntoExpedition = useGameStore((state) => state.finishBattleIntoExpedition)
   const returnToTerran = useGameStore((state) => state.returnToTerran)
   const navigate = useNavigate()
-
   const battle = save?.battle
-  const enemies = useMemo(
-    () => battle
-      ? Object.values(battle.combatants).filter((combatant) => combatant.side === 'enemy')
-      : [],
-    [battle],
-  )
-  const firstLivingEnemyId = enemies.find((enemy) => enemy.alive)?.id ?? ''
-  const [selectedTargetId, setSelectedTargetId] = useState(firstLivingEnemyId)
-  const [drawer, setDrawer] = useState<'status' | 'log' | null>('status')
+  const enemies = useMemo(() => battle
+    ? Object.values(battle.combatants).filter((actor) => actor.side === 'enemy')
+    : [], [battle])
+  const player = battle?.combatants.combatant_player
+  const [targetId, setTargetId] = useState('')
+  const [menu, setMenu] = useState<Menu>(null)
   const [selectedConsumableId, setSelectedConsumableId] = useState('')
+  const [collected, setCollected] = useState<number[]>([])
+  const [hit, setHit] = useState<'player' | 'enemy' | null>(null)
+  const [turnCue, setTurnCue] = useState(false)
+  const [showLog, setShowLog] = useState(false)
+  const previous = useRef<{ id: string; hp: Record<string, number> } | null>(null)
+  const reducedMotion = Boolean(save?.settings.reducedMotion)
 
   useEffect(() => {
-    const selected = enemies.find((enemy) => enemy.id === selectedTargetId)
-    if (!selected?.alive && firstLivingEnemyId) setSelectedTargetId(firstLivingEnemyId)
-  }, [enemies, firstLivingEnemyId, selectedTargetId])
+    if (!enemies.some((enemy) => enemy.id === targetId && enemy.alive)) {
+      setTargetId(enemies.find((enemy) => enemy.alive)?.id ?? '')
+    }
+  }, [enemies, targetId])
+  useEffect(() => {
+    setCollected([])
+    setMenu(null)
+    previous.current = null
+  }, [battle?.id])
+  useEffect(() => {
+    if (!battle) return
+    const hp = Object.fromEntries(Object.values(battle.combatants).map((actor) => [actor.id, actor.hp]))
+    const old = previous.current
+    previous.current = { id: battle.id, hp }
+    if (reducedMotion || old?.id !== battle.id) return
+    const playerHit = player && player.hp < (old.hp[player.id] ?? player.hp)
+    const enemyHit = enemies.some((enemy) => enemy.hp < (old.hp[enemy.id] ?? enemy.hp))
+    if (!playerHit && !enemyHit) return
+    setHit(playerHit ? 'player' : 'enemy')
+    setTurnCue(Boolean(playerHit))
+    const timer = window.setTimeout(() => { setHit(null); setTurnCue(false) }, 620)
+    return () => window.clearTimeout(timer)
+  }, [battle, enemies, player, reducedMotion])
 
   if (!save) return <Navigate to="/terran" replace />
-  if (!save.battle) {
-    const destination = save.world.currentLocationId === FUNGAL_DUNGEON_ID
-      ? '/dungeon'
+  if (!battle) {
+    const destination = save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon'
       : content.trails.trail_astravel_entry.nodes.some((node) => node.id === save.world.currentLocationId) ? '/expedition' : '/terran'
     return <Navigate to={destination} replace />
   }
-  const activeBattle = save.battle
-  const player = Object.values(activeBattle.combatants).find(
-    (combatant) => combatant.side === 'player',
-  )
-  if (!player || enemies.length === 0) return <Navigate to="/terran" replace />
+  if (!player || !enemies.length) return <Navigate to="/terran" replace />
 
-  const selectedEnemy = enemies.find((enemy) => enemy.id === selectedTargetId) ?? enemies[0]
-  const encounter = content.encounters[activeBattle.encounterId]
-  const activeWeapon = save.boundItems[save.character.bondedEquipment.weapon ?? '']
-  const playerSkills = player.skillIds
-    .map((skillId) => content.combatSkills[skillId])
-    .filter((skill) => Boolean(skill))
-  const usableConsumables = save.inventory.filter((instance) => {
+  const target = enemies.find((enemy) => enemy.id === targetId && enemy.alive) ?? enemies.find((enemy) => enemy.alive) ?? enemies[0]
+  const encounter = content.encounters[battle.encounterId]
+  const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((skill) => Boolean(skill))
+  const consumables = save.inventory.filter((instance) => {
     const definition = content.items[instance.definitionId]
     return definition?.category === 'consumable' && definition.combatEffects.length > 0
   })
-  const activeConsumable = usableConsumables.find((item) => item.instanceId === selectedConsumableId) ?? usableConsumables[0]
-  const activeConsumableDefinition = activeConsumable
-    ? content.items[activeConsumable.definitionId]
-    : undefined
-  const canUseConsumable = Boolean(activeConsumableDefinition?.combatEffects.some((effect) =>
+  const selectedItem = consumables.find((item) => item.instanceId === selectedConsumableId) ?? consumables[0]
+  const itemDefinition = selectedItem ? content.items[selectedItem.definitionId] : undefined
+  const itemUseful = Boolean(itemDefinition?.combatEffects.some((effect) =>
     effect.type === 'restoreHp' && player.hp < player.maxHp
     || effect.type === 'restoreMp' && player.mp < player.maxMp
     || effect.type === 'cleanseHarmful' && player.statusEffects.some((status) => content.statusEffects[status.definitionId]?.tone === 'harmful'),
   ))
+  const isPlayerTurn = battle.phase === 'AwaitingAction' && !turnCue
+  const drops = battle.rewards.lootDefinitionIds
+  const allPicked = collected.length === drops.length
+  const activeWeapon = save.boundItems[save.character.bondedEquipment.weapon ?? '']
 
-  const leave = () => {
-    returnToTerran()
-    if (!unified) navigate('/terran')
+  const send = (command: Parameters<typeof submit>[0]) => {
+    if (!isPlayerTurn) return
+    setMenu(null)
+    submit(command)
   }
-  const continueExpedition = () => {
-    finishBattleIntoExpedition()
-    if (!unified) navigate(save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon' : '/expedition')
+  const end = (toCity: boolean) => {
+    if (toCity) returnToTerran()
+    else finishBattleIntoExpedition()
+    if (!unified) navigate(toCity ? '/terran' : save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon' : '/expedition')
   }
-
-  const attack = () => {
-    if (selectedEnemy?.alive) submit({ type: 'attack', targetId: selectedEnemy.id })
-  }
-  const handleSkill = (skillId: string) => {
-    const skill = content.combatSkills[skillId]
-    const targetId = skill?.target === 'self' ? player.id : selectedEnemy?.id
-    if (skill && targetId && (skill.target === 'self' || selectedEnemy?.alive)) {
-      submit({ type: 'skill', skillId: skill.id, targetId })
-    }
-  }
-  const useItem = () => {
-    if (activeConsumable) {
-      submit({
-        type: 'item',
-        itemInstanceId: activeConsumable.instanceId,
-        targetId: player.id,
-      })
-    }
-  }
-
-  const sceneContent = (
-    <div className="terran-game battle-game">
-      <header className="terran-game__topbar">
-        <div><span className="eyebrow">ENCONTRO · COMBATE POR TURNOS</span><h1>{encounter?.name ?? 'Combate'}</h1></div>
-        <div className="terran-game__readout"><Crosshair size={16} /> {encounter?.locationLabel ?? 'ASTRAVÉL'}<span>Rodada {activeBattle.round} · {activeBattle.phase}</span></div>
-      </header>
-
-      <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
-        <section className="terran-game__stage battle-game__stage" aria-label="Viewport unificada de combate">
-          <section className={`battlefield battle-game__field ${save.world.currentLocationId === FUNGAL_DUNGEON_ID ? 'battle-game__field--dungeon' : 'battle-game__field--astravel'}`} aria-label="Campo de batalha">
-            <WorldBattleBackdrop save={save} />
-            <div className="battlefield__mist" aria-hidden="true" />
-            <div className={`battle-enemy-party battle-enemy-party--${enemies.length}`}>
-              {enemies.map((enemy, index) => (
-                <button key={enemy.id} type="button"
-                  className={`battle-enemy ${content.enemies[enemy.definitionId]?.boss ? 'battle-enemy--boss' : ''} ${!enemy.alive ? 'defeated' : ''} ${selectedEnemy?.id === enemy.id ? 'selected' : ''}`}
-                  onClick={() => enemy.alive && setSelectedTargetId(enemy.id)} disabled={!enemy.alive}
-                  aria-label={`Selecionar alvo ${enemy.name} ${index + 1}`} aria-pressed={selectedEnemy?.id === enemy.id}>
-                  <AssetImage assetId={content.enemies[enemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} />
-                  <span>{enemy.name}</span>
-                  <i><b style={{ width: `${(enemy.hp / enemy.maxHp) * 100}%` }} /></i>
-                  {selectedEnemy?.id === enemy.id && enemy.alive ? <Crosshair size={18} /> : null}
-                </button>
-              ))}
-            </div>
-            <div className="turn-orbit"><span>{activeBattle.round}</span><small>RODADA</small></div>
-          </section>
-
-          <div className="terran-game__hud battle-game__menu" aria-label="Informações do combate">
-            <button type="button" className={drawer === 'status' ? 'active' : ''} aria-label="Abrir Status de combate"
-              aria-pressed={drawer === 'status'} onClick={() => setDrawer(drawer === 'status' ? null : 'status')}>
-              <UserRound size={19} /><span>Status</span>
-            </button>
-            <button type="button" className={drawer === 'log' ? 'active' : ''} aria-label="Abrir Registro de batalha"
-              aria-pressed={drawer === 'log'} onClick={() => setDrawer(drawer === 'log' ? null : 'log')}>
-              <ScrollText size={19} /><span>Registro</span>
-            </button>
-          </div>
-
-          <div className="battle-game__vitals battle-game__vitals--player">
-            <strong>{player.name}</strong><span>{player.hp}/{player.maxHp} PV · {player.mp}/{player.maxMp} MP</span>
-            <i><b style={{ width: `${player.hp / player.maxHp * 100}%` }} /></i>
-          </div>
-          {selectedEnemy ? <div className="battle-game__vitals battle-game__vitals--enemy">
-            <strong>{selectedEnemy.name}</strong><span>{selectedEnemy.hp}/{selectedEnemy.maxHp} PV</span>
-            <i><b style={{ width: `${selectedEnemy.hp / selectedEnemy.maxHp * 100}%` }} /></i>
-          </div> : null}
-
-          {activeBattle.phase === 'AwaitingAction' ? <div className="battle-command-bar battle-game__commands">
-            <GameButton variant="primary" onClick={attack} disabled={!selectedEnemy?.alive}><Swords size={18} /> Atacar</GameButton>
-            {playerSkills.length ? playerSkills.slice(0, 3).map((skill) => (
-              <GameButton key={skill.id} variant="secondary" onClick={() => handleSkill(skill.id)}
-                disabled={player.mp < skill.mpCost || (skill.target === 'enemy' && !selectedEnemy?.alive)} title={skill.description}>
-                <Sparkles size={18} /> {skill.name} · {skill.mpCost} MP
-              </GameButton>
-            )) : <GameButton variant="secondary" disabled><Sparkles size={18} /> Habilidade bloqueada</GameButton>}
-            <GameButton variant="secondary" onClick={() => submit({ type: 'defend' })}><Shield size={18} /> Defender</GameButton>
-            <select className="battle-game__consumable-select" aria-label="Selecionar consumível" value={activeConsumable?.instanceId ?? ''} onChange={(event) => setSelectedConsumableId(event.target.value)} disabled={usableConsumables.length === 0}>
-              {usableConsumables.length === 0 && <option value="">Sem consumíveis</option>}
-              {usableConsumables.map((instance) => <option key={instance.instanceId} value={instance.instanceId}>{content.items[instance.definitionId]?.name} ×{instance.quantity}</option>)}
-            </select>
-            <GameButton variant="ghost" onClick={useItem} disabled={!activeConsumable || !canUseConsumable}
-              title={activeConsumableDefinition?.description}><Backpack size={18} /> {activeConsumableDefinition?.name ?? 'Sem consumível'}</GameButton>
-            <GameButton variant="ghost" onClick={() => submit({ type: 'flee' })} disabled={!activeBattle.canFlee}><Footprints size={18} /> Fugir</GameButton>
-          </div> : null}
-
-          {activeBattle.phase === 'Victory' ? <div className="battle-result battle-result--victory battle-game__result">
-            <Sparkles size={26} />
-            <div><p className="eyebrow">VITÓRIA</p><h2>{encounter?.victoryTitle ?? 'A rota foi preservada'}</h2><p>{encounter?.victorySummary}</p><p>+{activeBattle.rewards.characterXp} XP · +{activeBattle.rewards.gold} Ouro · +{activeBattle.rewards.boundResonance} Ressonância · {activeBattle.rewards.lootDefinitionIds.length} drop</p></div>
-            {!activeBattle.claimed ? <GameButton variant="primary" onClick={claim}>Receber recompensas</GameButton> : <>
-              <GameButton variant="primary" onClick={continueExpedition}>Continuar expedição</GameButton>
-              <GameButton variant="ghost" onClick={leave}>Retornar a Terran</GameButton>
-            </>}
-          </div> : null}
-
-          {activeBattle.phase === 'Defeat' ? <div className="battle-result battle-result--defeat battle-game__result">
-            <Shield size={26} /><div><p className="eyebrow">DERROTA</p><h2>Retirada necessária</h2><p>A punição final de derrota permanece OWNER_DECISION.</p></div>
-            <GameButton variant="secondary" onClick={leave}>Retornar a Terran</GameButton>
-          </div> : null}
-        </section>
-
-        {drawer ? <aside className="terran-game__drawer battle-game__drawer" aria-label={`Painel lateral: ${drawer === 'status' ? 'Status de combate' : 'Registro de batalha'}`}>
-          <header><span className="eyebrow">MÁQUINA DE ESTADOS · {activeBattle.phase}</span><h2>{drawer === 'status' ? 'Status de combate' : 'Registro de batalha'}</h2>
-            <button type="button" onClick={() => setDrawer(null)} aria-label="Fechar painel"><X size={19} /></button>
-          </header>
-          <div className="terran-game__drawer-content">
-            {drawer === 'status' ? <>
-              <div className="battle-game__identity"><AssetImage assetId={save.character.portraitAssetId} /><div><span className="eyebrow">TERRÍRIAN</span><strong>{player.name}</strong><small>Arma G{activeWeapon?.grade ?? 1} · {activeWeapon?.resonance ?? 0} R</small></div></div>
-              <ProgressBar value={player.hp} max={player.maxHp} label="Vida" tone="health" />
-              <ProgressBar value={player.mp} max={player.maxMp} label="Mana" />
-              <dl className="combat-stats"><div><dt>Ataque</dt><dd>{player.attackPower}</dd></div><div><dt>Mitigação</dt><dd>{player.mitigation}</dd></div><div><dt>Iniciativa</dt><dd>{player.initiative}</dd></div></dl>
-              <StatusList combatant={player} />
-              <div className="enemy-roster">{enemies.map((enemy, index) => <button key={enemy.id} type="button"
-                className={selectedEnemy?.id === enemy.id ? 'selected' : ''} onClick={() => enemy.alive && setSelectedTargetId(enemy.id)} disabled={!enemy.alive}>
-                <span>{index + 1}</span><div><strong>{enemy.name}</strong><small>{enemy.hp}/{enemy.maxHp} Vida</small></div>{enemy.alive ? <Crosshair size={15} /> : <span>×</span>}
-              </button>)}</div>
-              {selectedEnemy ? <div className="target-inspector"><AssetImage assetId={content.enemies[selectedEnemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} />
-                <p className="eyebrow">ALVO SELECIONADO</p><strong>{selectedEnemy.name}</strong><ProgressBar value={selectedEnemy.hp} max={selectedEnemy.maxHp} label="Vida" tone="health" /><StatusList combatant={selectedEnemy} /></div> : null}
-              <div className="initiative-strip" aria-label="Ordem de iniciativa">{activeBattle.initiativeOrder.map((combatantId, index) => {
-                const combatant = activeBattle.combatants[combatantId]
-                return <span key={combatantId} className={activeBattle.actorId === combatantId ? 'active' : ''}>{index + 1}. {combatant.name}</span>
-              })}</div>
-            </> : <div className="battle-log-panel"><div className="battle-log" aria-live="polite">
-              {activeBattle.log.slice(-14).map((entry) => <p key={entry.id} className={`battle-log__${entry.tone}`}><span>[R{entry.round}]</span> {entry.message}</p>)}
-            </div><details><summary>Inspecionar fases resolvidas</summary><code>{activeBattle.phaseHistory.join(' → ')}</code></details></div>}
-          </div>
-        </aside> : null}
-      </div>
-    </div>
+  const button = (label: string, icon: React.ReactNode, onClick: () => void, disabled = false, selected = false) => (
+    <button key={label} type="button" className={`pixel-battle__command ${selected ? 'is-selected' : ''}`} disabled={disabled} onClick={onClick}>
+      {icon}<span>{label}</span>
+    </button>
   )
 
-  return unified ? sceneContent : <GameShell fluid immersive>{sceneContent}</GameShell>
+  const scene = <div className="pixel-battle">
+    <header className="pixel-battle__header" aria-label="Encontro de combate">
+      <strong>TERRÚNIA</strong>
+      <span>{battle.waveIndex ? 'PORTAL · ONDAS DA RUÍNA' : encounter?.locationLabel ?? 'ASTRAVÉL'} · {encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}</span>
+      <small>{battle.waveIndex ? 'ONDA ' + battle.waveIndex + ' · ' : ''}RODADA {battle.round} · {turnCue ? 'TURNO DOS INIMIGOS' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'TURNO DO JOGADOR'}</small>
+    </header>
+    <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
+      <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} />
+      <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''}`}>
+        <AssetImage assetId={save.character.portraitAssetId} alt={player.alive ? 'Terrírian em posição de batalha' : 'Terrírian derrotado'} />
+      </div>
+      <div className={`pixel-battle__enemies pixel-battle__enemies--${enemies.length}`}>
+        {enemies.map((enemy, i) => <button type="button" key={enemy.id}
+          className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${!enemy.alive ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''}`}
+          onClick={() => enemy.alive && setTargetId(enemy.id)} disabled={!enemy.alive}
+          aria-label={`Selecionar ${enemy.name} ${i + 1}, ${enemy.hp} de ${enemy.maxHp} de Vida`}
+          aria-pressed={enemy.id === target.id}>
+          {enemy.alive && enemy.id === target.id && <span className="pixel-battle__target-arrow" aria-hidden="true">◆</span>}
+          <span className="pixel-battle__enemy-bar"><i style={{ width: clampPercent(enemy.hp, enemy.maxHp) + '%' }} /></span>
+          <AssetImage assetId={content.enemies[enemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} alt="" />
+          <small>{enemy.name}</small>
+        </button>)}
+      </div>
+      <div className="pixel-battle__turn-order" aria-label="Ordem de turnos">
+        {battle.initiativeOrder.map((id) => {
+          const actor = battle.combatants[id]
+          return <span key={id} className={`${id === battle.actorId ? 'is-current' : ''} ${!actor.alive ? 'is-dead' : ''}`}
+            title={actor.name}>{actor.side === 'player' ? '★' : '✦'}</span>
+        })}
+      </div>
+      {turnCue && <div className="pixel-battle__turn-cue" role="status">TURNO DOS INIMIGOS</div>}
+      {battle.phase === 'Victory' && !battle.claimed && <div className="pixel-battle__drops" aria-label="Espólios disponíveis">
+        <strong>CLIQUE PARA RECOLHER OS ESPÓLIOS</strong>
+        {drops.map((id, index) => <button type="button" key={index} className={collected.includes(index) ? 'is-picked' : ''}
+          onClick={() => setCollected((current) => current.includes(index) ? current : [...current, index])}
+          disabled={collected.includes(index)} title={content.items[id]?.name ?? id}>
+          <AssetImage assetId={content.items[id]?.iconAssetId ?? 'item.fungal-nucleus'} alt={content.items[id]?.name ?? id} />
+          <span>{collected.includes(index) ? 'RECOLHIDO' : content.items[id]?.name ?? id}</span>
+        </button>)}
+      </div>}
+    </main>
+    <div className="pixel-battle__foot">
+      <section className="pixel-battle__panel pixel-battle__stats">
+        <h2>TERRÍRIAN</h2>
+        <div className="pixel-battle__stat-body">
+          <AssetImage assetId={save.character.portraitAssetId} alt="" className="pixel-battle__portrait" />
+          <div>
+            <strong>{player.name}</strong>
+            <label>VIDA <span>{player.hp} / {player.maxHp}</span></label>
+            <div className="pixel-battle__meter hp"><i style={{ width: clampPercent(player.hp, player.maxHp) + '%' }} /></div>
+            <label>MANA <span>{player.mp} / {player.maxMp}</span></label>
+            <div className="pixel-battle__meter mp"><i style={{ width: clampPercent(player.mp, player.maxMp) + '%' }} /></div>
+          </div>
+        </div>
+        <div className="pixel-battle__equipment" aria-label="Cinco equipamentos vinculados">
+          {BOUND_SLOTS.map((slot) => {
+            const bondId = save.character.bondedEquipment[slot]
+            const instance = bondId ? save.boundItems[bondId] : undefined
+            const base = instance ? content.boundItemBases[instance.baseItemId] : undefined
+            return <span key={slot} title={slot + (instance ? ' · grau ' + instance.grade : ' · vazio')}>
+              <AssetImage assetId={base?.assetIdByGrade[instance?.grade ?? 1] ?? boundSlotPreviewAssetIds[slot]} alt={slot} />
+            </span>
+          })}
+        </div>
+        <small>Arma vinculada G{activeWeapon?.grade ?? 1} · {activeWeapon?.resonance ?? 0} R</small>
+      </section>
+      <section className="pixel-battle__panel pixel-battle__actions" aria-label="Ações de combate">
+        <h2>{battle.phase === 'AwaitingAction' ? 'ESCOLHA SUA AÇÃO' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'COMBATE'}</h2>
+        {battle.phase === 'AwaitingAction' ? <>
+          <div className="pixel-battle__commands">
+            {button('ATACAR', <Swords />, () => send({ type: 'attack', targetId: target.id }), !isPlayerTurn || !target.alive)}
+            {button('HABILIDADES', <Sparkles />, () => setMenu(menu === 'skills' ? null : 'skills'), !isPlayerTurn, menu === 'skills')}
+            {button('ARREMESSÁVEIS', <Bomb />, () => setMenu(menu === 'throwables' ? null : 'throwables'), !isPlayerTurn, menu === 'throwables')}
+            {button('MAGIAS', <WandSparkles />, () => setMenu(menu === 'magic' ? null : 'magic'), !isPlayerTurn, menu === 'magic')}
+            {button('RUNAS', <Gem />, () => setMenu(menu === 'runes' ? null : 'runes'), !isPlayerTurn, menu === 'runes')}
+            {button('ESSÊNCIAS', <Zap />, () => setMenu(menu === 'essences' ? null : 'essences'), !isPlayerTurn, menu === 'essences')}
+            {button('ITENS / POÇÕES', <Backpack />, () => setMenu(menu === 'items' ? null : 'items'), !isPlayerTurn, menu === 'items')}
+            {button('DEFENDER', <Shield />, () => send({ type: 'defend' }), !isPlayerTurn)}
+            {button('FUGIR', <Footprints />, () => send({ type: 'flee' }), !isPlayerTurn || !battle.canFlee)}
+          </div>
+          {menu && <div className="pixel-battle__submenu">
+            <button type="button" aria-label="Fechar opções" onClick={() => setMenu(null)}>×</button>
+            {menu === 'skills' ? skills.length ? skills.map((skill) =>
+              <button key={skill.id} disabled={player.mp < skill.mpCost || (skill.target === 'enemy' && !target.alive)}
+                onClick={() => send({ type: 'skill', skillId: skill.id, targetId: skill.target === 'self' ? player.id : target.id })}>
+                {skill.name} · {skill.mpCost} MP</button>) : <span>Nenhuma habilidade desbloqueada.</span> : null}
+            {menu === 'items' ? consumables.length ? <><select aria-label="Selecionar consumível" value={selectedItem?.instanceId ?? ''}
+              onChange={(event) => setSelectedConsumableId(event.target.value)}>
+              {consumables.map((item) => <option key={item.instanceId} value={item.instanceId}>{content.items[item.definitionId].name} ×{item.quantity}</option>)}
+            </select><button disabled={!itemUseful} onClick={() => selectedItem && send({ type: 'item', itemInstanceId: selectedItem.instanceId, targetId: player.id })}>USAR POÇÃO</button></> :
+              <span>Sem consumíveis disponíveis.</span> : null}
+            {menu && !['skills', 'items'].includes(menu) ? <span>{menu.toUpperCase()} — aguardando definição das ações e custos. Nenhum recurso será consumido.</span> : null}
+          </div>}
+        </> : battle.phase === 'Victory' ? <div className="pixel-battle__result">
+          <p>+{battle.rewards.characterXp} XP · +{battle.rewards.gold} Ouro · {drops.length} drops</p>
+          {!battle.claimed ? <button disabled={!allPicked} onClick={claim}>{allPicked ? 'CONFIRMAR RECOMPENSAS' : 'RECOLHA TODOS OS ITENS'}</button> : <>
+            {battle.waveIndex ? <button onClick={nextWave}>PRÓXIMA ONDA · {battle.waveIndex + 1}</button> :
+              <button onClick={() => end(false)}>CONTINUAR EXPEDIÇÃO</button>}
+            <button onClick={() => end(true)}>RETORNAR A TERRAN</button>
+          </>}
+        </div> : <div className="pixel-battle__result"><p>O Terrírian caiu. A penalidade definitiva continua OWNER_DECISION.</p>
+          <button onClick={() => end(true)}>RETORNAR A TERRAN</button></div>}
+      </section>
+      <section className="pixel-battle__panel pixel-battle__target">
+        <h2>ALVO <button type="button" onClick={() => setShowLog(!showLog)} aria-expanded={showLog} aria-label="Abrir registro de combate"><ScrollText size={16} /></button></h2>
+        {showLog ? <div className="pixel-battle__log" aria-live="polite">
+          {battle.log.slice(-8).map((entry) => <p key={entry.id}>R{entry.round} · {entry.message}</p>)}
+        </div> : <div className="pixel-battle__target-info">
+          <AssetImage assetId={content.enemies[target.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} alt="" />
+          <div><strong>{target.name}</strong><span>{target.hp} / {target.maxHp} PV</span>
+            <div className="pixel-battle__meter hp"><i style={{ width: clampPercent(target.hp, target.maxHp) + '%' }} /></div></div>
+        </div>}
+        <p className="pixel-battle__hint"><Crosshair size={14} /> {battle.phase === 'Victory' ? 'Recolha os espólios antes de sair.' : battle.phase === 'Defeat' ? 'A expedição foi interrompida.' : 'Selecione um inimigo e escolha sua ação.'}</p>
+      </section>
+    </div>
+  </div>
+
+  return unified ? scene : <GameShell fluid immersive>{scene}</GameShell>
 }
 
-export function BattleScreen() {
-  return <BattleScene />
-}
+export function BattleScreen() { return <BattleScene /> }

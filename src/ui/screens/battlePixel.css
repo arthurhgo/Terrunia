@@ -1,0 +1,72 @@
+/* Battle presentation v0.1 — VISUAL_DRAFT. CSS never determines combat rules. */
+.pixel-battle { --gold:#dda64b; --rim:#69461b; --ink:#050d19; --cyan:#3ae1f3; display:flex; flex-direction:column; min-height: min(900px,calc(100vh - 24px)); width:100%; background:#061020; color:#f3e6bd; font-family:Georgia,serif; border:3px solid var(--rim); box-shadow:inset 0 0 0 3px #d1973d,0 0 24px #081022; overflow:hidden; }
+.pixel-battle__header{display:grid;grid-template-columns:minmax(125px,1fr) 2fr minmax(190px,1fr);align-items:center;gap:12px;min-height:58px;padding:7px 17px;background:linear-gradient(180deg,#101a2d,#020b16);border-bottom:3px ridge var(--gold);text-align:center;letter-spacing:.1em;text-shadow:1px 2px #050809}
+.pixel-battle__header strong{text-align:left;font-size:clamp(16px,1.8vw,26px);letter-spacing:.17em;color:#ffdb86}
+.pixel-battle__header span{font-size:clamp(12px,1.15vw,19px);color:#f1c779}
+.pixel-battle__header small{justify-self:end;border:2px solid var(--rim);padding:8px;font-size:clamp(10px,.95vw,15px);color:var(--cyan);font-weight:bold}
+.pixel-battle__arena{position:relative;isolation:isolate;flex:1;min-height:320px;overflow:hidden;background:#0b2339;}
+.pixel-battle__canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;object-fit:fill;filter:brightness(.88)}
+.pixel-battle__arena:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#020a1559,transparent 30%,transparent 72%,#02091777),linear-gradient(0deg,#05101f9c,transparent 34%);z-index:1}
+.pixel-battle__hero{position:absolute;z-index:3;left:13%;bottom:5%;width:clamp(80px,12vw,188px);aspect-ratio:1;display:grid;place-items:end center;filter:drop-shadow(7px 8px 0 #0008);transform-origin:bottom center;}
+.pixel-battle__hero img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;transform:scaleX(-1)}
+.pixel-battle__enemies{position:absolute;z-index:3;left:45%;right:5%;bottom:23%;height:47%;display:flex;justify-content:space-evenly;align-items:flex-end;gap:1.6%}
+.pixel-battle__enemy{position:relative;background:none;border:0;cursor:pointer;color:#fff3c6;min-width:0;flex:1;max-width:175px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;font-family:inherit;font-size:clamp(10px,.9vw,14px);text-shadow:1px 2px 0 #020a11;transition:transform .15s}
+.pixel-battle__enemy img{display:block;width:100%;max-height:155px;aspect-ratio:1;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(4px 7px #0009);}
+.pixel-battle__enemy small{white-space:nowrap;font-size:inherit;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.pixel-battle__enemy.is-target{transform:translateY(-9px);filter:drop-shadow(0 0 9px #f3ba5c)}
+.pixel-battle__enemy.is-dead{opacity:.3;filter:grayscale(1);cursor:not-allowed;transform:rotate(12deg)}
+.pixel-battle__target-arrow{position:absolute;top:-23px;color:#ffcc69;font-size:26px;line-height:1;animation:pb-arrow .8s steps(2,end) infinite}
+.pixel-battle__enemy-bar{display:block;width:min(100%,90px);height:7px;background:#180c12;border:2px solid #1b0e13;box-shadow:0 0 0 1px #b46b37}
+.pixel-battle__enemy-bar i{display:block;height:100%;background:#e63f49}
+.pixel-battle__turn-order{position:absolute;bottom:12px;left:40%;z-index:4;display:flex;gap:7px;padding:5px 9px;background:#03101ee0;border:2px solid #bc833d}
+.pixel-battle__turn-order span{min-width:27px;height:26px;border:1px solid #9c702e;display:grid;place-items:center;color:#cf7853;background:#0c1e29;font-weight:bold}
+.pixel-battle__turn-order .is-current{border-color:#48e6ff;color:#48e6ff;box-shadow:0 0 7px #43e2ff}
+.pixel-battle__turn-order .is-dead{opacity:.35}
+.pixel-battle__foot{display:grid;grid-template-columns:1.05fr 1.5fr 1.05fr;gap:7px;min-height:262px;padding:8px;background:#040913;border-top:3px ridge #d09a43}
+.pixel-battle__panel{position:relative;min-width:0;background:linear-gradient(130deg,#08192a,#020913 83%);border:2px solid #88571f;outline:1px solid #c38a30;outline-offset:-5px;padding:12px 15px;box-shadow:inset 0 0 0 1px #050b16}
+.pixel-battle__panel h2{margin:0 0 10px;padding-bottom:9px;border-bottom:1px solid #8c612f;color:#f5c979;font-size:clamp(16px,1.6vw,22px);letter-spacing:.13em;text-shadow:1px 2px #000}
+.pixel-battle__stat-body{display:grid;grid-template-columns:100px 1fr;gap:12px}
+.pixel-battle__portrait{width:100%;max-width:94px;aspect-ratio:1;border:2px solid #be8940;background:#162638;image-rendering:pixelated}
+.pixel-battle__stat-body strong{font-size:15px;display:block;margin:0 0 4px;overflow-wrap:anywhere}
+.pixel-battle__stat-body label{font-size:13px;display:flex;justify-content:space-between;gap:4px}
+.pixel-battle__meter{height:14px;background:#18222b;border:2px solid #596470;margin:5px 0 8px;box-shadow:inset 0 0 3px #05090e}
+.pixel-battle__meter i{display:block;height:100%;transition:width .25s steps(10,end)}
+.pixel-battle__meter.hp i{background:linear-gradient(#f54c54,#9a182d)}
+.pixel-battle__meter.mp i{background:linear-gradient(#56d7ff,#1165d9)}
+.pixel-battle__equipment{display:flex;gap:5px;justify-content:center;margin:12px 0 7px}
+.pixel-battle__equipment span{min-width:0;flex:1;max-width:52px;aspect-ratio:1;display:grid;place-items:center;border:1px solid #536073;background:#0b111b}
+.pixel-battle__equipment img{width:80%;height:80%;image-rendering:pixelated}
+.pixel-battle__stats>small{display:block;color:#bcb2a0;font-size:11px}
+.pixel-battle__actions{display:flex;flex-direction:column}
+.pixel-battle__commands{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;flex:1}
+.pixel-battle__command,.pixel-battle__result button,.pixel-battle__submenu button{min-width:0;min-height:43px;background:linear-gradient(#112136,#061121);border:2px solid #916126;box-shadow:inset 0 0 0 1px #e1ac55;color:#f1dfb2;font-family:inherit;font-weight:bold;letter-spacing:.04em;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:7px;padding:5px;font-size:clamp(10px,.82vw,15px)}
+.pixel-battle__command svg{height:20px;width:20px;color:#e5b452;flex:none}
+.pixel-battle__command:hover:enabled,.pixel-battle__command:focus-visible,.pixel-battle__command.is-selected,.pixel-battle__result button:hover:enabled{background:#48300b;box-shadow:inset 0 0 0 1px #ffcc65,0 0 6px #d5a43e;color:#fff6d8}
+.pixel-battle button:disabled{opacity:.48;cursor:not-allowed}
+.pixel-battle__submenu{position:absolute;inset:49px 12px 12px;z-index:8;background:#071321f5;border:2px solid #bd8431;padding:14px;overflow-y:auto;display:flex;flex-wrap:wrap;align-content:center;align-items:center;justify-content:center;gap:9px;font-size:15px;text-align:center}
+.pixel-battle__submenu>button:first-child{position:absolute;right:6px;top:6px;min-height:25px;width:29px}
+.pixel-battle__submenu select{background:#10233a;color:#fff4d4;border:1px solid #b88a45;padding:10px;max-width:100%}
+.pixel-battle__result{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;flex:1;text-align:center}
+.pixel-battle__result p{margin:2px 0}
+.pixel-battle__target h2{display:flex;justify-content:space-between}
+.pixel-battle__target h2 button{border:0;background:none;color:#f4c576;cursor:pointer}
+.pixel-battle__target-info{display:grid;grid-template-columns:100px 1fr;gap:8px;align-items:center}
+.pixel-battle__target-info img{width:100%;aspect-ratio:1;object-fit:contain;border:1px solid #ac7028;background:#0b1825;image-rendering:pixelated}
+.pixel-battle__target-info strong{display:block;overflow-wrap:anywhere;text-transform:uppercase;font-size:16px}
+.pixel-battle__target-info span{font-size:13px}
+.pixel-battle__hint{font-size:13px;padding:11px 5px;border-top:1px solid #71532b;color:#c7c9c8;display:flex;gap:6px}
+.pixel-battle__log{max-height:150px;overflow:auto;font-size:12px;line-height:1.35}
+.pixel-battle__drops{position:absolute;z-index:5;right:2%;bottom:12%;max-width:56%;display:flex;flex-wrap:wrap;gap:5px;padding:7px;background:#07111ee6;border:2px solid #d3a34b}
+.pixel-battle__drops>strong{width:100%;font-size:11px;color:#ffdd92}
+.pixel-battle__drops button{display:flex;flex-direction:column;gap:2px;align-items:center;background:#081824;color:#f7dc98;border:1px solid #cc9a41;padding:4px;cursor:pointer;font-size:9px;max-width:95px}
+.pixel-battle__drops button.is-picked{opacity:.5}
+.pixel-battle__drops img{width:36px;height:36px;image-rendering:pixelated}
+.pixel-battle__turn-cue{position:absolute;z-index:8;left:30%;right:30%;top:20%;text-align:center;padding:16px;background:#071327dd;color:#ffc26b;font-size:22px;border:3px solid #bd8f33;animation:pb-cue .62s steps(5,end)}
+.pixel-battle__hero.is-hit,.pixel-battle__enemy.is-hit{animation:pb-hit .5s steps(3,end)}
+.pixel-battle__hero.is-fallen{filter:grayscale(1);transform:rotate(-70deg) translateX(-35px);transform-origin:bottom center;opacity:.8}
+@keyframes pb-hit{0%,50%{filter:brightness(1) sepia(1) saturate(11) hue-rotate(-45deg) drop-shadow(0 0 15px #ff2323)}25%,75%{filter:brightness(2) saturate(0)}100%{filter:none}}
+@keyframes pb-arrow{50%{transform:translateY(6px)}}
+@keyframes pb-cue{0%{opacity:0;transform:scaleX(.1)}30%{opacity:1;transform:scaleX(1)}90%{opacity:1}100%{opacity:0}}
+@media(max-width:850px){.pixel-battle__foot{grid-template-columns:1fr 1fr}.pixel-battle__target{grid-column:1/-1}.pixel-battle__arena{min-height:275px}.pixel-battle__hero{left:7%;width:110px}.pixel-battle__enemies{left:34%;right:2%}.pixel-battle__header{grid-template-columns:1fr 1fr}.pixel-battle__header span{grid-column:1/-1;grid-row:2}.pixel-battle__header small{grid-row:1;grid-column:2}}
+@media(max-width:560px){.pixel-battle__foot{display:flex;flex-direction:column}.pixel-battle__header{padding:5px}.pixel-battle__arena{min-height:230px}.pixel-battle__hero{left:6%;width:80px}.pixel-battle__enemies{bottom:27%;left:31%;height:43%}.pixel-battle__enemy small{display:none}.pixel-battle__panel{padding:9px}.pixel-battle__commands{gap:4px}.pixel-battle__command{font-size:10px;min-height:43px}.pixel-battle__stat-body{grid-template-columns:65px 1fr}.pixel-battle__turn-order{left:10%;bottom:6px}.pixel-battle__drops{max-width:85%}}
+@media(prefers-reduced-motion:reduce){.pixel-battle *{animation:none!important;transition:none!important}}

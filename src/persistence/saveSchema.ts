@@ -210,6 +210,7 @@ const battleSchema = z.object({
   id: idSchema,
   encounterId: idSchema,
   trailNodeId: idSchema,
+  waveIndex: positiveInteger.optional(),
   phase: battlePhaseSchema,
   phaseHistory: z.array(battlePhaseSchema).min(1),
   round: positiveInteger,
