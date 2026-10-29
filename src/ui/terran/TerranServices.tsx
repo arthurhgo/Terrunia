@@ -36,7 +36,7 @@ export function HomeRoomPixels() {
   </div>
 }
 
-export function HomeDrawer({ save }: { save: GameSave }) {
+export function HomeDrawer({ save, canRest = false }: { save: GameSave; canRest?: boolean }) {
   const rest = useGameStore((state) => state.restAtHome)
   const unlocked = save.world.worldFlags.includes(PLAYER_HOME_FLAG)
   const stats = deriveCharacterStats(save, content)
@@ -46,8 +46,8 @@ export function HomeDrawer({ save }: { save: GameSave }) {
     <p>{unlocked ? 'Seu quarto em Terran. Repouso gratuito fora de combate, sem perder progresso.' : 'Alojamento ainda fechado. Daeryn poderá oferecê-lo após sua primeira investigação em Astravél.'}</p>
     <ProgressBar value={save.vitals.hp} max={stats.life.value} label="Vida atual" tone="health" />
     <ProgressBar value={save.vitals.mp} max={stats.mana.value} label="Mana atual" />
-    <button type="button" className="terran-service-action" disabled={!unlocked || Boolean(save.battle)} onClick={rest}>
-      <BedDouble size={17} /> {unlocked ? 'Descansar · Recuperar PV e MP' : 'Conclua “Um Lugar em Terran”'}
+    <button type="button" className="terran-service-action" disabled={!unlocked || Boolean(save.battle) || !canRest} onClick={rest}>
+      <BedDouble size={17} /> {!unlocked ? 'Conclua “Um Lugar em Terran”' : canRest ? 'Descansar · Recuperar PV e MP' : 'Entre na sua casa para descansar'}
     </button>
   </div>
 }

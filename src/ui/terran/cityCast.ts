@@ -1,8 +1,9 @@
-import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
+import type { TerranLocationId } from '../../content/terran'
+import { streetNpcPlacements } from '../../content/streetNpcs'
 import type { TerranNpcPresence } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
-import { getNpcQuestMarker, getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
-import { getCityPoint, type WorldPoint } from './pixelCityArt'
+import { getNpcQuestMarker, getOutdoorCityNpcs } from '../../domain/terran/cityNpcs'
+import type { WorldPoint } from './pixelCityArt'
 
 export type CityActor = {
   id: string
@@ -14,23 +15,20 @@ export type CityActor = {
   marker: '!' | '✓' | null
 }
 
-const spots: readonly WorldPoint[] = [
-  { x: -17, y: 29 }, { x: 18, y: 30 }, { x: 0, y: 34 },
-]
-
+/** Street actors use designer-authored stable positions; the room roster is unrelated. */
 export function getCityCast(save: GameSave): CityActor[] {
-  return TERRAN_LOCATION_IDS.flatMap((locationId) => {
-    const institution = getCityPoint(locationId)
-    return getVisibleNpcsInLocation(save, locationId).slice(0, spots.length).map(({ presence }, index) => ({
-      id: presence.id,
+  const eligible = new Map(getOutdoorCityNpcs(save).map(({ presence }) => [presence.id, presence]))
+  return streetNpcPlacements.flatMap((placement) => {
+    const presence = eligible.get(placement.id)
+    if (!presence) return []
+    return [{
+      id: placement.id,
       presence,
-      locationId,
-      point: { x: institution.x + spots[index].x, y: institution.y + spots[index].y },
-      palette: locationId === 'location_terran_portal_plaza' ? 'portal' : locationId === 'location_terran_eldamar_house' ? 'knowledge'
-        : locationId === 'location_terran_vorren_post' ? 'exploration' : locationId === 'location_terran_bond_workshop' ? 'bond'
-          : locationId === 'location_terran_zareth_barracks' ? 'defense' : locationId === 'location_terran_clan_hall' ? 'clan' : 'healing',
-      variant: index,
+      locationId: placement.locationId,
+      point: { ...placement.point },
+      palette: placement.palette,
+      variant: placement.variant,
       marker: getNpcQuestMarker(save, presence),
-    }))
+    }]
   })
 }

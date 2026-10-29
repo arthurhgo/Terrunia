@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
 import { getOutdoorCityNpcs, getVisibleNpcsInLocation, isNpcVisible } from './cityNpcs'
+import { getCityCast } from '../../ui/terran/cityCast'
+import { isCityWalkable } from '../../ui/terran/cityNavigation'
 
 const createSave = () => createNewSave('owner', 'Teste', 'character.terririan.default', content, '2026-10-28T12:00:00Z')
 
@@ -23,6 +25,12 @@ describe('presença condicional de NPCs de Terran', () => {
     const members = getVisibleNpcsInLocation(save, 'location_terran_clan_hall').map((npc) => npc.presence.id)
     expect(members).not.toContain('presence_class_masters')
     expect(members).not.toContain('presence_main_lore_council')
-    expect(getOutdoorCityNpcs(save).length).toBeGreaterThanOrEqual(7)
+    expect(getOutdoorCityNpcs(save)).toHaveLength(6)
+    const cast = getCityCast(save)
+    expect(cast).toHaveLength(6)
+    expect(cast.every((npc) => npc.id.startsWith('presence_street_'))).toBe(true)
+    expect(cast.every((npc) => isCityWalkable(npc.point))).toBe(true)
+    expect(cast.every((npc) => content.npcs[npc.presence.npcId ?? '']?.questIds.some((id) =>
+      content.quests[id]?.category === 'secondary'))).toBe(true)
   })
 })

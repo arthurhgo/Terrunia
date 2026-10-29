@@ -1,12 +1,12 @@
 import { z } from 'zod'
-import { refreshQuestAvailability } from '../domain/quests/questEngine'
+import { refreshQuestAvailability, createQuestProgress } from '../domain/quests/questEngine'
 import { content } from '../content/catalog'
 import { getBoundSlotCapacity } from '../domain/bond/boundItems'
 import type { GameSave } from '../domain/game/types'
 import { MAX_ACTIVE_QUESTS, SLOT_OCCUPYING_QUEST_STATUSES } from '../domain/quests/questEngine'
 import { deriveCharacterStats } from '../domain/character/derivedStats'
 
-export const CURRENT_SAVE_SCHEMA = 9
+export const CURRENT_SAVE_SCHEMA = 10
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -679,6 +679,36 @@ const migrateV8ToV9 = (legacy: Record<string, unknown>): unknown => {
   return refreshQuestAvailability(next, content, previous.updatedAt)
 }
 
+const migrateV9ToV10 = (legacy: Record<string, unknown>): unknown => {
+  const previous = legacy as unknown as GameSave
+  const quests = structuredClone(previous.quests ?? {})
+  const relationships = structuredClone(previous.relationships ?? {})
+  for (const definition of Object.values(content.quests)) {
+    quests[definition.id] ??= createQuestProgress(definition)
+  }
+  for (const npc of Object.values(content.npcs)) {
+    relationships[npc.id] ??= {
+      npcId: npc.id,
+      discovered: false,
+      affinity: 0,
+      trust: 0,
+      reputationFlags: [],
+      completedQuestIds: [],
+      dialogueFlags: [],
+    }
+  }
+  const next: GameSave = {
+    ...previous,
+    schemaVersion: 10,
+    gameVersion: '0.8.2',
+    quests,
+    relationships,
+    revision: previous.revision + 1,
+    eventLog: [...previous.eventLog, 'SaveMigrated:9->10'],
+  }
+  return refreshQuestAvailability(next, content, previous.updatedAt)
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -721,6 +751,10 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 8) {
     candidate = migrateV8ToV9(candidate as Record<string, unknown>)
     version = 9
+  }
+  if (version === 9) {
+    candidate = migrateV9ToV10(candidate as Record<string, unknown>)
+    version = 10
   }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)

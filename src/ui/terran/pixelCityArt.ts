@@ -3,6 +3,7 @@ import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran
 import type { CityActor } from './cityCast'
 import type { MovingCityActor } from './cityLife'
 import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, WORLD_ACTOR_SCALE, type ActorFacing } from './pixelActorArt'
+import { PLAYER_HOME_CENTER, PLAYER_HOME_DOOR } from './roomContent'
 
 export const CITY_WIDTH = 384
 export const CITY_HEIGHT = 256
@@ -57,6 +58,25 @@ const drawBuilding = (ctx: CanvasRenderingContext2D, id: TerranLocationId, frame
   ctx.fillStyle = '#584c41'; ctx.fillRect(p.x - 8, p.y + 17, 16, 3)
 }
 
+/** Personal residence: additional property, not another Terran institution. */
+const drawPlayerHome = (ctx: CanvasRenderingContext2D, unlocked: boolean) => {
+  const { x, y } = PLAYER_HOME_CENTER
+  ctx.fillStyle = '#132633'; ctx.fillRect(x - 23, y - 18, 46, 37)
+  ctx.fillStyle = '#8c806f'; ctx.fillRect(x - 18, y - 8, 36, 25)
+  ctx.fillStyle = unlocked ? '#527896' : '#3e5068'
+  ctx.beginPath()
+  ctx.moveTo(x - 23, y - 12); ctx.lineTo(x - 12, y - 25)
+  ctx.lineTo(x + 13, y - 25); ctx.lineTo(x + 23, y - 12)
+  ctx.lineTo(x + 23, y - 7); ctx.lineTo(x - 23, y - 7); ctx.closePath(); ctx.fill()
+  ctx.fillStyle = '#d6ad6c'; ctx.fillRect(x - 16, y - 5, 7, 7); ctx.fillRect(x + 9, y - 5, 7, 7)
+  ctx.fillStyle = unlocked ? '#63cbd8' : '#263744'
+  ctx.fillRect(x - 14, y - 3, 3, 3); ctx.fillRect(x + 11, y - 3, 3, 3)
+  ctx.fillStyle = '#654934'; ctx.fillRect(x - 6, y + 3, 12, 15)
+  ctx.fillStyle = unlocked ? '#e5ba6a' : '#6d6661'; ctx.fillRect(x - 4, y + 5, 8, 12)
+  ctx.fillStyle = '#aa8e70'; ctx.fillRect(x - 10, y + 18, 20, 3)
+  if (unlocked) { ctx.fillStyle = '#77dbe1'; ctx.fillRect(x - 2, y - 24, 4, 3) }
+}
+
 const drawTree = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
   ctx.fillStyle = '#172f2c'; ctx.fillRect(x - 7, y - 12, 14, 14)
   ctx.fillStyle = '#47654c'; ctx.fillRect(x - 5, y - 15, 10, 10)
@@ -74,6 +94,7 @@ export const drawPixelCity = (
   facing: ActorFacing,
   playerPalette: string,
   cityCast: readonly (CityActor | MovingCityActor)[],
+  homeUnlocked = false,
 ) => {
   ctx.imageSmoothingEnabled = false
   ctx.clearRect(0, 0, CITY_WIDTH, CITY_HEIGHT)
@@ -94,6 +115,8 @@ export const drawPixelCity = (
     ctx.fillRect(Math.min(plaza.x, to.x) - 9, plaza.y - 9, Math.abs(plaza.x - to.x) + 18, 18)
     ctx.fillRect(to.x - 9, Math.min(plaza.y, to.y) - 9, 18, Math.abs(plaza.y - to.y) + 18)
   }
+  ctx.fillStyle = colors.road
+  ctx.fillRect(PLAYER_HOME_DOOR.x - 9, PLAYER_HOME_DOOR.y, 18, plaza.y - PLAYER_HOME_DOOR.y - 17)
   for (let x = 0; x < CITY_WIDTH; x += 31) {
     for (let y = 0; y < CITY_HEIGHT; y += 27) {
       const n = (x * 31 + y * 7) % 11
@@ -103,6 +126,7 @@ export const drawPixelCity = (
   ctx.fillStyle = '#b09c7c'; ctx.fillRect(plaza.x - 37, plaza.y - 25, 74, 56)
   ctx.fillStyle = colors.roadLight; ctx.fillRect(plaza.x - 32, plaza.y - 20, 64, 46)
   TERRAN_LOCATION_IDS.forEach((id) => drawBuilding(ctx, id, frame))
+  drawPlayerHome(ctx, homeUnlocked)
   const stride = walking ? Math.floor(frame / 8) % 3 : 0
   const renderPlayer = () => {
     drawPlayerAura(ctx, player.x, player.y, frame)

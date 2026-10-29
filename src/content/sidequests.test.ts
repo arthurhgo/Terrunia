@@ -9,7 +9,7 @@ describe('contratos secundários dos NPCs', () => {
   it('tem um contrato por NPC com alvo real e entrega manual', () => {
     expect(sideQuestDefinitions).toHaveLength(npcDefinitions.length)
     for (const npc of npcDefinitions) {
-      const quest = content.quests['side_' + npc.id]
+      const quest = content.quests[npc.questIds.find((id) => content.quests[id]?.category === 'secondary') ?? '']
       expect(quest.giverNpcId).toBe(npc.id)
       expect(quest.turnInNpcId).toBe(npc.id)
       expect(npc.questIds).toContain(quest.id)
@@ -31,10 +31,11 @@ describe('contratos secundários dos NPCs', () => {
     old.wallet.gold = 77
     delete old.quests.side_npc_eldamar
     const migrated = migrateAndValidateSave(old)
-    expect(migrated.schemaVersion).toBe(9)
+    expect(migrated.schemaVersion).toBe(10)
     expect(migrated.wallet.gold).toBe(77)
     expect(migrated.quests.vs_astravel_first_contact.status).toBe('completed')
     expect(migrated.quests.side_npc_eldamar.status).toBe('available')
     expect(migrated.eventLog).toContain('SaveMigrated:8->9')
+    expect(migrated.eventLog).toContain('SaveMigrated:9->10')
   })
 })
