@@ -4,7 +4,7 @@ import { getBoundSlotCapacity } from '../domain/bond/boundItems'
 import type { GameSave } from '../domain/game/types'
 import { MAX_ACTIVE_QUESTS, SLOT_OCCUPYING_QUEST_STATUSES } from '../domain/quests/questEngine'
 
-export const CURRENT_SAVE_SCHEMA = 6
+export const CURRENT_SAVE_SCHEMA = 7
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -42,6 +42,7 @@ const characterSchema = z.object({
   level: positiveInteger,
   xp: nonnegativeNumber,
   xpRequired: z.number().finite().positive(),
+  unspentAttributePoints: nonnegativeInteger,
   attributes: z.object({
     cunning: attributeSchema,
     agility: attributeSchema,
@@ -310,6 +311,14 @@ export const gameSaveSchema = z.object({
         code: 'custom',
         path: ['boundItems', itemId],
         message: 'O Vínculo deve corresponder à chave e ao personagem proprietário.',
+      })
+    }
+    const baseDefinition = content.boundItemBases[item.baseItemId]
+    if (!baseDefinition || baseDefinition.slot !== item.slot) {
+      context.addIssue({
+        code: 'custom',
+        path: ['boundItems', itemId, 'baseItemId'],
+        message: 'A fundação do Vínculo deve existir e corresponder ao slot persistido.',
       })
     }
     const capacity = getBoundSlotCapacity(item.grade)
@@ -594,6 +603,18 @@ const migrateV5ToV6 = (legacy: Record<string, unknown>): unknown => {
   }
 }
 
+const migrateV6ToV7 = (legacy: Record<string, unknown>): unknown => {
+  const character = structuredClone(legacy.character as GameSave['character'])
+  character.unspentAttributePoints ??= 3
+  return {
+    ...legacy,
+    schemaVersion: 7,
+    gameVersion: '0.7.0',
+    character,
+    eventLog: [...(((legacy.eventLog as string[] | undefined) ?? [])), 'SaveMigrated:6->7'],
+  }
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -624,6 +645,10 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 5) {
     candidate = migrateV5ToV6(candidate as Record<string, unknown>)
     version = 6
+  }
+  if (version === 6) {
+    candidate = migrateV6ToV7(candidate as Record<string, unknown>)
+    version = 7
   }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)

@@ -84,7 +84,7 @@ export function CharacterCreationScreen() {
             <Sparkles size={18} />
             <div>
               <strong>Fundação neutra</strong>
-              <p>Astúcia, Agilidade, Força, Vigor e Espírito começam em d6. A distribuição final permanece <code>OWNER_DECISION</code>.</p>
+              <p>Astúcia, Agilidade, Força, Vigor e Espírito começam em d4. Você distribui três pontos livremente antes do primeiro Vínculo.</p>
             </div>
           </div>
 

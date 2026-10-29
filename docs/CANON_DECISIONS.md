@@ -48,10 +48,10 @@ Registro das ambiguidades encontradas durante a implementação do vertical slic
 | Main Lore pós-Classe | A Main Lore precisava reagir à identidade conquistada. | `quest core + clan context + class variant`: a definição permanece única e o texto é resolvido pela Classe ativa após `ClanJoined` + `ClassUnlocked`. |
 | Reset de campanha | Limpar apenas IndexedDB permitiria que Firestore restaurasse a campanha apagada. | `CampaignReset` incrementa `campaignGeneration`, invalida o save cloud em transação, limpa o local e retorna à criação preservando autenticação e preferências. |
 | Personagem único por conta v0.6 | Permitir abrir diretamente a criação ou gravar outro `saveId` na mesma geração produziria personagens concorrentes para o mesmo usuário. | Cada `uid` possui um único Terrírian ativo. Todo novo acesso pede Continuar ou Criar outro; continuar libera a sessão, enquanto criar outro exige o `CampaignReset` oficial antes da criação. Firestore rejeita um segundo `saveId` ativo na mesma geração. |
+| Arsenal livre e atributos v0.7 | Materiais antigos associam armas a arquétipos de Classe, enquanto a direção aprovada exige acesso a qualquer tipo de arma e mantém exatamente cinco Vínculos permanentes. | O jogador escolhe livremente uma das sete fundações de Arma no primeiro Vínculo. Nível e atributos são os únicos pré-requisitos; Clã e Classe nunca bloqueiam equipamento e futuramente concedem apenas bônus/afinidades. O Terrírian recebe três pontos iniciais, parte de d4 e ganha um ponto por nível. Rank classifica a fundação; Grau I–VII representa a evolução permanente do Vínculo. |
 
 ## OWNER_DECISION pendente
 
-- Distribuição inicial dos cinco dados de atributo.
 - Curva final da barra de Essência e recompensas do encontro.
 - Conteúdo definitivo da primeira missão e da rota de Astravél.
 - Kit final da primeira habilidade, consumível e cadência das skills inimigas.

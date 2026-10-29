@@ -7,6 +7,7 @@ import {
   getGradeThreeGemCandidates,
   getGradeTwoInfusionCandidates,
 } from '../../domain/bond/boundItems'
+import { deriveWeaponPreview, evaluateEquipmentRequirements } from '../../domain/bond/equipmentLoadout'
 import { BOUND_SLOT_LABELS, BOUND_SLOTS, type BoundSlot, type Effect } from '../../domain/shared/types'
 import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
@@ -25,6 +26,7 @@ const statLabels: Record<Extract<Effect, { type: 'statModifier' }>['stat'], stri
   initiative: 'Iniciativa',
   essenceGain: 'Ganho de Essência',
 }
+const rankLabels = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'] as const
 
 const effectLabel = (effect: Effect) => {
   switch (effect.type) {
@@ -54,6 +56,10 @@ export function BoundItemScreen() {
   if (!item) return <Navigate to="/terran" replace />
 
   const definition = content.boundItemBases[item.baseItemId]
+  const eligibility = evaluateEquipmentRequirements(save.character, definition)
+  const weaponPreview = boundSlot === 'weapon'
+    ? deriveWeaponPreview(save, content, definition)
+    : null
   const capacity = getBoundSlotCapacity(item.grade)
   const infusionCandidates = getGradeTwoInfusionCandidates(save, content)
   const fragment = infusionCandidates[0]
@@ -150,6 +156,42 @@ export function BoundItemScreen() {
                 ))}
               </div>
             )}
+          </ArcanePanel>
+          <ArcanePanel title="Poder e técnicas" eyebrow={`RANK ${rankLabels[definition.rank - 1]} · GRAU ${item.grade}`}>
+            <p className="bound-foundation-description">{definition.description}</p>
+            {weaponPreview ? (
+              <div className="bound-power-summary">
+                <span><small>Poder-base</small><strong>{definition.basePower}</strong></span>
+                <span><small>Atributo</small><strong>+{weaponPreview.attributeContribution}</strong></span>
+                <span><small>Skill Tree</small><strong>+{weaponPreview.skillTreeContribution}</strong></span>
+                <span><small>Bônus de Clã</small><strong>+{weaponPreview.clanContribution}</strong></span>
+                <span className="total"><small>Ataque total</small><strong>{weaponPreview.totalAttack}</strong></span>
+              </div>
+            ) : null}
+            <div className="arsenal-requirements">
+              {eligibility.requirements.map((requirement) => (
+                <span key={requirement.id} className={requirement.met ? 'met' : 'unmet'}>
+                  {requirement.met ? <Check size={12} /> : <LockKeyhole size={12} />}
+                  {requirement.label}
+                </span>
+              ))}
+            </div>
+            {weaponPreview?.skills.length ? (
+              <div className="bound-skill-list">
+                {weaponPreview.skills.map((skill) => {
+                  const unlocked = skill.grade <= item.grade
+                  return (
+                    <div key={skill.skillId} className={unlocked ? 'unlocked' : 'locked'}>
+                      {unlocked ? <Sparkles size={17} /> : <LockKeyhole size={17} />}
+                      <span>
+                        <strong>{skill.definition?.name ?? skill.skillId}</strong>
+                        <small>Grau {skill.grade} · {skill.definition?.mpCost ?? 0} MP · poder projetado {skill.projectedPower}</small>
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : <p className="field-hint">Esta fundação ainda não possui técnica própria cadastrada.</p>}
           </ArcanePanel>
           <ArcanePanel title="Memórias" eyebrow="HISTÓRIA DO VÍNCULO">
             <div className="memory-list">

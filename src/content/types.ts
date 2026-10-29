@@ -1,5 +1,6 @@
 import type { DraftStatus, Effect, Rarity } from '../domain/shared/types'
 import type { BoundSlot } from '../domain/shared/types'
+import type { AttributeDie, AttributeId } from '../domain/game/types'
 
 export type CombatEffectDefinition =
   | { type: 'damage'; powerBonus: number }
@@ -29,9 +30,24 @@ export type ItemDefinition = {
 export type BoundItemBaseDefinition = {
   id: string
   name: string
+  description: string
   slot: BoundSlot
   archetype: string
+  rank: 1 | 2 | 3 | 4 | 5 | 6 | 7
   basePower: number
+  powerType: 'physical' | 'magical' | 'defensive' | 'utility'
+  damageType: 'cutting' | 'piercing' | 'blunt' | 'arcane' | 'protection' | 'resonance'
+  weightClass: 'light' | 'medium' | 'heavy'
+  scalingAttribute: AttributeId
+  requirements: {
+    level: number
+    attributes: Partial<Record<AttributeId, AttributeDie>>
+  }
+  skillUnlocks: Array<{
+    grade: 1 | 2 | 3 | 4 | 5 | 6 | 7
+    skillId: string
+  }>
+  statBonuses: Partial<Record<'maxHp' | 'maxMp' | 'mitigation' | 'initiative', number>>
   treeId: string
   assetIdByGrade: Partial<Record<1 | 2 | 3 | 4 | 5 | 6 | 7, string>>
   status: DraftStatus
