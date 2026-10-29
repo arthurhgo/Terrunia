@@ -5,8 +5,8 @@ Status: `VISUAL_DRAFT`/`CONTENT_DRAFT`, integração técnica de 2026-10-28.
 ## Identidade visual
 
 - A primeira instância externa tem canvas **384 × 256 px** em perspectiva superior 3/4, coerente com Terran v0.3. Texturas, troncos rúnicos, riacho de energia, vegetação bioluminescente, Fungorros e marcos são desenhados com retângulos de pixels inteiros, sem assets externos obrigatórios.
-- A malha técnica de movimento usa células de **8 × 8 px** com corredor transitável em torno dos pontos da definição data-driven `trail_astravel_entry`. Não há colisão atrelada às cores ou sprites.
-- O protagonista reaproveita a matriz 16×16 (quadro 32×32) ou spritesheet configurável pelo registro central. Movimento manual, clique, WASD, setas e D-pad; E investiga o marco alcançado. `settings.reducedMotion` pausa efeitos e passadas automáticas.
+- A malha técnica de movimento usa células de **8 × 8 px** em toda a instância. O caminho de terra orienta, mas não restringe deslocamento: bordas e árvores desenhadas são os colisores físicos compartilhados entre arte e pathfinding.
+- O protagonista reaproveita a matriz 16×16 na mesma escala dos NPCs, com aura amarela pixelada, ou spritesheet configurável pelo registro central. Movimento manual, clique, WASD, setas e D-pad; E investiga o marco alcançado. `settings.reducedMotion` pausa efeitos e passadas automáticas.
 - Símbolos e marcos: chegada pelo Portal, Fungorro, acampamento, emboscada, limiar e Colosso Micélio. O desenho final e a topografia são provisórios; as posições dos nós vêm de `src/content/trails.ts`.
 
 ## Fluxo de progressão preservado
@@ -25,6 +25,7 @@ Terran → Praça do Portal → Entrar/Retomar Astravél → /expedition
 - Após vitória, `finishBattleIntoExpedition` encerra apenas o estado de combate já reclamado; loot/XP/Ressonância são concedidos exclusivamente por `claimBattleRewards`. Retirar-se usa `returnToTerran`, mantém os nós concluídos e exige nova autorização de entrada no Portal.
 - A cena do limiar e a cena pós-Colosso usam os gatilhos e marcadores já existentes; não alteram as definições de quests.
 - Abas de navegação principais ficam ocultas na expedição e combate. Mochila, registro de trilha e missão surgem em painéis laterais, com o canvas do cenário preservado.
+- Livre exploração fora da trilha não altera o estado dos marcos. A progressão continua sequencial e somente o marco `current`/`available` pode executar sua ação.
 
 ## Limites da versão
 
@@ -37,4 +38,4 @@ Terran → Praça do Portal → Entrar/Retomar Astravél → /expedition
 - Testes de navegação percorrem todos os seis pontos sem atravessar áreas bloqueadas.
 - Testes de UI garantem que pontos futuros estejam inacessíveis e que combate só comece após o clique de confirmação no nó disponível.
 - Integração testa saída pós-vitória sem pagamento duplo e reentrada da instância sem repetir o registro do Portal.
-- E2E visual em navegador real continua pendente até haver Chromium executável no ambiente de testes.
+- O fluxo visual foi validado em navegador real em 2026-10-29: Terran → Portal → Astravél → primeiro encontro → combate → retorno à instância, em `/play`, sem rolagem vertical.

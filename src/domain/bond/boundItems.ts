@@ -3,6 +3,7 @@ import type { ContentCatalog } from '../../content/catalog'
 import type { BoundItemBaseDefinition } from '../../content/types'
 import type { BoundEquipmentInstance, GameSave } from '../game/types'
 import { fail, ok, type BoundSlot, type Result } from '../shared/types'
+import { createRandomId } from '../shared/randomId'
 
 export const getBoundSlotCapacity = (grade: number) => {
   if (grade <= 1) return { essences: 0, gems: 0, runes: 0, superiorRunes: 0 }
@@ -18,7 +19,7 @@ export const createBoundItem = (
   ownerCharacterId: string,
   definition: BoundItemBaseDefinition,
   now: string,
-  id: string = crypto.randomUUID(),
+  id: string = createRandomId(),
 ): BoundEquipmentInstance => ({
   id,
   baseItemId: definition.id,

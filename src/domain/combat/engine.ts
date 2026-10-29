@@ -8,6 +8,7 @@ import type {
 } from '../../content/types'
 import type { GameSave, InventoryItemInstance } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
+import { createRandomId } from '../shared/randomId'
 import { collectActiveEffects, getFlatStatBonus } from '../skillTree/skillTree'
 import type {
   BattleCommand,
@@ -330,7 +331,7 @@ export const createBattle = (
   save: GameSave,
   encounter: EncounterDefinition,
   catalog: ContentCatalog,
-  id: string = crypto.randomUUID(),
+  id: string = createRandomId(),
 ): BattleState => {
   const player = derivePlayerCombatant(save, catalog)
   const enemies = encounter.enemyDefinitionIds.map((definitionId, index) =>

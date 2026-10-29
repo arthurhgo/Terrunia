@@ -4,6 +4,7 @@ import { createBoundItem, canBindSlot } from '../bond/boundItems'
 import type { AttributeId, AttributeValue, GameSave, QuestProgress } from './types'
 import { createQuestProgress } from '../quests/questEngine'
 import { fail, ok, type Result } from '../shared/types'
+import { createRandomId } from '../shared/randomId'
 
 const createDefaultAttributes = (): Record<AttributeId, AttributeValue> => ({
   cunning: { die: BALANCE.defaultAttributeDie, bonus: 0 },
@@ -20,8 +21,8 @@ export const createNewSave = (
   catalog: ContentCatalog,
   now = new Date().toISOString(),
   ids: { saveId: string; characterId: string } = {
-    saveId: crypto.randomUUID(),
-    characterId: crypto.randomUUID(),
+    saveId: createRandomId(),
+    characterId: createRandomId(),
   },
   campaign: { campaignId: string; campaignGeneration: number } = {
     campaignId: ids.saveId,
@@ -132,7 +133,7 @@ export const bindPrologueWeapon = (
   save: GameSave,
   catalog: ContentCatalog,
   now = new Date().toISOString(),
-  itemId: string = crypto.randomUUID(),
+  itemId: string = createRandomId(),
 ): Result<GameSave> => {
   const definition = catalog.boundItemBases.bound_weapon_prologue_base
   if (!definition) return fail('MISSING_BOUND_BASE', 'A peça-base do prólogo não foi cadastrada.')

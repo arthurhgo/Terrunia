@@ -7,6 +7,8 @@ export const ASTRAVEL_GRID = 8
 const columns = ASTRAVEL_WIDTH / ASTRAVEL_GRID
 const rows = ASTRAVEL_HEIGHT / ASTRAVEL_GRID
 const anchorCache = new WeakMap<TrailDefinition, WorldPoint[]>()
+export type AstravelDecoration = WorldPoint & { kind: 'tree' | 'mushroom'; rune: boolean }
+const decorationCache = new WeakMap<TrailDefinition, AstravelDecoration[]>()
 
 export const getAstravelPoint = (node: TrailNodeDefinition): WorldPoint => ({
   x: Math.round(node.position.x * ASTRAVEL_WIDTH / 100),
@@ -29,13 +31,37 @@ const squaredDistanceToSegment = (point: WorldPoint, start: WorldPoint, end: Wor
   return (point.x - sx) ** 2 + (point.y - sy) ** 2
 }
 
-/** VISUAL_DRAFT: open walking corridor follows the canonical, ordered trail nodes. */
+/**
+ * VISUAL_DRAFT: the forest is an open instance. Progression remains node-based,
+ * but movement is blocked only by the map edge and visible trees.
+ */
 export function isAstravelWalkable(point: WorldPoint, trail: TrailDefinition): boolean {
   if (point.x < 12 || point.x > ASTRAVEL_WIDTH - 12 || point.y < 20 || point.y > ASTRAVEL_HEIGHT - 10) return false
+  return !getAstravelDecorations(trail).some((decoration) => decoration.kind === 'tree'
+    && Math.abs(point.x - decoration.x) <= 8
+    && point.y >= decoration.y - 16
+    && point.y <= decoration.y + 4)
+}
+
+/** Stable decorative obstacles shared by art, collision and pathfinding. */
+export function getAstravelDecorations(trail: TrailDefinition): AstravelDecoration[] {
+  const existing = decorationCache.get(trail)
+  if (existing) return existing
   const anchors = getAnchors(trail)
-  return anchors.some((anchor, index) => index === 0
-    ? Math.hypot(point.x - anchor.x, point.y - anchor.y) <= 22
-    : squaredDistanceToSegment(point, anchors[index - 1], anchor) <= 22 ** 2)
+  const decorations: AstravelDecoration[] = []
+  for (let y = 22; y < ASTRAVEL_HEIGHT; y += 21) {
+    for (let x = 10; x < ASTRAVEL_WIDTH; x += 23) {
+      const seed = (x * 11 + y * 7) % 17
+      const nearRoute = anchors.some((anchor, index) => index === 0
+        ? Math.hypot(x - anchor.x, y - anchor.y) <= 30
+        : squaredDistanceToSegment({ x, y }, anchors[index - 1], anchor) <= 30 ** 2)
+      if (nearRoute) continue
+      if (seed < 7) decorations.push({ x, y, kind: 'tree', rune: seed % 3 === 0 })
+      else if (seed === 9) decorations.push({ x, y, kind: 'mushroom', rune: false })
+    }
+  }
+  decorationCache.set(trail, decorations)
+  return decorations
 }
 
 const cellPoint = (cell: number): WorldPoint => ({

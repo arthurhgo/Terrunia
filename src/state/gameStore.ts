@@ -43,6 +43,7 @@ import {
   type SyncMode,
 } from '../services/sync/syncService'
 import { loadAccountSettings, saveAccountSettings } from '../services/settings/accountSettings'
+import { createRandomId } from '../domain/shared/randomId'
 import { cutscenes, type CutsceneId } from '../domain/terran/cutscenes'
 
 type GameStatus = 'idle' | 'loading' | 'ready' | 'error'
@@ -195,7 +196,7 @@ export const useGameStore = create<GameState>((set, get) => {
         content,
         nowIso(),
         undefined,
-        campaignSeed ?? { campaignId: crypto.randomUUID(), campaignGeneration: 0 },
+        campaignSeed ?? { campaignId: createRandomId(), campaignGeneration: 0 },
       )
       if (preservedSettings) save.settings = preservedSettings
       commit(save)
@@ -707,7 +708,7 @@ export const useGameStore = create<GameState>((set, get) => {
       set({ syncStatus: 'saving', error: null })
       await flushPersistence()
       const campaignSeed = {
-        campaignId: crypto.randomUUID(),
+        campaignId: createRandomId(),
         campaignGeneration: save.campaignGeneration + 1,
       }
       const resetEvent = requestCampaignReset(save, campaignSeed.campaignId, nowIso())

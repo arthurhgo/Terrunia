@@ -19,6 +19,7 @@ import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
 import { GameShell } from '../components/GameShell'
 import { ProgressBar } from '../components/ProgressBar'
+import { WorldBattleBackdrop } from '../world/WorldBattleBackdrop'
 
 const statusName = (definitionId: string) =>
   content.statusEffects[definitionId]?.name ?? definitionId
@@ -125,12 +126,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
 
       <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
         <section className="terran-game__stage battle-game__stage" aria-label="Viewport unificada de combate">
-          <section className="battlefield battle-game__field" aria-label="Campo de batalha">
+          <section className={`battlefield battle-game__field ${save.world.currentLocationId === FUNGAL_DUNGEON_ID ? 'battle-game__field--dungeon' : 'battle-game__field--astravel'}`} aria-label="Campo de batalha">
+            <WorldBattleBackdrop save={save} />
             <div className="battlefield__mist" aria-hidden="true" />
-            <div className="battle-character battle-character--player">
-              <AssetImage assetId={save.character.portraitAssetId} />
-              <span>{player.name}</span>
-            </div>
             <div className={`battle-enemy-party battle-enemy-party--${enemies.length}`}>
               {enemies.map((enemy, index) => (
                 <button key={enemy.id} type="button"

@@ -1,5 +1,5 @@
 import type { DungeonDefinition, DungeonRoomDefinition } from '../../content/types'
-import { ACTOR_PALETTES, drawPixelActor, type ActorFacing } from '../terran/pixelActorArt'
+import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, WORLD_ACTOR_SCALE, type ActorFacing } from '../terran/pixelActorArt'
 import type { WorldPoint } from '../terran/pixelCityArt'
 import { DUNGEON_GRID, DUNGEON_HEIGHT, DUNGEON_WIDTH, isDungeonWalkable } from './dungeonNavigation'
 
@@ -100,10 +100,11 @@ export function drawFungalDungeon(
     if (isDungeonWalkable({ x, y }, dungeon)) fill(ctx, index % 2 ? '#a5b3d3' : '#b5cfad', x, y, 2, 2)
   }
 
-  fill(ctx, '#17282d', player.x - 9, player.y - 4, 18, 4)
+  drawPlayerAura(ctx, player.x, player.y, frame)
+  fill(ctx, '#17282d', player.x - 5, player.y - 2, 10, 3)
   const stride = walking ? Math.floor(frame / 8) % 3 : 0
   if (sprite?.complete && sprite.naturalWidth >= 128 && sprite.naturalHeight >= 128) {
     const row = { down: 0, left: 1, right: 2, up: 3 }[facing]
-    ctx.drawImage(sprite, stride * 32, row * 32, 32, 32, Math.round(player.x - 16), Math.round(player.y - 32), 32, 32)
-  } else drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[variant], 2)
+    ctx.drawImage(sprite, stride * 32, row * 32, 32, 32, Math.round(player.x - 8), Math.round(player.y - 16), 16, 16)
+  } else drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[variant], WORLD_ACTOR_SCALE)
 }

@@ -4,6 +4,7 @@ import { isFirebaseConfigured } from '../firebase/firebase'
 import { getActiveCampaignReference, getActiveCloudSaveId } from './cloudProfileRepository'
 import { getCloudSave, putCloudSave, resetCloudCampaign } from './cloudSaveRepository'
 import type { CampaignReset } from '../../domain/game/campaignReset'
+import { createRandomId } from '../../domain/shared/randomId'
 
 export type SyncMode = 'local' | 'cloud'
 export type CampaignSeed = { campaignId: string; campaignGeneration: number }
@@ -52,11 +53,11 @@ export const loadCampaignSeed = async (ownerId: string): Promise<CampaignSeed> =
     const local = await getLatestLocalSave(ownerId)
     return local
       ? { campaignId: local.campaignId, campaignGeneration: local.campaignGeneration }
-      : { campaignId: crypto.randomUUID(), campaignGeneration: 0 }
+      : { campaignId: createRandomId(), campaignGeneration: 0 }
   }
   const reference = await getActiveCampaignReference(ownerId)
   return {
-    campaignId: reference.activeCampaignId ?? crypto.randomUUID(),
+    campaignId: reference.activeCampaignId ?? createRandomId(),
     campaignGeneration: reference.campaignGeneration,
   }
 }

@@ -5,7 +5,7 @@ Status: implementação técnica `VISUAL_DRAFT`/`CONTENT_DRAFT`, direção de UX
 ## Experiência
 
 - `/terran` é uma cena única, sem abas de navegação no topo. A cidade e o personagem são desenhados em canvas com resolução lógica **384 × 256** e `image-rendering: pixelated`.
-- Perspectiva superior 3/4. O terreno utiliza módulo de **16 × 16 px**; o personagem ocupa quadro de **32 × 32 px**. As sete coordenadas já existentes são as fontes de posição, sem reescrever o cânone geográfico.
+- Perspectiva superior 3/4. O terreno e os atores utilizam módulo de **16 × 16 px**. O Terrírian tem a mesma escala dos NPCs e uma aura amarela de identificação. As sete coordenadas já existentes são as fontes de posição, sem reescrever o cânone geográfico.
 - WASD/setas movem; toque/clique indica destino; botões com nomes acessíveis indicam instituições; **E** interage na proximidade; no celular há controles direcionais.
 - A Casa de Eldamar, Posto de Vorren, Oficina dos Vínculos, Quartel de Zareth, Salão dos Clãs, Casa de Daeryn e Praça do Portal permanecem simultaneamente na cena.
 - Mochila, personagem/Vínculos, diário e evolução abrem um painel **ao lado do mapa**. No celular, o painel se sobrepõe parcialmente à cidade. O mapa não é desmontado quando o jogador interage com a interface.
@@ -80,3 +80,12 @@ O `eventLog` permanece dentro do save local/cloud já versionado. Não exige mig
 - As sete instituições de Terran funcionam como nodes urbanos clicáveis com caminho até a entrada. O termo “node” é técnico/visual e não converte instituições em nós de trilha nem altera o cânone da cidade.
 - Rotas antigas `/terran`, `/expedition`, `/dungeon` e `/battle` redirecionam à raiz unificada na aplicação. Os componentes isolados continuam disponíveis para testes e compatibilidade interna.
 - Velocidade final, aceleração, colisão com moradores e encontros aleatórios permanecem `OWNER_DECISION`. O movimento atual é parametrização técnica `VISUAL_DRAFT`; encontros continuam apenas nos nodes definidos em conteúdo.
+
+## Incremento de navegação espacial v0.5 — 2026-10-29
+
+- O protagonista deixa de ser ampliado a 32×32 no mundo. Terran, Astravél, Câmaras e o cenário de batalha desenham o Terrírian no mesmo quadro 16×16 dos demais atores. Uma aura amarela pixelada, animada e sem efeito de regra identifica o jogador.
+- A viewport imersiva ocupa `100dvh`; cabeçalho, topbar, cenário, HUD e drawer são compostos dentro da altura disponível. O documento não cria rolagem vertical durante cidade, instância ou combate; painéis extensos rolam internamente.
+- O cabeçalho mantém um percurso derivado exclusivamente do save: `Terran → local/Portal → Astravél → marco/Câmaras → Batalha`. O último item representa a posição contextual atual e combate continua sendo estado temporário sobre a instância.
+- Astravél é caminhável fora da trilha desenhada. Bordas e árvores visíveis continuam colisores físicos; marcos bloqueados continuam inacessíveis para progressão. Livre deslocamento não conclui nodes, não inicia encontro e não concede recompensa.
+- O combate desenha a instância corrente como plano de fundo 384×256 e preserva o Terrírian em escala de mundo. Inimigos, comandos, barras e máquina de estados permanecem overlays de combate, sem transportar o personagem para uma tela abstrata.
+- Transições de Portal, marco, batalha, vitória e retorno continuam na rota `/play`; `reducedMotion` remove animação sem remover a continuidade de contexto.
