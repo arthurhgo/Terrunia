@@ -72,6 +72,11 @@ export type BattleRewards = {
   }
 }
 
+export type BattleSource =
+  | { type: 'campaign' }
+  | { type: 'portalHunt' }
+  | { type: 'portalWave'; runId: string; wave: number }
+
 export type BattleState = {
   id: string
   encounterId: string
@@ -85,6 +90,7 @@ export type BattleState = {
   combatants: Record<string, Combatant>
   log: BattleLogEntry[]
   rewards: BattleRewards
+  source: BattleSource
   claimed: boolean
   canFlee: boolean
   consumedItemInstanceIds: string[]

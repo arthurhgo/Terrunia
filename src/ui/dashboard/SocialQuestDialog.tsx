@@ -1,4 +1,4 @@
-import { BookOpenCheck, CheckCheck, Circle, ShieldCheck, X } from 'lucide-react'
+import { BookOpenCheck, CheckCheck, Circle, MapPinned, ShieldCheck, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
@@ -27,21 +27,28 @@ export function SocialQuestDialog({ questId, save, onClose }: Props) {
 
   const npc = content.npcs[definition.giverNpcId]
   const slots = getActiveQuestCount(save)
+  const isTrial = ['clan', 'class'].includes(definition.category) || definition.id === 'main_lore_identity_01'
+  const taskName = definition.category === 'secondary' ? 'missão' : 'prova'
+  const categoryLabel = definition.category === 'clan' ? 'RECRUTAMENTO DE CLÃ'
+    : definition.category === 'class' ? 'PROVA DE CLASSE'
+      : definition.category === 'secondary' ? 'MISSÃO SECUNDÁRIA' : 'MAIN LORE ADAPTADA'
   const openOffer = () => offerQuest(definition.id)
   const decline = () => { declineQuest(definition.id); onClose() }
   const accept = () => acceptQuest(definition.id)
   const complete = () => { turnInQuest(definition.id, definition.turnInNpcId); onClose() }
 
   return (
-    <Modal open onClose={onClose} eyebrow={`${definition.category === 'clan' ? 'RECRUTAMENTO DE CLÃ' : definition.category === 'class' ? 'PROVA DE CLASSE' : 'MAIN LORE ADAPTADA'} · ${slots}/${MAX_ACTIVE_QUESTS}`} title={npc?.name ?? 'Representante'} className="social-quest-modal" footer={
+    <Modal open onClose={onClose} eyebrow={`${categoryLabel} · ${slots}/${MAX_ACTIVE_QUESTS}`} title={`Conversa com ${npc?.name ?? 'Representante'}`} className="social-quest-modal" footer={
       progress.status === 'available'
-        ? <GameButton variant="primary" onClick={openOffer}><BookOpenCheck size={17} /> Conhecer a prova</GameButton>
+        ? <GameButton variant="primary" onClick={openOffer}><BookOpenCheck size={17} /> Conhecer a {taskName}</GameButton>
         : progress.status === 'offered'
-          ? <div className="quest-offer-actions"><GameButton variant="ghost" onClick={decline}><X size={17} /> Ainda não</GameButton><GameButton variant="primary" onClick={accept} disabled={slots >= MAX_ACTIVE_QUESTS}><BookOpenCheck size={17} /> Aceitar prova</GameButton></div>
+          ? <div className="quest-offer-actions"><GameButton variant="ghost" onClick={decline}><X size={17} /> Ainda não</GameButton><GameButton variant="primary" onClick={accept} disabled={slots >= MAX_ACTIVE_QUESTS}><BookOpenCheck size={17} /> Aceitar {taskName}</GameButton></div>
           : progress.status === 'active'
-            ? <GameButton variant="primary" onClick={() => performTrial(definition.id)}><ShieldCheck size={17} /> Realizar prova</GameButton>
+            ? isTrial
+              ? <GameButton variant="primary" onClick={() => performTrial(definition.id)}><ShieldCheck size={17} /> Realizar prova</GameButton>
+              : <GameButton variant="ghost" disabled><MapPinned size={17} /> Complete o objetivo no Portal</GameButton>
             : progress.status === 'ready_to_turn_in'
-              ? <GameButton variant="primary" onClick={complete}><CheckCheck size={17} /> Concluir prova</GameButton>
+              ? <GameButton variant="primary" onClick={complete}><CheckCheck size={17} /> Concluir {taskName}</GameButton>
               : <GameButton variant="ghost" onClick={onClose}>Encerrar conversa</GameButton>
     }>
       <div className="social-quest-detail">

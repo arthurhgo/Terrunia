@@ -161,10 +161,12 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     travel(sourceId)
     setLocationId(sourceId)
     setDrawer('location')
-    if (presence.npcId === 'npc_eldamar') { setEldamarOpen(true); return }
-    const quest = Object.values(content.quests).find((candidate) => candidate.giverNpcId === presence.npcId &&
+    const npc = presence.npcId ? content.npcs[presence.npcId] : null
+    const quest = npc?.questIds.map((id) => content.quests[id]).find((candidate) => candidate &&
       ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[candidate.id]?.status ?? 'locked'))
-    if (quest && content.terranLocations[sourceId].viewKind === 'clanHall') { setSocialQuestId(quest.id); return }
+    const eldamarMainStatus = save.quests.vs_astravel_first_contact?.status
+    if (presence.npcId === 'npc_eldamar' && eldamarMainStatus !== 'completed') { setEldamarOpen(true); return }
+    if (quest) { setSocialQuestId(quest.id); return }
     setDialogueLine(0)
     setDialogue(presence)
   }

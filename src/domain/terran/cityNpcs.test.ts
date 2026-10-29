@@ -25,4 +25,15 @@ describe('presença condicional de NPCs de Terran', () => {
     expect(members).not.toContain('presence_main_lore_council')
     expect(getOutdoorCityNpcs(save).length).toBeGreaterThanOrEqual(7)
   })
+
+  it('liga toda presença nomeada a um NPC com missão secundária', () => {
+    for (const location of Object.values(content.terranLocations)) {
+      for (const presence of location.npcPresences) {
+        expect(presence.npcId, presence.label).toBeTruthy()
+        const npc = content.npcs[presence.npcId!]
+        expect(npc, presence.label).toBeTruthy()
+        expect(npc.questIds.some((questId) => content.quests[questId]?.category === 'secondary'), presence.label).toBe(true)
+      }
+    }
+  })
 })

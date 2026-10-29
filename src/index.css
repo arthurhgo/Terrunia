@@ -2105,3 +2105,60 @@ code {
   .battle-loot-result { width: 96%; max-height: 92%; padding: 9px; }
   .battle-drops button { width: 94px; min-height: 82px; }
 }
+
+/* Portal combat hub — repeatable hunts and the persistent endless-wave record. */
+.portal-combat-hub { display: grid; gap: 9px; border-top: 1px solid rgb(212 177 96 / 25%); padding-top: 12px; }
+.portal-combat-hub__heading { display: flex; align-items: center; gap: 9px; color: var(--gold); }
+.portal-combat-hub__heading h3 { margin: 1px 0 0; }
+.portal-hunt-grid { display: grid; gap: 7px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.portal-hunt-grid article { position: relative; display: grid; min-width: 0; align-content: start; gap: 5px; border: 1px solid #6e613f; padding: 9px; color: #dce5d4; background: linear-gradient(145deg, #121d20, #182a29); box-shadow: inset 0 0 0 2px #080e10; }
+.portal-hunt-grid article > svg { color: #d9b65d; }
+.portal-hunt-grid article strong { color: #f0d68d; font-family: var(--display); font-size: .58rem; line-height: 1.35; }
+.portal-hunt-grid article small { min-height: 2.6em; color: #91aaa2; font-size: .51rem; line-height: 1.3; }
+.portal-hunt-grid__rank { color: #5ee0d0; font-size: .47rem; letter-spacing: .08em; }
+.portal-hunt-grid button { border: 1px solid #8f7133; padding: 6px; color: #f3dda2; background: #2d291d; font-family: var(--display); font-size: .49rem; cursor: pointer; }
+.portal-hunt-grid button:hover { border-color: #70e1d0; color: #d9fffa; background: #163b39; }
+.portal-wave-card { display: grid; align-items: center; gap: 10px; border: 2px solid #aa833b; padding: 12px; color: #d9e3db; background: radial-gradient(circle at 8% 50%, rgb(36 201 186 / 18%), transparent 23%), linear-gradient(135deg, #0a1318, #172526); box-shadow: inset 0 0 0 2px #05090b, 0 0 18px rgb(29 207 191 / 9%); grid-template-columns: auto 1fr; }
+.portal-wave-card__sigil { display: grid; width: 48px; height: 48px; place-items: center; border: 2px solid #35cbbb; border-radius: 50%; color: #8ffff0; box-shadow: 0 0 14px #25c9b466, inset 0 0 10px #25c9b433; }
+.portal-wave-card h3 { margin: 2px 0 4px; color: #f1d88f; }
+.portal-wave-card p { margin: 0; color: #9fb2ac; font-size: .57rem; line-height: 1.45; }
+.portal-wave-card .game-button { grid-column: 1 / -1; }
+.portal-wave-stats { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 8px; }
+.portal-wave-stats span { display: inline-flex; align-items: center; gap: 4px; color: #9ad8cf; font-size: .53rem; }
+.portal-wave-stats strong { color: #f0d28a; }
+
+/* VISUAL_DRAFT — dark cyan ruin arena with black/gold combat frames, following the supplied reference. */
+.pixel-battle-arena,
+.pixel-battle-arena--portal { background: #050b10; }
+.pixel-battle-arena .pixel-battle-arena__sky,
+.pixel-battle-arena--dungeon .pixel-battle-arena__sky,
+.pixel-battle-arena--portal .pixel-battle-arena__sky { height: 62%; background: radial-gradient(circle at 72% 38%, #237f7a 0 2%, #123f45 3% 8%, transparent 18%), linear-gradient(#050b12 0 48%, #0c2026 70%, #123337); }
+.pixel-battle-arena .pixel-battle-arena__sky::before { position: absolute; inset: 5% 4% 0; content: ""; opacity: .88; background: linear-gradient(90deg, #111a1e 0 7%, transparent 7% 13%, #1b292c 13% 18%, transparent 18% 77%, #162428 77% 83%, transparent 83% 91%, #101a1e 91%), repeating-linear-gradient(90deg, transparent 0 14%, rgb(31 100 99 / 16%) 14% 15%); clip-path: polygon(0 0, 8% 0, 8% 73%, 16% 73%, 16% 22%, 22% 22%, 22% 75%, 76% 75%, 76% 17%, 84% 17%, 84% 68%, 92% 68%, 92% 0, 100% 0, 100% 100%, 0 100%); }
+.pixel-battle-arena .pixel-battle-arena__sky::after { top: auto; right: 0; bottom: 0; width: 100%; height: 25%; border-radius: 0; opacity: .65; content: ""; background: radial-gradient(ellipse at 12% 100%, #56ead7 0 2%, #177f76 3% 5%, transparent 6%), radial-gradient(ellipse at 18% 100%, #9effe8 0 1.5%, #218a80 2% 4%, transparent 5%), radial-gradient(ellipse at 86% 100%, #62ead8 0 2%, #166d69 3% 5%, transparent 6%), radial-gradient(ellipse at 93% 100%, #b0fff0 0 1%, #237f78 2% 4%, transparent 5%); box-shadow: none; }
+.pixel-battle-arena .pixel-battle-arena__hills,
+.pixel-battle-arena--dungeon .pixel-battle-arena__hills { top: 33%; height: 24%; opacity: .8; filter: none; background: linear-gradient(155deg, transparent 0 9%, #0b262b 9% 24%, transparent 24% 29%, #102f33 29% 45%, transparent 45% 54%, #0b2227 54% 72%, transparent 72%); }
+.pixel-battle-arena .pixel-battle-arena__treeline,
+.pixel-battle-arena--dungeon .pixel-battle-arena__treeline { top: 44%; height: 20%; opacity: .72; background: repeating-linear-gradient(125deg, #071417 0 12px, #0d2e2e 12px 23px, #061014 23px 33px); }
+.pixel-battle-arena .pixel-battle-arena__ground,
+.pixel-battle-arena--dungeon .pixel-battle-arena__ground { height: 52%; background: repeating-linear-gradient(0deg, rgb(48 139 129 / 8%) 0 3px, transparent 3px 17px), linear-gradient(#163a38, #0c2426 56%, #060f14); }
+.pixel-battle-arena .pixel-battle-arena__ground::after { opacity: .36; background: repeating-linear-gradient(102deg, transparent 0 37px, #38b9aa 38px 40px, transparent 41px 79px); }
+.pixel-battle-platform { border-color: #268a80; background: radial-gradient(ellipse, #174a44 0 35%, #09211f 62%, transparent 70%); filter: drop-shadow(0 0 9px #25c9b455); }
+.battle-game__stage--arena .battle-game__vitals { border-color: #a68242; color: #f2dda3; background: #080d11ed; box-shadow: inset 0 0 0 2px #2c2415, 5px 5px 0 rgb(0 0 0 / 55%); }
+.battle-game__stage--arena .battle-game__vitals span { color: #8ec9bf; }
+.battle-game__stage--arena .battle-game__menu button { border-color: #94733a; color: #f4d791; background: #080d11ed; }
+.battle-command-deck { border-color: #c69d4c; background: #060b0eef; box-shadow: 0 -6px 0 rgb(0 0 0 / 70%), inset 0 2px #302512; }
+.battle-command-deck__prompt { border-color: #9a793d; color: #dbe7de; background: #10191b; box-shadow: inset 0 0 0 2px #05090b; }
+.battle-action-options { border-color: #9a793d; background: #0d1517; }
+.battle-option { border-color: #725d38; color: #d9e2dc; background: #141d1e; box-shadow: 3px 3px 0 #05090a; }
+.battle-option:hover:not(:disabled), .battle-option:focus-visible { border-color: #43d4c3; background: #18312f; }
+.battle-option strong { color: #f0d58e; }
+.battle-option small, .battle-options-empty { color: #8fabaa; }
+.battle-action-families button { border-color: #715b36; color: #bfcac3; background: #0d1618; }
+.battle-action-families button:hover, .battle-action-families button.active { border-color: #dbb65f; color: #ffe6a1; background: #1d302d; box-shadow: inset 4px 0 #30bdae; }
+.battle-turn-banner { border-color: #d1a64d; color: #fff0b6; background: #080d11eb; box-shadow: 0 0 0 4px #2a2113, 8px 8px 0 #0009; }
+
+@media (max-width: 760px) {
+  .portal-hunt-grid { grid-template-columns: 1fr; }
+  .portal-hunt-grid article { grid-template-columns: auto 1fr; align-items: center; }
+  .portal-hunt-grid article small, .portal-hunt-grid article button { grid-column: 1 / -1; }
+}

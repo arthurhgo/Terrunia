@@ -39,8 +39,8 @@ export const createNewSave = (
   )
 
   return {
-    schemaVersion: 7,
-    gameVersion: '0.8.0',
+    schemaVersion: 8,
+    gameVersion: '0.9.0',
     saveId: ids.saveId,
     campaignId: campaign.campaignId,
     campaignGeneration: campaign.campaignGeneration,
@@ -120,6 +120,11 @@ export const createNewSave = (
       },
       completedEncounterIds: [],
       worldFlags: [],
+    },
+    portalCombat: {
+      activeRun: null,
+      bestWave: 0,
+      totalWavesCleared: 0,
     },
     battle: null,
     settings: {

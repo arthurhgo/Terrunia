@@ -135,6 +135,7 @@ export type EncounterDefinition = {
   trailNodeId: string
   enemyDefinitionIds: string[]
   canFlee: boolean
+  portalMode?: 'hunt' | 'wave'
   rewards: {
     characterXp: number
     gold: number
@@ -199,7 +200,7 @@ export type CharacterClassDefinition = {
 
 export type QuestObjectiveDefinition = {
   id: string
-  type: 'talk' | 'kill' | 'collect' | 'visit' | 'interact' | 'completeRite'
+  type: 'talk' | 'kill' | 'collect' | 'visit' | 'interact' | 'completeRite' | 'completeWave'
   targetId: string
   required: number
   label: string

@@ -62,6 +62,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const submit = useGameStore((state) => state.submitBattleCommand)
   const claim = useGameStore((state) => state.claimBattleRewards)
   const finishBattleIntoExpedition = useGameStore((state) => state.finishBattleIntoExpedition)
+  const advancePortalWave = useGameStore((state) => state.advancePortalWave)
   const returnToTerran = useGameStore((state) => state.returnToTerran)
   const navigate = useNavigate()
 
@@ -120,6 +121,18 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
 
   const selectedEnemy = enemies.find((enemy) => enemy.id === selectedTargetId) ?? enemies[0]
   const encounter = content.encounters[activeBattle.encounterId]
+  const encounterName = activeBattle.source.type === 'portalWave'
+    ? `Portal sem Fim · Onda ${activeBattle.source.wave}`
+    : encounter?.name ?? 'Combate'
+  const encounterLocation = activeBattle.source.type === 'portalWave'
+    ? `NEXO DO PORTAL · ONDA ${activeBattle.source.wave}`
+    : encounter?.locationLabel ?? 'ASTRAVÉL'
+  const victoryTitle = activeBattle.source.type === 'portalWave'
+    ? `Onda ${activeBattle.source.wave} superada`
+    : encounter?.victoryTitle ?? 'A rota foi preservada'
+  const victorySummary = activeBattle.source.type === 'portalWave'
+    ? 'Os ecos recuam por um instante. Colete os drops antes de abrir a próxima onda.'
+    : encounter?.victorySummary
   const activeWeapon = save.boundItems[save.character.bondedEquipment.weapon ?? '']
   const playerSkills = player.skillIds.map((skillId) => content.combatSkills[skillId]).filter((skill) => Boolean(skill))
   const itemsByKind = (kind: Exclude<ActionFamily, 'attack' | 'magic'>) => save.inventory.flatMap((instance) => {
@@ -139,6 +152,17 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const continueExpedition = () => {
     finishBattleIntoExpedition()
     if (!unified) navigate(save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon' : '/expedition')
+  }
+  const continueAfterVictory = () => {
+    if (activeBattle.source.type === 'portalWave') {
+      advancePortalWave()
+      return
+    }
+    if (activeBattle.source.type === 'portalHunt') {
+      leave()
+      return
+    }
+    continueExpedition()
   }
   const executeCommand = (command: BattleCommand) => {
     if (presentationBusy || activeBattle.phase !== 'AwaitingAction') return
@@ -211,13 +235,13 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const sceneContent = (
     <div className="terran-game battle-game battle-game--turn-based">
       <header className="terran-game__topbar battle-game__topbar">
-        <div><span className="eyebrow">ENCONTRO · COMBATE POR TURNOS</span><h1>{encounter?.name ?? 'Combate'}</h1></div>
-        <div className="terran-game__readout"><Crosshair size={16} /> {encounter?.locationLabel ?? 'ASTRAVÉL'}<span>Rodada {activeBattle.round}</span></div>
+        <div><span className="eyebrow">ENCONTRO · COMBATE POR TURNOS</span><h1>{encounterName}</h1></div>
+        <div className="terran-game__readout"><Crosshair size={16} /> {encounterLocation}<span>Rodada {activeBattle.round}</span></div>
       </header>
 
       <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
         <section className="terran-game__stage battle-game__stage battle-game__stage--arena" aria-label="Viewport unificada de combate">
-          <div className={`pixel-battle-arena ${save.world.currentLocationId === FUNGAL_DUNGEON_ID ? 'pixel-battle-arena--dungeon' : ''}`}>
+          <div className={`pixel-battle-arena ${save.world.currentLocationId === FUNGAL_DUNGEON_ID ? 'pixel-battle-arena--dungeon' : ''} ${activeBattle.source.type !== 'campaign' ? 'pixel-battle-arena--portal' : ''}`}>
             <div className="pixel-battle-arena__sky" aria-hidden="true" />
             <div className="pixel-battle-arena__hills" aria-hidden="true" />
             <div className="pixel-battle-arena__treeline" aria-hidden="true" />
@@ -272,7 +296,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             </div> : null}
 
             {activeBattle.phase === 'Victory' && !presentationBusy ? <div className="battle-result battle-result--victory battle-game__result battle-loot-result">
-              <div className="battle-loot-result__heading"><Sparkles size={24} /><div><p className="eyebrow">VITÓRIA</p><h2>{encounter?.victoryTitle ?? 'A rota foi preservada'}</h2><p>{encounter?.victorySummary}</p></div></div>
+              <div className="battle-loot-result__heading"><Sparkles size={24} /><div><p className="eyebrow">VITÓRIA</p><h2>{victoryTitle}</h2><p>{victorySummary}</p></div></div>
               {!activeBattle.claimed ? <>
                 <div className="battle-loot-result__instruction"><MousePointerClick size={17} /><span>Clique em cada item antes de encerrar o combate.</span></div>
                 <div className="battle-drops" aria-label="Drops da batalha">
@@ -289,8 +313,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
                 <div className="battle-loot-result__summary">+{activeBattle.rewards.characterXp} XP · +{activeBattle.rewards.gold} Ouro · +{activeBattle.rewards.boundResonance} Ressonância</div>
                 <GameButton variant="primary" onClick={claim} disabled={!allDropsCollected}>Confirmar coleta</GameButton>
               </> : <div className="battle-loot-result__exit"><span><Check size={17} /> Recompensas preservadas no save.</span>
-                <GameButton variant="primary" onClick={continueExpedition}>Continuar expedição</GameButton>
-                <GameButton variant="ghost" onClick={leave}>Retornar a Terran</GameButton>
+                <GameButton variant="primary" onClick={continueAfterVictory}>
+                  {activeBattle.source.type === 'portalWave' ? `Abrir onda ${activeBattle.source.wave + 1}` : activeBattle.source.type === 'portalHunt' ? 'Retornar ao Portal' : 'Continuar expedição'}
+                </GameButton>
+                {activeBattle.source.type !== 'portalHunt' ? <GameButton variant="ghost" onClick={leave}>{activeBattle.source.type === 'portalWave' ? 'Encerrar sequência' : 'Retornar a Terran'}</GameButton> : null}
               </div>}
             </div> : null}
 

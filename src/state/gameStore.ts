@@ -6,6 +6,7 @@ import {
   performGradeTwoRite,
 } from '../domain/bond/boundItems'
 import { createBattle, submitBattleCommand } from '../domain/combat/engine'
+import { advanceWaveRun, createPortalWaveEncounter, getPortalWaveScale, nextWaveRun } from '../domain/combat/waveEngine'
 import type { BattleCommand } from '../domain/combat/types'
 import {
   completeTrailNode,
@@ -92,6 +93,9 @@ type GameState = {
   exitFungalChambers: () => void
   resolveCurrentTrailNode: () => void
   startBattle: (nodeId?: string) => void
+  startPortalHunt: (encounterId: string) => void
+  startPortalWave: () => void
+  advancePortalWave: () => void
   submitBattleCommand: (command: BattleCommand) => void
   claimBattleRewards: () => void
   finishBattleIntoExpedition: () => void
@@ -518,6 +522,70 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(next)
     },
 
+    startPortalHunt: (encounterId) => {
+      const save = get().save
+      if (!save || save.battle) return failAction('Já existe um encontro ativo.')
+      if (save.world.currentLocationId !== 'location_terran_portal_plaza') {
+        return failAction('As caçadas repetíveis devem ser abertas na Praça do Portal.')
+      }
+      const encounter = content.encounters[encounterId]
+      if (!encounter || encounter.portalMode !== 'hunt') return failAction('Esta caçada não está disponível no Portal.')
+      const next = structuredClone(save)
+      next.battle = createBattle(next, encounter, content, createRandomId(), { source: { type: 'portalHunt' } })
+      next.updatedAt = nowIso()
+      next.revision += 1
+      next.eventLog.push(`PortalHuntStarted:${encounter.id}`)
+      commit(next)
+    },
+
+    startPortalWave: () => {
+      const save = get().save
+      if (!save || save.battle) return failAction('Já existe um encontro ativo.')
+      if (save.world.currentLocationId !== 'location_terran_portal_plaza') {
+        return failAction('O modo de ondas só pode começar na Praça do Portal.')
+      }
+      const next = structuredClone(save)
+      const startedAt = nowIso()
+      const run = next.portalCombat.activeRun ?? {
+        id: createRandomId(),
+        currentWave: 1,
+        clearedWaves: 0,
+        score: 0,
+        startedAt,
+      }
+      const encounter = createPortalWaveEncounter(run.currentWave, content)
+      next.portalCombat.activeRun = run
+      next.battle = createBattle(next, encounter, content, createRandomId(), {
+        enemyScale: getPortalWaveScale(run.currentWave),
+        source: { type: 'portalWave', runId: run.id, wave: run.currentWave },
+      })
+      next.updatedAt = startedAt
+      next.revision += 1
+      next.eventLog.push(`PortalWaveStarted:${run.id}:${run.currentWave}`)
+      commit(next)
+    },
+
+    advancePortalWave: () => {
+      const save = get().save
+      const battle = save?.battle
+      const run = save?.portalCombat.activeRun
+      if (!save || !battle || battle.phase !== 'Victory' || !battle.claimed || battle.source.type !== 'portalWave' || !run || run.id !== battle.source.runId) {
+        return failAction('Conclua e colete a onda atual antes de avançar.')
+      }
+      const next = structuredClone(save)
+      const nextRun = nextWaveRun(run)
+      const encounter = createPortalWaveEncounter(nextRun.currentWave, content)
+      next.portalCombat.activeRun = nextRun
+      next.battle = createBattle(next, encounter, content, createRandomId(), {
+        enemyScale: getPortalWaveScale(nextRun.currentWave),
+        source: { type: 'portalWave', runId: nextRun.id, wave: nextRun.currentWave },
+      })
+      next.updatedAt = nowIso()
+      next.revision += 1
+      next.eventLog.push(`PortalWaveStarted:${nextRun.id}:${nextRun.currentWave}`)
+      commit(next)
+    },
+
     submitBattleCommand: (command) => {
       const save = get().save
       if (!save?.battle) return failAction('Nenhuma batalha está ativa.')
@@ -590,11 +658,13 @@ export const useGameStore = create<GameState>((set, get) => {
         if (!next.world.worldFlags.includes(flag)) next.world.worldFlags.push(flag)
       }
       next.battle = { ...battle, claimed: true }
-      const trail = getTrailByNodeId(content, battle.trailNodeId)
-      if (!trail) return failAction('A trilha deste encontro não foi encontrada.')
-      const trailResult = completeTrailNode(next, trail, battle.trailNodeId, acquiredAt)
-      if (!trailResult.ok) return failAction(trailResult.message)
-      next = trailResult.value.save
+      if (battle.source.type === 'campaign') {
+        const trail = getTrailByNodeId(content, battle.trailNodeId)
+        if (!trail) return failAction('A trilha deste encontro não foi encontrada.')
+        const trailResult = completeTrailNode(next, trail, battle.trailNodeId, acquiredAt)
+        if (!trailResult.ok) return failAction(trailResult.message)
+        next = trailResult.value.save
+      }
       if (!next.world.completedEncounterIds.includes(battle.encounterId)) {
         next.world.completedEncounterIds.push(battle.encounterId)
       }
@@ -610,12 +680,27 @@ export const useGameStore = create<GameState>((set, get) => {
           acquiredAt,
         )
       }
+      for (const definitionId of battle.rewards.lootDefinitionIds) {
+        next = applyQuestEvent(next, { type: 'collect', targetId: definitionId }, content, acquiredAt)
+      }
+      if (battle.source.type === 'portalWave') {
+        const run = next.portalCombat.activeRun
+        if (!run || run.id !== battle.source.runId) return failAction('A sequência desta onda não corresponde ao save.')
+        next.portalCombat.activeRun = advanceWaveRun(
+          run,
+          battle.rewards.characterXp + battle.rewards.gold + battle.rewards.boundResonance,
+        )
+        next.portalCombat.bestWave = Math.max(next.portalCombat.bestWave, battle.source.wave)
+        next.portalCombat.totalWavesCleared += 1
+        next = applyQuestEvent(next, { type: 'completeWave', targetId: 'portal_wave' }, content, acquiredAt)
+        next.eventLog.push(`PortalWaveCleared:${battle.source.runId}:${battle.source.wave}`)
+      }
       commit(next)
       show(
         'Vitória',
         loot.length > 0
-          ? `${loot.length} drop entrou no inventário. A trilha avançou para o próximo nó.`
-          : 'A trilha avançou para o próximo nó.',
+          ? `${loot.length} drop entrou no inventário.${battle.source.type === 'campaign' ? ' A trilha avançou para o próximo nó.' : ''}`
+          : battle.source.type === 'campaign' ? 'A trilha avançou para o próximo nó.' : 'A recompensa do encontro foi preservada.',
         'success',
       )
     },
@@ -625,6 +710,7 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!save?.battle || save.battle.phase !== 'Victory' || !save.battle.claimed) {
         return failAction('Receba as recompensas antes de continuar a expedição.')
       }
+      if (save.battle.source.type !== 'campaign') return failAction('Este encontro retorna diretamente à Praça do Portal.')
       const next = structuredClone(save)
       next.battle = null
       next.updatedAt = nowIso()
@@ -638,6 +724,7 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!save) return
       const next = structuredClone(save)
       next.battle = null
+      next.portalCombat.activeRun = null
       next.world.currentLocationId = 'location_terran_portal_plaza'
       if (!next.world.unlockedLocationIds.includes('location_terran_portal_plaza')) {
         next.world.unlockedLocationIds.push('location_terran_portal_plaza')

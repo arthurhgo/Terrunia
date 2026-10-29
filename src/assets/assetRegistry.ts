@@ -59,6 +59,30 @@ const entries: AssetEntry[] = [
     alt: 'Colosso Micélio',
   },
   {
+    id: 'enemy.luminous-slime',
+    path: '/assets/enemies/portal/enemy_luminous_slime_idle.svg',
+    fallback: '/assets/placeholders/enemy.svg',
+    alt: 'Limusco Luminescente',
+  },
+  {
+    id: 'enemy.void-moth',
+    path: '/assets/enemies/portal/enemy_void_moth_idle.svg',
+    fallback: '/assets/placeholders/enemy.svg',
+    alt: 'Mariposa do Vazio',
+  },
+  {
+    id: 'enemy.spore-mantis',
+    path: '/assets/enemies/portal/enemy_spore_mantis_idle.svg',
+    fallback: '/assets/placeholders/enemy.svg',
+    alt: 'Louva-Esporos',
+  },
+  {
+    id: 'enemy.ruin-sentinel',
+    path: '/assets/enemies/portal/enemy_ruin_sentinel_idle.svg',
+    fallback: '/assets/placeholders/enemy.svg',
+    alt: 'Sentinela da Ruína',
+  },
+  {
     id: 'equipment.weapon.prologue.g1',
     path: '/assets/equipment/weapon/weapon_prologue_g1.png',
     fallback: '/assets/placeholders/weapon.svg',
@@ -135,6 +159,18 @@ const entries: AssetEntry[] = [
     alt: 'Fragmento de Essência Micelial',
     pixelArt: true,
   },
+  ...[
+    ['item.luminous-gel', 'item_luminous_gel.png', 'Gel Luminescente'],
+    ['item.void-dust', 'item_void_dust.png', 'Pó do Vazio'],
+    ['item.spore-chitin', 'item_spore_chitin.png', 'Quitina de Esporos'],
+    ['item.ruin-shard', 'item_ruin_shard.png', 'Lasca da Ruína'],
+  ].map(([id, file, alt]) => ({
+    id,
+    path: `/assets/items/${file}`,
+    fallback: '/assets/placeholders/item.svg',
+    alt,
+    pixelArt: true,
+  })),
   {
     id: 'gem.emerald-growth',
     path: '/assets/gems/gem_emerald_growth.png',

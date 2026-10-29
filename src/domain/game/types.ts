@@ -148,6 +148,20 @@ export type PlayerSettings = {
   textScale: 'normal' | 'large'
 }
 
+export type PortalWaveRun = {
+  id: string
+  currentWave: number
+  clearedWaves: number
+  score: number
+  startedAt: string
+}
+
+export type PortalCombatProgress = {
+  activeRun: PortalWaveRun | null
+  bestWave: number
+  totalWavesCleared: number
+}
+
 export type GameSave = {
   schemaVersion: number
   gameVersion: string
@@ -174,6 +188,7 @@ export type GameSave = {
   quests: Record<string, QuestProgress>
   relationships: Record<string, NPCRelationshipState>
   world: WorldProgress
+  portalCombat: PortalCombatProgress
   battle: BattleState | null
   settings: PlayerSettings
   eventLog: string[]

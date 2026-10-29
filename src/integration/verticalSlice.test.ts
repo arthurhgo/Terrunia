@@ -3,6 +3,34 @@ import { getLatestLocalSave } from '../persistence/localSaveRepository'
 import { flushPersistence, useGameStore } from '../state/gameStore'
 
 describe('vertical slice integrada', () => {
+  it('abre uma sequência infinita pelo Portal, preserva recorde e avança de onda', async () => {
+    const ownerId = 'integration-portal-wave-user'
+    await useGameStore.getState().boot(ownerId)
+    useGameStore.getState().createGame('Ayla', 'character.terririan.default')
+    useGameStore.getState().bindPrologueWeapon()
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
+    useGameStore.getState().startPortalWave()
+
+    for (let turn = 0; turn < 8 && useGameStore.getState().save?.battle?.phase === 'AwaitingAction'; turn += 1) {
+      const battle = useGameStore.getState().save!.battle!
+      const target = Object.values(battle.combatants).find((combatant) => combatant.side === 'enemy' && combatant.alive)!
+      useGameStore.getState().submitBattleCommand({ type: 'attack', targetId: target.id })
+    }
+
+    expect(useGameStore.getState().save?.battle?.phase).toBe('Victory')
+    expect(useGameStore.getState().save?.battle?.source).toMatchObject({ type: 'portalWave', wave: 1 })
+    useGameStore.getState().claimBattleRewards()
+    expect(useGameStore.getState().save?.portalCombat).toMatchObject({ bestWave: 1, totalWavesCleared: 1 })
+    expect(useGameStore.getState().save?.portalCombat.activeRun).toMatchObject({ currentWave: 1, clearedWaves: 1 })
+
+    useGameStore.getState().advancePortalWave()
+    expect(useGameStore.getState().save?.battle?.source).toMatchObject({ type: 'portalWave', wave: 2 })
+    expect(useGameStore.getState().save?.portalCombat.activeRun?.currentWave).toBe(2)
+    useGameStore.getState().returnToTerran()
+    expect(useGameStore.getState().save?.portalCombat.activeRun).toBeNull()
+    expect(useGameStore.getState().save?.portalCombat.bestWave).toBe(1)
+  })
+
   it('continua a expedição após o combate e a retoma sem duplicar a entrada', async () => {
     const ownerId = 'integration-expedition-continuity'
     await useGameStore.getState().boot(ownerId)

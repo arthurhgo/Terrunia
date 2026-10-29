@@ -1,5 +1,6 @@
 import type { QuestDefinition, QuestProgressionOutcome } from './types'
 import { clanDefinitions, classDefinitions } from './progression'
+import { npcDefinitions, secondaryQuestIdForNpc } from './npcs'
 
 const mainLoreClassVariants = Object.fromEntries(classDefinitions.map((classDefinition) => [
   classDefinition.id,
@@ -63,6 +64,45 @@ const classTrial = (
   { type: 'noClass' },
 ], { type: 'classEligibility', classId })
 
+const npcLocation = (npcId: string) => {
+  if (['npc_eldamar', 'npc_torvynn', 'npc_gethin', 'npc_elvira'].includes(npcId)) return 'location_terran_eldamar_house'
+  if (['npc_vorren', 'npc_elric', 'npc_draelis', 'npc_keldron', 'npc_nerion'].includes(npcId)) return 'location_terran_vorren_post'
+  if (['npc_lithwynn', 'npc_valmira', 'npc_talia', 'npc_edran', 'npc_feril', 'npc_lorian', 'npc_durnan'].includes(npcId)) return 'location_terran_bond_workshop'
+  if (['npc_zareth', 'npc_kaedin', 'npc_torvan', 'npc_dremor'].includes(npcId)) return 'location_terran_zareth_barracks'
+  if (['npc_daeryn', 'npc_sylwen', 'npc_briana', 'npc_orlan'].includes(npcId)) return 'location_terran_daeryn_house'
+  if (npcId === 'npc_portal_guardian') return 'location_terran_portal_plaza'
+  return 'location_terran_clan_hall'
+}
+
+const secondaryObjectiveTemplates: QuestDefinition['objectives'][] = [
+  [{ id: 'hunt_luminous', type: 'kill', targetId: 'enemy_luminous_slime', required: 2, label: 'Derrote 2 Limuscos Luminescentes' }],
+  [{ id: 'collect_gel', type: 'collect', targetId: 'drop_luminous_gel', required: 2, label: 'Colete 2 Géis Luminescentes' }],
+  [{ id: 'hunt_void', type: 'kill', targetId: 'enemy_void_moth', required: 2, label: 'Derrote 2 Mariposas do Vazio' }],
+  [{ id: 'collect_chitin', type: 'collect', targetId: 'drop_spore_chitin', required: 1, label: 'Colete Quitina de Esporos' }],
+  [{ id: 'hunt_ruin', type: 'kill', targetId: 'enemy_ruin_sentinel', required: 1, label: 'Derrote uma Sentinela da Ruína' }],
+  [{ id: 'survive_waves', type: 'completeWave', targetId: 'portal_wave', required: 3, label: 'Supere 3 ondas do Portal' }],
+]
+
+const secondaryQuests = npcDefinitions.map((npc, index): QuestDefinition => {
+  const locationId = npcLocation(npc.id)
+  return {
+    id: secondaryQuestIdForNpc(npc.id),
+    title: `Pedido de ${npc.name}`,
+    summary: `${npc.name} precisa de ajuda com uma ameaça ou material detectado nas instâncias repetíveis do Portal.`,
+    giverNpcId: npc.id,
+    turnInNpcId: npc.id,
+    category: 'secondary',
+    objectives: secondaryObjectiveTemplates[index % secondaryObjectiveTemplates.length].map((objective) => ({ ...objective })),
+    rewards: [
+      { type: 'characterXp', value: 18 + index % 4 * 4 },
+      { type: 'gold', value: 12 + index % 5 * 3 },
+    ],
+    initialStatus: 'available',
+    terranFlow: { active: 'location_terran_portal_plaza', ready_to_turn_in: locationId },
+    status: 'CONTENT_DRAFT',
+  }
+})
+
 export const questDefinitions = [
   {
     id: 'vs_astravel_first_contact',
@@ -123,4 +163,5 @@ export const questDefinitions = [
   classTrial('class_canalizador_trial', 'Canalizador do Caos', 'Redirecione fluxos instáveis sem sobrecarga.', 'npc_master_canalizador', 'estres_do_et', 'canalizador_do_caos'),
   classTrial('class_ruptura_trial', 'Guardador da Ruptura', 'Mantenha várias fissuras sob controle.', 'npc_master_ruptura', 'estres_do_et', 'guardador_da_ruptura'),
   classTrial('class_ruina_trial', 'Mago da Ruína', 'Destrua partes instáveis sem provocar colapso.', 'npc_master_ruina', 'estres_do_et', 'mago_da_ruina'),
+  ...secondaryQuests,
 ] satisfies QuestDefinition[]

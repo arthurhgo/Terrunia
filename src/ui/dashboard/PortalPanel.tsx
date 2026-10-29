@@ -1,9 +1,14 @@
 import {
   BookOpen,
+  Infinity as InfinityIcon,
   LockKeyhole,
   MapPinned,
+  Repeat2,
   Skull,
+  Sparkles,
+  Swords,
   Trees,
+  Trophy,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -19,14 +24,22 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
   navigateOnEnter?: boolean
 }) {
   const enterAstravel = useGameStore((state) => state.enterAstravel)
+  const startPortalHunt = useGameStore((state) => state.startPortalHunt)
+  const startPortalWave = useGameStore((state) => state.startPortalWave)
   const navigate = useNavigate()
   const trail = content.trails.trail_astravel_entry
   const quest = save.quests.vs_astravel_first_contact
   const currentNode = getActiveTrailNode(save, trail)
+  const hunts = Object.values(content.encounters).filter((encounter) => encounter.portalMode === 'hunt')
 
   const enter = () => {
     enterAstravel()
     if (navigateOnEnter) navigate('/expedition')
+  }
+
+  const enterCombat = (start: () => void) => {
+    start()
+    if (navigateOnEnter && useGameStore.getState().save?.battle) navigate('/battle')
   }
 
   const action = (() => {
@@ -46,7 +59,7 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
   })()
 
   return (
-    <ArcanePanel title="Instância disponível" eyebrow="ACESSO DE EXPEDIÇÃO" className="portal-panel" as="aside">
+    <ArcanePanel title="Central de instâncias" eyebrow="ACESSO DE EXPEDIÇÃO" className="portal-panel" as="aside">
       <div className="portal-heading">
         <MapPinned size={20} />
         <div><p className="eyebrow">EXPLORAÇÃO DE TERRÚNIA</p><h3>{trail.name}</h3><small>{trail.actLabel}</small></div>
@@ -101,6 +114,40 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
         </div>
       </div>
       {action}
+
+      <section className="portal-combat-hub" aria-labelledby="portal-hunts-title">
+        <div className="portal-combat-hub__heading">
+          <Repeat2 size={18} />
+          <div><p className="eyebrow">COMBATE REPETÍVEL</p><h3 id="portal-hunts-title">Caçadas do Portal</h3></div>
+        </div>
+        <div className="portal-hunt-grid">
+          {hunts.map((encounter, index) => (
+            <article key={encounter.id}>
+              <span className="portal-hunt-grid__rank">NÍVEL {index + 1}</span>
+              <Swords size={18} />
+              <strong>{encounter.name}</strong>
+              <small>{encounter.enemyDefinitionIds.map((id) => content.enemies[id]?.name).filter(Boolean).join(' + ')}</small>
+              <button type="button" onClick={() => enterCombat(() => startPortalHunt(encounter.id))}>Iniciar caçada</button>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="portal-wave-card" aria-labelledby="portal-wave-title">
+        <div className="portal-wave-card__sigil"><InfinityIcon size={28} /></div>
+        <div>
+          <p className="eyebrow">MODO ONDAS · SEM LIMITE</p>
+          <h3 id="portal-wave-title">Portal sem Fim</h3>
+          <p>Inimigos e atributos escalam a cada onda. Chefes surgem a cada cinco ondas e todos os drops devem ser recolhidos antes de avançar.</p>
+          <div className="portal-wave-stats">
+            <span><Trophy size={15} /> Recorde <strong>{save.portalCombat.bestWave}</strong></span>
+            <span><Sparkles size={15} /> Ondas vencidas <strong>{save.portalCombat.totalWavesCleared}</strong></span>
+          </div>
+        </div>
+        <GameButton variant="primary" onClick={() => enterCombat(startPortalWave)}>
+          <InfinityIcon size={17} /> {save.portalCombat.activeRun ? `Continuar onda ${save.portalCombat.activeRun.currentWave}` : 'Iniciar onda 1'}
+        </GameButton>
+      </section>
     </ArcanePanel>
   )
 }

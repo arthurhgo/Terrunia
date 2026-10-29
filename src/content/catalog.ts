@@ -210,6 +210,12 @@ for (const location of Object.values(content.terranLocations)) {
   }
 }
 
+for (const npc of Object.values(content.npcs)) {
+  for (const questId of npc.questIds) {
+    assertReference(content.quests[questId], `${npc.id} → ${questId}`)
+  }
+}
+
 for (const clan of Object.values(content.clans)) {
   assertReference(content.npcs[clan.recruiterNpcId], `${clan.id} → ${clan.recruiterNpcId}`)
   for (const questId of clan.recruitmentQuestIds) assertReference(content.quests[questId], `${clan.id} → ${questId}`)

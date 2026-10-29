@@ -17,6 +17,7 @@ import type {
   BattleLogEntry,
   BattlePhase,
   BattlePresentationEvent,
+  BattleSource,
   BattleState,
   Combatant,
 } from './types'
@@ -107,20 +108,22 @@ const deriveEnemyCombatant = (
   definitionId: string,
   index: number,
   catalog: ContentCatalog,
+  scale = 1,
 ): Combatant => {
   const enemy = catalog.enemies[definitionId]
   if (!enemy) throw new Error(`Inimigo não cadastrado: ${definitionId}`)
+  const maxHp = Math.max(1, Math.ceil(enemy.maxHp * scale))
   return {
     id: `combatant_${enemy.id}_${index + 1}`,
     definitionId: enemy.id,
     name: enemy.name,
     side: 'enemy',
-    hp: enemy.maxHp,
-    maxHp: enemy.maxHp,
+    hp: maxHp,
+    maxHp,
     mp: 0,
     maxMp: 0,
-    attackPower: enemy.attackPower,
-    mitigation: enemy.mitigation,
+    attackPower: Math.max(1, Math.ceil(enemy.attackPower * scale)),
+    mitigation: Math.max(0, Math.floor(enemy.mitigation * Math.sqrt(scale))),
     initiative: Math.max(1, enemy.level + 3),
     alive: true,
     defending: false,
@@ -357,15 +360,21 @@ const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
   }
 }
 
+export type BattleCreationOptions = {
+  enemyScale?: number
+  source?: BattleSource
+}
+
 export const createBattle = (
   save: GameSave,
   encounter: EncounterDefinition,
   catalog: ContentCatalog,
   id: string = createRandomId(),
+  options: BattleCreationOptions = {},
 ): BattleState => {
   const player = derivePlayerCombatant(save, catalog)
   const enemies = encounter.enemyDefinitionIds.map((definitionId, index) =>
-    deriveEnemyCombatant(definitionId, index, catalog),
+    deriveEnemyCombatant(definitionId, index, catalog, options.enemyScale ?? 1),
   )
   const combatants = [player, ...enemies]
   // BALANCE_DRAFT — the requested cadence is always player → enemy party → player.
@@ -388,13 +397,14 @@ export const createBattle = (
     combatants: Object.fromEntries(combatants.map((combatant) => [combatant.id, combatant])),
     log: [],
     rewards: structuredClone(encounter.rewards),
+    source: options.source ?? { type: 'campaign' },
     claimed: false,
     canFlee: encounter.canFlee,
     consumedItemInstanceIds: [],
     rngSeed: 104729,
   }
 
-  addLog(state, `${encounter.name} bloqueia o avanço em Astravél.`, 'system')
+  addLog(state, `${encounter.name} inicia o confronto.`, 'system')
   const actor = state.combatants[state.actorId]
   addPhase(state, 'TurnStart')
   addTurnLog(state, actor)

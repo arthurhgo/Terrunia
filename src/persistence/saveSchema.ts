@@ -4,7 +4,7 @@ import { getBoundSlotCapacity } from '../domain/bond/boundItems'
 import type { GameSave } from '../domain/game/types'
 import { MAX_ACTIVE_QUESTS, SLOT_OCCUPYING_QUEST_STATUSES } from '../domain/quests/questEngine'
 
-export const CURRENT_SAVE_SCHEMA = 7
+export const CURRENT_SAVE_SCHEMA = 8
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -245,6 +245,11 @@ const battleSchema = z.object({
       description: z.string(),
     }).optional(),
   }),
+  source: z.discriminatedUnion('type', [
+    z.object({ type: z.literal('campaign') }),
+    z.object({ type: z.literal('portalHunt') }),
+    z.object({ type: z.literal('portalWave'), runId: idSchema, wave: positiveInteger }),
+  ]),
   claimed: z.boolean(),
   canFlee: z.boolean(),
   consumedItemInstanceIds: z.array(idSchema),
@@ -270,6 +275,17 @@ export const gameSaveSchema = z.object({
   quests: z.record(z.string(), questProgressSchema),
   relationships: z.record(z.string(), relationshipSchema),
   world: worldSchema,
+  portalCombat: z.object({
+    activeRun: z.object({
+      id: idSchema,
+      currentWave: positiveInteger,
+      clearedWaves: nonnegativeInteger,
+      score: nonnegativeInteger,
+      startedAt: z.string(),
+    }).nullable(),
+    bestWave: nonnegativeInteger,
+    totalWavesCleared: nonnegativeInteger,
+  }),
   battle: battleSchema.nullable(),
   settings: z.object({
     reducedMotion: z.boolean(),
@@ -625,6 +641,43 @@ const migrateV6ToV7 = (legacy: Record<string, unknown>): unknown => {
   }
 }
 
+const migrateV7ToV8 = (legacy: Record<string, unknown>): unknown => {
+  const quests = structuredClone((legacy.quests ?? {}) as GameSave['quests'])
+  for (const definition of Object.values(content.quests)) {
+    quests[definition.id] ??= {
+      questId: definition.id,
+      status: definition.initialStatus ?? 'available',
+      tracked: false,
+      objectives: Object.fromEntries(definition.objectives.map((objective) => [objective.id, 0])),
+    }
+  }
+  const relationships = structuredClone((legacy.relationships ?? {}) as GameSave['relationships'])
+  for (const npc of Object.values(content.npcs)) {
+    relationships[npc.id] ??= {
+      npcId: npc.id,
+      discovered: false,
+      affinity: 0,
+      trust: 0,
+      reputationFlags: [],
+      completedQuestIds: [],
+      dialogueFlags: [],
+    }
+  }
+  const battle = legacy.battle
+    ? { ...(legacy.battle as Record<string, unknown>), source: (legacy.battle as { source?: unknown }).source ?? { type: 'campaign' } }
+    : null
+  return {
+    ...legacy,
+    schemaVersion: 8,
+    gameVersion: '0.9.0',
+    quests,
+    relationships,
+    battle,
+    portalCombat: legacy.portalCombat ?? { activeRun: null, bestWave: 0, totalWavesCleared: 0 },
+    eventLog: [...(((legacy.eventLog as string[] | undefined) ?? [])), 'SaveMigrated:7->8'],
+  }
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -659,6 +712,10 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 6) {
     candidate = migrateV6ToV7(candidate as Record<string, unknown>)
     version = 7
+  }
+  if (version === 7) {
+    candidate = migrateV7ToV8(candidate as Record<string, unknown>)
+    version = 8
   }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)
