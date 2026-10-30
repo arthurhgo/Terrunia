@@ -66,11 +66,13 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
     if (!unified) navigate('/terran')
   }
   const inspect = (nodeId: string) => { setSelectedId(nodeId); setDrawer('node') }
-  const engage = (nodeId: string) => {
+  const engage = (nodeId: string): boolean => {
     // The store enforces current trail status, encounter content, and remaining HP.
     // In the unified viewport, the persistent scene switches to combat automatically.
     startBattle(nodeId)
-    if (useGameStore.getState().save?.battle && !unified) navigate('/battle')
+    const started = Boolean(useGameStore.getState().save?.battle)
+    if (started && !unified) navigate('/battle')
+    return started
   }
   const act = () => {
     if (!selectedNode || !['current', 'bossCurrent'].includes(save.world.trailNodeStates[selectedNode.id] ?? '')
