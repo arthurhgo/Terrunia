@@ -7,18 +7,31 @@ import { WeaponGallery } from './WeaponGallery'
 afterEach(cleanup)
 
 describe('Galeria do primeiro Vínculo', () => {
-  it('mostra os sete Vínculos e troca a prévia de habilidades ao passar o mouse', () => {
+  it('prévia por hover não exibe sinergia; clique seleciona e libera os dados do Clã da arma escolhida', () => {
     const save = createNewSave('owner', 'Lysa', 'character.terririan.default', content)
     const onSelect = vi.fn()
-    render(<WeaponGallery save={save} selectedId="bound_weapon_long_sword" onSelect={onSelect} />)
+    const { rerender } = render(<WeaponGallery save={save} selectedId={null} onSelect={onSelect} />)
     expect(screen.getAllByRole('button', { name: /^Escolher / })).toHaveLength(7)
-    expect(screen.getByText('Arco da Lâmina')).toBeInTheDocument()
-    fireEvent.mouseEnter(screen.getByRole('button', { name: 'Escolher Machado de Guerra' }))
+    expect(screen.getByRole('button', { name: 'Escolher Espada Longa' })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.queryByText(/Sinergias e caminhos de Clã/)).not.toBeInTheDocument()
+
+    const axe = screen.getByRole('button', { name: 'Escolher Machado de Guerra' })
+    fireEvent.mouseEnter(axe)
     expect(screen.getByText('Ruptura do Machado')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: `Dado d${save.character.attributes.strength.die}` })).toBeInTheDocument()
+    expect(screen.queryByText(/Bônus condicionais à filiação/)).not.toBeInTheDocument()
+
+    fireEvent.click(axe)
+    expect(onSelect).toHaveBeenCalledWith('bound_weapon_war_axe')
+    rerender(<WeaponGallery save={save} selectedId="bound_weapon_war_axe" onSelect={onSelect} />)
+    expect(axe).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText(/Sinergias e caminhos de Clã · Machado de Guerra/)).toBeInTheDocument()
     expect(screen.getByText(/Bônus condicionais à filiação/)).toBeInTheDocument()
     expect(screen.getByText(/Sentinela da Luz: Proteção e prioridade/)).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Escolher Machado de Guerra' }))
-    expect(onSelect).toHaveBeenCalledWith('bound_weapon_war_axe')
+
+    fireEvent.mouseEnter(screen.getByRole('button', { name: 'Escolher Cetro Arcano' }))
+    expect(screen.getByText('Pulso do Cetro')).toBeInTheDocument()
+    expect(screen.getByText(/Sinergias e caminhos de Clã · Machado de Guerra/)).toBeInTheDocument()
+    expect(screen.queryByText(/Sinergias e caminhos de Clã · Cetro Arcano/)).not.toBeInTheDocument()
   })
 })
