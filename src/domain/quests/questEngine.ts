@@ -4,6 +4,7 @@ import { addRawEssence } from '../essence/essence'
 import type { GameSave, QuestProgress } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
 import { gainCharacterXp } from '../character/attributeProgression'
+import { consumeQuestDelivery, refreshDeliveryQuestProgress } from './questInventory'
 
 export const SLOT_OCCUPYING_QUEST_STATUSES = ['active', 'ready_to_turn_in'] as const
 
@@ -122,7 +123,7 @@ export const acceptQuest = (
       reconciled = applyQuestEvent(reconciled, { type: 'visit', targetId: objective.targetId, amount: objective.required }, catalog, now)
     }
   }
-  return ok(reconciled)
+  return ok(refreshDeliveryQuestProgress(reconciled, catalog, now))
 }
 
 export const setQuestTracked = (
@@ -189,7 +190,9 @@ export const turnInQuest = (
   if (progress.status !== 'ready_to_turn_in') return fail('QUEST_NOT_READY', 'Os objetivos desta missão ainda não foram concluídos.')
   if (definition.turnInNpcId !== npcId) return fail('WRONG_TURN_IN_NPC', 'Esta missão deve ser entregue a outro NPC.')
 
-  const next = structuredClone(save)
+  const delivery = consumeQuestDelivery(save, definition, catalog)
+  if (!delivery.ok) return delivery
+  const next = delivery.value
   applyQuestRewards(next, definition)
   next.quests[questId].status = 'completed'
   next.quests[questId].tracked = false
@@ -199,7 +202,7 @@ export const turnInQuest = (
   next.updatedAt = now
   next.revision += 1
   next.eventLog.push(`QuestCompleted:${questId}`)
-  return ok(refreshQuestAvailability(next, catalog, now))
+  return ok(refreshDeliveryQuestProgress(refreshQuestAvailability(next, catalog, now), catalog, now))
 }
 
 export const applyQuestEvent = (
@@ -214,6 +217,7 @@ export const applyQuestEvent = (
     if (progress.status !== 'active') continue
     const definition = catalog.quests[progress.questId]
     if (!definition) continue
+    if (definition.turnInItems?.length && event.type === 'collect') continue
     for (const objective of definition.objectives) {
       if (objective.type !== event.type || objective.targetId !== event.targetId) continue
       progress.objectives[objective.id] = Math.min(objective.required, (progress.objectives[objective.id] ?? 0) + (event.amount ?? 1))
@@ -229,5 +233,5 @@ export const applyQuestEvent = (
     next.updatedAt = now
     next.revision += 1
   }
-  return next
+  return refreshDeliveryQuestProgress(next, catalog, now)
 }

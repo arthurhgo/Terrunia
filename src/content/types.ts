@@ -238,6 +238,8 @@ export type QuestDefinition = {
   turnInNpcId: string
   category: QuestCategory
   objectives: QuestObjectiveDefinition[]
+  /** Delivery contracts consume the specified inventory at the NPC, once. */
+  turnInItems?: Array<{ itemId: string; quantity: number }>
   rewards: Array<
     | { type: 'characterXp'; value: number }
     | { type: 'rawEssence'; value: number }

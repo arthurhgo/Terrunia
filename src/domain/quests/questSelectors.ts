@@ -39,6 +39,25 @@ export const getTrackedQuestEntries = (save: GameSave, catalog: ContentCatalog) 
 
 export type NpcQuestMarker = 'available' | 'turnIn' | null
 
+export const getNpcActionableQuests = (save: GameSave, npcId: string, catalog: ContentCatalog) =>
+  Object.values(catalog.quests).filter((quest) => quest.giverNpcId === npcId &&
+    ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status ?? 'locked'))
+    .sort((a, b) => {
+      const priority = { ready_to_turn_in: 0, offered: 1, available: 2, active: 3, locked: 4, completed: 5 }
+      return priority[save.quests[a.id].status] - priority[save.quests[b.id].status]
+        || Number(a.category === 'secondary' || a.category === 'bounty') - Number(b.category === 'secondary' || b.category === 'bounty')
+    })
+
+export type NpcWorldMarker = '!' | '◇' | '◆' | '?' | null
+
+export const getNpcWorldMarker = (save: GameSave, npcId: string, catalog: ContentCatalog): NpcWorldMarker => {
+  if (npcId === 'npc_rosetta') return '?'
+  const quest = getNpcActionableQuests(save, npcId, catalog)[0]
+  if (!quest) return null
+  if (quest.category === 'secondary' || quest.category === 'bounty') return save.quests[quest.id].status === 'ready_to_turn_in' ? '◆' : '◇'
+  return '!'
+}
+
 export const getNpcQuestMarker = (save: GameSave, npcId: string, catalog: ContentCatalog): NpcQuestMarker => {
   for (const definition of Object.values(catalog.quests)) {
     if (definition.turnInNpcId === npcId && save.quests[definition.id]?.status === 'ready_to_turn_in') return 'turnIn'

@@ -35,7 +35,7 @@ export const waveEncounter = (catalog: ContentCatalog, requestedWave: number): E
       characterXp: Math.floor(baseXp * multiplier),
       gold: Math.floor(baseGold * multiplier),
       boundResonance: Math.floor(baseResonance * multiplier),
-      lootDefinitionIds: enemyIds.map((id) => catalog.enemies[id].lootDefinitionIds[0]),
+      lootDefinitionIds: enemyIds.flatMap((id) => catalog.enemies[id].lootDefinitionIds),
     },
     status: 'BALANCE_DRAFT',
   }

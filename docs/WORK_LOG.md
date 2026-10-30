@@ -1,5 +1,17 @@
 # Registro de implementação
 
+## Terran v0.11 — cidade ampliada e encomendas de materiais (2026-10-30)
+
+- ampliado o mundo de Terran para 768×512 com câmera 384×256 seguindo o jogador, minimapa com viewport e navegação física até destinos;
+- aumentadas as construções, separados os moradores pelas ruas e adicionados seis pontos de exploração com colisão, inspeção e descoberta persistida;
+- reduzidos os NPCs a 28 px, mantendo a arte de retrato e diferenciando `?` vermelho de Rosetta, `!` amarelo das missões e losangos azuis das sidequests;
+- criados 12 contratos de entrega com ouro proporcional, seleção entre missões do mesmo NPC, quadro de encomendas e indicação dos materiais na mochila;
+- criado Fragmento de Eco comercial com drop em Astravél, Vigília da Ruína e Ondas, sem consumir o componente de Infusão;
+- implementado consumo atômico, proteção dos materiais e recálculo de contratos concorrentes após qualquer mudança de inventário;
+- corrigida a revenda lucrativa dos materiais de Neris e introduzida migração 13→14 sem recompensas ou aceite automático;
+- ampliados testes de contratos, migração, marcadores, câmera, colisão, descoberta e fluxo real de combate → coleta → entrega → reload;
+- detalhes em `TERRAN_EXPLORATION_AND_CONTRACTS_v0.11.md`.
+
 ## Terran v0.10 — elenco, diálogos, missões e forja (2026-10-30)
 
 - usada a imagem escolhida do jogador como sprite na cidade, interiores e instâncias; combate e diálogo compõem a arma vinculada na mão;

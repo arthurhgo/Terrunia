@@ -2,7 +2,8 @@ import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { TerranNpcPresence } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
-import { getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
+import { getNpcQuestMarker, getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
+import type { NpcWorldMarker } from '../../domain/quests/questSelectors'
 import { PLAYER_HOME_INTERIOR_ID, type TerranInteriorId } from './roomContent'
 import type { WorldPoint } from './pixelCityArt'
 import { getRoomPlan, isRoomWalkable } from './roomGeometry'
@@ -17,7 +18,7 @@ export type InteriorResident = {
   presence: TerranNpcPresence
   position: WorldPoint
   palette: string
-  marker: '!' | '✓' | null
+  marker: NpcWorldMarker
 }
 
 /** Backwards-compatible workshop coordinates for older callers/tests. */
@@ -36,13 +37,11 @@ export function getInteriorResidents(save: GameSave, id: TerranInteriorId): Inte
   const location = content.terranLocations[id]
   const positions = getRoomPlan(id).residents
   return getVisibleNpcsInLocation(save, id).slice(0, positions.length).map(({ presence }, index) => {
-    const npc = presence.npcId ? content.npcs[presence.npcId] : undefined
-    const statuses = npc?.questIds.map((questId) => save.quests[questId]?.status) ?? []
     return {
       presence,
       position: positions[index],
       palette: paletteByTone[location.tone] ?? 'knowledge',
-      marker: statuses.includes('ready_to_turn_in') ? '✓' : statuses.some((status) => status === 'available' || status === 'offered') ? '!' : null,
+      marker: getNpcQuestMarker(save, presence),
     }
   })
 }

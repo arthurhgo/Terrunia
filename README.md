@@ -2,9 +2,13 @@
 
 Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, primeira Ruína, Vínculos, Infusão, Lapidação de Joias, Skill Tree e save local-first.
 
+## Terran explorável e contratos v0.11
+
+Terran agora ocupa **768×512**, com câmera acompanhando o jogador, minimapa, construções maiores e seis pontos interativos. Os NPCs ficaram 12,5% menores: apenas Rosetta mantém `?` vermelho, missões usam `!` amarelo e sidequests usam losangos azuis. Há **12 novas encomendas de drops e fragmentos**, com entrega real dos materiais e pagamento de 150% do valor comum de venda. Detalhes: [cidade e contratos](docs/TERRAN_EXPLORATION_AND_CONTRACTS_v0.11.md).
+
 ## Personagens, diálogos e forja v0.10
 
-O sprite do jogador usa a imagem escolhida na criação; 51 aparências de NPCs têm o mesmo desenho no mapa e nos diálogos. Conversas usam dois personagens acima da caixa inferior, e todos os NPCs, incluindo Rosetta, exibem a mesma interrogação vermelha. O combate mostra a arma vinculada na mão e o jogador voltado para os inimigos. Não há limite de missões simultâneas. Neris vende materiais no Mercado, e Durnan produz componentes e aprimora a arma na nova Casa do Ferreiro, revelando dois nodes na Skill Tree. Detalhes: [personagens e forja](docs/CHARACTERS_DIALOGUE_FORGE_v0.10.md).
+O sprite do jogador usa a imagem escolhida na criação; 51 aparências de NPCs têm o mesmo desenho no mapa e nos diálogos. Conversas usam dois personagens acima da caixa inferior. O combate mostra a arma vinculada na mão e o jogador voltado para os inimigos. Não há limite de missões simultâneas. Neris vende materiais no Mercado, e Durnan produz componentes e aprimora a arma na nova Casa do Ferreiro, revelando dois nodes na Skill Tree. Detalhes: [personagens e forja](docs/CHARACTERS_DIALOGUE_FORGE_v0.10.md).
 
 ## Astravél v0.9
 

@@ -1,12 +1,13 @@
 import type { NPCDefinition, QuestDefinition, TerranNpcPresence } from './types'
 import type { TerranLocationId } from './terran'
+import { collectionQuestIdsForNpc } from './collectionContracts'
 
 /**
  * CONTENT_DRAFT — new sidequest-only street characters.
  * They are not institutional residents and do not grant clans/classes.
  * Locations anchor conversations in existing Terran areas, not extra institutions.
  */
-export const streetNpcDefinitions: NPCDefinition[] = [
+const streetNpcBaseDefinitions: NPCDefinition[] = [
   {
     id: 'npc_street_arlen', name: 'Arlen', title: 'Mensageiro de Terran', settlementId: 'terran',
     roles: ['questGiver'], questIds: ['side_street_arlen'], portraitAssetId: 'npc.street.arlen',
@@ -51,6 +52,10 @@ export const streetNpcDefinitions: NPCDefinition[] = [
   },
 ]
 
+export const streetNpcDefinitions: NPCDefinition[] = streetNpcBaseDefinitions.map((npc) => ({
+  ...npc, questIds: [...npc.questIds, ...collectionQuestIdsForNpc(npc.id)],
+}))
+
 export type StreetNpcPlacement = {
   id: string
   npcId: string
@@ -61,12 +66,12 @@ export type StreetNpcPlacement = {
 }
 
 export const streetNpcPlacements: readonly StreetNpcPlacement[] = [
-  { id: 'presence_street_arlen', npcId: 'npc_street_arlen', locationId: 'location_terran_eldamar_house', point: { x: 146, y: 91 }, palette: 'exploration', variant: 0 },
-  { id: 'presence_street_liora', npcId: 'npc_street_liora', locationId: 'location_terran_daeryn_house', point: { x: 141, y: 156 }, palette: 'healing', variant: 1 },
-  { id: 'presence_street_garrik', npcId: 'npc_street_garrik', locationId: 'location_terran_zareth_barracks', point: { x: 242, y: 185 }, palette: 'defense', variant: 2 },
-  { id: 'presence_street_siven', npcId: 'npc_street_siven', locationId: 'location_terran_vorren_post', point: { x: 244, y: 93 }, palette: 'knowledge', variant: 3 },
-  { id: 'presence_street_nara', npcId: 'npc_street_nara', locationId: 'location_terran_clan_hall', point: { x: 145, y: 195 }, palette: 'clan', variant: 4 },
-  { id: 'presence_street_ruven', npcId: 'npc_street_ruven', locationId: 'location_terran_bond_workshop', point: { x: 248, y: 155 }, palette: 'bond', variant: 5 },
+  { id: 'presence_street_arlen', npcId: 'npc_street_arlen', locationId: 'location_terran_eldamar_house', point: { x: 264, y: 156 }, palette: 'exploration', variant: 0 },
+  { id: 'presence_street_liora', npcId: 'npc_street_liora', locationId: 'location_terran_daeryn_house', point: { x: 164, y: 304 }, palette: 'healing', variant: 1 },
+  { id: 'presence_street_garrik', npcId: 'npc_street_garrik', locationId: 'location_terran_zareth_barracks', point: { x: 578, y: 469 }, palette: 'defense', variant: 2 },
+  { id: 'presence_street_siven', npcId: 'npc_street_siven', locationId: 'location_terran_vorren_post', point: { x: 540, y: 158 }, palette: 'knowledge', variant: 3 },
+  { id: 'presence_street_nara', npcId: 'npc_street_nara', locationId: 'location_terran_clan_hall', point: { x: 228, y: 468 }, palette: 'clan', variant: 4 },
+  { id: 'presence_street_ruven', npcId: 'npc_street_ruven', locationId: 'location_terran_bond_workshop', point: { x: 648, y: 316 }, palette: 'bond', variant: 5 },
 ]
 
 export const streetNpcPresences: readonly TerranNpcPresence[] = streetNpcPlacements.map((entry) => {

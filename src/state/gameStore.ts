@@ -23,6 +23,7 @@ import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { requestCampaignReset } from '../domain/game/campaignReset'
 import type { AttributeId, GameSave, InventoryItemInstance } from '../domain/game/types'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
+import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 import {
   acceptQuest as acceptQuestDomain,
   applyQuestEvent,
@@ -37,7 +38,7 @@ import {
   joinClan as joinClanDomain,
   unlockClass as unlockClassDomain,
 } from '../domain/progression/progressionEngine'
-import { visitTerranLocation } from '../domain/terran/cityEngine'
+import { discoverCityLandmark, visitTerranLocation } from '../domain/terran/cityEngine'
 import { buyFromSylwen, receiveDaerynAid, restAtHome } from '../domain/terran/services'
 import { buyMarketItem, MARKET_LOCATION_ID } from '../domain/terran/market'
 import { enterPlayerBase, leavePlayerBase, respawnDefeatedPlayer, transferBaseChestItem } from '../domain/terran/base'
@@ -93,6 +94,7 @@ type GameState = {
   joinClan: (clanId: string) => void
   unlockClass: (classId: string) => void
   travelInTerran: (locationId: string) => void
+  inspectCityLandmark: (landmarkId: string) => void
   preparePlayerHome: () => void
   performTerranQuestTask: (questId: string) => void
   restAtHome: () => void
@@ -164,7 +166,8 @@ export const useGameStore = create<GameState>((set, get) => {
     return persistenceQueue
   }
 
-  const commit = (save: GameSave) => {
+  const commit = (candidate: GameSave) => {
+    const save = refreshDeliveryQuestProgress(candidate, content, candidate.updatedAt)
     set({ save, status: 'ready', error: null })
     return persist(save)
   }
@@ -349,6 +352,14 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!completed.ok) return failAction(completed.message)
       commit(completed.value)
       show('Missão concluída', 'Recompensas aplicadas e registro movido para Concluídas.', 'success')
+    },
+
+    inspectCityLandmark: (landmarkId) => {
+      const save = get().save
+      if (!save) return
+      const result = discoverCityLandmark(save, landmarkId, nowIso())
+      if (!result.ok) return failAction(result.message)
+      if (result.value !== save) commit(result.value)
     },
 
     setQuestTracked: (questId, tracked) => {

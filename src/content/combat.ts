@@ -177,7 +177,7 @@ export const encounterDefinitions = [
     trailNodeId: 'portal_hunt_ruin',
     enemyDefinitionIds: ['enemy_ruin_sentinel', 'enemy_void_moth'],
     canFlee: false,
-    rewards: { characterXp: 66, gold: 34, boundResonance: 44, lootDefinitionIds: ['drop_ruin_shard', 'drop_void_dust'] },
+    rewards: { characterXp: 66, gold: 34, boundResonance: 44, lootDefinitionIds: ['drop_ruin_shard', 'fragment_echo_crystal', 'drop_void_dust'] },
     status: 'CONTENT_DRAFT',
   },
 ] satisfies EncounterDefinition[]

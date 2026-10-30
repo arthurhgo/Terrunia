@@ -5,6 +5,7 @@ import {
   getDiscoveredTerranLocationIds,
   getTerranQuestDestination,
   visitTerranLocation,
+  discoverCityLandmark,
 } from './cityEngine'
 
 const createSave = () =>
@@ -18,6 +19,21 @@ const createSave = () =>
   )
 
 describe('Terran city engine', () => {
+  it('registra cada ponto explorado uma vez e preserva recursos e progresso', () => {
+    const original = createSave()
+    const found = discoverCityLandmark(original, 'city_contract_board', original.updatedAt)
+    if (!found.ok) throw new Error(found.message)
+    expect(found.value.world.worldFlags).toContain('TerranLandmarkDiscovered:city_contract_board')
+    expect(found.value.wallet).toEqual(original.wallet)
+    expect(found.value.essence).toEqual(original.essence)
+    expect(found.value.quests).toEqual(original.quests)
+    expect(original.world.worldFlags).not.toContain('TerranLandmarkDiscovered:city_contract_board')
+    const again = discoverCityLandmark(found.value, 'city_contract_board', original.updatedAt)
+    expect(again.ok && again.value).toBe(found.value)
+    expect(discoverCityLandmark(original, 'no_landmark', original.updatedAt).ok).toBe(false)
+    original.world.currentLocationId = 'astravel_entry'
+    expect(discoverCityLandmark(original, 'city_contract_board', original.updatedAt).ok).toBe(false)
+  })
   it('descobre uma instituição, salva a localização e não duplica a descoberta', () => {
     const first = visitTerranLocation(
       createSave(),

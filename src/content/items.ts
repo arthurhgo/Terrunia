@@ -1,6 +1,12 @@
 import type { BoundItemBaseDefinition, ItemDefinition } from './types'
 
 export const itemDefinitions = [
+  {
+    id: 'fragment_echo_crystal', name: 'Fragmento de Eco', description: 'Cristal inerte desprendido de uma Sentinela. Serve a encomendas comerciais; não é um componente de Infusão.',
+    category: 'fragment', rarity: 'uncommon', convertToEssence: true, essenceValue: 35,
+    sellable: true, sellValue: 16, questLocked: false, canInfuseBoundItem: false,
+    combatEffects: [], affinityTags: ['ruin', 'echo'], iconAssetId: 'item.echo-fragment', status: 'BALANCE_DRAFT',
+  },
   ...[
     { id: 'material_runic_alloy', name: 'Liga Rúnica', description: 'Metal produzido por Durnan para componentes vinculados.', iconAssetId: 'item.runic-alloy' },
     { id: 'material_weapon_core', name: 'Núcleo de Arma', description: 'Componente de forja para a arma que já pertence ao Terrírian.', iconAssetId: 'item.weapon-core' },

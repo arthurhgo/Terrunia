@@ -4,8 +4,9 @@ import { content } from '../content/catalog'
 import { getBoundSlotCapacity } from '../domain/bond/boundItems'
 import type { GameSave } from '../domain/game/types'
 import { deriveCharacterStats } from '../domain/character/derivedStats'
+import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 
-export const CURRENT_SAVE_SCHEMA = 13
+export const CURRENT_SAVE_SCHEMA = 14
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -765,6 +766,14 @@ const migrateV12ToV13 = (legacy: Record<string, unknown>): unknown => {
   return refreshQuestAvailability(next, content, next.updatedAt)
 }
 
+const migrateV13ToV14 = (legacy: Record<string, unknown>): unknown => {
+  const next = structuredClone(legacy) as unknown as GameSave
+  for (const quest of Object.values(content.quests)) next.quests[quest.id] ??= createQuestProgress(quest)
+  next.schemaVersion = 14; next.gameVersion = '0.11.0'; next.revision += 1
+  next.eventLog.push('SaveMigrated:13->14')
+  return refreshDeliveryQuestProgress(refreshQuestAvailability(next, content, next.updatedAt), content, next.updatedAt)
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -821,6 +830,7 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
     version = 12
   }
   if (version === 12) { candidate = migrateV12ToV13(candidate as Record<string, unknown>); version = 13 }
+  if (version === 13) { candidate = migrateV13ToV14(candidate as Record<string, unknown>); version = 14 }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)
   }

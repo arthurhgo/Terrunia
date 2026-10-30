@@ -2,6 +2,7 @@ import type { QuestDefinition, QuestPrerequisite } from './types'
 import { npcDefinitions } from './npcs'
 import { clanDefinitions, classDefinitions } from './progression'
 import { streetQuestDefinitions } from './streetNpcs'
+import { collectionContractDefinitions } from './collectionContracts'
 
 /**
  * CONTENT_DRAFT / BALANCE_DRAFT: secondary NPC contracts.
@@ -79,4 +80,5 @@ const baseSideQuestDefinitions: QuestDefinition[] = npcDefinitions.filter((npc) 
 export const sideQuestDefinitions: QuestDefinition[] = [
   ...baseSideQuestDefinitions,
   ...streetQuestDefinitions,
+  ...collectionContractDefinitions,
 ]

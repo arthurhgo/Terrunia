@@ -1,6 +1,4 @@
-import { TERRAN_LOCATION_IDS } from '../../content/terran'
-import { CITY_HEIGHT, CITY_WIDTH, getCityPoint, type WorldPoint } from './pixelCityArt'
-import { PLAYER_HOME_CENTER } from './roomContent'
+import { CITY_HEIGHT, CITY_WIDTH, cityCollisionRects, type WorldPoint } from './cityWorld'
 
 /** VISUAL_DRAFT: collision belongs to the drawn city, never to gameplay rules or asset files. */
 export const NAV_GRID = 8
@@ -8,17 +6,9 @@ const columns = CITY_WIDTH / NAV_GRID
 const rows = CITY_HEIGHT / NAV_GRID
 
 export function isCityWalkable(point: WorldPoint): boolean {
-  if (point.x < 12 || point.x > CITY_WIDTH - 12 || point.y < 28 || point.y > CITY_HEIGHT - 8) return false
-  if (Math.abs(point.x - PLAYER_HOME_CENTER.x) < 24
-    && point.y > PLAYER_HOME_CENTER.y - 25 && point.y < PLAYER_HOME_CENTER.y + 20) return false
-  return !TERRAN_LOCATION_IDS.some((id) => {
-    const center = getCityPoint(id)
-    const portal = id === 'location_terran_portal_plaza'
-    const halfWidth = portal ? 32 : 24
-    const roofTop = portal ? 19 : 25
-    const bottom = portal ? 15 : 20
-    return Math.abs(point.x - center.x) < halfWidth && point.y > center.y - roofTop && point.y < center.y + bottom
-  })
+  if (point.x < 24 || point.x > CITY_WIDTH - 24 || point.y < 40 || point.y > CITY_HEIGHT - 24) return false
+  return !cityCollisionRects.some((rect) => point.x > rect.x && point.x < rect.x + rect.width
+    && point.y > rect.y && point.y < rect.y + rect.height)
 }
 
 const indexOf = (x: number, y: number) => y * columns + x
@@ -44,7 +34,7 @@ function accessibleCell(point: WorldPoint): number | null {
   return null
 }
 
-/** Four-way breadth-first path; stable, deterministic and cheap for 48×32 cells. */
+/** Four-way breadth-first path across 96×64 cells; props and buildings share their drawn footprint. */
 export function findCityPath(start: WorldPoint, destination: WorldPoint): WorldPoint[] {
   const origin = accessibleCell(start)
   const goal = accessibleCell(destination)

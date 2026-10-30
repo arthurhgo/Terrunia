@@ -129,7 +129,7 @@ export const enemyDefinitions = [
     xpReward: 40,
     goldReward: 22,
     boundResonanceReward: 24,
-    lootDefinitionIds: ['drop_ruin_shard'],
+    lootDefinitionIds: ['drop_ruin_shard', 'fragment_echo_crystal'],
     skillIds: [],
     weaknessTags: ['resonance', 'blunt'],
     assetId: 'enemy.ruin-sentinel',

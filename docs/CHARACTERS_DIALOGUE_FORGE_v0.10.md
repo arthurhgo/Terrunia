@@ -1,5 +1,7 @@
 # Personagens, diálogos e forja — v0.10
 
+Registro da entrega v0.10. A direção posterior em `TERRAN_EXPLORATION_AND_CONTRACTS_v0.11.md` substitui os marcadores uniformes, reduz os NPCs a 28 px, amplia Terran e revisa os preços de materiais de Neris. Os retratos e a forja continuam válidos.
+
 Direção do criador de 2026-10-30: usar a imagem do personagem como sprite; diferenciar todos os NPCs em pixel art; remover o limite de missões; mostrar a arma na mão em combate; criar vendedor e Casa do Ferreiro; unificar a interrogação vermelha; compor diálogos com dois personagens acima da caixa inferior.
 
 ## Identidade visual

@@ -1,5 +1,6 @@
 import type { NPCDefinition } from './types'
 import { streetNpcDefinitions } from './streetNpcs'
+import { collectionQuestIdsForNpc } from './collectionContracts'
 
 const baseNpcDefinitions = [
   {
@@ -114,7 +115,7 @@ const baseNpcDefinitions = [
 export const npcDefinitions: NPCDefinition[] = [
   ...baseNpcDefinitions.map((npc) => ({
     ...npc,
-    questIds: npc.id === 'npc_rosetta' ? [] : [...npc.questIds, 'side_' + npc.id],
+    questIds: npc.id === 'npc_rosetta' ? [] : [...npc.questIds, 'side_' + npc.id, ...collectionQuestIdsForNpc(npc.id)],
   })),
   ...streetNpcDefinitions,
 ]

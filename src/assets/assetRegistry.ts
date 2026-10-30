@@ -45,7 +45,7 @@ const entries: AssetEntry[] = [
     id: profile.assetId, path: profile.path, fallback: '/assets/placeholders/npc.svg',
     alt: `Retrato pixel art de ${profile.name}`, pixelArt: true,
   })),
-  ...['runic-alloy', 'weapon-core', 'mycelial-resin'].map((id) => ({
+  ...['runic-alloy', 'weapon-core', 'mycelial-resin', 'echo-fragment'].map((id) => ({
     id: `item.${id}`, path: `/assets/items/item_${id.replaceAll('-', '_')}.png`,
     fallback: '/assets/placeholders/item.svg', alt: id, pixelArt: true,
   })),

@@ -2,6 +2,8 @@
 
 O registro central fica em `src/assets/assetRegistry.ts`. Telas solicitam um `assetId`; o componente `AssetImage` resolve caminho, texto alternativo e fallback.
 
+Atualização v0.11: o manifest pixelado inclui 129 entradas (66 itens, 10 monstros, 51 NPCs e 2 aparências de jogador). `item.echo-fragment` é um novo cristal violeta nativo 16×16 para contratos comerciais. Os 51 NPCs mantêm os PNGs de 32×32 compartilhados com os retratos e são desenhados no mundo com 28 px; a escala não altera os arquivos-fonte. A tabela abaixo registra a base histórica inicial.
+
 | Grupo | Estado | Local |
 |---|---|---|
 | Marca do Nexo | `VISUAL_DRAFT` vetorial | `public/assets/ui/terrunia-mark.svg` |

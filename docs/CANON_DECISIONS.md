@@ -68,6 +68,17 @@ Registro das ambiguidades encontradas durante a implementação do vertical slic
 
 Esta atualização substitui as referências históricas a limite de três, seis instituições e sprites genéricos nas linhas anteriores. Detalhes: `CHARACTERS_DIALOGUE_FORGE_v0.10.md`.
 
+## Atualização posterior do criador — 2026-10-30, v0.11
+
+| Tema | Conflito encontrado | Decisão aplicada |
+|---|---|---|
+| Sinalização dos NPCs | A v0.10 aplicava `?` vermelho a todos. | O pedido mais recente prevalece: somente Rosetta mantém `?`; missões principais/Clã/Classe disponíveis ou em andamento usam `!` amarelo; sidequests usam losango azul, preenchido quando prontas. NPC sem missão fica sem símbolo. |
+| Escala e exploração de Terran | A cidade cabia inteira em 384×256, ao contrário da câmera de Astravél. | Mundo ampliado para 768×512, câmera 384×256, NPCs com 28 px e construções maiores. Seis pontos interativos registram descoberta sem criar instituições extras. Arte, bairros e coordenadas continuam `VISUAL_DRAFT`. |
+| Contratos de drops e fragmentos | Os contratos antigos eram majoritariamente abates e não exigiam entrega de objetos. | Adicionados 12 contratos de entrega com consumo atômico da mochila e ouro proporcional. Fragmento de Eco é um material comercial novo, obtido de Sentinelas e separado do Fragmento Micelial de Infusão. Nomes, quantidades e bônus de 50% sobre a venda são `CONTENT_DRAFT`/`BALANCE_DRAFT`. |
+| Ouro e fornecimento | Neris vendia alguns materiais abaixo do valor de revenda, permitindo lucro ilimitado. | Preços de Lasca/Fibra/Cerne ajustados para 60/48/72 Ouro, acima da revenda e do valor unitário dos contratos. Entregas são pagas uma vez e exigem os materiais atuais; não contam o mesmo lote depois de consumido por outro contrato. |
+
+Detalhes e validação em `TERRAN_EXPLORATION_AND_CONTRACTS_v0.11.md`. Esta atualização substitui as referências anteriores a marcadores uniformes e escala fixa da cidade.
+
 ## OWNER_DECISION pendente
 
 - Curva final da barra de Essência e recompensas do encontro.

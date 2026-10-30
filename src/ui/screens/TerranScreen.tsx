@@ -38,6 +38,9 @@ import { BaseChest, DaerynServices, HomeDrawer, QuestNpcPanel, VorrenBestiary } 
 import { MarketNpcPanel } from '../terran/MarketServices'
 import { isMarketNpc } from '../../domain/terran/market'
 import { BASE_LOCATION_ID } from '../../domain/terran/base'
+import { getNpcActionableQuests } from '../../domain/quests/questSelectors'
+import { type TerranLandmark } from '../../content/terranExploration'
+import { CityLandmarkDialog } from '../terran/CityLandmarkDialog'
 
 type Drawer = 'local' | 'location' | 'inventory' | 'quests' | 'market' | 'home' | 'chest' | 'records' | 'forge' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
@@ -122,6 +125,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [dialogueLine, setDialogueLine] = useState(0)
   const [localQuestId, setLocalQuestId] = useState<string | null>(null)
   const [marketNpc, setMarketNpc] = useState<Presence | null>(null)
+  const [cityLandmark, setCityLandmark] = useState<TerranLandmark | null>(null)
 
   useEffect(() => {
     if (!waking) return
@@ -141,7 +145,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const guidance = getTerranQuestDestination(save, content)
   const discovered = getDiscoveredTerranLocationIds(save).length
   const location = content.terranLocations[locationId]
-  const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !socialQuestId && !dialogue && !inspected && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
+  const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !socialQuestId && !dialogue && !inspected && !cityLandmark && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
 
   const openLocation = (id: TerranLocationId) => {
     setStreetSpawn(null)
@@ -152,7 +156,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setMarketNpc(null)
     setDialogue(null)
     setDialogueLine(0)
-    // Six official institutions are walkable interiors; the Portal remains outdoors.
+    // The seven institutions have walkable interiors; the Portal remains outdoors.
     if (hasTerranInterior(id)) {
       setInteriorId(id)
       setDrawer(null)
@@ -219,8 +223,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
       return
     }
     setMarketNpc(null)
-    const quest = Object.values(content.quests).find((candidate) => candidate.giverNpcId === presence.npcId &&
-      ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[candidate.id]?.status ?? 'locked'))
+    const quest = presence.npcId ? getNpcActionableQuests(save, presence.npcId, content)[0] : undefined
     if (presence.npcId === 'npc_eldamar' && (!quest || quest.id === 'vs_astravel_first_contact')) {
       setEldamarOpen(true)
       return
@@ -235,8 +238,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setDialogue(presence)
   }
   const currentLabel = interiorId ? getRoomName(interiorId) : content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
-  const forgeQuest = Object.values(content.quests).find((quest) => quest.giverNpcId === 'npc_durnan' &&
-    ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status ?? 'locked'))
+  const forgeQuest = getNpcActionableQuests(save, 'npc_durnan', content)[0]
   const activeTitle = drawer === 'forge' ? 'Casa do Ferreiro' : drawer === 'location' ? (
     localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
   ) : drawer === 'local' ? 'Mapa de Terran' : drawer === 'market' ? `Mercado · ${marketNpc?.label ?? 'Serviços'}` : drawer === 'inventory' ? 'Inventário e Nexo' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
@@ -273,7 +275,12 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                   currentLocationId={save.world.currentLocationId} spawnPoint={streetSpawn}
                   homeUnlocked={true} onEnterHome={enterHome}
                   enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
-                  actors={cityCast} onEnter={openLocation} onTalk={(id, presence) => talk(presence, id)} />}
+                  actors={cityCast} onEnter={openLocation} onTalk={(id, presence) => talk(presence, id)}
+                  landmarkFlags={save.world.worldFlags} onInspectLandmark={(landmark) => {
+                    useGameStore.getState().inspectCityLandmark(landmark.id)
+                    setCityLandmark(landmark)
+                  }} />}
+            {cityLandmark && <CityLandmarkDialog landmark={cityLandmark} save={save} onClose={() => setCityLandmark(null)} />}
             {waking && interiorId === PLAYER_HOME_INTERIOR_ID && <div className="terran-base__waking" role="status">Você acorda na Base. Descanse para recuperar Vida e Mana.</div>}
             {inspected && <div className="pixel-interior__inspection" role="dialog" aria-label={`Inspecionar ${inspected.name}`}>
               <strong>{inspected.name}</strong><p>{inspected.description}</p>
@@ -301,7 +308,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 <InventoryPanel save={save} />
               </div>}
               {drawer === 'location' && (localQuestId
-                ? <QuestNpcPanel save={save} questId={localQuestId} onClose={() => {
+                ? <QuestNpcPanel save={save} questId={localQuestId} onSelectQuest={setLocalQuestId} onClose={() => {
                   if (content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_')) setDrawer(null)
                   setLocalQuestId(null)
                 }} />
@@ -310,7 +317,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 save={save} presence={marketNpc} onClose={() => { setMarketNpc(null); setDrawer('location') }}
                 onQuest={marketNpc.npcId && Object.values(content.quests).some((quest) => quest.giverNpcId === marketNpc.npcId && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status ?? 'locked'))
                   ? () => {
-                    const quest = Object.values(content.quests).find((entry) => entry.giverNpcId === marketNpc.npcId && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[entry.id]?.status ?? 'locked'))
+                    const quest = getNpcActionableQuests(save, marketNpc.npcId!, content)[0]
                     if (quest) { setLocalQuestId(quest.id); setMarketNpc(null); setDrawer('location') }
                   } : undefined} />}
               {drawer === 'records' && interiorId === 'location_terran_eldamar_house' && <EldamarRecords save={save} />}

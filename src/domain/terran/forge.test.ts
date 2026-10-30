@@ -101,7 +101,7 @@ describe('Casa do Ferreiro e materiais vinculados', () => {
     const purchase = buyMarketItem(save, 'presence_neris', 'drop_ruin_shard', 2, content, save.updatedAt)
     expect(purchase.ok).toBe(true)
     if (!purchase.ok) return
-    expect(purchase.value.wallet.gold).toBe(944)
+    expect(purchase.value.wallet.gold).toBe(880)
     expect(purchase.value.inventory.at(-1)?.quantity).toBe(2)
     expect(buyMarketItem({ ...save, world: { ...save.world, currentLocationId: FORGE_LOCATION_ID } }, 'presence_neris', 'drop_ruin_shard', 1, content, save.updatedAt).ok).toBe(false)
   })
