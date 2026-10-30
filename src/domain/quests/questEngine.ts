@@ -117,7 +117,15 @@ export const acceptQuest = (
   next.updatedAt = now
   next.revision += 1
   next.eventLog.push(`QuestAccepted:${questId}`)
-  return ok(next)
+  // A recovered landmark is permanent evidence. Late acceptance and migrated
+  // campaigns must not require replaying one-time story combats.
+  let reconciled = next
+  for (const objective of definition.objectives) {
+    if (objective.type === 'visit' && next.world.trailNodeStates[objective.targetId] === 'completed') {
+      reconciled = applyQuestEvent(reconciled, { type: 'visit', targetId: objective.targetId, amount: objective.required }, catalog, now)
+    }
+  }
+  return ok(reconciled)
 }
 
 export const setQuestTracked = (

@@ -31,24 +31,14 @@ describe('trilha sequencial', () => {
     expect(result.value.save.world.trailNodeStates.astravel_camp_03).toBe('locked')
   })
 
-  it('resolve acampamento, concede consumível e preserva progressão', () => {
+  it('não permite coletar suprimentos do acampamento sem vencer o combate', () => {
     const save = makeSaveAtEntry()
-    save.world.trailNodeStates.astravel_entry = 'completed'
-    save.world.trailNodeStates.astravel_fungorro_01 = 'completed'
     save.world.trailNodeStates.astravel_camp_03 = 'current'
-    const result = resolveTrailInteraction(
-      save,
-      content.trails.trail_astravel_entry,
-      'astravel_camp_03',
-      content,
-      '2026-08-10T12:02:00.000Z',
-      () => 'tonic_1',
-    )
-    expect(result.ok).toBe(true)
-    if (!result.ok) return
-    expect(result.value.save.inventory[0].definitionId).toBe('consumable_minor_tonic')
-    expect(result.value.save.world.trailNodeStates.astravel_spore_ambush_04).toBe('current')
-    expect(result.value.save.world.worldFlags).toContain('astravel_camp_supplies_found')
+    const result = resolveTrailInteraction(save, content.trails.trail_astravel_entry,
+      'astravel_camp_03', content, '2026-10-30T12:00:00Z')
+    expect(result.ok).toBe(false)
+    expect(save.inventory).toHaveLength(0)
+    expect(save.world.worldFlags).not.toContain('astravel_camp_supplies_found')
   })
 
   it('não permite pular um nó bloqueado', () => {

@@ -145,6 +145,7 @@ for (const gem of Object.values(content.gems)) {
 }
 
 for (const enemy of Object.values(content.enemies)) {
+  for (const itemId of enemy.lootDefinitionIds) assertReference(content.items[itemId], `${enemy.id} → ${itemId}`)
   for (const skillId of enemy.skillIds) {
     assertReference(content.combatSkills[skillId], `${enemy.id} → ${skillId}`)
   }
@@ -168,7 +169,9 @@ for (const encounter of Object.values(content.encounters)) {
 }
 
 for (const trail of Object.values(content.trails)) {
+  validateStableIds(`${trail.id} nós`, trail.nodes)
   for (const node of trail.nodes) {
+    if (node.requiresQuestId) assertReference(content.quests[node.requiresQuestId], `${node.id} → ${node.requiresQuestId}`)
     if (node.encounterId) {
       const encounter = content.encounters[node.encounterId]
       assertReference(encounter, `${node.id} → ${node.encounterId}`)

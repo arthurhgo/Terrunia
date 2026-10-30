@@ -1346,7 +1346,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 128,
+        "y": 96,
+        "width": 32,
+        "height": 32
+      }
     },
     {
       "assetId": "npc.street.liora",
@@ -1357,7 +1363,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 160,
+        "y": 96,
+        "width": 32,
+        "height": 32
+      }
     },
     {
       "assetId": "npc.street.garrik",
@@ -1368,7 +1380,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 0,
+        "y": 128,
+        "width": 32,
+        "height": 32
+      }
     },
     {
       "assetId": "npc.street.siven",
@@ -1379,7 +1397,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 32,
+        "y": 128,
+        "width": 32,
+        "height": 32
+      }
     },
     {
       "assetId": "npc.street.nara",
@@ -1390,7 +1414,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 64,
+        "y": 128,
+        "width": 32,
+        "height": 32
+      }
     },
     {
       "assetId": "npc.street.ruven",
@@ -1401,7 +1431,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 96,
+        "y": 128,
+        "width": 32,
+        "height": 32
+      }
     },
     {
       "assetId": "enemy.luminous-slime",
@@ -1456,7 +1492,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 48,
+        "y": 96,
+        "width": 16,
+        "height": 16
+      }
     },
     {
       "assetId": "item.field-rune",
@@ -1467,7 +1509,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 64,
+        "y": 96,
+        "width": 16,
+        "height": 16
+      }
     },
     {
       "assetId": "item.vital-essence",
@@ -1478,7 +1526,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 80,
+        "y": 96,
+        "width": 16,
+        "height": 16
+      }
     },
     {
       "assetId": "item.luminous-gel",
@@ -1489,7 +1543,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 96,
+        "y": 96,
+        "width": 16,
+        "height": 16
+      }
     },
     {
       "assetId": "item.void-dust",
@@ -1500,7 +1560,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 112,
+        "y": 96,
+        "width": 16,
+        "height": 16
+      }
     },
     {
       "assetId": "item.spore-chitin",
@@ -1511,7 +1577,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 0,
+        "y": 112,
+        "width": 16,
+        "height": 16
+      }
     },
     {
       "assetId": "item.ruin-shard",
@@ -1522,7 +1594,13 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
-      "atlas": null
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 16,
+        "y": 112,
+        "width": 16,
+        "height": 16
+      }
     },
     {
       "assetId": "npc.rosetta.portrait",
@@ -1533,7 +1611,92 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 128,
+        "y": 128,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "enemy.blackroot-titan",
+      "path": "/assets/enemies/fungorros/enemy_blackroot_titan_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
       "atlas": null
+    },
+    {
+      "assetId": "item.fungal-gel",
+      "path": "/assets/items/item_fungal_gel.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 32,
+        "y": 112,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.mycelial-fiber",
+      "path": "/assets/items/item_mycelial_fiber.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 48,
+        "y": 112,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.blackroot-core",
+      "path": "/assets/items/item_blackroot_core.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 64,
+        "y": 112,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.hunter-insignia",
+      "path": "/assets/items/item_hunter_insignia.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 80,
+        "y": 112,
+        "width": 16,
+        "height": 16
+      }
     }
   ]
 }

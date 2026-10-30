@@ -11,6 +11,7 @@ import { canStartPortalHunt } from '../domain/combat/portalHunts'
 import type { BattleCommand } from '../domain/combat/types'
 import {
   completeTrailNode,
+  checkTrailQuestGate,
   getActiveTrailNode,
   getCurrentTrailNode,
   getTrailByNodeId,
@@ -547,6 +548,11 @@ export const useGameStore = create<GameState>((set, get) => {
     enterFungalChambers: () => {
       const save = get().save
       if (!save) return
+      const boss = content.trails.trail_astravel_entry.nodes.find((node) => node.type === 'boss')!
+      if (save.world.trailNodeStates[boss.id] !== 'completed') {
+        const gate = checkTrailQuestGate(save, boss, content)
+        if (!gate.ok) return failAction(gate.message)
+      }
       const result = enterDungeon(save, content.dungeons.dungeon_fungal_chambers, nowIso())
       if (!result.ok) return failAction(result.message)
       commit(result.save)
@@ -593,6 +599,7 @@ export const useGameStore = create<GameState>((set, get) => {
     startBattle: (nodeId) => {
       const save = get().save
       if (!save) return
+      if (save.battle) return failAction('Finalize o encontro atual antes de iniciar outro combate.')
       if (save.vitals.hp <= 0) return failAction('Descanse na Base antes de combater.')
       const trail = content.trails.trail_astravel_entry
       const node = nodeId
@@ -608,6 +615,12 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!['battle', 'boss'].includes(node.type) || !node.encounterId) {
         return failAction('O nó atual não contém um encontro de combate.')
       }
+      if (!trail.nodes.some((candidate) => candidate.id === save.world.currentLocationId)
+        && save.world.currentLocationId !== FUNGAL_DUNGEON_ID) {
+        return failAction('Entre em Astravél pelo Portal antes de iniciar este encontro.')
+      }
+      const questGate = checkTrailQuestGate(save, node, content)
+      if (!questGate.ok) return failAction(questGate.message)
       if (node.type === 'boss' && (save.world.currentLocationId !== FUNGAL_DUNGEON_ID
         || !save.world.worldFlags.includes(dungeonRoomFlag('fungal_core')))) {
         return failAction('Alcance o Núcleo da Ruína dentro das Câmaras Fúngicas antes de enfrentar o Colosso.')
@@ -720,6 +733,13 @@ export const useGameStore = create<GameState>((set, get) => {
         }),
       )
       next.inventory.push(...loot)
+      const recovery = battle.rewards.fieldRecovery
+      if (recovery) {
+        const stats = deriveCharacterStats(next, content)
+        next.vitals.hp = Math.min(stats.life.value, next.vitals.hp + recovery.hp)
+        next.vitals.mp = Math.min(stats.mana.value, next.vitals.mp + recovery.mp)
+        next.eventLog.push(`FieldRecovery:${battle.trailNodeId}`)
+      }
       const weaponId = next.character.bondedEquipment.weapon
       if (weaponId && next.boundItems[weaponId]) {
         next.boundItems[weaponId] = gainBoundResonance(
@@ -760,6 +780,12 @@ export const useGameStore = create<GameState>((set, get) => {
       }
       next.eventLog.push(`BattleWon:${battle.encounterId}`, `DropReceived:${loot.length}`)
       next.updatedAt = acquiredAt
+      if (!battle.waveIndex && !battle.portalHuntId) {
+        next = applyQuestEvent(next, { type: 'visit', targetId: battle.trailNodeId }, content, acquiredAt)
+      }
+      for (const item of loot) {
+        next = applyQuestEvent(next, { type: 'collect', targetId: item.definitionId, amount: item.quantity }, content, acquiredAt)
+      }
       for (const enemy of Object.values(battle.combatants).filter(
         (combatant) => combatant.side === 'enemy' && !combatant.alive,
       )) {
