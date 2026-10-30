@@ -79,7 +79,7 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('img', { name: /Interior pixelado de Casa de Daeryn/ })).toBeInTheDocument()
   })
 
-  it('mantém os quatro atalhos da cena e abre telas completas sem dividir Inventário e Nexo', () => {
+  it('mantém Local, Inventário/Nexo e Missões na lateral; somente Menu abre a tela da build', () => {
     loadSave()
     render(<MemoryRouter initialEntries={['/terran']}>
       <Routes>
@@ -91,35 +91,38 @@ describe('interfaces de Terran', () => {
         <Route path="/menu" element={<SkillTreeScreen />} />
       </Routes>
     </MemoryRouter>)
-    expect(screen.getByRole('img', { name: new RegExp('Terran vista superior 3/4') })).toBeInTheDocument()
+    const city = screen.getByRole('img', { name: /Terran vista superior 3\\/4/ })
+    expect(city).toBeInTheDocument()
     const rail = screen.getByRole('navigation', { name: 'Menu de Terran' })
     expect(rail.querySelectorAll('button')).toHaveLength(4)
-    expect(screen.getByRole('button', { name: 'Abrir Local' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Abrir Inventário e Nexo' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Abrir Missões' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Abrir Menu' })).toBeInTheDocument()
-    expect(screen.getByRole('complementary', { name: 'Status permanente do personagem' })).toBeInTheDocument()
+    const stage = screen.getByRole('region', { name: 'Cenário contínuo de Terran' })
+    const status = screen.getByRole('complementary', { name: 'Status permanente do personagem' })
+    expect(screen.getByRole('link', { name: 'Abrir Menu' })).toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Navegação principal' })).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Local' }))
-    expect(screen.getByRole('heading', { name: 'Terran' })).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: /Mapa cartográfico do continente de Terran/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Selecionar Terran no mapa' })).toBeInTheDocument()
-    expect(screen.getAllByLabelText('Região não descoberta')).toHaveLength(2)
+    const mapDrawer = screen.getByRole('complementary', { name: 'Painel lateral: Mapa de Terran' })
+    expect(mapDrawer).toBeInTheDocument()
+    expect(mapDrawer).toHaveTextContent('Explore o continente')
+    expect(screen.getByRole('link', { name: 'Ampliar mapa do continente' })).toHaveAttribute('href', '/local')
+    expect(screen.getByRole('region', { name: 'Cenário contínuo de Terran' })).toBe(stage)
     expect(screen.queryByText('Modo Ondas do Portal')).not.toBeInTheDocument()
-    expect(screen.queryByText('Colosso Micélio')).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('link', { name: 'Terran' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Inventário e Nexo' }))
-    expect(screen.getByRole('heading', { name: 'Inventário e Nexo' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Status do personagem' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Inventário' })).toBeInTheDocument()
+    const inventoryDrawer = screen.getByRole('complementary', { name: 'Painel lateral: Inventário e Nexo' })
+    expect(inventoryDrawer).toBeInTheDocument()
+    expect(inventoryDrawer).toHaveTextContent('Status do personagem')
+    expect(inventoryDrawer).toHaveTextContent('Inventário')
     expect(screen.queryByRole('group', { name: 'Seções de Inventário e Nexo' })).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('link', { name: 'Terran' }))
+    expect(status).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Missões' }))
-    expect(screen.getByRole('heading', { name: 'Registro de Missões' })).toBeInTheDocument()
+    expect(screen.getByRole('complementary', { name: 'Painel lateral: Diário de Missões' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Registro de missões em grid' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('link', { name: 'Terran' }))
+    expect(city).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Menu' }))
     expect(screen.getByRole('heading', { name: 'Menu' })).toBeInTheDocument()
