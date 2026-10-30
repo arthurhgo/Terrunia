@@ -6,6 +6,7 @@ import { deriveWeaponPreview, evaluateEquipmentRequirements } from '../../domain
 import { useGameStore } from '../../state/gameStore'
 import { AttributeAllocator } from '../character/AttributeAllocator'
 import { WeaponGallery } from '../prologue/WeaponGallery'
+import './prologueEnhanced.css'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
@@ -30,7 +31,7 @@ export function PrologueScreen() {
   }
 
   return (
-    <main className="prologue-screen">
+    <main className="prologue-screen prologue-screen--enhanced">
       <div className="prologue-screen__rune" aria-hidden="true" />
       <section className="prologue-copy">
         <p className="eyebrow">PRÓLOGO TÉCNICO · CONTEÚDO DE DESENVOLVIMENTO</p>
