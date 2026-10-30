@@ -5,6 +5,7 @@ import { content } from '../../content/catalog'
 import { deriveWeaponPreview, evaluateEquipmentRequirements } from '../../domain/bond/equipmentLoadout'
 import { useGameStore } from '../../state/gameStore'
 import { AttributeAllocator } from '../character/AttributeAllocator'
+import { WeaponGallery } from '../prologue/WeaponGallery'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
@@ -41,22 +42,11 @@ export function PrologueScreen() {
           <Link2 size={22} />
           <span><strong>Vínculo é permanente.</strong> Drops futuros alimentam sua evolução; não substituem esta peça.</span>
         </div>
+        <WeaponGallery save={save} selectedId={selectedWeapon.id} onSelect={setSelectedWeaponId} />
       </section>
 
       <ArcanePanel title="Escolha da Arma Vinculada" subtitle="Qualquer arquétipo · requisitos do personagem" className="prologue-bindings prologue-arsenal">
         <AttributeAllocator save={save} />
-        <div className="prologue-weapon-grid" aria-label="Armas iniciais">
-          {weapons.map((weapon) => {
-            const requirement = evaluateEquipmentRequirements(save.character, weapon)
-            return (
-              <button key={weapon.id} type="button" className={selectedWeapon.id === weapon.id ? 'selected' : ''} aria-pressed={selectedWeapon.id === weapon.id} onClick={() => setSelectedWeaponId(weapon.id)}>
-                <AssetImage assetId={weapon.assetIdByGrade[1] ?? ''} />
-                <span><strong>{weapon.name}</strong><small>{weapon.archetype} · poder {weapon.basePower}</small></span>
-                {requirement.eligible ? <Check size={15} /> : <LockKeyhole size={15} />}
-              </button>
-            )
-          })}
-        </div>
         <div className="prologue-weapon-preview">
           <div className="prologue-weapon-preview__visual"><AssetImage assetId={selectedWeapon.assetIdByGrade[1] ?? ''} /><span>RANK I · GRAU I</span></div>
           <div>
