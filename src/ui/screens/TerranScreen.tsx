@@ -1,6 +1,6 @@
-import { BookOpen, GitBranch, MapPin, Package, X } from 'lucide-react'
+import { BookOpen, CircleUserRound, GitBranch, Map, MapPin, Menu, Package, Settings, Sparkles, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { TerranLocationDefinition } from '../../content/types'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
@@ -13,6 +13,7 @@ import { useGameStore } from '../../state/gameStore'
 import { BoundItemsPanel } from '../dashboard/BoundItemsPanel'
 import { ClanHallPanel } from '../dashboard/ClanHallPanel'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
+import { NexusOverview } from '../dashboard/NexusOverview'
 import { NpcDialog } from '../dashboard/NpcDialog'
 import { PortalPanel } from '../dashboard/PortalPanel'
 import { SocialQuestDialog } from '../dashboard/SocialQuestDialog'
@@ -31,14 +32,15 @@ import { getCityCast } from '../terran/cityCast'
 import { BaseChest, DaerynServices, HomeDrawer, QuestNpcPanel, VorrenBestiary } from '../terran/TerranServices'
 import { BASE_LOCATION_ID } from '../../domain/terran/base'
 
-type Drawer = 'location' | 'inventory' | 'quests' | 'home' | 'chest' | 'records' | null
+type Drawer = 'location' | 'inventory' | 'quests' | 'menu' | 'home' | 'chest' | 'records' | null
+type InventorySection = 'inventory' | 'nexus'
 type Presence = TerranLocationDefinition['npcPresences'][number]
 
 const hud = [
   { id: 'location', label: 'Local', icon: MapPin },
-  { id: 'inventory', label: 'Inventário', icon: Package },
+  { id: 'inventory', label: 'Inventário e Nexo', icon: Package },
   { id: 'quests', label: 'Missões', icon: BookOpen },
-  { id: 'skill-tree', label: 'Skill Tree', icon: GitBranch },
+  { id: 'menu', label: 'Menu', icon: Menu },
 ] as const
 
 function DialogueBox({ save, presence, line, onNext }: { save: GameSave; presence: Presence; line: number; onNext: () => void }) {
@@ -114,7 +116,6 @@ function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
 }
 
 export function TerranScene({ unified = false }: { unified?: boolean }) {
-  const navigate = useNavigate()
   const save = useGameStore((state) => state.save)
   const travel = useGameStore((state) => state.travelInTerran)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
@@ -122,6 +123,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const enterBase = useGameStore((state) => state.enterBase)
   const leaveBase = useGameStore((state) => state.leaveBase)
   const [drawer, setDrawer] = useState<Drawer>(null)
+  const [inventorySection, setInventorySection] = useState<InventorySection>('inventory')
   const [locationId, setLocationId] = useState<TerranLocationId>('location_terran_portal_plaza')
   const [interiorId, setInteriorId] = useState<TerranInteriorId | null>(
     save?.world.currentLocationId === BASE_LOCATION_ID ? PLAYER_HOME_INTERIOR_ID : null)
@@ -230,7 +232,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const currentLabel = interiorId ? getRoomName(interiorId) : content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
   const activeTitle = drawer === 'location' ? (
     localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
-  ) : drawer === 'inventory' ? 'Inventário' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
+  ) : drawer === 'inventory' ? 'Inventário e Nexo' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'menu' ? 'Menu' : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
 
   const sceneContent = (
     <div className="terran-game">
@@ -244,11 +246,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             {hud.map(({ id, label, icon: Icon }) => (
               <button key={id} type="button" className={drawer === id ? 'active' : ''}
                 title={label} aria-label={`Abrir ${label}`}
-                aria-pressed={id !== 'skill-tree' && drawer === id}
-                onClick={() => {
-                  if (id === 'skill-tree') { navigate('/skill-tree'); return }
-                  setDrawer(drawer === id ? null : id)
-                }}>
+                aria-pressed={drawer === id}
+                onClick={() => setDrawer(drawer === id ? null : id)}>
                 <Icon size={20} aria-hidden="true" /><span>{label}</span>
               </button>
             ))}
@@ -287,7 +286,22 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                   setLocalQuestId(null)
                 }} />
                 : <LocationDrawer save={save} location={location} onTalk={talk} onVisit={openLocation} unified={unified} />)}
-              {drawer === 'inventory' && <InventoryPanel save={save} />}
+              {drawer === 'inventory' && <>
+                <div className="terran-drawer__tabbar" role="group" aria-label="Seções de Inventário e Nexo">
+                  <button type="button" className={inventorySection === 'inventory' ? 'active' : ''}
+                    aria-pressed={inventorySection === 'inventory'} onClick={() => setInventorySection('inventory')}>Inventário</button>
+                  <button type="button" className={inventorySection === 'nexus' ? 'active' : ''}
+                    aria-pressed={inventorySection === 'nexus'} onClick={() => setInventorySection('nexus')}>Nexo</button>
+                </div>
+                {inventorySection === 'inventory' ? <InventoryPanel save={save} /> : <NexusOverview save={save} />}
+              </>}
+              {drawer === 'menu' && <nav className="terran-menu" aria-label="Opções do Menu">
+                <Link to="/skill-tree"><GitBranch size={17} aria-hidden="true" /> Skill Tree</Link>
+                <Link to="/character"><CircleUserRound size={17} aria-hidden="true" /> Personagem</Link>
+                <Link to="/npcs"><Sparkles size={17} aria-hidden="true" /> Relações</Link>
+                <Link to="/world"><Map size={17} aria-hidden="true" /> Mundo</Link>
+                <Link to="/settings"><Settings size={17} aria-hidden="true" /> Configurações</Link>
+              </nav>}
               {drawer === 'records' && interiorId === 'location_terran_eldamar_house' && <EldamarRecords save={save} />}
               {drawer === 'quests' && <QuestDrawer save={save} />}
               {drawer === 'home' && <HomeDrawer save={save} canRest={interiorId === PLAYER_HOME_INTERIOR_ID} />}
