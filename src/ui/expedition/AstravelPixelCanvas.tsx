@@ -53,6 +53,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
   const inspectRef = useRef(onInspect)
   const engageRef = useRef(onEngage)
   const engagingRef = useRef<string | null>(null)
+  const autoAttemptedRef = useRef<string | null>(null)
   const travelRef = useRef(onTravelStart)
   enabledRef.current = enabled
   statusesRef.current = statuses
