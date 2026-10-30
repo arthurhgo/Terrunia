@@ -1,4 +1,4 @@
-import { BookOpen, CircleUserRound, GitBranch, Landmark, LogOut, Map, Package, Settings, Sparkles } from 'lucide-react'
+import { BookOpen, CircleUserRound, Grid2X2, Landmark, LogOut, Map, Package, Settings, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../state/authStore'
@@ -16,7 +16,7 @@ const navItems = [
   { to: '/play', label: 'Terran', icon: Landmark },
   { to: '/inventory', label: 'Inventário e Nexo', icon: Package },
   { to: '/character', label: 'Personagem', icon: CircleUserRound },
-  { to: '/skill-tree', label: 'Skill Tree', icon: GitBranch },
+  { to: '/menu', label: 'Menu', icon: Grid2X2 },
   { to: '/quests', label: 'Missões', icon: BookOpen },
   { to: '/npcs', label: 'Relações', icon: Sparkles },
   { to: '/world', label: 'Mundo', icon: Map },
