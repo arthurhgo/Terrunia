@@ -213,14 +213,14 @@ export function BoundItemScreen() {
                 </div>
                 <div className={inWorkshop ? 'met' : 'unmet'}>
                   {inWorkshop ? <Check size={16} /> : <MapPin size={16} />}
-                  <span>Instituição responsável<strong>Oficina dos Vínculos</strong></span>
+                  <span>Instituição responsável<strong>Mercado de Terran</strong></span>
                 </div>
                 <div className={riteComponentReady ? 'met' : 'unmet'}>
                   {riteComponentReady ? <Check size={16} /> : <LockKeyhole size={16} />}
                   <span>{item.grade === 1 ? 'Componente infusível' : 'Joia compatível'}<strong>{riteComponentName}</strong></span>
                 </div>
               </div>
-              <p className="modal-warning">A Oficina dos Vínculos é a instituição responsável. NPC, custo e forma narrativa final do rito permanecem OWNER_DECISION.</p>
+              <p className="modal-warning">No Mercado, Lithwynn realiza a Infusão (GII) e Talia a Lapidação (GIII) quando os requisitos forem cumpridos.</p>
             </ArcanePanel>
           )}
         </div>
