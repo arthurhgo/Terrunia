@@ -52,7 +52,7 @@ describe('Layout da escolha da Arma Vinculada', () => {
 
     fireEvent.click(axe)
     expect(within(bindingPanel as HTMLElement).queryByRole('heading', { name: 'Sem arma vinculada' })).not.toBeInTheDocument()
-    expect(within(heroPreview).getByRole('img', { name: 'Machado de Guerra equipada na mão do personagem (prévia)' })).toHaveClass('prologue-hero-preview__equipped-weapon')
+    expect(within(heroPreview).getByRole('img', { name: 'Machado de Guerra na mão do personagem (prévia)' })).toHaveClass('prologue-hero-preview__equipped-weapon')
     expect(heroPreview.querySelector('.prologue-hero-preview__actor')).toHaveAttribute('data-weapon-id', 'bound_weapon_war_axe')
     expect(heroPreview.querySelector('.prologue-hero-preview__stage')).toHaveClass('is-armed')
     expect(within(heroPreview).getByRole('img', { name: 'Terrírian Lysa' })).toHaveClass('prologue-hero-preview__character')
