@@ -35,15 +35,35 @@ describe('expedição pixelada de Astravél', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Trilha' }))
     const stage = screen.getByRole('region', { name: 'Cena contínua de Astravél' })
     const routeWindow = screen.getByRole('complementary', { name: 'Painel lateral: Rota de Astravél' })
-    expect(stage).toContainElement(routeWindow)
+    const gameLayout = stage.parentElement
+    expect(gameLayout).toContainElement(routeWindow)
+    expect(stage).not.toContainElement(routeWindow)
     expect(routeWindow).toHaveClass('expedition-game__window')
-    expect(stage).toContainElement(screen.getByRole('button', { name: 'Fechar janela da instância' }))
+    expect(gameLayout).toContainElement(screen.getByRole('button', { name: 'Fechar janela da instância' }))
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Mochila' }))
-    expect(stage).toContainElement(screen.getByRole('complementary', { name: 'Painel lateral: Mochila' }))
+    expect(gameLayout).toContainElement(screen.getByRole('complementary', { name: 'Painel lateral: Mochila' }))
     fireEvent.click(screen.getByRole('button', { name: 'Fechar janela da instância' }))
     expect(screen.queryByRole('complementary', { name: 'Painel lateral: Mochila' })).not.toBeInTheDocument()
     expect(stage).toBeInTheDocument()
     expect(screen.getByRole('img', { name: /Astravél em pixels/ })).toBeInTheDocument()
+  })
+
+  it('abre Acampamento Abandonado no centro da expedição ao interagir com o marco atual', () => {
+    seedExpedition('astravel_camp_03')
+    const save = useGameStore.getState().save!
+    save.world.trailNodeStates.astravel_fungorro_01 = 'completed'
+    save.world.trailNodeStates.astravel_camp_03 = 'current'
+    render(<MemoryRouter initialEntries={['/expedition']}><ExpeditionScreen /></MemoryRouter>)
+    const layout = screen.getByRole('region', { name: 'Cena contínua de Astravél' }).parentElement
+    fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Acampamento Abandonado' }))
+    const modal = screen.getByRole('complementary', { name: 'Painel lateral: Acampamento Abandonado' })
+    expect(modal).toBeVisible()
+    expect(layout).toContainElement(modal)
+    expect(modal).toHaveClass('expedition-game__window')
+    expect(screen.getByRole('button', { name: 'Vasculhar acampamento' })).toBeVisible()
+    expect(screen.getByRole('region', { name: 'Cena contínua de Astravél' })).not.toContainElement(modal)
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
+    expect(screen.queryByRole('complementary', { name: 'Painel lateral: Acampamento Abandonado' })).not.toBeInTheDocument()
   })
 
   it('entra no combate ao alcançar a Presença Fungorra sem exigir segundo clique no painel', () => {
