@@ -28,7 +28,7 @@ describe('Layout da escolha da Arma Vinculada', () => {
     expect(within(introduction as HTMLElement).queryByRole('region', { name: 'Galeria flutuante de armas vinculadas' })).not.toBeInTheDocument()
     expect(within(bindingPanel as HTMLElement).getByRole('region', { name: 'Galeria flutuante de armas vinculadas' })).toBeInTheDocument()
     expect(screen.queryByText(/Sinergias e caminhos de Clã/)).not.toBeInTheDocument()
-    expect(within(bindingPanel as HTMLElement).getByText('Sem arma vinculada')).toBeInTheDocument()
+    expect(within(bindingPanel as HTMLElement).getByRole('heading', { name: 'Sem arma vinculada' })).toBeInTheDocument()
     expect(within(bindingPanel as HTMLElement).getByRole('region', { name: 'Prévia do personagem com arma selecionada' })).toBeInTheDocument()
     expect(within(bindingPanel as HTMLElement).queryByRole('img', { name: /na mão do personagem/ })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Selecione uma arma' })).toBeDisabled()
@@ -39,7 +39,7 @@ describe('Layout da escolha da Arma Vinculada', () => {
     expect(screen.queryByText(/Sinergias e caminhos de Clã/)).not.toBeInTheDocument()
 
     fireEvent.click(axe)
-    expect(within(bindingPanel as HTMLElement).queryByText('Sem arma vinculada')).not.toBeInTheDocument()
+    expect(within(bindingPanel as HTMLElement).queryByRole('heading', { name: 'Sem arma vinculada' })).not.toBeInTheDocument()
     expect(within(bindingPanel as HTMLElement).getByRole('img', { name: 'Machado de Guerra na mão do personagem (prévia)' })).toBeInTheDocument()
     expect(screen.getByText(/Sinergias e caminhos de Clã · Machado de Guerra/)).toBeInTheDocument()
     expect(within(bindingPanel as HTMLElement).getByText('FUNDAÇÃO SELECIONADA')).toBeInTheDocument()
