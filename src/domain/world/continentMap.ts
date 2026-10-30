@@ -1,5 +1,6 @@
 import type { GameSave } from '../game/types'
 import { getDiscoveredTerranLocationIds } from '../terran/cityEngine'
+import type { TerranLocationId } from '../../content/terran'
 import { content } from '../../content/catalog'
 
 export type ContinentSite = {
@@ -16,7 +17,7 @@ export type ContinentSite = {
  * Cartographic positions are an illustrative UI layout, not new lore or travel
  * coordinates. Discovery comes only from the existing persisted world state.
  */
-const cityPositions: Record<string, { x: number; y: number }> = {
+const cityPositions: Record<TerranLocationId, { x: number; y: number }> = {
   location_terran_portal_plaza: { x: 44, y: 62 },
   location_terran_eldamar_house: { x: 40, y: 55 },
   location_terran_vorren_post: { x: 48, y: 54 },
@@ -43,7 +44,7 @@ export function getContinentSites(save: GameSave): ContinentSite[] {
       const place = content.terranLocations[id]
       return {
         id, name: place.name, description: place.role,
-        ...position, type: 'institution', discovered: discovered.has(id),
+        ...position, type: 'institution', discovered: discovered.has(id as TerranLocationId),
       }
     }),
     {
