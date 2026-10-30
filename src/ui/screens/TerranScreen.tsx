@@ -10,7 +10,6 @@ import { getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
 import { getDiscoveredTerranLocationIds, getTerranQuestDestination } from '../../domain/terran/cityEngine'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
-import { BoundItemsPanel } from '../dashboard/BoundItemsPanel'
 import { ClanHallPanel } from '../dashboard/ClanHallPanel'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { NexusOverview } from '../dashboard/NexusOverview'
@@ -30,9 +29,11 @@ import { streetNpcPlacements } from '../../content/streetNpcs'
 import type { WorldPoint } from '../terran/pixelCityArt'
 import { getCityCast } from '../terran/cityCast'
 import { BaseChest, DaerynServices, HomeDrawer, QuestNpcPanel, VorrenBestiary } from '../terran/TerranServices'
+import { MarketNpcPanel } from '../terran/MarketServices'
+import { isMarketNpc } from '../../domain/terran/market'
 import { BASE_LOCATION_ID } from '../../domain/terran/base'
 
-type Drawer = 'location' | 'inventory' | 'quests' | 'menu' | 'home' | 'chest' | 'records' | null
+type Drawer = 'location' | 'inventory' | 'quests' | 'menu' | 'market' | 'home' | 'chest' | 'records' | null
 type InventorySection = 'inventory' | 'nexus'
 type Presence = TerranLocationDefinition['npcPresences'][number]
 
@@ -94,7 +95,7 @@ function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
     <div className="terran-drawer__section">
       <p>{location.description}</p>
       {location.viewKind === 'portal' && <PortalPanel save={save} navigateOnEnter={!unified} onGoToEldamar={() => onVisit('location_terran_eldamar_house')} />}
-      {location.viewKind === 'workshop' && <><BoundItemsPanel save={save} /><InventoryPanel save={save} /></>}
+      {location.viewKind === 'workshop' && <p>O Mercado de Terran distribui os serviços entre os moradores: Valmira e Edran vendem itens; Feril paga Ouro; Lorian transforma drops em Essência; Lithwynn e Talia aplicam melhorias aos Vínculos. Aproxime-se e converse com cada NPC.</p>}
       {location.viewKind === 'clanHall' && <ClanHallPanel save={save} />}
       {location.viewKind === 'daeryn' && <DaerynServices save={save} />}
       {location.viewKind === 'vorren' && <VorrenBestiary save={save} />}
@@ -136,6 +137,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [dialogue, setDialogue] = useState<Presence | null>(null)
   const [dialogueLine, setDialogueLine] = useState(0)
   const [localQuestId, setLocalQuestId] = useState<string | null>(null)
+  const [marketNpc, setMarketNpc] = useState<Presence | null>(null)
 
   useEffect(() => {
     if (!waking) return
@@ -163,6 +165,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     travel(id)
     setLocationId(id)
     setLocalQuestId(null)
+    setMarketNpc(null)
     setDialogue(null)
     setDialogueLine(0)
     // Six official institutions are walkable interiors; the Portal remains outdoors.
@@ -206,6 +209,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setDrawer(null)
     setDialogue(null)
     setLocalQuestId(null)
+    setMarketNpc(null)
     setInspected(null)
   }
   const talk = (presence: Presence, sourceId: TerranLocationId = locationId) => {
@@ -214,6 +218,12 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setLocationId(sourceId)
     setDrawer('location')
     setLocalQuestId(null)
+    if (sourceId === 'location_terran_bond_workshop' && interiorId === sourceId && isMarketNpc(presence.id)) {
+      setMarketNpc(presence)
+      setDrawer('market')
+      return
+    }
+    setMarketNpc(null)
     const quest = Object.values(content.quests).find((candidate) => candidate.giverNpcId === presence.npcId &&
       ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[candidate.id]?.status ?? 'locked'))
     if (presence.npcId === 'npc_eldamar' && (!quest || quest.id === 'vs_astravel_first_contact')) {
@@ -232,7 +242,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const currentLabel = interiorId ? getRoomName(interiorId) : content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
   const activeTitle = drawer === 'location' ? (
     localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
-  ) : drawer === 'inventory' ? 'Inventário e Nexo' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'menu' ? 'Menu' : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
+  ) : drawer === 'market' ? `Mercado · ${marketNpc?.label ?? 'Serviços'}` : drawer === 'inventory' ? 'Inventário e Nexo' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'menu' ? 'Menu' : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
 
   const sceneContent = (
     <div className="terran-game">
@@ -286,6 +296,13 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                   setLocalQuestId(null)
                 }} />
                 : <LocationDrawer save={save} location={location} onTalk={talk} onVisit={openLocation} unified={unified} />)}
+              {drawer === 'market' && marketNpc && interiorId === 'location_terran_bond_workshop' && <MarketNpcPanel
+                save={save} presence={marketNpc} onClose={() => { setMarketNpc(null); setDrawer('location') }}
+                onQuest={marketNpc.npcId && Object.values(content.quests).some((quest) => quest.giverNpcId === marketNpc.npcId && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status ?? 'locked'))
+                  ? () => {
+                    const quest = Object.values(content.quests).find((entry) => entry.giverNpcId === marketNpc.npcId && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[entry.id]?.status ?? 'locked'))
+                    if (quest) { setLocalQuestId(quest.id); setMarketNpc(null); setDrawer('location') }
+                  } : undefined} />}
               {drawer === 'inventory' && <>
                 <div className="terran-drawer__tabbar" role="group" aria-label="Seções de Inventário e Nexo">
                   <button type="button" className={inventorySection === 'inventory' ? 'active' : ''}
