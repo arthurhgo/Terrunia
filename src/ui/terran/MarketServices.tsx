@@ -45,10 +45,12 @@ function Upgrade({ save, grade }: { save: GameSave; grade: 2 | 3 }) {
       const item = itemId ? save.boundItems[itemId] : null
       if (!item) return null
       const definition = content.boundItemBases[item.baseItemId]
-      const candidate = grade === 2 ? fragments[0] : getGradeThreeGemCandidates(save, item.id, content)[0]
-      const componentId = grade === 2 ? candidate?.instanceId : candidate?.inventoryInstanceId
-      const componentDefinition = candidate ? content.items[grade === 2
-        ? candidate.definitionId : (candidate as { itemDefinitionId: string }).itemDefinitionId] : null
+      const fragment = grade === 2 ? fragments[0] : undefined
+      const gemCandidate = grade === 3 ? getGradeThreeGemCandidates(save, item.id, content)[0] : undefined
+      const componentId = grade === 2 ? fragment?.instanceId : gemCandidate?.inventoryInstanceId
+      const componentDefinition = fragment
+        ? content.items[fragment.definitionId]
+        : gemCandidate ? content.items[gemCandidate.itemDefinitionId] : null
       const ready = item.grade === grade - 1 && item.resonance >= item.resonanceThreshold && Boolean(componentId)
       return <article className="market-upgrade__item" key={slot}>
         <strong>{BOUND_SLOT_LABELS[slot]} · {definition?.name ?? 'Vínculo'} · G{item.grade}</strong>
