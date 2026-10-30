@@ -66,6 +66,12 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
     if (!unified) navigate('/terran')
   }
   const inspect = (nodeId: string) => { setSelectedId(nodeId); setDrawer('node') }
+  const engage = (nodeId: string) => {
+    // The store enforces current trail status, encounter content, and remaining HP.
+    // In the unified viewport, the persistent scene switches to combat automatically.
+    startBattle(nodeId)
+    if (useGameStore.getState().save?.battle && !unified) navigate('/battle')
+  }
   const act = () => {
     if (!selectedNode || !['current', 'bossCurrent'].includes(save.world.trailNodeStates[selectedNode.id] ?? '')
       && !(selectedNode.type === 'boss' && save.world.trailNodeStates[selectedNode.id] === 'completed')) return
@@ -73,8 +79,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
       enterFungalChambers()
       if (!unified) navigate('/dungeon')
     } else if (selectedNode.type === 'battle') {
-      startBattle(selectedNode.id)
-      if (!unified) navigate('/battle')
+      engage(selectedNode.id)
     } else if (selectedNode.type === 'camp' || selectedNode.type === 'event') {
       resolveCurrentTrailNode()
       setSelectedId(null)
@@ -93,7 +98,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
         <section className="terran-game__stage" aria-label="Cena contínua de Astravél">
           <AstravelPixelCanvas trail={trail} statuses={save.world.trailNodeStates}
             currentLocationId={save.world.currentLocationId} portraitAssetId={save.character.portraitAssetId}
-            reducedMotion={save.settings.reducedMotion} enabled={!scene} onInspect={inspect}
+            reducedMotion={save.settings.reducedMotion} enabled={!scene} onInspect={inspect} onEngage={engage}
             onTravelStart={() => { if (drawer === 'node') { setDrawer(null); setSelectedId(null) } }} />
           <div className="terran-game__hud" aria-label="Ações de exploração">
             {([
