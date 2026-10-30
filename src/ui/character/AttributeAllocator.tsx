@@ -2,13 +2,14 @@ import { Minus, Plus } from 'lucide-react'
 import { BALANCE } from '../../content/balance'
 import { ATTRIBUTE_IDS, type AttributeId, type GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
+import { DieIcon } from '../components/DieIcon'
 
-const labels: Record<AttributeId, { name: string; role: string }> = {
-  cunning: { name: 'Astúcia', role: 'magia, análise e grimórios' },
-  agility: { name: 'Agilidade', role: 'arcos, adagas e iniciativa' },
-  strength: { name: 'Força', role: 'lâminas e armas pesadas' },
-  vigor: { name: 'Vigor', role: 'vida, armaduras e proteção' },
-  spirit: { name: 'Espírito', role: 'mana, cajados e focos' },
+const labels: Record<AttributeId, { name: string; role: string; combat: string }> = {
+  cunning: { name: 'Astúcia', role: 'focos e grimórios', combat: 'Escala armas de Astúcia. Sem foco equipado, contribui para a leitura de ataque mágico.' },
+  agility: { name: 'Agilidade', role: 'arcos, adagas e iniciativa', combat: 'Contribui diretamente para a iniciativa; também escala arcos e adagas.' },
+  strength: { name: 'Força', role: 'lâminas e armas pesadas', combat: 'Contribui para o ataque físico e para o dano base de armas que escalam Força.' },
+  vigor: { name: 'Vigor', role: 'vida, armaduras e proteção', combat: 'Aumenta Vida e Defesa, reduzindo dano recebido pelas regras atuais.' },
+  spirit: { name: 'Espírito', role: 'mana, cajados e focos', combat: 'Aumenta a reserva de Mana e escala armas vinculadas ao Espírito.' },
 }
 
 export function AttributeAllocator({ save, compact = false }: { save: GameSave; compact?: boolean }) {
@@ -31,9 +32,10 @@ export function AttributeAllocator({ save, compact = false }: { save: GameSave; 
               <div><strong>{labels[id].name}</strong><small>{labels[id].role}</small></div>
               <div className="attribute-stepper">
                 <button type="button" aria-label={`Reduzir ${labels[id].name}`} disabled={!canRefund} onClick={() => adjust(id, -1)}><Minus size={14} /></button>
-                <span>d{attribute.die}{attribute.bonus ? ` +${attribute.bonus}` : ''}</span>
+                <span className="attribute-stepper__die"><DieIcon sides={attribute.die} /> <b>d{attribute.die}{attribute.bonus ? ` +${attribute.bonus}` : ''}</b></span>
                 <button type="button" aria-label={`Aumentar ${labels[id].name}`} disabled={!canIncrease} onClick={() => adjust(id, 1)}><Plus size={14} /></button>
               </div>
+              <p className="attribute-allocator__combat" title={labels[id].combat}>{labels[id].combat}</p>
             </article>
           )
         })}
