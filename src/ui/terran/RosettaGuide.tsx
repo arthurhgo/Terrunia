@@ -46,7 +46,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests }: {
       <article className="rosetta-guide__library">
         <h3><BookOpen size={16}/> Biblioteca de Eldamar</h3>
         <p>Na Biblioteca de Eldamar, procure a <strong>Estante dos Registros</strong>. Ela contém o Guia do Viajante, o Arsenal Visual e informações sobre os Vínculos.</p>
-        <small>Encontre Eldamar e a estante no edifício de registros de Terran.</small>
+        <small>Entre na Casa de Eldamar em Terran: a estante fica no interior da biblioteca.</small>
       </article>
     </div>
   </section>
