@@ -2,6 +2,7 @@ import { Minus, Plus } from 'lucide-react'
 import { BALANCE } from '../../content/balance'
 import { ATTRIBUTE_IDS, type AttributeId, type GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
+import { nextAttributeDie } from '../../domain/character/attributeProgression'
 import { DieIcon } from '../components/DieIcon'
 
 const labels: Record<AttributeId, { name: string; role: string; combat: string }> = {
@@ -25,22 +26,24 @@ export function AttributeAllocator({ save, compact = false }: { save: GameSave; 
       <div className="attribute-allocator__grid">
         {ATTRIBUTE_IDS.map((id) => {
           const attribute = save.character.attributes[id]
-          const canIncrease = save.character.unspentAttributePoints > 0 && attribute.die < 12
-          const canRefund = !locked && attribute.die > BALANCE.defaultAttributeDie
+          const increasedDie = nextAttributeDie(attribute.die, 1)
+          const decreasedDie = nextAttributeDie(attribute.die, -1)
+          const canIncrease = save.character.unspentAttributePoints > 0 && Boolean(increasedDie)
+          const canRefund = !locked && Boolean(decreasedDie) && attribute.die > BALANCE.defaultAttributeDie
           return (
             <article key={id} title={labels[id].combat}>
               <div><strong>{labels[id].name}</strong><small>{labels[id].role}</small></div>
               <div className="attribute-stepper">
-                <button type="button" aria-label={`Reduzir ${labels[id].name}`} disabled={!canRefund} onClick={() => adjust(id, -1)}><Minus size={14} /></button>
+                <button type="button" aria-label={`Reduzir ${labels[id].name}`} title={decreasedDie ? `d${attribute.die} → d${decreasedDie} · devolve 1 ponto` : 'Dado mínimo: d4'} disabled={!canRefund} onClick={() => adjust(id, -1)}><Minus size={14} /></button>
                 <span className="attribute-stepper__die"><DieIcon sides={attribute.die} /> <b>d{attribute.die}{attribute.bonus ? ` +${attribute.bonus}` : ''}</b></span>
-                <button type="button" aria-label={`Aumentar ${labels[id].name}`} disabled={!canIncrease} onClick={() => adjust(id, 1)}><Plus size={14} /></button>
+                <button type="button" aria-label={`Aumentar ${labels[id].name}`} title={increasedDie ? `d${attribute.die} → d${increasedDie} · custa 1 ponto` : 'Dado máximo: d12'} disabled={!canIncrease} onClick={() => adjust(id, 1)}><Plus size={14} /></button>
               </div>
               <p className="attribute-allocator__combat" title={labels[id].combat}>{labels[id].combat}</p>
             </article>
           )
         })}
       </div>
-      <p>{locked ? 'A distribuição não pode ser reduzida após o primeiro Vínculo. Novos pontos ainda podem ser investidos.' : 'Antes do Vínculo, pontos podem ser redistribuídos livremente.'}</p>
+      <p>Dados avançam de 2 em 2 faces: d4 → d6 → d8 → d10 → d12. Cada avanço consome 1 ponto. {locked ? 'Após o primeiro Vínculo, não é possível reembolsar pontos.' : 'Antes do Vínculo, a distribuição pode ser refeita.'}</p>
     </section>
   )
 }
