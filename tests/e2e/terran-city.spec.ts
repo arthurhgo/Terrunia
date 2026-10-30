@@ -22,6 +22,24 @@ test('Terran é uma cidade pixelada com sete instituições e painéis sem troca
   await expect(city).toBeVisible()
   await expect(page.getByRole('navigation', { name: 'Navegação principal' })).toHaveCount(0)
 
+  // On desktop the contextual pane must occupy the empty area left of the
+  // rail, never intercepting clicks or covering pixels of the game stage.
+  const stage = page.getByRole('region', { name: 'Cenário contínuo de Terran' })
+  const inventoryTab = page.getByRole('button', { name: 'Abrir Inventário' })
+  await inventoryTab.hover()
+  const [stageBounds, tabBounds] = await Promise.all([stage.boundingBox(), inventoryTab.boundingBox()])
+  expect(stageBounds).not.toBeNull()
+  expect(tabBounds).not.toBeNull()
+  expect(tabBounds!.x + tabBounds!.width).toBeLessThanOrEqual(stageBounds!.x + 1)
+  await inventoryTab.click()
+  const drawer = page.getByRole('complementary', { name: 'Painel lateral: Inventário' })
+  await expect(drawer).toBeVisible()
+  const drawerBounds = await drawer.boundingBox()
+  expect(drawerBounds).not.toBeNull()
+  expect(drawerBounds!.x + drawerBounds!.width).toBeLessThanOrEqual(stageBounds!.x)
+  await expect(city).toBeVisible()
+  await page.getByRole('button', { name: 'Fechar painel' }).click()
+
   const locations = [
     'Casa de Eldamar',
     'Posto de Vorren',
