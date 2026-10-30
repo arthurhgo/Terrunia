@@ -90,7 +90,7 @@ describe('interfaces de Terran', () => {
         <Route path="/menu" element={<SkillTreeScreen />} />
       </Routes>
     </MemoryRouter>)
-    expect(screen.getByRole('img', { name: /Terran vista superior 3\\/4/ })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: new RegExp('Terran vista superior 3/4') })).toBeInTheDocument()
     const rail = screen.getByRole('navigation', { name: 'Menu de Terran' })
     expect(rail.querySelectorAll('button')).toHaveLength(4)
     expect(screen.getByRole('button', { name: 'Abrir Local' })).toBeInTheDocument()
