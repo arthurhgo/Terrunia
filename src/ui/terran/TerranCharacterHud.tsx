@@ -30,6 +30,11 @@ export function TerranCharacterHud({ save }: { save: GameSave }) {
   const { character, essence } = save
   const [attributesExpanded, setAttributesExpanded] = useState(true)
   const derived = deriveCharacterStats(save, content)
+  const equippedCount = BOUND_SLOTS.filter((slot) => {
+    const itemId = character.bondedEquipment[slot]
+    const instance = itemId ? save.boundItems[itemId] : null
+    return Boolean(instance && content.boundItemBases[instance.baseItemId])
+  }).length
   return <aside className="terran-character-hud" aria-label="Status permanente do personagem">
     <header className="terran-character-hud__header">
       <span className="eyebrow">NEXO DO PERSONAGEM</span>
@@ -56,25 +61,28 @@ export function TerranCharacterHud({ save }: { save: GameSave }) {
     </section>
 
     <section className="terran-character-hud__section" aria-label="Cinco equipamentos vinculados">
-      <div className="terran-character-hud__section-heading"><Gem size={14} aria-hidden="true" /> VÍNCULOS <span>{BOUND_SLOTS.filter((slot) => character.bondedEquipment[slot]).length}/5</span></div>
+      <div className="terran-character-hud__section-heading"><Gem size={14} aria-hidden="true" /> VÍNCULOS <span>{equippedCount}/5</span></div>
       <div className="terran-character-hud__slots">
         {BOUND_SLOTS.map((slot) => {
           const id = character.bondedEquipment[slot]
           const instance = id ? save.boundItems[id] : null
           const definition = instance ? content.boundItemBases[instance.baseItemId] : null
           const EmptyIcon = emptySlotIcons[slot]
-          return <div className={`terran-character-hud__slot ${instance ? 'is-bound' : 'is-empty'}`} key={slot}
-            title={`${BOUND_SLOT_LABELS[slot]} · ${definition?.name ?? 'Não vinculado'}`}>
+          const equipped = Boolean(instance && definition)
+          const spriteId = instance && definition
+            ? definition.assetIdByGrade[instance.grade] ?? definition.assetIdByGrade[1]
+            : undefined
+          return <div className={`terran-character-hud__slot ${equipped ? 'is-bound' : 'is-empty'}`} key={slot}
+            title={`${BOUND_SLOT_LABELS[slot]} · ${equipped ? definition!.name : 'Não vinculado'}`}>
             <span>{BOUND_SLOT_LABELS[slot]}</span>
             <div className="terran-character-hud__slot-art">
-              {instance && definition
-                ? <AssetImage assetId={definition.assetIdByGrade[instance.grade] ?? definition.assetIdByGrade[1] ?? ''}
-                    alt={definition.name} />
+              {spriteId && definition
+                ? <AssetImage assetId={spriteId} alt={definition.name} />
                 : <span className="terran-character-hud__empty-icon" aria-hidden="true">
                     <EmptyIcon size={26} strokeWidth={1.7} />
                   </span>}
             </div>
-            <small>{instance ? `G${instance.grade}` : 'Vazio'}</small>
+            <small>{equipped ? `G${instance!.grade}` : 'Vazio'}</small>
           </div>
         })}
       </div>
