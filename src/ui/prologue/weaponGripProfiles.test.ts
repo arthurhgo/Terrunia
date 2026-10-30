@@ -11,8 +11,8 @@ describe('Preview de armas vinculadas na mão do Terrírian', () => {
       const grip = weaponGripProfiles[weapon.id]
       expect(grip, weapon.name).toBeDefined()
       expect(getWeaponGripProfile(weapon.id)).toBe(grip)
-      expect(grip.size).toBeGreaterThanOrEqual(26)
-      expect(grip.size).toBeLessThanOrEqual(55)
+      expect(grip.size).toBeGreaterThanOrEqual(24)
+      expect(grip.size).toBeLessThanOrEqual(39)
       expect(grip.x).toBeGreaterThan(45)
       expect(grip.x).toBeLessThan(80)
       expect(grip.y).toBeGreaterThan(40)
@@ -24,9 +24,19 @@ describe('Preview de armas vinculadas na mão do Terrírian', () => {
     }
   })
 
+  it('ancora a Espada Longa abaixo da linha do rosto com proporção de arma de uma mão', () => {
+    const sword = getWeaponGripProfile('bound_weapon_long_sword')
+    expect(sword.size).toBeLessThanOrEqual(30)
+    expect(sword.x).toBeGreaterThanOrEqual(58)
+    expect(sword.y).toBeGreaterThanOrEqual(62)
+    // Positive rotation angles the blade away from the character's face.
+    expect(sword.rotation).toBeGreaterThan(0)
+    expect(sword.handleY).toBeGreaterThanOrEqual(75)
+  })
+
   it('faz fallback visual sem bloquear sprites manuais adicionados futuramente', () => {
     expect(getWeaponGripProfile('equipment.future.placeholder')).toMatchObject({
-      size: 42, x: 63, y: 61,
+      size: 30, x: 62, y: 65,
     })
   })
 })
