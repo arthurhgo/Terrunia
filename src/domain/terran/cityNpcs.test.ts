@@ -27,10 +27,12 @@ describe('presença condicional de NPCs de Terran', () => {
     expect(members).not.toContain('presence_main_lore_council')
     expect(getOutdoorCityNpcs(save)).toHaveLength(6)
     const cast = getCityCast(save)
-    expect(cast).toHaveLength(6)
-    expect(cast.every((npc) => npc.id.startsWith('presence_street_'))).toBe(true)
+    expect(cast).toHaveLength(7)
+    expect(cast.filter((npc) => npc.id.startsWith('presence_street_'))).toHaveLength(6)
+    expect(cast.find((npc) => npc.id === 'presence_rosetta')?.marker).toBe('?')
     expect(cast.every((npc) => isCityWalkable(npc.point))).toBe(true)
-    expect(cast.every((npc) => content.npcs[npc.presence.npcId ?? '']?.questIds.some((id) =>
-      content.quests[id]?.category === 'secondary'))).toBe(true)
+    expect(cast.filter((npc) => npc.id.startsWith('presence_street_')).every((npc) =>
+      content.npcs[npc.presence.npcId ?? '']?.questIds.some((id) =>
+        content.quests[id]?.category === 'secondary'))).toBe(true)
   })
 })
