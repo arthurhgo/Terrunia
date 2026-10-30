@@ -1,4 +1,4 @@
-import { BookOpen, Gem, ScrollText, Shield, Sword } from 'lucide-react'
+import { BookOpen, ScrollText, Shield, Sword } from 'lucide-react'
 import { useState } from 'react'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
