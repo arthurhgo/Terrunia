@@ -3,6 +3,17 @@ import { streetNpcDefinitions } from './streetNpcs'
 
 const baseNpcDefinitions = [
   {
+    id: 'npc_rosetta', name: 'Rosetta', title: 'Guardiã do Portal',
+    settlementId: 'terran', roles: ['lore', 'normal'], questIds: [],
+    portraitAssetId: 'npc.rosetta.portrait',
+    dialogue: [
+      'Bem-vindo a Terran, aventureiro. Sou Rosetta, Guardiã do Portal. Posso ajudar a escolher seus próximos passos.',
+      'Diga-me quais missões procura. Vou consultar o que está disponível para você e onde falar com cada responsável.',
+      'Na Biblioteca de Eldamar há uma Estante dos Registros. Leia seus manuais e relatos sempre que precisar de orientação.',
+    ],
+    status: 'CONTENT_DRAFT',
+  },
+  {
     id: 'npc_eldamar',
     name: 'Eldamar',
     title: 'Mestre dos Registros',
