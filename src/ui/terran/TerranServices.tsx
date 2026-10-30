@@ -7,6 +7,8 @@ import { PLAYER_HOME_FLAG, SYLWEN_STOCK } from '../../domain/terran/services'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
 import { ProgressBar } from '../components/ProgressBar'
+import { getNpcActionableQuests, getQuestStatusLabel } from '../../domain/quests/questSelectors'
+import { getDeliverableCount } from '../../domain/quests/questInventory'
 
 // VISUAL_DRAFT: mapa de pixels 20×12, sem dependência entre arte e lógica.
 const homePixels = [
@@ -131,7 +133,7 @@ export function VorrenBestiary({ save }: { save: GameSave }) {
   </section>
 }
 
-export function QuestNpcPanel({ save, questId, onClose }: { save: GameSave; questId: string; onClose: () => void }) {
+export function QuestNpcPanel({ save, questId, onClose, onSelectQuest }: { save: GameSave; questId: string; onClose: () => void; onSelectQuest?: (id: string) => void }) {
   const offer = useGameStore((state) => state.offerQuest)
   const accept = useGameStore((state) => state.acceptQuest)
   const decline = useGameStore((state) => state.declineQuest)
@@ -141,14 +143,25 @@ export function QuestNpcPanel({ save, questId, onClose }: { save: GameSave; ques
   const progress = save.quests[questId]
   if (!definition || !progress) return null
   const npc = content.npcs[definition.giverNpcId]
+  const conversations = getNpcActionableQuests(save, npc.id, content)
   return <DialogueWindow save={save} title={npc.name} portraitAssetId={npc.portraitAssetId} lines={npc.dialogue} onClose={onClose}><section className="terran-drawer__section terran-quest-dialog" aria-label={`Conversa com ${npc.name}`}>
     <button type="button" onClick={onClose}>← Voltar ao local</button>
     <div className="terran-quest-dialog__npc"><AssetImage assetId={npc.portraitAssetId} /><div><strong>{npc.name}</strong><small>{npc.title}</small></div></div>
     <p>{npc.dialogue[0]}</p>
-    <h3>{definition.title}</h3>
+    {onSelectQuest && conversations.length > 1 && <nav className="npc-quest-choices" aria-label={`Missões de ${npc.name}`}>
+      {conversations.map((quest) => <button type="button" key={quest.id} aria-pressed={quest.id === questId}
+        onClick={() => onSelectQuest(quest.id)}>{quest.category === 'secondary' || quest.category === 'bounty' ? '◇' : '!'} {quest.title}
+        <small>{getQuestStatusLabel(save.quests[quest.id].status)}</small></button>)}
+    </nav>}
+    <h3>{definition.category === 'secondary' || definition.category === 'bounty' ? '◇ ' : ''}{definition.title}</h3>
     <p>{definition.summary}</p>
     {definition.objectives.map((objective) => <p key={objective.id}>{objective.label} · {progress.objectives[objective.id] ?? 0}/{objective.required}</p>)}
     <p>{definition.rewards.map((reward) => `${reward.type === 'gold' ? 'Ouro' : reward.type === 'characterXp' ? 'XP' : 'Essência'} +${reward.value}`).join(' · ')}</p>
+    {definition.turnInItems && <div className="quest-delivery-items">
+      <p>A entrega consome estes materiais e paga a recompensa uma única vez. Favoritos e itens protegidos são preservados.</p>
+      {definition.turnInItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />
+        {content.items[input.itemId].name}<strong>{getDeliverableCount(save, input.itemId, content)}/{input.quantity}</strong></span>)}
+    </div>}
     {progress.status === 'available' && <button type="button" className="terran-service-action" onClick={() => offer(questId)}>Ouvir a oferta</button>}
     {progress.status === 'offered' && <div className="terran-quest-dialog__actions">
       <button type="button" onClick={() => { decline(questId); onClose() }}>Agora não</button>

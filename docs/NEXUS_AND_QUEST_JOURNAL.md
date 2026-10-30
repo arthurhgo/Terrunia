@@ -41,7 +41,7 @@ LOCKED → AVAILABLE → OFFERED → ACTIVE → READY_TO_TURN_IN → COMPLETED
 - Quest Journal;
 - Quest Tracker;
 - destino do minimapa;
-- estados dos marcadores dos NPCs (oferta, entrega ou conversa), representados em jogo pela mesma janela vermelha com `?`, incluindo Rosetta; o texto acessível informa o estado da missão.
+- estados dos marcadores dos NPCs: `?` vermelho exclusivo de Rosetta; `!` amarelo para missões principais, de Clã ou Classe disponíveis/em andamento; `◇` azul para sidequests e `◆` azul para entrega pronta. NPC sem missão disponível, oferecida, ativa ou pronta não recebe marcador. Esta decisão posterior da v0.11 substitui a padronização vermelha da v0.10.
 
 Não criar listas paralelas de missões na UI.
 
@@ -56,3 +56,7 @@ O Tracker exibe apenas missões `ACTIVE` ou `READY_TO_TURN_IN` marcadas como `tr
 **Decisão do criador de 2026-10-30:** não há limite de missões simultâneas. Esta direção substitui `MAX_ACTIVE_QUESTS = 3`, inclusive na validação de saves. O Journal mostra a quantidade em andamento, sem denominador nem bloqueio de capacidade. Nenhuma missão deve ser descartada ou substituída automaticamente.
 
 Provas de Clã e Classe usam o mesmo motor, também sem limite de capacidade. Pré-requisitos, aceite explícito e entrega ao NPC correto continuam obrigatórios. As três provas necessárias ao recrutamento de Clã permanecem uma regra independente. Abandono de Main Quest, Clã ou Classe permanece `OWNER_DECISION` e não é oferecido pela interface.
+
+## Encomendas de materiais — decisão de 2026-10-30, v0.11
+
+Sidequests de entrega usam `turnInItems` e objetivos de coleta ligados à mochila atual. Vender, converter, forjar, guardar ou proteger itens recalcula a prontidão. Aceitar uma encomenda reconhece materiais já existentes; eventos cumulativos de coleta não substituem sua posse. A entrega valida e consome quantidades exatas antes de pagar uma única recompensa, respeitando favoritos, itens trancados e componentes reservados à progressão. O quadro da cidade informa ofertas, mas o aceite e a entrega continuam com o NPC.

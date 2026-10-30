@@ -5,6 +5,8 @@ import type { TerranNpcPresence } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
 import { getNpcQuestMarker, getOutdoorCityNpcs } from '../../domain/terran/cityNpcs'
 import type { WorldPoint } from './pixelCityArt'
+import type { NpcWorldMarker } from '../../domain/quests/questSelectors'
+import { getCityDoor } from './cityWorld'
 
 export type CityActor = {
   id: string
@@ -13,7 +15,7 @@ export type CityActor = {
   point: WorldPoint
   palette: string
   variant: number
-  marker: '!' | '✓' | '?' | null
+  marker: NpcWorldMarker
   stationary?: boolean
 }
 
@@ -39,8 +41,7 @@ export function getCityCast(save: GameSave): CityActor[] {
     id: rosetta.id,
     presence: rosetta,
     locationId: 'location_terran_portal_plaza' as const,
-    // Beside the Portal's spawn point (192,148), on the walkable plaza.
-    point: { x: 210, y: 155 },
+    point: { x: getCityDoor('location_terran_portal_plaza').x + 38, y: getCityDoor('location_terran_portal_plaza').y + 4 },
     palette: 'knowledge',
     variant: 0,
     marker: '?' as const,

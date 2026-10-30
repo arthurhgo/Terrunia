@@ -1,13 +1,31 @@
 import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
-import { getOutdoorCityNpcs, getVisibleNpcsInLocation, isNpcVisible } from './cityNpcs'
+import { getNpcQuestMarker, getOutdoorCityNpcs, getVisibleNpcsInLocation, isNpcVisible } from './cityNpcs'
 import { getCityCast } from '../../ui/terran/cityCast'
 import { isCityWalkable } from '../../ui/terran/cityNavigation'
 
 const createSave = () => createNewSave('owner', 'Teste', 'character.terririan.default', content, '2026-10-28T12:00:00Z')
 
 describe('presença condicional de NPCs de Terran', () => {
+  it('reserva ? a Rosetta, usa ! para missão e losangos para sidequests, sem marcar NPCs sem missão', () => {
+    const save = createSave()
+    const rosetta = { id: 'guide', npcId: 'npc_rosetta', label: 'Rosetta', presence: 'resident' as const, roleLabel: 'Guia' }
+    const arlen = { ...rosetta, id: 'arlen', npcId: 'npc_street_arlen' }
+    const eldamar = { ...rosetta, id: 'eldamar', npcId: 'npc_eldamar' }
+    expect(getNpcQuestMarker(save, rosetta)).toBe('?')
+    expect(getNpcQuestMarker(save, arlen)).toBeNull()
+    expect(getNpcQuestMarker(save, eldamar)).toBe('!')
+    save.quests.side_street_arlen.status = 'available'
+    expect(getNpcQuestMarker(save, arlen)).toBe('◇')
+    save.quests.side_street_arlen.status = 'active'
+    expect(getNpcQuestMarker(save, arlen)).toBe('◇')
+    save.quests.side_street_arlen.status = 'ready_to_turn_in'
+    expect(getNpcQuestMarker(save, arlen)).toBe('◆')
+    save.quests.side_street_arlen.status = 'completed'
+    expect(getNpcQuestMarker(save, arlen)).toBeNull()
+    expect(getNpcQuestMarker(save, { ...arlen, npcId: undefined })).toBeNull()
+  })
   it('exibe residentes mas não libera visitantes e condicionais sem um evento', () => {
     const save = createSave()
     const vorren = getVisibleNpcsInLocation(save, 'location_terran_vorren_post').map((npc) => npc.presence.label)

@@ -16,7 +16,7 @@ export function getWorldSprite(assetId: string): HTMLImageElement | null {
 
 /** Native 32px PNGs are actual actor images, not palettes for a generic silhouette. */
 export function drawActorImage(ctx: CanvasRenderingContext2D, image: HTMLImageElement | null,
-  x: number, footY: number, facing: ActorFacing, stride = 0): boolean {
+  x: number, footY: number, facing: ActorFacing, stride = 0, size = 32): boolean {
   if (!image?.complete || !image.naturalWidth || !image.naturalHeight) return false
   ctx.save()
   ctx.imageSmoothingEnabled = false
@@ -24,11 +24,11 @@ export function drawActorImage(ctx: CanvasRenderingContext2D, image: HTMLImageEl
   const bob = stride === 1 ? -1 : 0
   if (sheet) {
     const row = { down: 0, left: 1, right: 2, up: 3 }[facing]
-    ctx.drawImage(image, stride * 32, row * 32, 32, 32, Math.round(x - 16), Math.round(footY - 32 + bob), 32, 32)
+    ctx.drawImage(image, stride * 32, row * 32, 32, 32, Math.round(x - size / 2), Math.round(footY - size + bob), size, size)
   } else {
     ctx.translate(Math.round(x), Math.round(footY + bob))
     if (facing === 'left') ctx.scale(-1, 1)
-    ctx.drawImage(image, -16, -32, 32, 32)
+    ctx.drawImage(image, -size / 2, -size, size, size)
   }
   ctx.restore()
   return true

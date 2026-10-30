@@ -4,8 +4,7 @@ import type { WorldPoint } from './pixelCityArt'
 export const PLAYER_HOME_INTERIOR_ID = 'interior_terririan_home' as const
 export type TerranInteriorId = TerranLocationId | typeof PLAYER_HOME_INTERIOR_ID
 
-export const PLAYER_HOME_CENTER: WorldPoint = { x: 192, y: 53 }
-export const PLAYER_HOME_DOOR: WorldPoint = { x: 192, y: 80 }
+export { PLAYER_HOME_CENTER, PLAYER_HOME_DOOR } from './cityWorld'
 
 export type RoomFurniture = {
   id: string

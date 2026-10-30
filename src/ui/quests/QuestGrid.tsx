@@ -1,4 +1,4 @@
-import { BookOpen, CheckCircle2, Circle, Coins, Gem, MapPin, Radio, RadioTower, ScrollText, Swords, X } from 'lucide-react'
+import { BookOpen, CheckCircle2, Circle, Coins, Diamond, Gem, MapPin, Radio, RadioTower, ScrollText, Swords, X } from 'lucide-react'
 import { useState } from 'react'
 import { content } from '../../content/catalog'
 import type { QuestCategory } from '../../content/types'
@@ -57,7 +57,7 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
             onMouseEnter={() => setSelectedId(progress.questId)}
             onFocus={() => setSelectedId(progress.questId)}
             onClick={() => setSelectedId(progress.questId)}>
-            <span className="quest-tile__category"><ScrollText size={13} /> {categoryLabel[definition.category]}</span>
+            <span className="quest-tile__category">{definition.category === 'secondary' || definition.category === 'bounty' ? <Diamond size={13} /> : <ScrollText size={13} />} {categoryLabel[definition.category]}</span>
             <strong>{definition.title}</strong>
             <span className="quest-tile__status">{getQuestStatusLabel(progress.status)}</span>
             <span className="quest-tile__excerpt">{definition.summary}</span>

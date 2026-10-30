@@ -15,7 +15,7 @@ describe('Casa do Terrírian e interiores temáticos', () => {
   it('a residência adicional não substitui as instituições da cidade', () => {
     expect(getRoomName(PLAYER_HOME_INTERIOR_ID)).toBe('Base do Terrírian')
     expect(Object.keys(content.terranLocations)).toHaveLength(8)
-    expect(PLAYER_HOME_CENTER.x).toBe(192)
+    expect(PLAYER_HOME_CENTER.x).toBe(384)
     expect(isCityWalkable(PLAYER_HOME_CENTER)).toBe(false)
     expect(isCityWalkable(PLAYER_HOME_DOOR)).toBe(true)
     expect(getInteriorResidents(save, PLAYER_HOME_INTERIOR_ID)).toEqual([])

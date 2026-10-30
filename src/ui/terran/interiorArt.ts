@@ -2,6 +2,7 @@ import { drawActorImage, getWorldSprite } from './worldSprites'
 import { getPresencePortrait } from '../../content/npcVisuals'
 import { PLAYER_HOME_INTERIOR_ID, roomFurniture, type TerranInteriorId } from './roomContent'
 import { getRoomPlan } from './roomGeometry'
+import { CITY_NPC_SIZE } from './cityWorld'
 import type { InteriorResident } from './interiorLayout'
 import type { WorldPoint } from './pixelCityArt'
 import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, type ActorFacing } from './pixelActorArt'
@@ -173,7 +174,7 @@ export function drawTerranInterior(
     if (!drawn && player.y < resident.position.y) { drawPlayer(); drawn = true }
     const { x, y } = resident.position
     block(x - 6, y - 2, 12, 3, '#192631')
-    if (!drawActorImage(ctx, getWorldSprite(getPresencePortrait(resident.presence)), x, y, 'down')) {
+    if (!drawActorImage(ctx, getWorldSprite(getPresencePortrait(resident.presence)), x, y, 'down', 0, CITY_NPC_SIZE)) {
       drawPixelActor(ctx, x, y, 'down', 0, ACTOR_PALETTES[resident.palette] ?? ACTOR_PALETTES.knowledge, 1)
     }
   }

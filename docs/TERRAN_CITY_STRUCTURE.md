@@ -97,6 +97,8 @@ Uma missão não precisa visitar todas as casas. Cada etapa deve existir nos dad
 - retorno de instância ocorre na Praça do Portal.
 - Ritos e gestão dos cinco Vínculos continuam na instituição de ID `location_terran_bond_workshop`, apresentada como Mercado; NPC, custo e cerimônia final dos ritos continuam `OWNER_DECISION`.
 - A Casa do Ferreiro possui interior, acesso pelas ruas, produção de materiais e aprimoramentos da mesma arma. Receitas e bônus ficam em dados, e novas sinergias exigem compra normal na Skill Tree.
-- Sprites de NPCs e retratos de diálogo devem resolver a mesma identidade visual no registro central. Todos usam a janela vermelha com `?` acima da cabeça.
+- Sprites de NPCs e retratos de diálogo resolvem a mesma identidade visual no registro central. A decisão posterior da v0.11 reserva `?` vermelho a Rosetta; missões usam `!` amarelo, sidequests `◇` azul e entregas secundárias prontas `◆` azul. NPCs sem missão não têm marcador.
+- Terran é um mundo 768×512 observado por uma câmera 384×256 que acompanha o personagem e respeita as bordas, como em Astravél. Casas maiores, ruas, pátios e seis objetos exploráveis usam geometria compartilhada com colisão e pathfinding; NPCs são desenhados em 28 px, preservando seus arquivos nativos de 32 px.
+- Fonte, quadro de encomendas, jardim, marco das ruínas, cargas do Mercado e pátio da Guarda são pontos de exploração, não instituições adicionais. Descobri-los registra uma flag, sem aceitar missões ou distribuir recompensas.
 - coordenadas do minimapa são `VISUAL_DRAFT` e não definem escala, distância ou geografia canônica.
 - NPCs condicionais/visitantes/progressivos não devem aparecer como residentes permanentes desbloqueados.
