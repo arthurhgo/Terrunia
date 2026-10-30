@@ -44,7 +44,7 @@ export function PrologueScreen() {
       <WeaponGallery save={save} selectedId={selectedWeaponId} onSelect={setSelectedWeaponId} />
       <div className="prologue-choice-summary">
         <BoundWeaponCharacterPreview save={save}
-          weapon={selectedWeapon ? { name: selectedWeapon.name, assetId: selectedWeapon.assetIdByGrade[1] ?? '' } : null} />
+          weapon={selectedWeapon ? { id: selectedWeapon.id, name: selectedWeapon.name, assetId: selectedWeapon.assetIdByGrade[1] ?? '' } : null} />
         <div className="prologue-choice-detail">
           {selectedWeapon && preview && eligibility ? <>
             <span className="eyebrow">FUNDAÇÃO SELECIONADA</span>
@@ -59,7 +59,7 @@ export function PrologueScreen() {
           </> : <>
             <span className="eyebrow">FUNDAÇÃO INICIAL</span>
             <h3>Sem arma vinculada</h3>
-            <p>Selecione uma arma no arsenal. A prévia aparece ao lado do personagem.</p>
+            <p>Selecione uma arma para vê-la ajustada à mão do Terrírian.</p>
           </>}
         </div>
       </div>
