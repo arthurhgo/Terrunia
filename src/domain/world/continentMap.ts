@@ -18,7 +18,7 @@ export type ContinentSite = {
  * coordinates. Discovery comes only from the existing persisted world state.
  */
 const cityPositions: Record<TerranLocationId, { x: number; y: number }> = {
-  location_terran_portal_plaza: { x: 44, y: 62 },
+  location_terran_portal_plaza: { x: 45, y: 66 },
   location_terran_eldamar_house: { x: 40, y: 55 },
   location_terran_vorren_post: { x: 48, y: 54 },
   location_terran_bond_workshop: { x: 50, y: 61 },
