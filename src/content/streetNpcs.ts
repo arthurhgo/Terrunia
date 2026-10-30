@@ -1,12 +1,13 @@
 import type { NPCDefinition, QuestDefinition, TerranNpcPresence } from './types'
 import type { TerranLocationId } from './terran'
+import { collectionQuestIdsForNpc } from './collectionContracts'
 
 /**
  * CONTENT_DRAFT — new sidequest-only street characters.
  * They are not institutional residents and do not grant clans/classes.
  * Locations anchor conversations in existing Terran areas, not extra institutions.
  */
-export const streetNpcDefinitions: NPCDefinition[] = [
+const streetNpcBaseDefinitions: NPCDefinition[] = [
   {
     id: 'npc_street_arlen', name: 'Arlen', title: 'Mensageiro de Terran', settlementId: 'terran',
     roles: ['questGiver'], questIds: ['side_street_arlen'], portraitAssetId: 'npc.street.arlen',
@@ -50,6 +51,10 @@ export const streetNpcDefinitions: NPCDefinition[] = [
     status: 'CONTENT_DRAFT',
   },
 ]
+
+export const streetNpcDefinitions: NPCDefinition[] = streetNpcBaseDefinitions.map((npc) => ({
+  ...npc, questIds: [...npc.questIds, ...collectionQuestIdsForNpc(npc.id)],
+}))
 
 export type StreetNpcPlacement = {
   id: string

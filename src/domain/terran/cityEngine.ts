@@ -3,6 +3,18 @@ import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran
 import type { GameSave } from '../game/types'
 import { getTrackedQuestEntries } from '../quests/questSelectors'
 import { fail, ok, type Result } from '../shared/types'
+import { cityLandmarkFlag, terranLandmarks } from '../../content/terranExploration'
+
+export const discoverCityLandmark = (save: GameSave, landmarkId: string, now: string): Result<GameSave> => {
+  if (save.battle || (save.world.currentLocationId !== 'terran' && !isTerranLocationId(save.world.currentLocationId))) return fail('CITY_EXPLORATION_LOCATION', 'Explore estes pontos nas ruas de Terran, fora de combate.')
+  if (!terranLandmarks.some((landmark) => landmark.id === landmarkId)) return fail('CITY_LANDMARK_UNKNOWN', 'Este ponto não pertence a Terran.')
+  const flag = cityLandmarkFlag(landmarkId)
+  if (save.world.worldFlags.includes(flag)) return ok(save)
+  const next = structuredClone(save)
+  next.world.worldFlags.push(flag); next.eventLog.push(flag)
+  next.updatedAt = now; next.revision += 1
+  return ok(next)
+}
 
 const terranLocationIdSet = new Set<string>(TERRAN_LOCATION_IDS)
 

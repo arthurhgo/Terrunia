@@ -70,5 +70,11 @@ def build():
     for name,color in [('runic_alloy','steel_light'),('weapon_core','cyan'),('mycelial_resin','moss')]:
         im,d=sheet();p(d,'outline',(3,4),(11,2),(14,6),(12,13),(3,14),(1,10));p(d,color,(4,5),(10,3),(12,6),(11,11),(4,12),(2,9));r(d,'ice',(5,5,9,6));r(d,'gold',(6,9,9,10))
         im.save(ROOT/'public/assets/items'/f'item_{name}.png')
+    im,d=sheet()
+    p(d,'outline',(7,0),(12,3),(14,9),(8,15),(2,12),(1,6))
+    p(d,'violet',(7,2),(11,4),(12,9),(8,13),(4,11),(3,6))
+    p(d,'violet_light',(7,2),(8,6),(7,12),(4,10),(3,6))
+    r(d,'ice',(6,4,7,6));px(d,'gold_light',10,9)
+    im.save(ROOT/'public/assets/items/item_echo_fragment.png')
     print(f'{len(profiles)} distinctive NPCs generated; portraits and world sprites share the same PNG.')
 if __name__=='__main__':build()

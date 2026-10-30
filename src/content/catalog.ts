@@ -223,6 +223,17 @@ for (const classDefinition of Object.values(content.classes)) {
 for (const quest of Object.values(content.quests)) {
   assertReference(content.npcs[quest.giverNpcId], `${quest.id} → ${quest.giverNpcId}`)
   assertReference(content.npcs[quest.turnInNpcId], `${quest.id} → ${quest.turnInNpcId}`)
+  const deliveryIds = new Set<string>()
+  for (const input of quest.turnInItems ?? []) {
+    const item = content.items[input.itemId]
+    assertReference(item && item.sellable && !item.questLocked && !item.canInfuseBoundItem && !item.gemComponentId,
+      `${quest.id} → material comercial ${input.itemId}`)
+    if (!Number.isSafeInteger(input.quantity) || input.quantity < 1 || deliveryIds.has(input.itemId)
+      || !quest.objectives.some((objective) => objective.type === 'collect' && objective.targetId === input.itemId && objective.required === input.quantity)) {
+      throw new Error(`Entrega inválida: ${quest.id} → ${input.itemId}`)
+    }
+    deliveryIds.add(input.itemId)
+  }
   for (const requirement of quest.prerequisites ?? []) {
     if (requirement.type === 'questCompleted') assertReference(content.quests[requirement.questId], `${quest.id} → ${requirement.questId}`)
     if ('clanId' in requirement) assertReference(content.clans[requirement.clanId], `${quest.id} → ${requirement.clanId}`)

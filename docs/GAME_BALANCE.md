@@ -34,3 +34,11 @@ Todos os números abaixo são `BALANCE_DRAFT`. Eles existem para tornar o fluxo 
 | Rito Grau III | 300 Ressonância + Grau II + Joia compatível + presença na Oficina dos Vínculos | Usa threshold da especificação; NPC, custo e rito narrativo permanecem `OWNER_DECISION`. |
 
 As fontes ficam em `src/content/balance.ts`, `src/content/combat.ts`, `src/content/items.ts`, `src/content/enemies.ts` e `src/content/skillTrees.ts`.
+
+## Economia das encomendas v0.11 — BALANCE_DRAFT
+
+Os 12 contratos em `src/content/collectionContracts.ts` pagam `ceil(soma(valor de venda × quantidade) × 1,5)` Ouro uma única vez, após consumir a quantidade exata no NPC. Não concedem XP, Essência ou Pontos de Essência diretamente. Materiais já possuídos contam após o aceite; itens protegidos ou reservados a Infusão/Lapidação não são entregues.
+
+Fragmento de Eco: 16 Ouro de venda ou 35 Essência, obtido adicionalmente das Sentinelas da Ruína, inclusive nas caçadas/ondas repetíveis. O Fragmento Micelial do Colosso continua preservado para Infusão.
+
+Neris vende Lasca da Ruína por 60 Ouro, Fibra Micelial por 48 e Cerne Raiz-Negra por 72. Os preços superam tanto a venda comum quanto o pagamento unitário de encomendas, eliminando a compra/revenda lucrativa dos valores anteriores.
