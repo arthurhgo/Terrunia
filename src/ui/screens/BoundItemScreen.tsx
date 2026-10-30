@@ -115,14 +115,14 @@ export function BoundItemScreen() {
             <div className="bound-detail-actions">
               <Link to="/skill-tree" className="game-button game-button--primary"><Sparkles size={17} /> Abrir Skill Tree</Link>
               {item.grade === 1 ? (
-                <GameButton variant="secondary" disabled={!gradeTwoReady} onClick={() => setRiteTarget(2)}>
+                <GameButton variant="secondary" disabled onClick={() => setRiteTarget(2)}>
                   {gradeTwoReady ? <Sparkles size={17} /> : <LockKeyhole size={17} />}
-                  {gradeTwoReady ? 'Executar Rito G2' : 'Rito G2 bloqueado'}
+                  Infusão GII · fale com Lithwynn no Mercado
                 </GameButton>
               ) : item.grade === 2 ? (
-                <GameButton variant="secondary" disabled={!gradeThreeReady} onClick={openGradeThreeRite}>
+                <GameButton variant="secondary" disabled onClick={openGradeThreeRite}>
                   {gradeThreeReady ? <Gem size={17} /> : <LockKeyhole size={17} />}
-                  {gradeThreeReady ? 'Executar Rito G3' : 'Rito G3 bloqueado'}
+                  Lapidação GIII · fale com Talia no Mercado
                 </GameButton>
               ) : (
                 <GameButton variant="ghost" disabled><Check size={17} /> Grau III concluído</GameButton>
