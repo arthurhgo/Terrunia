@@ -3369,3 +3369,27 @@ code {
     gap: 8px;
   }
 }
+
+/* Reliable nearby-encounter action when the player reaches a trail landmark.
+   This is an interaction fallback, not a bypass of quest or HP validation. */
+.astravel-field__fight-action {
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  bottom: 15%;
+  transform: translateX(-50%);
+  min-width: min(230px, 62%);
+  padding: 9px 12px;
+  border: 2px solid #ecc27a;
+  background: #182c31f2;
+  color: #ffdd99;
+  box-shadow: 0 0 18px #0008, inset 0 0 12px #d49a3940;
+  font: 700 .75rem var(--display);
+  text-align: center;
+  cursor: pointer;
+}
+.astravel-field__fight-action:hover,
+.astravel-field__fight-action:focus-visible { background: #375144; outline: 2px solid #ffebae; outline-offset: 2px; }
+@media (max-width: 600px) {
+  .astravel-field__fight-action { bottom: 12%; font-size: .6rem; padding: 6px 8px; min-width: 160px; }
+}
