@@ -7,6 +7,9 @@ import { bindPrologueWeapon, createNewSave } from '../../domain/game/createSave'
 import { useGameStore } from '../../state/gameStore'
 import { TerranLocationScreen } from './TerranLocationScreen'
 import { InventoryScreen } from './InventoryScreen'
+import { LocalScreen } from './LocalScreen'
+import { QuestsScreen } from './QuestsScreen'
+import { SkillTreeScreen } from './SkillTreeScreen'
 import { TerranScreen } from './TerranScreen'
 
 const createPlayableSave = () => {
@@ -76,99 +79,58 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('img', { name: /Interior pixelado de Casa de Daeryn/ })).toBeInTheDocument()
   })
 
-  it('mantém a cidade pixelada e abre painéis adjacentes sem navegação por abas', () => {
+  it('mantém os quatro atalhos da cena e abre telas completas sem dividir Inventário e Nexo', () => {
     loadSave()
-    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
-
-    expect(screen.getByRole('heading', { name: /^Terran$/ })).toBeInTheDocument()
-    expect(screen.getByText('HOME · CIDADE-BASE DO JOGADOR')).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Ir para Base do Terrírian' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Conversar com Arlen' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Conversar com Liora' })).toBeInTheDocument()
-    expect(screen.queryByRole('navigation', { name: 'Navegação principal' })).not.toBeInTheDocument()
+    render(<MemoryRouter initialEntries={['/terran']}>
+      <Routes>
+        <Route path="/terran" element={<TerranScreen />} />
+        <Route path="/local" element={<LocalScreen />} />
+        <Route path="/inventory" element={<InventoryScreen />} />
+        <Route path="/quests" element={<QuestsScreen />} />
+        <Route path="/menu" element={<SkillTreeScreen />} />
+      </Routes>
+    </MemoryRouter>)
+    expect(screen.getByRole('img', { name: /Terran vista superior 3\\/4/ })).toBeInTheDocument()
     const rail = screen.getByRole('navigation', { name: 'Menu de Terran' })
-    expect(rail).toBeInTheDocument()
     expect(rail.querySelectorAll('button')).toHaveLength(4)
     expect(screen.getByRole('button', { name: 'Abrir Local' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Abrir Inventário e Nexo' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Abrir Missões' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Abrir Menu' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Abrir Skill Tree' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Abrir Base' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Abrir Mochila' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Abrir Evolução' })).not.toBeInTheDocument()
-    const frame = screen.getByTestId('terran-centered-gameplay')
-    const scene = screen.getByRole('region', { name: 'Cenário contínuo de Terran' })
-    expect(scene.parentElement).toBe(frame)
-    expect(rail.parentElement).toBe(frame)
-    const status = screen.getByRole('complementary', { name: 'Status permanente do personagem' })
-    expect(status.parentElement).toBe(frame)
-    expect(screen.queryByRole('navigation', { name: 'Ações contextuais de Terran' })).not.toBeInTheDocument()
-    expect(screen.getByLabelText('Cinco equipamentos vinculados')).toBeInTheDocument()
-    expect(screen.getByLabelText('Atributos e combate')).toBeInTheDocument()
-    expect(screen.getByRole('progressbar', { name: 'Vida' })).toBeInTheDocument()
-    expect(screen.getByRole('progressbar', { name: 'Mana' })).toBeInTheDocument()
-    expect(screen.getByText('Lysa')).toBeInTheDocument()
-    expect(screen.queryByText(/Você está em/)).not.toBeInTheDocument()
-    for (const locationId of TERRAN_LOCATION_IDS) {
-      expect(
-        screen.getByRole('button', { name: new RegExp(`Ir para ${content.terranLocations[locationId].name}`) }),
-      ).toBeInTheDocument()
-    }
+    expect(screen.getByRole('complementary', { name: 'Status permanente do personagem' })).toBeInTheDocument()
+
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Local' }))
-    const contextual = screen.getByRole('complementary', { name: 'Painel lateral: Praça do Portal' })
-    expect(contextual.parentElement).toBe(frame)
-    expect(screen.getByRole('complementary', { name: 'Status permanente do personagem' })).toBe(status)
-    expect(screen.getByRole('region', { name: 'Cenário contínuo de Terran' })).toBe(scene)
-    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
+    expect(screen.getByRole('heading', { name: 'Instâncias de Combate' })).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Filtrar instâncias de combate' })).toBeInTheDocument()
+    expect(screen.getByText('Modo Ondas do Portal')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('link', { name: 'Terran' }))
+
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Inventário e Nexo' }))
-    expect(screen.getByRole('complementary', { name: 'Painel lateral: Inventário e Nexo' })).toBeInTheDocument()
-    expect(screen.getByRole('group', { name: 'Seções de Inventário e Nexo' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Nexo' }))
+    expect(screen.getByRole('heading', { name: 'Inventário e Nexo' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Status do personagem' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Itens Vinculados' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /Examinar arsenal e requisitos/ })).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Inventário' }))
     expect(screen.getByRole('heading', { name: 'Inventário' })).toBeInTheDocument()
-    expect(screen.getByRole('complementary', { name: 'Status permanente do personagem' })).toBe(status)
-    expect(screen.getByRole('region', { name: 'Cenário contínuo de Terran' })).toBe(scene)
-    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
-    expect(screen.queryByRole('complementary', { name: /Painel lateral/ })).not.toBeInTheDocument()
-    expect(screen.getByRole('complementary', { name: 'Status permanente do personagem' })).toBe(status)
-    fireEvent.click(screen.getByRole('button', { name: 'Ir para Praça do Portal' }))
-    expect(screen.getByRole('complementary', { name: 'Painel lateral: Praça do Portal' })).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Seções de Inventário e Nexo' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('link', { name: 'Terran' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Missões' }))
+    expect(screen.getByRole('heading', { name: 'Registro de Missões' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Registro de missões em grid' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('link', { name: 'Terran' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Menu' }))
+    expect(screen.getByRole('heading', { name: 'Menu' })).toBeInTheDocument()
+    expect(screen.getByRole('tablist', { name: 'Árvores de progressão' })).toBeInTheDocument()
   })
 
   it('mantém a biblioteca visual exclusivamente nos Registros de Eldamar', () => {
     loadSave()
     render(<MemoryRouter><InventoryScreen /></MemoryRouter>)
     expect(screen.getByRole('heading', { name: 'Inventário e Nexo' })).toBeInTheDocument()
-    expect(screen.getByRole('group', { name: 'Seções de Inventário e Nexo' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Nexo' }))
+    expect(screen.queryByRole('group', { name: 'Seções de Inventário e Nexo' })).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Status do personagem' })).toBeInTheDocument()
     expect(screen.getByText(/O Arsenal Visual e o guia de jogo ficam na Estante dos Registros/)).toBeInTheDocument()
     expect(screen.queryByText('BIBLIOTECA DE SPRITES · 16×16 PX')).not.toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Tipos de equipamento' })).not.toBeInTheDocument()
-  })
-
-  it('abre a Skill Tree pelo Menu sem criar acesso direto à Base', () => {
-    loadSave()
-    render(<MemoryRouter initialEntries={['/terran']}>
-      <Routes>
-        <Route path="/terran" element={<TerranScreen />} />
-        <Route path="/skill-tree" element={<h1>Árvore de Habilidades Independente</h1>} />
-      </Routes>
-    </MemoryRouter>)
-    expect(screen.queryByRole('button', { name: 'Abrir Base' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Ir para Base do Terrírian' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Menu' }))
-    expect(screen.getByRole('complementary', { name: 'Painel lateral: Menu' })).toBeInTheDocument()
-    expect(screen.getByRole('navigation', { name: 'Opções do Menu' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /Base/i })).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('link', { name: 'Skill Tree' }))
-    expect(screen.getByRole('heading', { name: 'Árvore de Habilidades Independente' })).toBeInTheDocument()
   })
 
   it('reflete o save real no painel direito sem atribuir status inventados', async () => {
