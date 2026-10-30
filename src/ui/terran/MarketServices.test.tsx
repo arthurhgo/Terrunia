@@ -70,4 +70,22 @@ describe('NPCs do Mercado', () => {
     expect(useGameStore.getState().save?.boundItems[id].grade).toBe(2)
     expect(useGameStore.getState().save?.inventory.some((entry) => entry.instanceId === 'fragment-market-test')).toBe(false)
   })
+  it('Talia lapida o Vínculo GII usando uma Joia compatível', () => {
+    const save = makeSave()
+    const id = save.character.bondedEquipment.weapon!
+    const item = save.boundItems[id]
+    item.grade = 2
+    item.components.essences.push('essence_mycelial')
+    item.resonance = item.resonanceThreshold
+    save.inventory.push({
+      instanceId: 'gem-market-test', definitionId: 'item_gem_esmeralda_crescimento',
+      quantity: 1, rarity: 'rare', favorite: false, locked: false, acquiredAt: '2026-10-30T00:00:00Z',
+    })
+    setup('presence_talia', save)
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar melhoria G3' }))
+    expect(useGameStore.getState().save?.boundItems[id].grade).toBe(3)
+    expect(useGameStore.getState().save?.boundItems[id].components.gems).toContain('esmeralda_crescimento')
+    expect(useGameStore.getState().save?.inventory.some((entry) => entry.instanceId === 'gem-market-test')).toBe(false)
+  })
+
 })
