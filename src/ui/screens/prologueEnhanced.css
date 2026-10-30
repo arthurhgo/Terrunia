@@ -30,6 +30,45 @@
 .prologue-screen--enhanced .attribute-stepper__die b { font-size: .62rem; }
 .prologue-screen--enhanced .attribute-allocator > p { font-size: .61rem; }
 .prologue-screen--enhanced .attribute-allocator--compact { margin-bottom: 0; }
+/* First Vínculo: full-width attribute rows stacked vertically in the left column. */
+.prologue-screen--enhanced .attribute-allocator--vertical .attribute-allocator__grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 7px;
+}
+.prologue-screen--enhanced .attribute-allocator--vertical .attribute-allocator__grid > article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 144px;
+  align-items: center;
+  gap: 10px;
+  min-height: 63px;
+  padding: 6px 10px;
+}
+.prologue-screen--enhanced .attribute-allocator--vertical .attribute-allocator__grid > article > div:first-child {
+  min-width: 0;
+  gap: 3px;
+}
+.prologue-screen--enhanced .attribute-allocator--vertical .attribute-allocator__grid strong {
+  font-size: .82rem;
+}
+.prologue-screen--enhanced .attribute-allocator--vertical .attribute-allocator__grid > article > div:first-child small {
+  display: block;
+  color: #98aeb4;
+  font-size: .63rem;
+  line-height: 1.25;
+}
+.prologue-screen--enhanced .attribute-allocator--vertical .attribute-stepper {
+  grid-template-columns: 27px minmax(0, 1fr) 27px;
+  gap: 4px;
+}
+.prologue-screen--enhanced .attribute-allocator--vertical .attribute-stepper button {
+  width: 27px;
+  height: 29px;
+}
+.prologue-screen--enhanced .attribute-allocator--vertical .attribute-allocator__grid .die-icon {
+  width: 37px;
+  height: 37px;
+}
+
 .prologue-screen--enhanced .prologue-arsenal { position: relative; max-width: none; width: 100%; justify-self: stretch; align-self: center; min-width: 0; }
 .prologue-screen--enhanced .prologue-arsenal > .arcane-panel__header { padding: 11px 14px; }
 .prologue-screen--enhanced .prologue-arsenal > .arcane-panel__header h2 { font-size: 1rem; }
@@ -101,10 +140,25 @@
   .prologue-screen--enhanced .prologue-hero-preview__stage { height: 85px; }
   .prologue-screen--enhanced .prologue-hero-preview__character { width: 74px; height: 80px; }
 }
-@media (max-width: 1050px), (max-height: 599px) {
+@media (max-width: 900px), (max-height: 599px) {
   .prologue-screen.prologue-screen--enhanced { height: auto; min-height: 100dvh; grid-template-columns: minmax(0,1fr); max-width: 880px; margin: 0 auto; padding: 18px; gap: 13px; overflow: visible; }
   .prologue-screen--enhanced .prologue-copy h1 { font-size: clamp(1.5rem, 4.5vw, 2.8rem); }
 }
+@media (max-width: 400px) {
+  .prologue-screen--enhanced .attribute-allocator--vertical .attribute-allocator__grid > article {
+    grid-template-columns: minmax(0, 1fr) 124px;
+    gap: 6px;
+    padding-inline: 7px;
+  }
+  .prologue-screen--enhanced .attribute-allocator--vertical .attribute-stepper {
+    grid-template-columns: 24px minmax(0, 1fr) 24px;
+    gap: 3px;
+  }
+  .prologue-screen--enhanced .attribute-allocator--vertical .attribute-stepper button {
+    width: 24px;
+  }
+}
+
 @media (max-width: 560px) {
   .prologue-screen--enhanced .attribute-allocator__grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
   .prologue-screen--enhanced .weapon-gallery__grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
