@@ -151,24 +151,12 @@ export const drawPixelCity = (
     const movingActor = actor as MovingCityActor
     drawPixelActor(ctx, actor.point.x, actor.point.y, movingActor.facing ?? 'down',
       movingActor.moving ? Math.floor(frame / 8) % 3 : 0, variantPalette, 1)
-    if (actor.marker) {
-      if (actor.marker === '?') {
-        ctx.fillStyle = '#0d2832'
-        ctx.fillRect(actor.point.x - 6, actor.point.y - 30, 12, 13)
-        ctx.fillStyle = '#78d7e5'
-        ctx.fillRect(actor.point.x - 5, actor.point.y - 29, 10, 10)
-        ctx.fillStyle = '#123342'
-        ctx.fillRect(actor.point.x - 4, actor.point.y - 28, 8, 8)
-        ctx.fillStyle = '#ffdf9a'
-        ctx.font = 'bold 9px monospace'
-        ctx.textAlign = 'center'
-        ctx.fillText('?', actor.point.x, actor.point.y - 20)
-      } else {
-        ctx.fillStyle = actor.marker === '!' ? '#f1c76c' : '#77d2a8'
-        ctx.fillRect(actor.point.x - 3, actor.point.y - 23, 6, 6)
-        ctx.fillStyle = colors.ink; ctx.fillRect(actor.point.x, actor.point.y - 22, 1, 3)
-      }
-    }
-  }
+    // Rosetta's interactive HTML button owns the single question bubble.
+    if (actor.marker && actor.marker !== '?') {
+      ctx.fillStyle = actor.marker === '!' ? '#f1c76c' : '#77d2a8'
+      ctx.fillRect(actor.point.x - 3, actor.point.y - 23, 6, 6)
+      ctx.fillStyle = colors.ink
+      ctx.fillRect(actor.point.x, actor.point.y - 22, 1, 3)
+    }  }
   if (!playerDrawn) renderPlayer()
 }
