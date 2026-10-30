@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -146,7 +146,7 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('heading', { name: 'Árvore de Habilidades Independente' })).toBeInTheDocument()
   })
 
-  it('reflete o save real no painel direito sem atribuir status inventados', () => {
+  it('reflete o save real no painel direito sem atribuir status inventados', async () => {
     loadSave()
     render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     const hud = screen.getByRole('complementary', { name: 'Status permanente do personagem' })
@@ -159,8 +159,10 @@ describe('interfaces de Terran', () => {
     updated.wallet.gold = 749
     updated.vitals.hp -= 5
     useGameStore.setState({ save: updated })
-    expect(hud).toHaveTextContent('749 Ouro')
-    expect(screen.getByRole('progressbar', { name: 'Vida' })).toHaveAttribute('aria-valuenow', String(updated.vitals.hp))
+    await waitFor(() => {
+      expect(hud).toHaveTextContent('749 Ouro')
+      expect(screen.getByRole('progressbar', { name: 'Vida' })).toHaveAttribute('aria-valuenow', String(updated.vitals.hp))
+    })
   })
 
   it('entra na Casa de Eldamar, mostra o NPC no interior e retorna pela porta', () => {
