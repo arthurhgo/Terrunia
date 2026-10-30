@@ -24,6 +24,7 @@ import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { PixelCityCanvas } from '../terran/PixelCityCanvas'
 import { PixelInteriorCanvas } from '../terran/PixelInteriorCanvas'
 import { EldamarRecords } from '../terran/EldamarRecords'
+import { RosettaGuide } from '../terran/RosettaGuide'
 import { TerranCharacterHud } from '../terran/TerranCharacterHud'
 import { hasTerranInterior } from '../terran/interiorLayout'
 import { getRoomName, PLAYER_HOME_DOOR, PLAYER_HOME_INTERIOR_ID, type RoomFurniture, type TerranInteriorId } from '../terran/roomContent'
@@ -122,6 +123,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [streetSpawn, setStreetSpawn] = useState<WorldPoint | null>(null)
   const [inspected, setInspected] = useState<RoomFurniture | null>(null)
   const [eldamarOpen, setEldamarOpen] = useState(false)
+  const [rosettaOpen, setRosettaOpen] = useState(false)
   const [socialQuestId, setSocialQuestId] = useState<string | null>(null)
   const [dialogue, setDialogue] = useState<Presence | null>(null)
   const [dialogueLine, setDialogueLine] = useState(0)
@@ -146,7 +148,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const guidance = getTerranQuestDestination(save, content)
   const discovered = getDiscoveredTerranLocationIds(save).length
   const location = content.terranLocations[locationId]
-  const gameEnabled = !scene && !eldamarOpen && !socialQuestId && !dialogue && !inspected && drawer !== 'records'
+  const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !socialQuestId && !dialogue && !inspected && drawer !== 'records'
 
   const openLocation = (id: TerranLocationId) => {
     setStreetSpawn(null)
@@ -202,6 +204,12 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setInspected(null)
   }
   const talk = (presence: Presence, sourceId: TerranLocationId = locationId) => {
+    if (presence.npcId === 'npc_rosetta') {
+      setDialogue(null)
+      setDrawer(null)
+      setRosettaOpen(true)
+      return
+    }
     const isStreetNpc = streetNpcPlacements.some((entry) => entry.id === presence.id)
     travel(sourceId)
     setLocationId(sourceId)
@@ -271,6 +279,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               <strong>{inspected.name}</strong><p>{inspected.description}</p>
               <button type="button" onClick={() => setInspected(null)}>Continuar explorando</button>
             </div>}
+            {rosettaOpen && <RosettaGuide save={save} onClose={() => setRosettaOpen(false)}
+              onOpenQuests={() => { setRosettaOpen(false); setDrawer('quests') }} />}
             {dialogue && <DialogueBox save={save} presence={dialogue} line={dialogueLine} onNext={() => {
               const length = getTerranDialogue(save, dialogue).length
               if (dialogueLine + 1 < length) setDialogueLine(dialogueLine + 1)
