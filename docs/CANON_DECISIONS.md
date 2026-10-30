@@ -91,6 +91,18 @@ Detalhes e validação em `TERRAN_EXPLORATION_AND_CONTRACTS_v0.11.md`. Esta atua
 
 Detalhes e validação em `DIALOGUE_JOURNAL_INVENTORY_v0.12.md`. Não há alteração de balanceamento, dados persistidos ou schema nesta rodada.
 
+## Atualização posterior do criador — 2026-10-30, v0.13
+
+| Tema | Conflito encontrado | Decisão aplicada |
+|---|---|---|
+| Histórico do diário | Concluídas ficavam expostas junto das missões em andamento. | O grupo inicia recolhido, com quantidade e comando de expandir/recolher. Nenhum dado de missão é descartado. |
+| Papel de Rosetta | A v0.10–0.12 tratava Rosetta apenas como orientadora de missões alheias, sem suas próprias tarefas. | O pedido posterior torna Rosetta responsável por quatro lições jogáveis de equipamento, compras e reforço. Aceite e entrega são explícitos; outros NPCs mantêm suas próprias missões. |
+| Túnicas e armaduras comuns | 0B.4 limitava a mochila a recursos e vetava equipamento comum; o pedido novo exige receber túnicas, comprar armadura e aprender a equipar. | É autorizada proteção simples de preparação na mochila. Ela pode ser vestida/trocada no eixo Armadura antes de um Vínculo permanente. Não existe slot extra; peças vinculadas não são removidas ou substituídas. Esta é uma exceção posterior para o tutorial e não transforma loot comum em substituto dos Vínculos. |
+| Primeiro aprimoramento | Evolução dos sete Graus exige progressão própria; o tutorial pede uma melhoria inicial acessível. | Durnan reforça uma peça simples em +1 usando Linha de Linho e Ouro. O reforço conserva a instância, não altera Graus e não concede Pontos de Essência. Valores são `BALANCE_DRAFT`. |
+| Ajuda visual | O Tracker destacava uma missão, sem mostrar todos os trabalhos possíveis. | Hover/foco em Rosetta mostra caminhos dourados para todas as principais/secundárias acionáveis, rastreadas ou não. Próxima ação define o destino; destinos compartilhados são reunidos. Fixação no diálogo permite uso por toque. É uma leitura do mesmo save, sem aceite ou recompensa. |
+
+Quatro novos ícones nativos 16×16 e textos de lição são `VISUAL_DRAFT`/`CONTENT_DRAFT`. App 0.13.0, schema 15 com migração 14→15 sem aceitar missões nem entregar itens automaticamente. Detalhes em `ROSETTA_TUTORIAL_v0.13.md`.
+
 ## OWNER_DECISION pendente
 
 - Curva final da barra de Essência e recompensas do encontro.

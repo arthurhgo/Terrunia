@@ -42,3 +42,19 @@ Os 12 contratos em `src/content/collectionContracts.ts` pagam `ceil(soma(valor d
 Fragmento de Eco: 16 Ouro de venda ou 35 Essência, obtido adicionalmente das Sentinelas da Ruína, inclusive nas caçadas/ondas repetíveis. O Fragmento Micelial do Colosso continua preservado para Infusão.
 
 Neris vende Lasca da Ruína por 60 Ouro, Fibra Micelial por 48 e Cerne Raiz-Negra por 72. Os preços superam tanto a venda comum quanto o pagamento unitário de encomendas, eliminando a compra/revenda lucrativa dos valores anteriores.
+
+## Preparação de Rosetta v0.13 — BALANCE_DRAFT
+
+| Peça/ação | Valor | Origem |
+|---|---|---|
+| Túnica de Linho Gasta | +1 Defesa | Uma por aceite da primeira lição; Neris vende por 12 Ouro |
+| Túnica de Aprendiz | +1 Iniciativa, sem bônus de Defesa | Uma por aceite da primeira lição; Neris vende por 12 Ouro |
+| Armadura de Couro Simples | +2 Defesa | Neris, 35 Ouro |
+| Linha de Linho | Uma unidade por reforço | Uma por aceite da quarta lição; Neris vende por 4 Ouro |
+| Reforço de peça simples | +1 Defesa, limite +1 por instância | Durnan, 8 Ouro + uma linha |
+| Lição 1 | 10 XP + 70 Ouro | Entrega manual após equipar |
+| Lição 2 | 10 XP | Comprar Tônico de Campo com Neris por 18 Ouro |
+| Lição 3 | 15 XP + 10 Ouro | Comprar e vestir a proteção de couro |
+| Lição 4 | 20 XP + 10 Ouro | Aplicar reforço +1 e retornar |
+
+Partindo de zero, completar o percurso, comprar Tônico e couro e pagar pelo reforço deixa 29 Ouro e 55 XP. Cada pagamento ocorre uma vez. Peças simples não são vendáveis/conversíveis, e trocar/vestir/reforçar não cura nem gera Pontos de Essência. O bônus deixa de valer se a peça não estiver vestida; uma Armadura vinculada tem precedência exclusiva.

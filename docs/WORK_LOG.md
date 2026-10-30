@@ -1,5 +1,17 @@
 # Registro de implementação
 
+## Terran v0.13 — tutorial prático de Rosetta e orientação dourada (2026-10-30)
+
+- recolhido o histórico de concluídas por padrão, com contador e expansão por botão;
+- criadas quatro lições encadeadas, aceite manual, duas túnicas recebidas na mochila e pagamento para as primeiras compras;
+- implementados equipamento comum no eixo Armadura antes do Vínculo permanente, troca manual, indicação no HUD e bônus reais no combate;
+- ampliado o estoque de Neris com túnicas, Armadura de Couro Simples e Linha de Linho, e adicionado reforço +1 por Durnan;
+- criados quatro ícones nativos 16×16, registro central, atlas e manifest atualizado;
+- adicionados caminhos dourados por hover/foco em Rosetta e fixação por toque, com próxima ação, elegibilidade, minimapa e respeito ao movimento reduzido;
+- migrado save 14→15 sem equipamentos, aceite ou recompensas automáticas, validando referência da peça vestida, reforço e pilhas;
+- testes de domínio cobrem o orçamento integral, ações reais, repetição, proteção dos Vínculos, baú, gastos atômicos, migração e destinos; E2E executa as quatro lições e reload;
+- detalhes em `ROSETTA_TUTORIAL_v0.13.md`.
+
 ## Terran v0.12 — conversas, diário e inventário (2026-10-30)
 
 - tornados cinza o marcador e a notificação de missão aceita, com prioridade de entrega pronta sobre aceita e nova oferta;

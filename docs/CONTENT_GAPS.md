@@ -2,6 +2,8 @@
 
 O sistema suporta expansão orientada a dados, mas o slice usa conteúdo técnico mínimo.
 
+Na v0.13, o tutorial de Rosetta possui quatro lições jogáveis, túnicas e armadura simples, compra e reforço +1, com orientação dourada para trabalhos elegíveis. A autorização para proteção comum antes do Vínculo está registrada em `CANON_DECISIONS.md`; nomes, números e diálogos finais continuam drafts. Esse aprendizado não fecha os ritos/árvores completos da Armadura vinculada.
+
 ## Conteúdo ainda não definido
 
 - ritos e missões de entrada em cada Clã;

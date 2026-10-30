@@ -1,6 +1,6 @@
 # Estrutura oficial da cidade de Terran
 
-Status: decisão do criador aprovada em 2026-08-12; expansão do Mercado e nova Casa do Ferreiro autorizadas em 2026-10-30; conversas interativas e sinalização refinadas posteriormente na v0.12.
+Status: decisão do criador aprovada em 2026-08-12; expansão do Mercado e nova Casa do Ferreiro autorizadas em 2026-10-30; conversas refinadas na v0.12 e tutorial prático de Rosetta autorizado posteriormente na v0.13.
 
 Este documento é o adendo mais recente para Terran. Ele substitui representações anteriores que tratavam o Portal como Home/tela principal. A matriz inicial de seis instituições foi ampliada pelo criador em 2026-10-30 para incluir a Casa do Ferreiro e um novo vendedor no Mercado.
 
@@ -31,6 +31,8 @@ Terran possui sete instituições jogáveis ao redor da Praça do Portal:
 - Salão dos Clãs: representantes Dûn’Avar, Rustal, Cebios Esti e Estres do Ét; mestres de Classe progressivos; Conselho da Main Lore.
 - Casa de Daeryn: Daeryn, Sylwen, Briana e Orlan condicional.
 - Praça do Portal: Rosetta, Guardiã do Portal na representação atual (`CONTENT_DRAFT`).
+
+Na v0.13 Rosetta também conduz quatro lições de preparação: vestir uma das duas túnicas entregues na mochila, comprar um Tônico com Neris, comprar/equipar uma proteção de couro e reforçar uma peça simples em +1 com Durnan. As lições não bloqueiam a campanha antiga nem distribuem equipamentos ao carregar o save. As ações e entregas são manuais.
 
 Neris, as falas, a distribuição visual e os números das receitas permanecem `CONTENT_DRAFT`/`VISUAL_DRAFT`/`BALANCE_DRAFT`. A autorização da nova casa não transforma armas de loot em equipamentos substituíveis. Durnan reforça o Vínculo existente e produz componentes, mantendo os sete Graus e o custo em Pontos de Essência para comprar nodes da árvore.
 
@@ -100,6 +102,8 @@ Uma missão não precisa visitar todas as casas. Cada etapa deve existir nos dad
 - Sprites de NPCs e retratos de diálogo resolvem a mesma identidade visual no registro central. `?` vermelho permanece exclusivo de Rosetta. Ofertas usam `!` amarelo ou `◇` azul; a decisão posterior da v0.12 torna o marcador cinza após o aceite. Entregas prontas usam `!` amarelo ou `◆` azul, com prioridade sobre os demais estados. NPCs sem missão não têm marcador.
 - Diálogos usam um retrato do NPC à esquerda de uma única caixa de fala, com respostas do jogador abaixo. Não repetir nome, retrato e primeira fala dentro dos detalhes da missão. Os 51 perfis visuais têm assuntos próprios; a conversa permite perguntar sobre trabalho, acontecimentos locais, conselhos e a missão selecionada. As falas adicionais são `CONTENT_DRAFT`, sem conceder progresso, recompensas ou vínculos sociais automaticamente.
 - Missões do mesmo NPC aparecem em linhas horizontais empilhadas, principal destacada acima das secundárias. O Inventário abre na Mochila e não contém a ficha de status; esta permanece no Nexo e no HUD.
+- Ao passar o cursor sobre Rosetta ou focá-la, caminhos dourados acompanham a geometria caminhável até os destinos das missões principais e secundárias acionáveis. A câmera recorta a cena e o minimapa mostra os caminhos no mundo completo. Destinos compartilhados são reunidos; ofertas bloqueadas e histórico concluído são excluídos. A opção de fixar/ocultar pelo diálogo atende toque. Animação respeita movimento reduzido e as linhas não capturam cliques.
+- Proteções simples de preparação podem ocupar o eixo Armadura antes do Vínculo permanente, com ícone no HUD e ações na mochila. Neris vende as peças e Linha de Linho; Durnan aplica um único reforço +1. Não substituem um Vínculo existente.
 - Terran é um mundo 768×512 observado por uma câmera 384×256 que acompanha o personagem e respeita as bordas, como em Astravél. Casas maiores, ruas, pátios e seis objetos exploráveis usam geometria compartilhada com colisão e pathfinding; NPCs são desenhados em 28 px, preservando seus arquivos nativos de 32 px.
 - Fonte, quadro de encomendas, jardim, marco das ruínas, cargas do Mercado e pátio da Guarda são pontos de exploração, não instituições adicionais. Descobri-los registra uma flag, sem aceitar missões ou distribuir recompensas.
 - coordenadas do minimapa são `VISUAL_DRAFT` e não definem escala, distância ou geografia canônica.
