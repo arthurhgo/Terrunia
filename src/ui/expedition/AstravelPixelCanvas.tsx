@@ -16,6 +16,7 @@ type Props = {
   reducedMotion: boolean
   enabled: boolean
   onInspect: (nodeId: string) => void
+  onEngage: (nodeId: string) => void
   onTravelStart: () => void
 }
 
@@ -36,7 +37,7 @@ function nearestReachableNode(point: WorldPoint, radius: number, trail: TrailDef
   return closest
 }
 
-export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portraitAssetId, reducedMotion, enabled, onInspect, onTravelStart }: Props) {
+export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portraitAssetId, reducedMotion, enabled, onInspect, onEngage, onTravelStart }: Props) {
   const start = trail.nodes.find((node) => node.id === currentLocationId)
     ?? [...trail.nodes].reverse().find((node) => statuses[node.id] === 'completed')
     ?? trail.nodes[0]
@@ -48,20 +49,39 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
   const enabledRef = useRef(enabled)
   const statusesRef = useRef(statuses)
   const inspectRef = useRef(onInspect)
+  const engageRef = useRef(onEngage)
+  const engagingRef = useRef<string | null>(null)
   const travelRef = useRef(onTravelStart)
   enabledRef.current = enabled
   statusesRef.current = statuses
   inspectRef.current = onInspect
+  engageRef.current = onEngage
   travelRef.current = onTravelStart
 
   useEffect(() => {
     if (!enabled) { directionsRef.current.clear(); destinationRef.current = null }
   }, [enabled])
 
+  /**
+   * Active combat landmarks are encounter triggers, not a two-click inspection
+   * drawer. Completed/locked landmarks cannot spawn another encounter.
+   */
+  const activateNode = (nodeId: string) => {
+    if (!enabledRef.current || engagingRef.current) return
+    const node = trail.nodes.find((candidate) => candidate.id === nodeId)
+    if (!node || !reachable(statusesRef.current[nodeId])) return
+    if (node.type === 'battle' && statusesRef.current[nodeId] === 'current') {
+      engagingRef.current = nodeId
+      destinationRef.current = null
+      directionsRef.current.clear()
+      engageRef.current(nodeId)
+    } else inspectRef.current(nodeId)
+  }
+
   const walkTo = (point: WorldPoint, nodeId: string | null) => {
     if (!enabledRef.current) return
     if (Math.hypot(playerRef.current.x - point.x, playerRef.current.y - point.y) < (nodeId ? 18 : 4)) {
-      if (nodeId) inspectRef.current(nodeId)
+      if (nodeId) activateNode(nodeId)
       return
     }
     const path = findAstravelPath(playerRef.current, point, trail)
@@ -89,7 +109,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
       }
       if (key === 'e' || key === 'enter') {
         const nearby = nearestReachableNode(playerRef.current, 23, trail, statusesRef.current)
-        if (nearby) inspectRef.current(nearby.id)
+        if (nearby) activateNode(nearby.id)
         event.preventDefault()
       }
     }
@@ -110,7 +130,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
         const speed = 72 * dt
         if (dx === 0 && dy === 0 && destination) {
           const waypoint = destination.path[0]
-          if (!waypoint) { destinationRef.current = null; if (destination.nodeId) inspectRef.current(destination.nodeId) }
+          if (!waypoint) { destinationRef.current = null; if (destination.nodeId) activateNode(destination.nodeId) }
           else {
             const distance = Math.hypot(waypoint.x - playerRef.current.x, waypoint.y - playerRef.current.y)
             if (distance <= speed + 0.4) {
@@ -118,7 +138,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
               destination.path.shift()
               if (!destination.path.length) {
                 destinationRef.current = null
-                if (destination.nodeId) inspectRef.current(destination.nodeId)
+                if (destination.nodeId) activateNode(destination.nodeId)
               }
             } else { dx = (waypoint.x - playerRef.current.x) / distance; dy = (waypoint.y - playerRef.current.y) / distance }
           }
@@ -131,6 +151,10 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
           else if (isAstravelWalkable({ x: next.x, y: playerRef.current.y }, trail)) { playerRef.current.x = next.x; walking = true }
           else if (isAstravelWalkable({ x: playerRef.current.x, y: next.y }, trail)) { playerRef.current.y = next.y; walking = true }
           else destinationRef.current = null
+        }
+        if (walking && !engagingRef.current) {
+          const nearby = nearestReachableNode(playerRef.current, 14, trail, statusesRef.current)
+          if (nearby?.type === 'battle' && statusesRef.current[nearby.id] === 'current') activateNode(nearby.id)
         }
       }
       drawAstravel(ctx, trail, statusesRef.current, playerRef.current, sheet, reducedMotion ? 0 : frame,
@@ -167,7 +191,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
         const point = getAstravelPoint(node)
         const status = statuses[node.id] ?? 'locked'
         return <button key={node.id} type="button" disabled={!enabled || !reachable(status)}
-          aria-label={`Aproximar-se de ${node.label}`} title={`${node.label} — ${status}`}
+          aria-label={`Aproximar-se de ${node.label}`} title={`${node.label} — ${status === 'current' && node.type === 'battle' ? 'encontro de combate' : status}`}
           className={`astravel-field__node astravel-field__node--${status}`}
           style={{ left: `${point.x / ASTRAVEL_WIDTH * 100}%`, top: `${(point.y - 26) / ASTRAVEL_HEIGHT * 100}%` }}
           onClick={() => walkToNode(node)}>
