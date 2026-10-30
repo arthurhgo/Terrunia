@@ -3294,3 +3294,71 @@ code {
   .terran-continent__rose { display: none; }
 }
 @media (prefers-reduced-motion:reduce) { .quest-tracker__chevron { transition: none; } }
+
+/* Terran v1.2 — left-side drawers stay in place; only MENU opens the full build screen. */
+.world-header-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.5vw, 22px);
+  min-width: 0;
+}
+.world-header-nav .world-journey { flex: 1 1 auto; min-width: 0; }
+.world-header-nav__menu {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 clamp(10px, 1.3vw, 17px);
+  border: 1px solid #a0783f;
+  border-bottom: 2px solid #d8a84d;
+  color: #f3d49b;
+  background: linear-gradient(180deg, #17212b, #20190f);
+  font: 700 .71rem var(--display);
+  letter-spacing: .1em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.world-header-nav__menu:hover,
+.world-header-nav__menu:focus-visible {
+  border-color: #f6d18c;
+  color: #ffebc1;
+  background: #3c2b19;
+  outline-offset: 2px;
+}
+.terran-inventory-drawer { display: grid; align-content: start; gap: 12px; min-width: 0; }
+.terran-inventory-drawer > * { min-width: 0; }
+.terran-local-drawer__map { overflow: hidden; border: 1px solid #716140; min-width: 0; }
+.terran-local-drawer__map .terran-continent__canvas {
+  height: 245px;
+  min-height: 245px;
+}
+.terran-local-drawer__map .terran-continent__title,
+.terran-local-drawer__map .terran-continent__legend,
+.terran-local-drawer__map .terran-continent__selection,
+.terran-local-drawer__map .terran-continent__rose,
+.terran-local-drawer__map .terran-continent__footer,
+.terran-local-drawer__map .terran-continent__marker--institution { display: none; }
+.terran-local-drawer__map .terran-continent__marker strong { white-space: normal; font-size: .59rem; }
+.terran-local-drawer__map .terran-continent__marker--city .terran-continent__pin { width: 23px; height: 23px; }
+.terran-local-drawer__map .terran-continent__marker--region .terran-continent__pin,
+.terran-local-drawer__map .terran-continent__marker--ruin .terran-continent__pin { width: 17px; height: 17px; }
+.terran-local-drawer__map .terran-continent__unknown { width: 18px; height: 18px; font-size: .67rem; }
+.terran-local-drawer .panel-link {
+  display: flex;
+  justify-content: center;
+  padding: 10px 9px;
+  border: 1px solid #b38a4c;
+  background: #182432;
+  color: #f1d39b;
+  text-align: center;
+}
+.terran-local-drawer .panel-link:hover { background: #283b4c; }
+@media (max-width: 720px) {
+  .world-header-nav { justify-content: flex-end; }
+  .world-header-nav .world-journey { display: none; }
+  .world-header-nav__menu { min-height: 33px; padding: 0 8px; }
+  .terran-local-drawer__map .terran-continent__canvas { height: 210px; min-height: 210px; }
+}
