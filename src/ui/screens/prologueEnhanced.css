@@ -1,14 +1,15 @@
 /* Primeiro Vínculo — compact desktop viewport; mobile/tablet may scroll for accessibility. */
 .prologue-screen.prologue-screen--enhanced {
   width: 100%;
-  height: 100dvh;
-  min-height: 600px;
-  padding: clamp(12px, 2vh, 22px) clamp(16px, 2vw, 32px);
+  min-height: 100dvh;
+  height: auto;
+  padding: clamp(10px, 1.5vh, 22px) clamp(12px, 1.7vw, 32px);
   display: grid;
   align-items: center;
-  grid-template-columns: minmax(300px, 39%) minmax(0, 1fr);
-  gap: clamp(14px, 2vw, 26px);
-  overflow: hidden;
+  /* Keep both panels side by side even on short desktop windows at 100% zoom. */
+  grid-template-columns: minmax(285px, 38%) minmax(0, 1fr);
+  gap: clamp(10px, 1.4vw, 22px);
+  overflow: visible;
 }
 .prologue-screen--enhanced .prologue-copy { min-width: 0; position: relative; z-index: 1; align-self: center; }
 .prologue-screen--enhanced .prologue-copy .eyebrow { font-size: .72rem; letter-spacing: .16em; }
@@ -132,7 +133,7 @@
 @keyframes weapon-bob { 0%,100% { translate: 0 0; } 50% { translate: 0 -3px; } }
 @keyframes weapon-float { 0%,100% { translate: 0 1px; rotate: -2deg; } 50% { translate: 0 -3px; rotate: 3deg; } }
 @keyframes held-weapon-idle { 0%,100% { translate: 0 0; } 50% { translate: 0 -3px; } }
-@media (min-width: 1051px) and (max-height: 720px) {
+@media (min-width: 751px) and (max-height: 740px) {
   .prologue-screen.prologue-screen--enhanced { padding-block: 8px; }
   .prologue-screen--enhanced .weapon-gallery__choice { height: 48px; }
   .prologue-screen--enhanced .weapon-gallery__sprite { width: 27px; height: 27px; }
@@ -140,8 +141,15 @@
   .prologue-screen--enhanced .prologue-hero-preview__stage { height: 85px; }
   .prologue-screen--enhanced .prologue-hero-preview__character { width: 74px; height: 80px; }
 }
-@media (max-width: 900px), (max-height: 599px) {
-  .prologue-screen.prologue-screen--enhanced { height: auto; min-height: 100dvh; grid-template-columns: minmax(0,1fr); max-width: 880px; margin: 0 auto; padding: 18px; gap: 13px; overflow: visible; }
+/* Stack only on genuinely narrow screens; viewport height must not change columns. */
+@media (max-width: 750px) {
+  .prologue-screen.prologue-screen--enhanced {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 880px;
+    margin-inline: auto;
+    padding: 18px;
+    gap: 13px;
+  }
   .prologue-screen--enhanced .prologue-copy h1 { font-size: clamp(1.5rem, 4.5vw, 2.8rem); }
 }
 @media (max-width: 400px) {
