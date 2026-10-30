@@ -3815,3 +3815,10 @@ code {
   .forge-recipe img { width: 28px; height: 28px; }
   .forge-recipe button { grid-column: 2; justify-self: end; }
 }
+
+/* Completed quest history: opt-in expansion. */
+.quest-history-toggle { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px; color: #b8c1bb; border: 1px solid #445451; background: #13212a; font: inherit; cursor: pointer; text-align: left; }
+.quest-history-toggle > svg:last-child { margin-left: auto; transition: transform .15s; }
+.quest-history-toggle[aria-expanded="true"] > svg:last-child { transform: rotate(180deg); }
+.quest-history-toggle:hover, .quest-history-toggle:focus-visible { color: #efca83; border-color: #b29a68; }
+.quest-board--rows .quest-board__grid[hidden] { display: none; }
