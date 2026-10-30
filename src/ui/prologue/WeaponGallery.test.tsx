@@ -15,7 +15,7 @@ describe('Galeria do primeiro Vínculo', () => {
     expect(screen.getByText('Arco da Lâmina')).toBeInTheDocument()
     fireEvent.mouseEnter(screen.getByRole('button', { name: 'Escolher Machado de Guerra' }))
     expect(screen.getByText('Ruptura do Machado')).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: 'Dado d8' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: `Dado d${save.character.attributes.strength.die}` })).toBeInTheDocument()
     expect(screen.getByText(/Bônus condicionais à filiação/)).toBeInTheDocument()
     expect(screen.getByText(/Sentinela da Luz: Proteção e prioridade/)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Escolher Machado de Guerra' }))
