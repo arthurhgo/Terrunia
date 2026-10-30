@@ -37,6 +37,7 @@ import {
 } from '../domain/progression/progressionEngine'
 import { visitTerranLocation } from '../domain/terran/cityEngine'
 import { buyFromSylwen, receiveDaerynAid, restAtHome } from '../domain/terran/services'
+import { buyMarketItem, MARKET_LOCATION_ID } from '../domain/terran/market'
 import { enterPlayerBase, leavePlayerBase, respawnDefeatedPlayer, transferBaseChestItem } from '../domain/terran/base'
 import {
   loadCampaignSeed,
@@ -98,6 +99,7 @@ type GameState = {
   transferBaseItem: (direction: 'deposit' | 'withdraw', instanceId: string, quantity: number) => void
   receiveDaerynAid: () => void
   buyFromSylwen: (itemId: string, quantity?: number) => void
+  buyFromMarket: (npcId: string, itemId: string, quantity?: number) => void
   recordCutsceneViewed: (sceneId: CutsceneId) => void
   enterAstravel: () => void
   enterFungalChambers: () => void
@@ -476,6 +478,15 @@ export const useGameStore = create<GameState>((set, get) => {
       show('Compra realizada', `${quantity}× ${content.items[itemId].name} adicionado à mochila.`, 'success')
     },
 
+    buyFromMarket: (npcId, itemId, quantity = 1) => {
+      const save = get().save
+      if (!save) return
+      const result = buyMarketItem(save, npcId, itemId, quantity, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+      show('Compra realizada', `${quantity}× ${content.items[itemId].name} recebido no Mercado.`, 'success')
+    },
+
     recordCutsceneViewed: (sceneId) => {
       const save = get().save
       if (!save || !cutscenes.some((scene) => scene.id === sceneId)) return
@@ -813,6 +824,7 @@ export const useGameStore = create<GameState>((set, get) => {
     convertItems: (instanceIds) => {
       const save = get().save
       if (!save) return
+      if (save.battle || save.world.currentLocationId !== MARKET_LOCATION_ID) return failAction('Troque itens por Essência com Lorian no Mercado.')
       const result = convertInventoryItems(save.inventory, save.essence, instanceIds, content)
       if (!result.ok) return failAction(result.message)
       const next = structuredClone(save)
@@ -835,6 +847,7 @@ export const useGameStore = create<GameState>((set, get) => {
     sellItems: (instanceIds) => {
       const save = get().save
       if (!save) return
+      if (save.battle || save.world.currentLocationId !== MARKET_LOCATION_ID) return failAction('Venda itens por Ouro com Feril no Mercado.')
       const result = sellInventoryItems(save.inventory, save.wallet.gold, instanceIds, content)
       if (!result.ok) return failAction(result.message)
       const next = structuredClone(save)
