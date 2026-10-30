@@ -2863,3 +2863,64 @@ code {
 @media(prefers-reduced-motion:reduce) {
   .terran-character-hud__toggle svg:last-child { transition: none; }
 }
+
+/* Terran UI v0.8 — drawers occupy the reserved empty area LEFT of the
+   navigation rail. Neither panels nor expanded labels cover the game canvas.
+   The reservation is stable whether a drawer is open or closed. */
+@media (min-width: 961px) {
+  .terran-game__layout,
+  .terran-game__layout.has-drawer {
+    --terran-drawer-width: min(332px, 24vw);
+    padding-left: calc(var(--terran-drawer-width) + var(--terran-rail-width) + 8px);
+    padding-right: var(--terran-hud-width);
+  }
+  .terran-game__frame {
+    --terran-canvas-width: min(900px, calc((100dvh - 165px) * 1.5), 100%);
+  }
+  .terran-game__drawer,
+  .terran-game__layout.has-drawer .terran-game__drawer {
+    left: auto;
+    right: calc(100% + var(--terran-rail-width) + 8px);
+    width: var(--terran-drawer-width);
+    box-shadow: -8px 0 24px #03080ed9;
+  }
+}
+/* When a side-by-side panel will not fit, place it BELOW the scene instead
+   of over the gameplay. The world viewport scrolls to reach that panel. */
+@media (max-width: 960px) {
+  .terran-game__layout,
+  .terran-game__layout.has-drawer {
+    padding-left: var(--terran-rail-width);
+    padding-right: var(--terran-hud-width);
+  }
+  .terran-game__frame {
+    --terran-canvas-width: min(900px, calc((100dvh - 165px) * 1.5), 100%);
+  }
+  .terran-game__drawer,
+  .terran-game__layout.has-drawer .terran-game__drawer {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    width: 100%;
+    height: auto;
+    max-height: min(40dvh, 360px);
+    margin-top: 10px;
+    box-shadow: 0 8px 24px #03080ed9;
+  }
+  .world-scene--terran { overflow-x: hidden; overflow-y: auto; }
+  .world-scene--terran .world-scene__content { height: auto; min-height: 100%; }
+  .world-scene--terran .terran-game {
+    height: auto;
+    min-height: 100%;
+    grid-template-rows: auto auto;
+  }
+}
+@media (max-width: 720px) {
+  .terran-game__layout,
+  .terran-game__layout.has-drawer { padding: 0; }
+  .terran-game__frame {
+    --terran-canvas-width: min(calc(100vw - 50px), calc((100dvh - 155px) * 1.5));
+  }
+}
