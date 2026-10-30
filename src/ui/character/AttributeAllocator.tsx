@@ -28,7 +28,7 @@ export function AttributeAllocator({ save, compact = false }: { save: GameSave; 
           const canIncrease = save.character.unspentAttributePoints > 0 && attribute.die < 12
           const canRefund = !locked && attribute.die > BALANCE.defaultAttributeDie
           return (
-            <article key={id}>
+            <article key={id} title={labels[id].combat}>
               <div><strong>{labels[id].name}</strong><small>{labels[id].role}</small></div>
               <div className="attribute-stepper">
                 <button type="button" aria-label={`Reduzir ${labels[id].name}`} disabled={!canRefund} onClick={() => adjust(id, -1)}><Minus size={14} /></button>
