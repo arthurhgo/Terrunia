@@ -22,6 +22,8 @@ export function BoundWeaponCharacterPreview({ save, weapon }: Props) {
     '--weapon-size': `${grip.size}%`,
     '--handle-x': `${grip.handleX}%`,
     '--handle-y': `${grip.handleY}%`,
+    '--handle-offset-x': `-${grip.handleX}%`,
+    '--handle-offset-y': `-${grip.handleY}%`,
     '--weapon-rotation': `${grip.rotation}deg`,
   } as CSSProperties : undefined
 
