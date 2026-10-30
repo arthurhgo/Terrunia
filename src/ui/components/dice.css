@@ -9,3 +9,8 @@
 .die-icon--d10 .die-icon__shape { fill: #48304c; }
 .die-icon--d12 .die-icon__shape { fill: #564327; }
 .die-icon--d20 .die-icon__shape { fill: #563b40; }
+
+/* Attribute dice remain readable even when entering an established save directly. */
+.attribute-stepper__die { display: grid; justify-items: center; align-content: center; min-width: 0; gap: 1px; }
+.attribute-stepper__die b { font: 700 .67rem var(--display); color: #f3ca80; }
+.attribute-allocator__combat { margin: 0; color: #aabfc7; font-size: .57rem; line-height: 1.35; }
