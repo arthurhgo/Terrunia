@@ -17,6 +17,10 @@ export type RoomFurniture = {
 
 /** VISUAL_DRAFT — objects are identified independently from canvas art or sprite paths. */
 export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> = {
+  location_terran_forge: [
+    { id: 'forge_furnace', name: 'Fornalha de Durnan', point: { x: 112, y: 91 }, behavior: 'inspect', description: 'Brasas arcanas alimentam a produção das ligas.' },
+    { id: 'forge_anvil', name: 'Bigorna dos Vínculos', point: { x: 284, y: 191 }, behavior: 'services', description: 'Produza materiais ou aplique têmpera à sua arma.' },
+  ],
   location_terran_eldamar_house: [
     { id: 'eldamar_archive', name: 'Estante dos Registros', point: { x: 111, y: 181 }, behavior: 'archive', description: 'Manuais do viajante, Arsenal Visual e registros de sistemas do mundo. Consulte os documentos nesta estante.' },
     { id: 'eldamar_desk', name: 'Mesa de Pesquisa', point: { x: 274, y: 181 }, behavior: 'services', description: 'Consulta aos serviços e registros desta instituição.' },
@@ -52,6 +56,7 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
 export const getRoomName = (id: TerranInteriorId) =>
   id === PLAYER_HOME_INTERIOR_ID ? 'Base do Terrírian' :
   ({
+    location_terran_forge: 'Casa do Ferreiro',
     location_terran_eldamar_house: 'Casa de Eldamar',
     location_terran_vorren_post: 'Posto de Vorren',
     location_terran_bond_workshop: 'Mercado',

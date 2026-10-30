@@ -1,3 +1,5 @@
+import { drawActorImage, getWorldSprite } from './worldSprites'
+import { getPresencePortrait } from '../../content/npcVisuals'
 import { PLAYER_HOME_INTERIOR_ID, roomFurniture, type TerranInteriorId } from './roomContent'
 import { getRoomPlan } from './roomGeometry'
 import type { InteriorResident } from './interiorLayout'
@@ -6,6 +8,7 @@ import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, type ActorFacing } from
 
 /** Seven distinctive interiors, rendered from one geometry and furniture registry. VISUAL_DRAFT. */
 const palettes = {
+  forge: { wall: '#382f30', floor: '#665348', light: '#8e7160', trim: '#c9915b', glow: '#f6ac65' },
   slate: { wall: '#25344b', floor: '#555d69', light: '#778399', trim: '#bfa77c', glow: '#87b5db' },
   moss: { wall: '#293d34', floor: '#566857', light: '#879677', trim: '#c1a879', glow: '#83dbb0' },
   arcane: { wall: '#213e49', floor: '#52606a', light: '#879ca3', trim: '#e0b76d', glow: '#49e1df' },
@@ -105,7 +108,11 @@ export function drawTerranInterior(
   // Furniture silhouettes and hit targets share their IDs and positions.
   for (const item of roomFurniture[locationId]) {
     const { x, y } = item.point
-    if (item.behavior === 'archive') {
+    if (locationId === 'location_terran_forge' && item.id === 'forge_furnace') {
+      block(x - 24, y - 25, 48, 30, '#332b2d'); block(x - 18, y - 22, 36, 25, '#8d6350')
+      block(x - 13, y - 15, 26, 18, '#492e2b'); block(x - 10, y - 8, 20, 11, '#e7854f')
+      block(x - 5, y - 11 + Math.floor(frame / 15) % 2, 10, 12, '#f7d18a')
+    } else if (item.behavior === 'archive') {
       block(x - 21, y - 33, 42, 36, '#2b252b')
       block(x - 18, y - 30, 36, 31, '#835c39')
       for (let shelf = 0; shelf < 3; shelf++) {
@@ -155,13 +162,8 @@ export function drawTerranInterior(
 
   const drawPlayer = () => {
     drawPlayerAura(ctx, player.x, player.y, frame)
-    if (sheet?.complete && sheet.naturalWidth >= 128 && sheet.naturalHeight >= 128) {
-      const row = { down: 0, left: 1, right: 2, up: 3 }[facing]
-      ctx.drawImage(sheet, (walking ? Math.floor(frame / 8) % 3 : 0) * 32, row * 32, 32, 32,
-        Math.round(player.x - 8), Math.round(player.y - 16), 16, 16)
-    } else {
-      drawPixelActor(ctx, player.x, player.y, facing, walking ? Math.floor(frame / 8) % 3 : 0,
-        ACTOR_PALETTES[portraitId.includes('sigil') ? 'sigil' : 'terririan'], 1)
+    if (!drawActorImage(ctx, sheet, player.x, player.y, facing, walking ? Math.floor(frame / 8) % 3 : 0)) {
+      drawPixelActor(ctx, player.x, player.y, facing, 0, ACTOR_PALETTES[portraitId.includes('sigil') ? 'sigil' : 'terririan'], 1)
     }
   }
 
@@ -171,10 +173,8 @@ export function drawTerranInterior(
     if (!drawn && player.y < resident.position.y) { drawPlayer(); drawn = true }
     const { x, y } = resident.position
     block(x - 6, y - 2, 12, 3, '#192631')
-    drawPixelActor(ctx, x, y, 'down', 0, ACTOR_PALETTES[resident.palette] ?? ACTOR_PALETTES.knowledge, 1)
-    if (resident.marker) {
-      block(x - 3, y - 23, 7, 7, '#edc575')
-      block(x, y - 22, 2, 4, '#17212b')
+    if (!drawActorImage(ctx, getWorldSprite(getPresencePortrait(resident.presence)), x, y, 'down')) {
+      drawPixelActor(ctx, x, y, 'down', 0, ACTOR_PALETTES[resident.palette] ?? ACTOR_PALETTES.knowledge, 1)
     }
   }
   if (!drawn) drawPlayer()

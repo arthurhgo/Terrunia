@@ -1,3 +1,4 @@
+import { drawActorImage, getWorldSprite } from './worldSprites'
 import type { Cutscene } from '../../domain/terran/cutscenes'
 import { ACTOR_PALETTES, drawPixelActor } from './pixelActorArt'
 
@@ -112,8 +113,11 @@ export function drawCinematicFrame(
     const y = (i * 23 + 55 - pulse * 2 + 1600) % 115
     rect(ctx, ruins ? '#ad86ba' : ritual ? '#d7b1db' : victory ? '#eacb91' : '#81cbd4', x, y, 2 + i % 2, 2 + i % 2)
   }
+  if (!drawActorImage(ctx, getWorldSprite(variant === 'sigil' ? 'character.terririan.sigil' : 'character.terririan.default'),
+    ritual ? 192 : ruins ? 143 : victory ? 150 : 126, 137, ritual || victory ? 'down' : 'right', Math.floor(frame / 12) % 3)) {
   drawPixelActor(ctx, ritual ? 192 : ruins ? 143 : victory ? 150 : 126, 137, ritual || victory ? 'down' : 'right',
     Math.floor(frame / 12) % 3, ACTOR_PALETTES[variant], 2)
+  }
   if (tone === 'portal') {
     rect(ctx, '#bfe8e4', 180, 18 + pulse % 17, 5, 12)
     rect(ctx, '#98cfd8', 200, 31 + pulse % 12, 5, 16)

@@ -3,10 +3,9 @@ import { refreshQuestAvailability, createQuestProgress } from '../domain/quests/
 import { content } from '../content/catalog'
 import { getBoundSlotCapacity } from '../domain/bond/boundItems'
 import type { GameSave } from '../domain/game/types'
-import { MAX_ACTIVE_QUESTS, SLOT_OCCUPYING_QUEST_STATUSES } from '../domain/quests/questEngine'
 import { deriveCharacterStats } from '../domain/character/derivedStats'
 
-export const CURRENT_SAVE_SCHEMA = 12
+export const CURRENT_SAVE_SCHEMA = 13
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -118,6 +117,7 @@ const boundItemSchema = z.object({
     description: z.string(),
     createdAt: z.string(),
   })),
+  forging: z.object({ upgradeIds: z.array(idSchema) }).optional(),
   scars: z.array(z.object({
     id: idSchema,
     sourceId: idSchema,
@@ -285,16 +285,6 @@ export const gameSaveSchema = z.object({
       code: 'custom',
       path: ['essence', 'current'],
       message: 'A Essência acumulada deve ser menor que o limiar atual.',
-    })
-  }
-
-  const occupiedQuestSlots = Object.values(save.quests).filter((progress) =>
-    SLOT_OCCUPYING_QUEST_STATUSES.includes(progress.status as typeof SLOT_OCCUPYING_QUEST_STATUSES[number])).length
-  if (occupiedQuestSlots > MAX_ACTIVE_QUESTS) {
-    context.addIssue({
-      code: 'custom',
-      path: ['quests'],
-      message: `Um save não pode possuir mais de ${MAX_ACTIVE_QUESTS} missões em andamento.`,
     })
   }
 
@@ -764,6 +754,17 @@ const migrateV11ToV12 = (legacy: Record<string, unknown>): unknown => {
   return refreshQuestAvailability(next, content, next.updatedAt)
 }
 
+const migrateV12ToV13 = (legacy: Record<string, unknown>): unknown => {
+  const next = structuredClone(legacy) as unknown as GameSave
+  for (const quest of Object.values(content.quests)) next.quests[quest.id] ??= createQuestProgress(quest)
+  for (const npc of Object.values(content.npcs)) next.relationships[npc.id] ??= {
+    npcId: npc.id, discovered: false, affinity: 0, trust: 0, reputationFlags: [], completedQuestIds: [], dialogueFlags: [],
+  }
+  next.schemaVersion = 13; next.gameVersion = '0.10.0'; next.revision += 1
+  next.eventLog.push('SaveMigrated:12->13')
+  return refreshQuestAvailability(next, content, next.updatedAt)
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -819,6 +820,7 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
     candidate = migrateV11ToV12(candidate as Record<string, unknown>)
     version = 12
   }
+  if (version === 12) { candidate = migrateV12ToV13(candidate as Record<string, unknown>); version = 13 }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)
   }

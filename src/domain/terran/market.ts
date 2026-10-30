@@ -6,6 +6,10 @@ export const MARKET_LOCATION_ID = 'location_terran_bond_workshop' as const
 
 /** BALANCE_DRAFT: trade offers are separated by the NPC who actually sells them. */
 export const MARKET_STOCK = [
+  { npcId: 'presence_neris', itemId: 'drop_ruin_shard', price: 28 },
+  { npcId: 'presence_neris', itemId: 'drop_mycelial_fiber', price: 32 },
+  { npcId: 'presence_neris', itemId: 'drop_blackroot_core', price: 52 },
+  { npcId: 'presence_neris', itemId: 'consumable_minor_tonic', price: 18 },
   { npcId: 'presence_valmira', itemId: 'fragment_mycelial_essence', price: 180 },
   { npcId: 'presence_valmira', itemId: 'item_gem_esmeralda_crescimento', price: 260 },
   { npcId: 'presence_valmira', itemId: 'consumable_field_rune', price: 30 },
@@ -15,6 +19,7 @@ export const MARKET_STOCK = [
 ] as const
 
 export const MARKET_SERVICES = {
+  presence_neris: 'merchant',
   presence_lithwynn: 'infusion',
   presence_valmira: 'merchant',
   presence_talia: 'lapidation',

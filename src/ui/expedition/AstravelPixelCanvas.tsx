@@ -105,8 +105,8 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
     if (!ctx) return
     let raf = 0, frame = 0, previous = 0
     const sheet = new Image()
-    sheet.src = resolveAsset('character.terririan.map').path
-    sheet.onerror = () => { sheet.onerror = null; sheet.src = resolveAsset('character.terririan.map').fallback }
+    sheet.src = resolveAsset(portraitAssetId).path
+    sheet.onerror = () => { sheet.onerror = null; sheet.src = resolveAsset(portraitAssetId).fallback }
     const enemySprites: Record<string, HTMLImageElement> = {}
     for (const node of trail.nodes) {
       const encounter = node.encounterId ? content.encounters[node.encounterId] : null

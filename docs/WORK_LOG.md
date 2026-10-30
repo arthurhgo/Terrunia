@@ -1,5 +1,16 @@
 # Registro de implementação
 
+## Terran v0.10 — elenco, diálogos, missões e forja (2026-10-30)
+
+- usada a imagem escolhida do jogador como sprite na cidade, interiores e instâncias; combate e diálogo compõem a arma vinculada na mão;
+- criadas 51 aparências pixeladas distintas com registro único para sprite e retrato, incluindo Rosetta, Neris e Durnan;
+- padronizada a janela vermelha com interrogação acima dos NPCs e implementado diálogo com dois personagens e caixa inferior;
+- removido o limite de três missões do domínio, UI e validação, mantendo aceite manual, pré-requisitos e entrega;
+- adicionada Neris ao Mercado e criada Casa do Ferreiro com fachada, interior, fornalha, bigorna e Durnan residente;
+- criados três materiais, cinco receitas e dois aprimoramentos permanentes da mesma arma, revelando dois nodes pagos com Pontos de Essência;
+- criado save 13 com migração que preserva campanha e introduz os novos NPCs sem distribuir recompensas;
+- atualizadas as decisões de cânone para a autorização mais recente do criador; detalhes em `CHARACTERS_DIALOGUE_FORGE_v0.10.md`.
+
 ## Astravél v0.9 — remake de quinze combates (2026-10-30)
 
 - substituída a rota de seis marcos por chegada + 15 nós com combate, três trechos e grupos de até três inimigos;

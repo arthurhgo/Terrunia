@@ -1,4 +1,5 @@
 import { useEffect, useRef, type PointerEvent } from 'react'
+import { NpcMarker } from './NpcMarker'
 import { resolveAsset } from '../../assets/assetRegistry'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
@@ -118,8 +119,8 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
     if (!ctx) return
     let frame = 0, raf = 0, previous = 0, elapsed = 0
     const sheet = new Image()
-    sheet.src = resolveAsset('character.terririan.map').path
-    sheet.onerror = () => { sheet.onerror = null; sheet.src = resolveAsset('character.terririan.map').fallback }
+    sheet.src = resolveAsset(portraitAssetId).path
+    sheet.onerror = () => { sheet.onerror = null; sheet.src = resolveAsset(portraitAssetId).fallback }
     const keydown = (event: KeyboardEvent) => {
       if (!enabledRef.current || event.altKey || event.ctrlKey || event.metaKey) return
       const target = event.target
@@ -153,7 +154,7 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
         const button = npcButtonsRef.current.get(actor.id)
         if (!button) continue
         button.style.left = `${actor.point.x / CITY_WIDTH * 100}%`
-        button.style.top = `${(actor.point.y - 9) / CITY_HEIGHT * 100}%`
+        button.style.top = `${(actor.point.y - 17) / CITY_HEIGHT * 100}%`
       }
       let walking = false
       if (enabledRef.current) {
@@ -251,10 +252,10 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
           onClick={walkToHome} disabled={!enabled}>Base</button>
         {actors.map((actor) => <button key={actor.id} type="button" className={`pixel-city__npc ${actor.marker === '?' ? 'pixel-city__npc--guide' : ''}`}
           ref={(button) => { if (button) npcButtonsRef.current.set(actor.id, button); else npcButtonsRef.current.delete(actor.id) }}
-          style={{ left: `${actor.point.x / CITY_WIDTH * 100}%`, top: `${(actor.point.y - 9) / CITY_HEIGHT * 100}%` }}
+          style={{ left: `${actor.point.x / CITY_WIDTH * 100}%`, top: `${(actor.point.y - 17) / CITY_HEIGHT * 100}%` }}
           aria-label={`Conversar com ${actor.presence.label}`} title={actor.presence.label}
           disabled={!enabled} onClick={() => walkToActor(actor)}>
-          {actor.marker ? <span className={actor.marker === '?' ? 'pixel-city__question-mark' : undefined} aria-hidden="true">{actor.marker}</span> : null}
+          <NpcMarker state={actor.marker} />
         </button>)}
       </div>
       <div className="pixel-city__dpad" aria-label="Controle de movimento">

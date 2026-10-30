@@ -88,6 +88,7 @@ export type BoundEquipmentInstance = {
     spentEssencePoints: number
   }
   memories: BoundItemMemory[]
+  forging?: { upgradeIds: string[] }
   scars: BoundItemScar[]
   visualStage: number
   customName?: string

@@ -1,6 +1,6 @@
 # Nexo e Quest Journal — direção oficial
 
-**Status:** decisão do criador aprovada em 2026-08-12. Prevalece sobre interpretações anteriores no domínio de Nexo, Personagem e missões.
+**Status:** decisão do criador aprovada em 2026-08-12, com capacidade e representação dos NPCs atualizadas pelo criador em 2026-10-30. Prevalece sobre interpretações anteriores no domínio de Nexo, Personagem e missões.
 
 ## Nexo
 
@@ -41,7 +41,7 @@ LOCKED → AVAILABLE → OFFERED → ACTIVE → READY_TO_TURN_IN → COMPLETED
 - Quest Journal;
 - Quest Tracker;
 - destino do minimapa;
-- marcadores `!` e `✓` dos NPCs.
+- estados dos marcadores dos NPCs (oferta, entrega ou conversa), representados em jogo pela mesma janela vermelha com `?`, incluindo Rosetta; o texto acessível informa o estado da missão.
 
 Não criar listas paralelas de missões na UI.
 
@@ -53,6 +53,6 @@ O Tracker exibe apenas missões `ACTIVE` ou `READY_TO_TURN_IN` marcadas como `tr
 
 ## Capacidade global
 
-`MAX_ACTIVE_QUESTS = 3` é uma regra única do domínio. Contam apenas `ACTIVE` e `READY_TO_TURN_IN`; `OFFERED` não entra no Journal nem ocupa slot, e `COMPLETED` libera o slot. A UI deve consultar `canAcceptQuest`, mostrar `X / 3` e nunca descartar ou substituir uma missão automaticamente.
+**Decisão do criador de 2026-10-30:** não há limite de missões simultâneas. Esta direção substitui `MAX_ACTIVE_QUESTS = 3`, inclusive na validação de saves. O Journal mostra a quantidade em andamento, sem denominador nem bloqueio de capacidade. Nenhuma missão deve ser descartada ou substituída automaticamente.
 
-Provas de Clã e Classe usam o mesmo motor e a mesma capacidade. Abandono de Main Quest, Clã ou Classe permanece `OWNER_DECISION` e não é oferecido pela interface.
+Provas de Clã e Classe usam o mesmo motor, também sem limite de capacidade. Pré-requisitos, aceite explícito e entrega ao NPC correto continuam obrigatórios. As três provas necessárias ao recrutamento de Clã permanecem uma regra independente. Abandono de Main Quest, Clã ou Classe permanece `OWNER_DECISION` e não é oferecido pela interface.

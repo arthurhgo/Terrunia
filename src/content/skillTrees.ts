@@ -2,6 +2,22 @@ import type { SkillTreeNodeDefinition } from './types'
 
 export const skillTreeNodeDefinitions = [
   {
+    id: 'weapon_forged_edge', treeId: 'tree_weapon_foundation', context: 'weapon', name: 'Fio Temperado',
+    description: 'A Têmpera abre um novo refinamento: +1 Ataque.', category: 'modifier', costEssencePoints: 1,
+    requires: [{ type: 'previousNode', nodeId: 'weapon_bond_core' }, { type: 'worldFlag', flag: 'forge_tempered_weapon' }],
+    hiddenUntil: [{ type: 'worldFlag', flag: 'forge_tempered_weapon' }],
+    effects: [{ type: 'statModifier', stat: 'attackPower', operation: 'flat', value: 1 }],
+    position: { x: 12, y: 70 }, iconAssetId: 'skill.weapon.bond-core', status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'weapon_forged_memory', treeId: 'tree_weapon_foundation', context: 'weapon', name: 'Trama da Forja',
+    description: 'O acabamento micelial abre uma sinergia protetora: +1 mitigação.', category: 'synergy', costEssencePoints: 1,
+    requires: [{ type: 'previousNode', nodeId: 'weapon_forged_edge' }, { type: 'worldFlag', flag: 'forge_mycelial_finish' }],
+    hiddenUntil: [{ type: 'worldFlag', flag: 'forge_mycelial_finish' }],
+    effects: [{ type: 'statModifier', stat: 'mitigation', operation: 'flat', value: 1 }],
+    position: { x: 12, y: 53 }, iconAssetId: 'skill.weapon.bond-core', status: 'BALANCE_DRAFT',
+  },
+  {
     id: 'weapon_bond_core',
     treeId: 'tree_weapon_foundation',
     context: 'weapon',

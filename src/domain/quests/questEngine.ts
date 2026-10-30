@@ -5,16 +5,13 @@ import type { GameSave, QuestProgress } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
 import { gainCharacterXp } from '../character/attributeProgression'
 
-export const MAX_ACTIVE_QUESTS = 3
 export const SLOT_OCCUPYING_QUEST_STATUSES = ['active', 'ready_to_turn_in'] as const
 
 export const getActiveQuestCount = (save: GameSave) => Object.values(save.quests)
   .filter((progress) => SLOT_OCCUPYING_QUEST_STATUSES.includes(progress.status as typeof SLOT_OCCUPYING_QUEST_STATUSES[number])).length
 
-export const canAcceptQuest = (save: GameSave): Result<true> =>
-  getActiveQuestCount(save) < MAX_ACTIVE_QUESTS
-    ? ok(true)
-    : fail('QUEST_LIMIT_REACHED', `Você já possui ${MAX_ACTIVE_QUESTS} missões em andamento.`)
+/** No capacity limit; explicit offers and prerequisites still govern acceptance. */
+export const canAcceptQuest = (_save: GameSave): Result<true> => ok(true)
 
 export type QuestEvent =
   | { type: 'talk'; targetId: string; amount?: number }

@@ -3613,3 +3613,68 @@ code {
   .expedition-game .terran-game__hud button:is(:hover, :focus-visible) { min-width: 32px; min-height: 30px; padding: 5px; }
   .expedition-game .terran-game__hud button span { display: none; }
 }
+
+/* One readable character image and one shared dialogue/interaction language. */
+.equipped-character { position: relative; display: block; width: 100%; aspect-ratio: 1; isolation: isolate; }
+.equipped-character__body { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; z-index: 1; }
+.equipped-character__weapon { position: absolute; z-index: 2; left: var(--hand-x); top: var(--hand-y); width: var(--weapon-size); height: auto; aspect-ratio: 1; object-fit: contain; image-rendering: pixelated; transform: translate(calc(-1 * var(--handle-x)), calc(-1 * var(--handle-y))) rotate(var(--weapon-angle)); transform-origin: var(--handle-x) var(--handle-y); pointer-events: none; }
+.equipped-character__weapon[data-forged="true"] { filter: drop-shadow(0 0 3px #f6c371); }
+.pixel-city__npc, .pixel-interior__npc { width: 32px; height: 34px; }
+.pixel-city__npc .npc-question-bubble, .pixel-interior__npc .npc-question-bubble {
+  position: absolute; left: 50%; right: auto; top: -18px; transform: translateX(-50%); display: grid;
+  place-items: center; width: 19px; height: 19px; padding: 0; border: 2px solid #efb7a0;
+  background: #ac303d; color: #fff1d1; box-shadow: 0 0 0 1px #351c26, 1px 3px 0 #09121bbb;
+  font: bold 15px/1 Georgia, serif;
+}
+.npc-question-bubble::after { content: ''; position: absolute; left: 6px; bottom: -5px; width: 4px; height: 4px; background: #ac303d; border-right: 1px solid #efb7a0; border-bottom: 1px solid #efb7a0; }
+.pixel-city__npc:hover .npc-question-bubble, .pixel-interior__npc:hover .npc-question-bubble { background: #cf4950; border-color: #ffe0ac; }
+.vn-overlay { position: fixed; inset: 0; z-index: 250; display: flex; justify-content: center; align-items: flex-end; padding: 18px; background: linear-gradient(0deg,#020914d9,transparent 85%); }
+.vn-dialog { display: flex; flex-direction: column; width: min(1050px,100%); max-height: calc(100dvh - 28px); outline: none; }
+.vn-cast { position: relative; display: flex; justify-content: space-between; flex: 0 0 clamp(110px,24vh,215px); margin: 0 8%; pointer-events: none; }
+.vn-cast > div { position: relative; width: min(240px,36vw); overflow: hidden; }
+.vn-cast__npc > img, .vn-cast__player > .equipped-character { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: clamp(150px,24vh,240px); height: clamp(150px,24vh,240px); image-rendering: pixelated; filter: drop-shadow(0 1px 6px #020914); }
+.vn-cast__player { opacity: .85; }
+.vn-cast > div > span { position: absolute; bottom: 0; left: 4px; right: 4px; padding: 4px 12px; border: 1px solid #ad8b55; background: #102c3ae8; color: #ffe0a1; font: .78rem var(--display); text-align: center; z-index: 4; }
+.vn-cast__player > span { color: #d5e7e2; }
+.vn-textbox { display: flex; flex-direction: column; min-height: 0; border: 3px solid #ac864e; background: #091724f5; box-shadow: inset 0 0 0 1px #e3b777, 0 12px 60px #000b; }
+.vn-textbox > header { display: flex; justify-content: space-between; align-items: center; padding: 9px 16px; border-bottom: 1px solid #816741; }
+.vn-textbox h2 { margin: 0; color: #f7d59e; font: 1.1rem var(--display); }
+.vn-textbox .eyebrow { display: block; color: #81bdc8; font-size: .55rem; margin-bottom: 3px; }
+.vn-close { flex: 0 0 auto; width: 30px; height: 28px; border: 1px solid #b38c54; color: #f5d8a4; background: #1a2937; font-size: 1.2rem; cursor: pointer; }
+.vn-speech { display: flex; gap: 15px; align-items: center; padding: 12px 17px; color: #261f1a; background: #bca17c; border-bottom: 2px solid #775b39; }
+.vn-speech p { margin: 0; flex: 1; font: .9rem/1.55 Georgia,serif; }
+.vn-speech button { display: grid; justify-items: center; border: none; padding: 4px; background: transparent; color: #473321; cursor: pointer; }
+.vn-speech small { font-size: .58rem; }
+.vn-details { min-height: 0; max-height: 32vh; overflow-y: auto; padding: 10px 16px; color: #d8ddcf; scrollbar-color: #9a8054 #102333; }
+.vn-details .terran-drawer__section { padding: 0; }
+.vn-details > .rosetta-guide__content { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0; max-height: none; }
+.vn-details .rosetta-guide__content > :last-child { grid-column: 1 / -1; }
+.vn-textbox > footer { display: flex; justify-content: flex-end; gap: 10px; padding: 10px 16px; border-top: 1px solid #715f40; }
+.vn-textbox > footer > button { border: 1px solid #bd985f; color: #ffe3ae; background: #263e43; padding: 8px 16px; cursor: pointer; }
+.vn-dialog button:focus-visible, .vn-dialog a:focus-visible { outline: 2px solid #b6ead6; outline-offset: 2px; }
+.terran-npc-avatar.asset-image { width: 42px; height: 42px; object-fit: contain; image-rendering: pixelated; }
+.forge-panel { display: grid; gap: 10px; }
+.forge-panel > p { margin: 0; font-size: .76rem; color: #d8ccaa; }
+.forge-recipe { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding: 12px; border: 1px solid #66543f; background: #122331; }
+.forge-recipe img { width: 40px; height: 40px; image-rendering: pixelated; }
+.forge-recipe h3 { margin: 0; color: #f5d39b; font-size: .84rem; }
+.forge-recipe p { margin: 5px 0; font-size: .76rem; line-height: 1.4; }
+.forge-recipe small { display: block; font-size: .68rem; color: #acc0b4; }
+.forge-recipe .forge-recipe__requirement { color: #cc9b89; margin-top: 4px; }
+.forge-recipe button { padding: 8px 12px; background: #304b48; color: #f6dfb3; border: 1px solid #be975e; cursor: pointer; }
+.forge-recipe button:disabled { opacity: .45; cursor: default; }
+@media(max-width:600px) {
+  .vn-overlay { padding: 7px; }
+  .vn-cast { flex-basis: 120px; margin: 0 3%; }
+  .vn-cast > div { width: 40vw; }
+  .vn-cast__npc > img, .vn-cast__player > .equipped-character { width: 150px; height: 150px; }
+  .vn-textbox > header { padding: 7px 10px; }
+  .vn-textbox h2 { font-size: .94rem; }
+  .vn-speech { padding: 9px 10px; }
+  .vn-speech p { font-size: .8rem; }
+  .vn-details { padding: 8px; max-height: 34vh; }
+  .vn-details > .rosetta-guide__content { display: grid; grid-template-columns: 1fr; }
+  .forge-recipe { grid-template-columns: 28px 1fr; padding: 8px; gap: 8px; }
+  .forge-recipe img { width: 28px; height: 28px; }
+  .forge-recipe button { grid-column: 2; justify-self: end; }
+}

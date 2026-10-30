@@ -35,7 +35,7 @@ describe('Seis moradores e contratos de rua — CONTENT_DRAFT', () => {
     delete old.quests.side_street_arlen
     delete old.relationships.npc_street_arlen
     const updated = migrateAndValidateSave(old)
-    expect(updated.schemaVersion).toBe(12)
+    expect(updated.schemaVersion).toBe(13)
     expect(updated.wallet.gold).toBe(101)
     expect(updated.quests.vs_astravel_first_contact.status).toBe('completed')
     expect(updated.quests.side_street_arlen.status).toBe('available')

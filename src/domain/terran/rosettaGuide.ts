@@ -1,7 +1,7 @@
 import type { ContentCatalog } from '../../content/catalog'
 import type { QuestDefinition } from '../../content/types'
 import type { GameSave } from '../game/types'
-import { MAX_ACTIVE_QUESTS, getActiveQuestCount } from '../quests/questEngine'
+import { getActiveQuestCount } from '../quests/questEngine'
 import { streetNpcPlacements } from '../../content/streetNpcs'
 
 export type RosettaQuestHint = {
@@ -33,7 +33,7 @@ const hint = (quest: QuestDefinition, npcId: string, catalog: ContentCatalog, in
 /** Read-only guide: only the actual quest journal decides eligibility and next objectives. */
 export function getRosettaGuidance(save: GameSave, catalog: ContentCatalog) {
   const activeCount = getActiveQuestCount(save)
-  const canReceive = activeCount < MAX_ACTIVE_QUESTS
+  const canReceive = true
   const definitions = Object.values(catalog.quests)
   const ready = definitions.filter((quest) => save.quests[quest.id]?.status === 'ready_to_turn_in')
   const active = definitions.filter((quest) => save.quests[quest.id]?.status === 'active')
@@ -59,7 +59,7 @@ export function getRosettaGuidance(save: GameSave, catalog: ContentCatalog) {
     ready: readyHints,
     inProgress: activeHints,
     activeCount,
-    maxActive: MAX_ACTIVE_QUESTS,
+    maxActive: null,
     canReceive,
   }
 }

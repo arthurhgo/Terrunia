@@ -15,7 +15,7 @@ const hypotheticalStreetQuestActor: CityActor = {
   id: 'future_street_quest_actor',
   locationId: 'location_terran_portal_plaza',
   presence: { id: 'future_street_quest_actor', label: 'Visitante', presence: 'visitor', roleLabel: 'Missão futura' },
-  point: { x: 192, y: 192 }, palette: 'exploration', variant: 0, marker: '!',
+  point: { x: 192, y: 170 }, palette: 'exploration', variant: 0, marker: '!',
 }
 
 describe('vida ambiental dos moradores de Terran', () => {

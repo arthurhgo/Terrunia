@@ -1,8 +1,8 @@
+import { DialogueWindow } from './DialogueWindow'
 import { BedDouble, Check, Coins, HeartPulse, ShoppingBasket, Archive, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react'
 import { content } from '../../content/catalog'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import type { GameSave } from '../../domain/game/types'
-import { getActiveQuestCount, MAX_ACTIVE_QUESTS } from '../../domain/quests/questEngine'
 import { PLAYER_HOME_FLAG, SYLWEN_STOCK } from '../../domain/terran/services'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
@@ -141,8 +141,7 @@ export function QuestNpcPanel({ save, questId, onClose }: { save: GameSave; ques
   const progress = save.quests[questId]
   if (!definition || !progress) return null
   const npc = content.npcs[definition.giverNpcId]
-  const full = getActiveQuestCount(save) >= MAX_ACTIVE_QUESTS
-  return <section className="terran-drawer__section terran-quest-dialog" aria-label={`Conversa com ${npc.name}`}>
+  return <DialogueWindow save={save} title={npc.name} portraitAssetId={npc.portraitAssetId} lines={npc.dialogue} onClose={onClose}><section className="terran-drawer__section terran-quest-dialog" aria-label={`Conversa com ${npc.name}`}>
     <button type="button" onClick={onClose}>← Voltar ao local</button>
     <div className="terran-quest-dialog__npc"><AssetImage assetId={npc.portraitAssetId} /><div><strong>{npc.name}</strong><small>{npc.title}</small></div></div>
     <p>{npc.dialogue[0]}</p>
@@ -153,12 +152,11 @@ export function QuestNpcPanel({ save, questId, onClose }: { save: GameSave; ques
     {progress.status === 'available' && <button type="button" className="terran-service-action" onClick={() => offer(questId)}>Ouvir a oferta</button>}
     {progress.status === 'offered' && <div className="terran-quest-dialog__actions">
       <button type="button" onClick={() => { decline(questId); onClose() }}>Agora não</button>
-      <button type="button" disabled={full} onClick={() => { accept(questId); onClose() }}>Aceitar missão</button>
-      {full && <small>Limite de {MAX_ACTIVE_QUESTS} missões ativas.</small>}
+      <button type="button" onClick={() => { accept(questId); onClose() }}>Aceitar missão</button>
     </div>}
     {progress.status === 'ready_to_turn_in' && <button type="button" className="terran-service-action" onClick={() => { complete(questId, definition.turnInNpcId); onClose() }}><Check size={17} /> Entregar missão</button>}
     {progress.status === 'active' && (definition.category === 'main' && definition.objectives.some((objective) => objective.type === 'interact')
       ? <button type="button" className="terran-service-action" onClick={() => perform(questId)}>Realizar objetivo no local</button>
       : <p>Missão em andamento. Realize o objetivo antes da entrega.</p>)}
-  </section>
+  </section></DialogueWindow>
 }

@@ -73,8 +73,8 @@ export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, po
     const ctx = canvasRef.current?.getContext('2d')
     if (!ctx) return
     const sheet = new Image()
-    sheet.src = resolveAsset('character.terririan.map').path
-    sheet.onerror = () => { sheet.onerror = null; sheet.src = resolveAsset('character.terririan.map').fallback }
+    sheet.src = resolveAsset(portraitAssetId).path
+    sheet.onerror = () => { sheet.onerror = null; sheet.src = resolveAsset(portraitAssetId).fallback }
     let raf = 0, frame = 0, previous = 0
     const keydown = (event: KeyboardEvent) => {
       if (!enabledRef.current || event.altKey || event.metaKey || event.ctrlKey) return

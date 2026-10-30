@@ -1,4 +1,5 @@
 import { useEffect, useRef, type PointerEvent } from 'react'
+import { NpcMarker } from './NpcMarker'
 import { resolveAsset } from '../../assets/assetRegistry'
 import { getRoomName, roomFurniture, type RoomFurniture, type TerranInteriorId, PLAYER_HOME_INTERIOR_ID } from './roomContent'
 import type { TerranNpcPresence } from '../../content/types'
@@ -100,8 +101,8 @@ export function PixelInteriorCanvas({
     const ctx = canvasRef.current?.getContext('2d')
     if (!ctx) return
     const sprite = new Image()
-    sprite.src = resolveAsset('character.terririan.map').path
-    sprite.onerror = () => { sprite.onerror = null; sprite.src = resolveAsset('character.terririan.map').fallback }
+    sprite.src = resolveAsset(save.character.portraitAssetId).path
+    sprite.onerror = () => { sprite.onerror = null; sprite.src = resolveAsset(save.character.portraitAssetId).fallback }
     let frame = 0, raf = 0, last = 0
     const keydown = (event: KeyboardEvent) => {
       if (!enabledRef.current || event.altKey || event.ctrlKey || event.metaKey) return
@@ -214,9 +215,9 @@ export function PixelInteriorCanvas({
           className="pixel-interior__npc"
           title={resident.presence.label}
           aria-label={`Falar com ${resident.presence.label} dentro do local`}
-          style={{ left: resident.position.x / 384 * 100 + '%', top: (resident.position.y - 9) / 256 * 100 + '%' }}
+          style={{ left: resident.position.x / 384 * 100 + '%', top: (resident.position.y - 17) / 256 * 100 + '%' }}
           onClick={() => walkTo({ x: resident.position.x, y: resident.position.y + 10 }, resident.presence.id)}>
-          {resident.marker ? <span>{resident.marker}</span> : null}
+          <NpcMarker state={resident.marker} />
         </button>)}
       {furniture.map((item) => <button type="button" key={item.id}
         className="pixel-interior__furniture" disabled={!enabled}
