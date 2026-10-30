@@ -101,9 +101,12 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('complementary', { name: 'Status permanente do personagem' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Local' }))
-    expect(screen.getByRole('heading', { name: 'Instâncias de Combate' })).toBeInTheDocument()
-    expect(screen.getByRole('group', { name: 'Filtrar instâncias de combate' })).toBeInTheDocument()
-    expect(screen.getByText('Modo Ondas do Portal')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Terran' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Mapa cartográfico do continente de Terran/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Selecionar Terran no mapa' })).toBeInTheDocument()
+    expect(screen.getAllByLabelText('Região não descoberta')).toHaveLength(2)
+    expect(screen.queryByText('Modo Ondas do Portal')).not.toBeInTheDocument()
+    expect(screen.queryByText('Colosso Micélio')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('link', { name: 'Terran' }))
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Inventário e Nexo' }))
