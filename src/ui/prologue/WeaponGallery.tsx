@@ -87,7 +87,8 @@ export function WeaponGallery({ save, selectedId, onSelect }: Props) {
           <div className={`weapon-gallery__clan ${clan.combatBonus === strongestBonus && strongestBonus > 0 ? 'is-affine' : ''}`} key={clan.id}>
             <div><strong>{clan.name}</strong><small>{clan.bonusLabel}</small></div>
             <span>{clan.combatBonus > 0 ? `+${clan.combatBonus} ataque ${inspected.powerType === 'magical' ? 'mágico' : 'físico'}` : 'Sem bônus direto de ataque'}</span>
-            <small>{clan.classes.map((classe) => `${classe.name}: ${classe.role}`).join(' · ')}</small>
+            <small className="weapon-gallery__principle">Padrão do Clã: {clan.philosophy}</small>
+            <small>Trilhas de classe: {clan.classes.map((classe) => `${classe.name}: ${classe.role}`).join(' · ')}</small>
           </div>)}
       </div>
     </article>
