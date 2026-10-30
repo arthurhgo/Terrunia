@@ -121,7 +121,7 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('region', { name: 'Cenário contínuo de Terran' })).toBe(scene)
     fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Inventário' }))
-    expect(screen.getByRole('complementary', { name: 'Painel lateral: Inventário e Arsenal' })).toBeInTheDocument()
+    expect(screen.getByRole('complementary', { name: 'Painel lateral: Inventário' })).toBeInTheDocument()
     expect(screen.getByRole('complementary', { name: 'Status permanente do personagem' })).toBe(status)
     expect(screen.getByRole('region', { name: 'Cenário contínuo de Terran' })).toBe(scene)
     expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
