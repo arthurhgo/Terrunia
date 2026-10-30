@@ -2378,3 +2378,367 @@ code {
   .terran-game__right-rail button,
   .terran-game__right-rail button span { transition: none; }
 }
+
+/* TERRÚNIA v0.6 — classic pixel HUD / reference-driven, but all values are data-backed.
+   Four left navigation tabs, centered game, permanently attached character info at right. */
+.terran-game__layout,
+.terran-game__layout.has-drawer {
+  --terran-hud-width: 288px;
+  --terran-rail-width: 46px;
+  display: flex;
+  position: relative;
+  width: 100%;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  padding-left: 0;
+  padding-right: calc(var(--terran-hud-width) - var(--terran-rail-width));
+  box-sizing: border-box;
+  gap: 0;
+}
+.terran-game__frame {
+  --terran-canvas-width: min(900px, calc((100dvh - 165px) * 1.5), calc(100vw - 370px));
+  position: relative;
+  flex: 0 0 auto;
+  display: block;
+  width: var(--terran-canvas-width);
+  max-width: 100%;
+  margin: 0;
+  aspect-ratio: 384 / 256;
+}
+.terran-game__stage,
+.terran-game__layout.has-drawer .terran-game__stage {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  aspect-ratio: 384 / 256;
+  box-sizing: border-box;
+  margin: 0;
+}
+.terran-game__hud {
+  position: absolute;
+  top: 0;
+  right: 100%;
+  left: auto;
+  width: var(--terran-rail-width);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 3px;
+  z-index: 40;
+}
+.terran-game__hud button {
+  flex: 0 0 44px;
+  min-height: 44px;
+  width: 44px;
+  min-width: 44px;
+  margin-left: auto;
+  padding: 9px 11px;
+  font-family: var(--display);
+  font-size: .67rem;
+}
+.terran-game__hud button:is(:hover,:focus-visible) {
+  width: 162px;
+}
+.terran-game__right-rail { display: none; }
+
+/* The contextual drawer is temporary and overlays the left of the map.
+   It NEVER replaces the permanent character HUD and never alters map geometry. */
+.terran-game__drawer,
+.terran-game__layout.has-drawer .terran-game__drawer {
+  position: absolute;
+  z-index: 35;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: auto;
+  width: min(390px, 92%);
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+  border: 2px solid #b28849;
+  background: #081622f5;
+  box-shadow: 8px 0 24px #03080ed9;
+}
+
+/* Right HUD sits against the canvas with ornamental, pixel-stepped frames. */
+.terran-character-hud {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  z-index: 20;
+  width: var(--terran-hud-width);
+  height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #09121feF;
+  border: 2px solid #bd8d49;
+  border-left-width: 3px;
+  color: #e6d6b3;
+  font-family: var(--display);
+  box-shadow: inset 0 0 0 2px #2b3444, 4px 4px 0 #050b16;
+  scrollbar-width: thin;
+  scrollbar-color: #927147 #0b1724;
+}
+.terran-character-hud__header {
+  padding: 9px 10px 8px;
+  background: linear-gradient(145deg, #142c3d, #0b1829 65%);
+  border-bottom: 2px solid #a47c45;
+}
+.terran-character-hud__header .eyebrow {
+  font-size: .59rem;
+  letter-spacing: .16em;
+  color: #d8a958;
+}
+.terran-character-hud__header h2 {
+  margin: 3px 0 9px;
+  color: #f6d99a;
+  text-shadow: 1px 2px 0 #31251c;
+  letter-spacing: .09em;
+  font-size: .98rem;
+  line-height: 1.1;
+}
+.terran-character-hud__identity {
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+}
+.terran-character-hud__portrait {
+  position: relative;
+  width: 66px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border: 2px ridge #c79a50;
+  background: #172c39;
+  box-shadow: inset 0 0 0 3px #0a141e;
+}
+.terran-character-hud__portrait img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.terran-character-hud__portrait span {
+  position: absolute;
+  right: -3px;
+  bottom: -4px;
+  padding: 2px 4px;
+  font-size: .62rem;
+  color: #fff0be;
+  background: #435371;
+  border: 1px solid #c79a50;
+}
+.terran-character-hud__identity > div:last-child {min-width: 0;}
+.terran-character-hud__identity strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #f0d09b;
+  font-size: .84rem;
+}
+.terran-character-hud__identity small {
+  display: block;
+  margin-top: 3px;
+  font-size: .58rem;
+  line-height: 1.25;
+  color: #9fb7c0;
+}
+.terran-character-hud__identity p {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 6px 0 0;
+  font-size: .72rem;
+  color: #efc977;
+}
+.terran-character-hud__section {
+  padding: 9px;
+  border-bottom: 1px solid #6c5736;
+}
+.terran-character-hud__section .progress {
+  margin-bottom: 5px;
+}
+.terran-character-hud__section .progress__labels {
+  font-size: .66rem;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+.terran-character-hud__section .progress__track {
+  height: 9px;
+  border: 1px solid #65512d;
+  background: #101824;
+}
+.terran-character-hud__essence {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 7px 0 0;
+  font-size: .64rem;
+  color: #9ce1e0;
+}
+.terran-character-hud__section-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #8d7047;
+  color: #e8c27d;
+  font-size: .72rem;
+  letter-spacing: .09em;
+}
+.terran-character-hud__section-heading span {
+  margin-left: auto;
+  color: #b8dcd5;
+  font-size: .65rem;
+}
+.terran-character-hud__slots {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 3px;
+}
+.terran-character-hud__slot {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 2px 3px;
+  border: 1px solid #81613a;
+  background: #111927;
+  box-shadow: inset 0 0 0 1px #273747;
+}
+.terran-character-hud__slot.is-bound {
+  border-color: #cfad67;
+  background: #1d2d3b;
+}
+.terran-character-hud__slot > span {
+  align-self: stretch;
+  overflow: hidden;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: .53rem;
+  color: #e9c47c;
+}
+.terran-character-hud__slot-art {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 38px;
+  margin: 3px 0;
+  background: #09141f;
+  border: 1px solid #384050;
+}
+.terran-character-hud__slot-art img {
+  width: 31px;
+  height: 31px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.terran-character-hud__slot small {font-size: .56rem; color: #9fb3bd;}
+.terran-character-hud__attributes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+}
+.terran-character-hud__attributes > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 6px;
+  border: 1px solid #526073;
+  background: #1b2b42;
+  font-size: .66rem;
+}
+.terran-character-hud__attributes span {color: #e6d8a7;}
+.terran-character-hud__attributes strong {color: #f5daa1;}
+.terran-character-hud__combat {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 6px;
+}
+.terran-character-hud__combat > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  background: #284030;
+  border: 1px solid #64865b;
+  color: #c6e2c0;
+  font-size: .62rem;
+}
+.terran-character-hud__combat strong {
+  margin-left: auto;
+  color: #f7d39a;
+}
+.terran-character-hud__note {
+  margin: auto 0 0;
+  padding: 8px;
+  font-size: .58rem;
+  line-height: 1.4;
+  text-align: center;
+  color: #9eacb5;
+}
+/* Keep the permanent character HUD visible, even when Local/Inventory/Quests open. */
+@media(max-width: 1120px) {
+  .terran-game__layout, .terran-game__layout.has-drawer {
+    --terran-hud-width: 248px;
+    --terran-rail-width: 44px;
+  }
+  .terran-game__frame {
+    --terran-canvas-width: min(calc((100dvh - 166px)*1.5), calc(100vw - 306px));
+  }
+  .terran-character-hud__header {padding: 7px;}
+  .terran-character-hud__section {padding: 7px;}
+  .terran-character-hud__slots {gap: 2px;}
+  .terran-character-hud__slot > span {font-size: .48rem;}
+}
+@media(max-width: 720px) {
+  .terran-game__layout, .terran-game__layout.has-drawer {
+    display: block;
+    padding: 0;
+  }
+  .terran-game__frame {
+    --terran-canvas-width: min(calc(100vw - 50px), calc((100dvh - 155px)*1.5));
+    width: var(--terran-canvas-width);
+    max-width: calc(100vw - 50px);
+    margin: 0 0 0 44px;
+  }
+  .terran-game__hud {width: 44px;}
+  .terran-character-hud {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    margin-top: 7px;
+    overflow: visible;
+  }
+  .terran-character-hud__slots {grid-template-columns: repeat(5,minmax(0,1fr));}
+  .terran-game__drawer, .terran-game__layout.has-drawer .terran-game__drawer {
+    top: 0;
+    bottom: auto;
+    left: 0;
+    right: auto;
+    width: min(90%, 390px);
+    height: 100%;
+    max-height: 100%;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .terran-game__hud button {transition: none;}
+}
