@@ -105,7 +105,17 @@ export function drawTerranInterior(
   // Furniture silhouettes and hit targets share their IDs and positions.
   for (const item of roomFurniture[locationId]) {
     const { x, y } = item.point
-    if (item.behavior === 'rest') {
+    if (item.behavior === 'archive') {
+      block(x - 21, y - 33, 42, 36, '#2b252b')
+      block(x - 18, y - 30, 36, 31, '#835c39')
+      for (let shelf = 0; shelf < 3; shelf++) {
+        for (let book = 0; book < 6; book++) {
+          const spine = ['#cc975e', '#557e8e', '#9a617c', '#628464'][((book + shelf * 3) % 4)]
+          block(x - 15 + book * 5, y - 27 + shelf * 10, 4, 8, spine)
+        }
+        block(x - 18, y - 19 + shelf * 10, 36, 2, '#d1a46a')
+      }
+    } else if (item.behavior === 'rest') {
       block(x - 23, y - 16, 46, 21, '#4c3a32')
       block(x - 20, y - 14, 40, 16, '#49748e')
       block(x - 17, y - 12, 13, 8, '#f0e6c9')

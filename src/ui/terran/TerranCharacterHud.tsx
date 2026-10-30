@@ -1,6 +1,6 @@
-import { Coins, Gem, Shield, Sparkles, Swords } from 'lucide-react'
+import { ChevronDown, Coins, Gem, Shield, Shirt, Sparkles, Sword, Swords, Watch } from 'lucide-react'
+import { useState } from 'react'
 import { content } from '../../content/catalog'
-import { boundSlotPreviewAssetIds } from '../../assets/assetRegistry'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import { BOUND_SLOTS, BOUND_SLOT_LABELS } from '../../domain/shared/types'
 import type { GameSave } from '../../domain/game/types'
@@ -23,9 +23,12 @@ const attributeFullNames = {
   spirit: 'Espírito',
 } as const
 
+const emptySlotIcons = { weapon: Sword, shield: Shield, armor: Shirt, necklace: Gem, bracelet: Watch } as const
+
 /** Fixed, read-only classic RPG HUD. All numerical values come from the actual save. */
 export function TerranCharacterHud({ save }: { save: GameSave }) {
   const { character, essence } = save
+  const [attributesExpanded, setAttributesExpanded] = useState(true)
   const derived = deriveCharacterStats(save, content)
   return <aside className="terran-character-hud" aria-label="Status permanente do personagem">
     <header className="terran-character-hud__header">
@@ -59,13 +62,17 @@ export function TerranCharacterHud({ save }: { save: GameSave }) {
           const id = character.bondedEquipment[slot]
           const instance = id ? save.boundItems[id] : null
           const definition = instance ? content.boundItemBases[instance.baseItemId] : null
+          const EmptyIcon = emptySlotIcons[slot]
           return <div className={`terran-character-hud__slot ${instance ? 'is-bound' : 'is-empty'}`} key={slot}
             title={`${BOUND_SLOT_LABELS[slot]} · ${definition?.name ?? 'Não vinculado'}`}>
             <span>{BOUND_SLOT_LABELS[slot]}</span>
             <div className="terran-character-hud__slot-art">
-              <AssetImage assetId={instance && definition
-                ? definition.assetIdByGrade[instance.grade] ?? definition.assetIdByGrade[1] ?? boundSlotPreviewAssetIds[slot]
-                : boundSlotPreviewAssetIds[slot]} alt={definition?.name ?? BOUND_SLOT_LABELS[slot]} />
+              {instance && definition
+                ? <AssetImage assetId={definition.assetIdByGrade[instance.grade] ?? definition.assetIdByGrade[1] ?? ''}
+                    alt={definition.name} />
+                : <span className="terran-character-hud__empty-icon" aria-hidden="true">
+                    <EmptyIcon size={26} strokeWidth={1.7} />
+                  </span>}
             </div>
             <small>{instance ? `G${instance.grade}` : 'Vazio'}</small>
           </div>
@@ -74,7 +81,13 @@ export function TerranCharacterHud({ save }: { save: GameSave }) {
     </section>
 
     <section className="terran-character-hud__section" aria-label="Atributos e combate">
-      <div className="terran-character-hud__section-heading"><Shield size={14} aria-hidden="true" /> ATRIBUTOS</div>
+      <button className="terran-character-hud__section-heading terran-character-hud__toggle" type="button"
+        aria-expanded={attributesExpanded} aria-controls="terran-character-attributes"
+        onClick={() => setAttributesExpanded((expanded) => !expanded)}>
+        <Shield size={14} aria-hidden="true" /> ATRIBUTOS
+        <ChevronDown size={16} aria-hidden="true" className={attributesExpanded ? 'is-expanded' : ''} />
+      </button>
+      {attributesExpanded && <div id="terran-character-attributes" className="terran-character-hud__details">
       <div className="terran-character-hud__attributes">
         {Object.entries(character.attributes).map(([key, value]) => {
           const id = key as keyof typeof attributeLabels
@@ -88,7 +101,7 @@ export function TerranCharacterHud({ save }: { save: GameSave }) {
         <span><Swords size={13} aria-hidden="true" /> Ataque <strong>{derived.primaryAttack.value}</strong></span>
         <span><Shield size={13} aria-hidden="true" /> Defesa <strong>{derived.defense.value}</strong></span>
       </div>
+      </div>}
     </section>
-    <p className="terran-character-hud__note">Os cinco Vínculos evoluem com o Terrírian.</p>
   </aside>
 }

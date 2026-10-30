@@ -34,6 +34,11 @@ describe('Casa do Terrírian e interiores temáticos', () => {
       expect(roomFurniture[id].some((item) => item.behavior === 'services')).toBe(true)
       expect(roomFurniture[id].every((item) => isInteriorWalkable(item.point))).toBe(true)
     }
+    const shelf = roomFurniture.location_terran_eldamar_house.find((item) => item.id === 'eldamar_archive')
+    expect(shelf?.behavior).toBe('archive')
+    expect(shelf && isInteriorWalkable(shelf.point, 'location_terran_eldamar_house')).toBe(true)
+    expect(Object.entries(roomFurniture).filter(([, items]) =>
+      items.some((item) => item.behavior === 'archive')).map(([id]) => id)).toEqual(['location_terran_eldamar_house'])
     expect(roomFurniture[PLAYER_HOME_INTERIOR_ID].some((item) => item.behavior === 'rest')).toBe(true)
     expect(roomFurniture[PLAYER_HOME_INTERIOR_ID].some((item) => item.behavior === 'inspect')).toBe(true)
   })

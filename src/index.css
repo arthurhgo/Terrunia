@@ -2742,3 +2742,124 @@ code {
 @media(prefers-reduced-motion:reduce) {
   .terran-game__hud button {transition: none;}
 }
+
+/* Terran UI v0.7: expanding left rail must grow AWAY from the canvas.
+   Auto margins on oversized flex items resolve to zero; flex-end keeps
+   their RIGHT edge at the canvas border even when wider than the rail. */
+.terran-game__hud {
+  align-items: flex-end;
+  overflow: visible;
+}
+.terran-game__hud button,
+.terran-game__hud button:is(:hover,:focus-visible) {
+  align-self: flex-end;
+  margin: 0;
+  position: relative;
+  left: auto;
+  right: 0;
+  max-width: none;
+  flex-shrink: 0;
+}
+.terran-game__hud button:is(:hover,:focus-visible) { width: 166px; }
+.terran-game__hud button:is(:hover,:focus-visible) span { visibility: visible; opacity: 1; }
+.terran-character-hud__slot.is-empty {
+  border-color: #545862;
+  background: #151a22;
+  box-shadow: inset 0 0 0 1px #272b32;
+}
+.terran-character-hud__slot.is-empty > span,
+.terran-character-hud__slot.is-empty small { color: #8a8f96; }
+.terran-character-hud__slot.is-empty .terran-character-hud__slot-art {
+  background: #11151b;
+  border-color: #363d43;
+}
+.terran-character-hud__empty-icon {
+  display: grid;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  color: #737985;
+  opacity: .62;
+  filter: grayscale(1);
+}
+.terran-character-hud__toggle {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #8d7047;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--display);
+}
+.terran-character-hud__toggle:hover,
+.terran-character-hud__toggle:focus-visible {
+  color: #fff1bd;
+  outline: 1px solid #bc965d;
+  outline-offset: 2px;
+}
+.terran-character-hud__toggle svg:last-child {
+  margin-left: auto;
+  transition: transform .18s steps(4,end);
+  transform: rotate(-90deg);
+}
+.terran-character-hud__toggle svg:last-child.is-expanded { transform: rotate(0deg); }
+.terran-character-hud__details { display: grid; gap: 2px; }
+.eldamar-records { display: grid; gap: 11px; color: #e2d4b4; }
+.eldamar-records__intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: .75rem;
+  line-height: 1.5;
+  color: #b5c6c6;
+}
+.eldamar-records__intro svg { flex: 0 0 auto; color: #dab679; }
+.eldamar-records__tabs {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+}
+.eldamar-records__tabs button {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: 7px 3px;
+  color: #d9c098;
+  font-family: var(--display);
+  font-size: .61rem;
+  background: #152635;
+  border: 1px solid #816941;
+  cursor: pointer;
+}
+.eldamar-records__tabs button.active { background: #3d342a; border-color: #dbb778; color: #ffe5af; }
+.eldamar-records__manual,
+.eldamar-records__foundations { display: grid; gap: 8px; }
+.eldamar-records h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 3px 0 0;
+  font-size: .84rem;
+  color: #ecd5a0;
+  font-family: var(--display);
+}
+.eldamar-records details {
+  border: 1px solid #68583e;
+  padding: 8px;
+  background: #101d2a;
+  font-size: .72rem;
+}
+.eldamar-records summary { cursor: pointer; color: #f0ce92; font-weight: 600; }
+.eldamar-records details p { margin: 9px 0 1px; color: #c7d0cc; line-height: 1.55; }
+.eldamar-records__foundation-list { display: grid; gap: 7px; margin-top: 8px; }
+.eldamar-records__foundation-list article { display: grid; gap: 3px; padding: 6px; border-left: 2px solid #876a4c; background: #1d2a39; }
+.eldamar-records__foundation-list strong { color: #edd09f; }
+.eldamar-records__foundation-list small { color: #95b5bf; }
+@media(max-width:720px) {
+  .terran-game__hud { align-items: flex-end; }
+  .terran-game__hud button:is(:hover,:focus-visible) { width: 142px; }
+  .eldamar-records__tabs {grid-template-columns: 1fr;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .terran-character-hud__toggle svg:last-child { transition: none; }
+}
