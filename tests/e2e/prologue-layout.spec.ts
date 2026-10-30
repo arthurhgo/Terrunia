@@ -72,4 +72,29 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
     expect(equipped.y + equipped.height).toBeGreaterThan(hero.y + hero.height * .3)
     expect(placement.animationName).toBe('none')
   }
+
+  // The Long Sword has its own smaller silhouette and stays BEHIND the hand,
+  // so the character's fist visually covers the weapon handle.
+  await page.getByRole('button', { name: 'Escolher Espada Longa' }).click()
+  const sword = characterPreview.getByRole('img', { name: 'Espada Longa na mão do personagem (prévia)' })
+  await expect(sword).toBeVisible()
+  const handRig = await characterPreview.evaluate((root) => {
+    const actor = root.querySelector('.prologue-hero-preview__actor')!
+    const hero = root.querySelector('.prologue-hero-preview__character')!
+    const weapon = root.querySelector('.prologue-hero-preview__equipped-weapon')!
+    const style = getComputedStyle(weapon)
+    return {
+      ratio: weapon.getBoundingClientRect().width / actor.getBoundingClientRect().width,
+      characterZ: Number(getComputedStyle(hero).zIndex),
+      weaponZ: Number(style.zIndex),
+      animationName: style.animationName,
+      weaponSize: style.getPropertyValue('--weapon-size').trim(),
+      gripX: style.getPropertyValue('--grip-x').trim(),
+    }
+  })
+  expect(handRig.ratio).toBeLessThan(.45)
+  expect(handRig.weaponZ).toBeLessThan(handRig.characterZ)
+  expect(handRig.animationName).toBe('none')
+  expect(handRig.weaponSize).toBe('27%')
+  expect(handRig.gripX).toBe('61%')
 })
