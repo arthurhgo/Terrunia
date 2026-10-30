@@ -8,7 +8,7 @@ import { DieIcon } from '../components/DieIcon'
 
 type Props = {
   save: GameSave
-  selectedId: string
+  selectedId: string | null
   onSelect: (id: string) => void
 }
 
@@ -22,12 +22,14 @@ export function WeaponGallery({ save, selectedId, onSelect }: Props) {
   const weapons = Object.values(content.boundItemBases)
     .filter((definition) => definition.slot === 'weapon' && definition.id !== 'bound_weapon_prologue_base')
   const [inspectedId, setInspectedId] = useState<string | null>(null)
+  const selectedWeapon = selectedId ? weapons.find((weapon) => weapon.id === selectedId) : undefined
   const inspected = weapons.find((weapon) => weapon.id === inspectedId)
-    ?? weapons.find((weapon) => weapon.id === selectedId) ?? weapons[0]
+    ?? selectedWeapon ?? weapons[0]
   const preview = deriveWeaponPreview(save, content, inspected)
+  // Clan synergy follows a deliberate click only; hovering another weapon never changes it.
   const clans = Object.values(content.clans).map((clan) => ({
     ...clan,
-    combatBonus: inspected.powerType === 'magical'
+    combatBonus: selectedWeapon?.powerType === 'magical'
       ? clan.bonuses.magicalAttack ?? 0
       : clan.bonuses.physicalAttack ?? 0,
     classes: clan.classIds.map((id) => content.classes[id]).filter(Boolean),
@@ -39,7 +41,7 @@ export function WeaponGallery({ save, selectedId, onSelect }: Props) {
     <header className="weapon-gallery__heading">
       <p className="eyebrow">ARSENAL DO PRIMEIRO VÍNCULO</p>
       <h2>Escolha sua fundação</h2>
-      <p>Selecione com um clique. Passe o mouse ou use Tab para inspecionar habilidades, atributos e caminhos de Clã.</p>
+      <p>Passe o mouse ou use Tab para inspecionar habilidades e atributos. Clique em uma arma para revelar a sinergia com os clãs.</p>
     </header>
     <div className="weapon-gallery__grid" aria-label="Armas iniciais">
       {weapons.map((weapon, i) => {
@@ -49,7 +51,9 @@ export function WeaponGallery({ save, selectedId, onSelect }: Props) {
           aria-label={`Escolher ${weapon.name}`}
           aria-pressed={selectedId === weapon.id}
           onMouseEnter={() => setInspectedId(weapon.id)}
+          onMouseLeave={() => setInspectedId(null)}
           onFocus={() => setInspectedId(weapon.id)}
+          onBlur={() => setInspectedId(null)}
           onClick={() => { onSelect(weapon.id); setInspectedId(weapon.id) }}
           style={{ animationDelay: `${i * -0.36}s` }}>
           <span className="weapon-gallery__aura" aria-hidden="true" />
@@ -80,17 +84,17 @@ export function WeaponGallery({ save, selectedId, onSelect }: Props) {
             <p>{skill.definition?.description ?? 'Aguardando definição.'}</p>
           </div>)}
       </div>
-      <div className="weapon-gallery__clans">
-        <h4><Shield size={15} /> Sinergias e caminhos de Clã</h4>
+      {selectedWeapon && <div className="weapon-gallery__clans" aria-label={`Sinergias de Clã para ${selectedWeapon.name}`}>
+        <h4><Shield size={15} /> Sinergias e caminhos de Clã · {selectedWeapon.name}</h4>
         <p className="weapon-gallery__notice">Bônus condicionais à filiação. Não são concedidos no primeiro Vínculo; as disciplinas abaixo são caminhos futuros, não skills desbloqueadas.</p>
         {clans.map((clan) =>
           <div className={`weapon-gallery__clan ${clan.combatBonus === strongestBonus && strongestBonus > 0 ? 'is-affine' : ''}`} key={clan.id}>
             <div><strong>{clan.name}</strong><small>{clan.bonusLabel}</small></div>
-            <span>{clan.combatBonus > 0 ? `+${clan.combatBonus} ataque ${inspected.powerType === 'magical' ? 'mágico' : 'físico'}` : 'Sem bônus direto de ataque'}</span>
+            <span>{clan.combatBonus > 0 ? `+${clan.combatBonus} ataque ${selectedWeapon.powerType === 'magical' ? 'mágico' : 'físico'}` : 'Sem bônus direto de ataque'}</span>
             <small className="weapon-gallery__principle">Padrão do Clã: {clan.philosophy}</small>
             <small>Trilhas de classe: {clan.classes.map((classe) => `${classe.name}: ${classe.role}`).join(' · ')}</small>
           </div>)}
-      </div>
+      </div>}
     </article>
   </section>
 }
