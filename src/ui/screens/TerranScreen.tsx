@@ -1,6 +1,6 @@
 import { BookOpen, Grid2X2, MapPin, Package, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { TerranLocationDefinition } from '../../content/types'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
@@ -11,6 +11,10 @@ import { getDiscoveredTerranLocationIds, getTerranQuestDestination } from '../..
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { ClanHallPanel } from '../dashboard/ClanHallPanel'
+import { InventoryPanel } from '../dashboard/InventoryPanel'
+import { NexusOverview } from '../dashboard/NexusOverview'
+import { QuestGrid } from '../quests/QuestGrid'
+import { TerranContinentMap } from '../world/TerranContinentMap'
 import { NpcDialog } from '../dashboard/NpcDialog'
 import { PortalPanel } from '../dashboard/PortalPanel'
 import { SocialQuestDialog } from '../dashboard/SocialQuestDialog'
@@ -31,14 +35,14 @@ import { MarketNpcPanel } from '../terran/MarketServices'
 import { isMarketNpc } from '../../domain/terran/market'
 import { BASE_LOCATION_ID } from '../../domain/terran/base'
 
-type Drawer = 'location' | 'inventory' | 'quests' | 'menu' | 'market' | 'home' | 'chest' | 'records' | null
+type Drawer = 'local' | 'location' | 'inventory' | 'quests' | 'market' | 'home' | 'chest' | 'records' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
 
 const hud = [
-  { id: 'local', label: 'Local', icon: MapPin, route: '/local' },
-  { id: 'inventory', label: 'Inventário e Nexo', icon: Package, route: '/inventory' },
-  { id: 'quests', label: 'Missões', icon: BookOpen, route: '/quests' },
-  { id: 'menu', label: 'Menu', icon: Grid2X2, route: '/menu' },
+  { id: 'local', label: 'Local', icon: MapPin },
+  { id: 'inventory', label: 'Inventário e Nexo', icon: Package },
+  { id: 'quests', label: 'Missões', icon: BookOpen },
+  { id: 'menu', label: 'Menu', icon: Grid2X2 },
 ] as const
 
 function DialogueBox({ save, presence, line, onNext }: { save: GameSave; presence: Presence; line: number; onNext: () => void }) {
@@ -58,27 +62,15 @@ function DialogueBox({ save, presence, line, onNext }: { save: GameSave; presenc
 }
 
 function QuestDrawer({ save }: { save: GameSave }) {
-  const setQuestTracked = useGameStore((state) => state.setQuestTracked)
-  const quests = Object.values(save.quests).filter((quest) => ['active', 'ready_to_turn_in', 'completed'].includes(quest.status))
-  return (
-    <div className="terran-drawer__section">
-      <p>Missões são aceitas em diálogo com os NPCs. A cidade continua visível.</p>
-      {quests.length === 0 && <div className="terran-drawer__notice">Nenhuma missão no diário. Converse com Eldamar.</div>}
-      {quests.map((progress) => {
-        const definition = content.quests[progress.questId]
-        if (!definition) return null
-        return <article className="terran-quest" key={progress.questId}>
-          <small>{progress.status.replaceAll('_', ' ').toUpperCase()}</small>
-          <strong>{definition.title}</strong>
-          <p>{definition.summary}</p>
-          {['active', 'ready_to_turn_in'].includes(progress.status) &&
-            <button type="button" onClick={() => setQuestTracked(progress.questId, !progress.tracked)}>
-              {progress.tracked ? 'Remover marcador' : 'Marcar objetivo'}
-            </button>}
-        </article>
-      })}
-    </div>
-  )
+  return <QuestGrid save={save} compact />
+}
+
+function LocalMapDrawer({ save }: { save: GameSave }) {
+  return <div className="terran-drawer__section terran-local-drawer">
+    <p>Explore o continente e acompanhe os locais descobertos. As áreas desconhecidas permanecem sob a névoa.</p>
+    <div className="terran-local-drawer__map"><TerranContinentMap save={save} /></div>
+    <Link className="panel-link" to="/local">Ampliar mapa do continente</Link>
+  </div>
 }
 
 function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
@@ -239,7 +231,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const currentLabel = interiorId ? getRoomName(interiorId) : content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
   const activeTitle = drawer === 'location' ? (
     localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
-  ) : drawer === 'market' ? `Mercado · ${marketNpc?.label ?? 'Serviços'}` : drawer === 'inventory' ? 'Inventário e Nexo' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'menu' ? 'Menu' : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
+  ) : drawer === 'local' ? 'Mapa de Terran' : drawer === 'market' ? `Mercado · ${marketNpc?.label ?? 'Serviços'}` : drawer === 'inventory' ? 'Inventário e Nexo' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'menu' ? 'Menu' : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
 
   const sceneContent = (
     <div className="terran-game">
@@ -250,10 +242,15 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
         <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
           <div className="terran-game__frame" data-testid="terran-centered-gameplay">
           <nav className="terran-game__hud" aria-label="Menu de Terran">
-            {hud.map(({ id, label, icon: Icon, route }) => (
-              <button key={id} type="button"
+            {hud.map(({ id, label, icon: Icon }) => (
+              <button key={id} type="button" className={drawer === id ? 'active' : ''}
                 title={label} aria-label={`Abrir ${label}`}
-                onClick={() => navigate(route)}>
+                aria-pressed={id !== 'menu' && drawer === id}
+                onClick={() => {
+                  if (id === 'menu') { navigate('/menu'); return }
+                  setDrawer(drawer === id ? null : id)
+                  setLocalQuestId(null)
+                }}>
                 <Icon size={20} aria-hidden="true" /><span>{label}</span>
               </button>
             ))}
@@ -286,6 +283,11 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               <button type="button" onClick={() => { setDrawer(null); setLocalQuestId(null) }} aria-label="Fechar painel"><X size={19} /></button>
             </header>
             <div className="terran-game__drawer-content">
+              {drawer === 'local' && <LocalMapDrawer save={save} />}
+              {drawer === 'inventory' && <div className="terran-inventory-drawer" aria-label="Inventário e Nexo reunidos">
+                <NexusOverview save={save} />
+                <InventoryPanel save={save} />
+              </div>}
               {drawer === 'location' && (localQuestId
                 ? <QuestNpcPanel save={save} questId={localQuestId} onClose={() => {
                   if (content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_')) setDrawer(null)
