@@ -73,7 +73,7 @@ export const terranLocationDefinitions = [
     shortName: 'Mercado',
     verb: 'Negociar',
     role: 'Comércio, Essência, Ouro e melhorias dos Vínculos',
-    description: 'Mercadores vendem suprimentos e componentes. Especialistas aprimoram Vínculos; outros NPCs trocam drops por Essência ou Ouro.'
+    description: 'Mercadores vendem suprimentos e componentes. Especialistas aprimoram Vínculos; outros NPCs trocam drops por Essência ou Ouro.',
     category: 'institution',
     viewKind: 'workshop',
     iconId: 'anvil',
