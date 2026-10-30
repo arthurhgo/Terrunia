@@ -8,6 +8,7 @@ import { BOUND_SLOTS, BOUND_SLOT_LABELS, type BoundSlot } from '../../domain/sha
 import { ArcanePanel } from '../components/ArcanePanel'
 import { AssetImage } from '../components/AssetImage'
 import { ProgressBar } from '../components/ProgressBar'
+import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
 
 const slotIcons = {
   weapon: Sword,
@@ -23,6 +24,11 @@ function BoundItemCard({ slot, save }: { slot: BoundSlot; save: GameSave }) {
   const definition = item ? content.boundItemBases[item.baseItemId] : null
   const Icon = slotIcons[slot]
   const capacity = getBoundSlotCapacity(item?.grade ?? 1)
+  const basic = slot === 'armor' ? getEquippedBasicArmor(save, content) : null
+  if (basic) return <article className="bound-card bound-card--starter"><header><Icon size={16} /><span>Armadura</span><small>Simples</small></header>
+    <div className="bound-card__visual"><AssetImage assetId={basic.definition.iconAssetId} alt={basic.definition.name} /></div>
+    <strong>{basic.definition.name}{basic.instance.refinementLevel ? ' +1' : ''}</strong><p>Equipada · sem Vínculo permanente.</p>
+    <small>Troque pela mochila. Durnan pode reforçar esta peça.</small></article>
 
   return (
     <article className={`bound-card ${item ? 'bound-card--active' : 'bound-card--empty'}`}>
@@ -55,7 +61,7 @@ function BoundItemCard({ slot, save }: { slot: BoundSlot; save: GameSave }) {
           <Link to={`/bound-items/${slot}`} className="bound-card__link">Detalhes / Evoluir</Link>
         </>
       ) : (
-        <p className="bound-card__empty-copy">Será obtido e vinculado durante o prólogo.</p>
+        <p className="bound-card__empty-copy">{slot === 'armor' ? 'Rosetta ensina a vestir sua primeira proteção.' : 'Será obtido e vinculado durante sua jornada.'}</p>
       )}
     </article>
   )

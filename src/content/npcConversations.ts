@@ -4,6 +4,10 @@ const voice = (question: string, work: string, place: string, advice: string): N
 
 /** Spoken mission briefs are distinct from the journal's third-person descriptions. */
 export const npcQuestBriefs: Record<string, string> = {
+  rosetta_tutorial_equip: 'Vou lhe entregar duas túnicas simples. Abra o Inventário, selecione uma delas na Mochila e escolha Equipar. A de linho protege um pouco; a de aprendiz favorece o movimento. Depois volte para receber o Ouro das próximas compras.',
+  rosetta_tutorial_supply: 'Vá ao Mercado e procure Neris. Compre um Tônico de Campo por 18 Ouro. O frasco ficará na mochila para os combates; não precisa usá-lo agora. Retorne quando terminar a compra.',
+  rosetta_tutorial_armor: 'Agora compre com Neris uma Armadura de Couro Simples por 35 Ouro. Abra a Mochila, selecione a peça e equipe. Ela oferece mais proteção que as túnicas. Quando tiver uma Armadura vinculada, as peças de treino não a substituirão.',
+  rosetta_tutorial_refine: 'Entrego esta Linha de Linho para seu primeiro reforço. Leve uma proteção simples a Durnan, na Casa do Ferreiro. Escolha a peça e pague 8 Ouro para aprimorá-la em +1. O reforço permanece nela; vestir e tirar a peça não gasta o material novamente.',
   vs_astravel_first_contact: 'Percebi sinais de uma presença Fungorra na entrada de Astravél. Preciso que investigue a trilha, enfrente a ameaça e volte para me contar o que encontrou.',
   main_astravel_lost_hunters: 'Reconheço os sinais dessa emboscada. Recupere os vestígios entre os Rastros dos Caçadores e o Refúgio; será preciso vencer os grupos que ocupam a rota.',
   main_astravel_corruption: 'Esses vestígios apontam para o núcleo da Ruína. Vença a Vigília, abra o Limiar e enfrente o Colosso Micélio nas Câmaras Fúngicas. Depois, traga seu relato.',
@@ -31,9 +35,14 @@ export const npcQuestBriefs: Record<string, string> = {
   delivery_durnan_batch: 'Estou comprando matéria-prima para a fornalha. Traga as lascas e fibras combinadas; depois de conferir o lote, eu lhe pago em Ouro.',
 }
 
+export const npcQuestActiveBriefs: Record<string, string> = {
+  rosetta_tutorial_equip: 'As duas túnicas já estão na sua mochila. Abra o Inventário, selecione uma delas e escolha Equipar. Você pode trocar entre as peças simples fora de combate. Volte quando tiver vestido sua proteção.',
+  rosetta_tutorial_refine: 'A Linha de Linho já está na sua mochila. Visite Durnan na Casa do Ferreiro, escolha uma proteção simples e pague 8 Ouro para reforçá-la em +1. Depois, retorne para encerrarmos o treinamento.',
+}
+
 export const npcConversationVoices: Record<string, NpcConversationVoice> = {
   'npc.rosetta.portrait': voice('Como escolho meu próximo passo?',
-    'Eu acompanho as partidas e os retornos. Posso indicar quem precisa de você; cada morador apresenta e recebe as próprias missões.',
+    'Eu ensino seus primeiros passos com a mochila, as compras e os aprimoramentos. Minhas lições começam aqui; as outras missões continuam com seus responsáveis. Passe o cursor sobre mim para ver caminhos dourados até o trabalho que você pode fazer.',
     'Terran é seu ponto de retorno. Há conhecimento na Casa de Eldamar, preparo com Daeryn, materiais no Mercado e trabalho na forja.',
     'Escolha um objetivo, confira a mochila e volte quando precisar se preparar. Você pode aceitar várias missões, mas não precisa resolver tudo de uma vez.'),
   'npc.eldamar.portrait': voice('Por que você estuda esses vestígios?',

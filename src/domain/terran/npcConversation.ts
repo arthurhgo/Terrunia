@@ -1,7 +1,7 @@
 import type { GameSave } from '../game/types'
 import type { QuestDefinition } from '../../content/types'
 import { content } from '../../content/catalog'
-import { npcConversationVoices, npcQuestBriefs } from '../../content/npcConversations'
+import { npcConversationVoices, npcQuestActiveBriefs, npcQuestBriefs } from '../../content/npcConversations'
 
 export type ConversationChoice = { id: string; label: string; nextId: string }
 export type ConversationNode = { id: string; text: string; choices: ConversationChoice[] }
@@ -32,7 +32,7 @@ export function buildNpcConversation(save: GameSave, portraitAssetId: string, li
       ? 'Preciso da sua ajuda para conter as manifestações Fungorras de Astravél. Observe as criaturas em combate e volte para me contar o que encontrou.' : quest.summary)
     const text = status === 'completed' ? 'Obrigado por cumprir o combinado. Sua contribuição já foi registrada.'
       : status === 'ready_to_turn_in' ? 'Você já cumpriu o combinado. Confirme a entrega quando quiser concluir.'
-      : (status === 'active' ? 'Conto com você para o trabalho que combinamos. ' : '') + brief
+      : status === 'active' ? npcQuestActiveBriefs[quest.id] ?? 'Conto com você para o trabalho que combinamos. ' + brief : brief
     nodes.mission = { id: 'mission', text,
       choices: [{ id: 'guidance', label: quest.turnInItems ? 'Onde encontro os materiais?' : 'Como posso avançar?', nextId: 'guidance' },
         { id: 'payment', label: 'O que recebo ao concluir?', nextId: 'payment' }, back] }
@@ -47,6 +47,7 @@ export function buildNpcConversation(save: GameSave, portraitAssetId: string, li
       : enemyNames.length ? `Procure ${enemyNames.join(' e ')} em Astravél ou nos encontros do Portal. Depois de cumprir o objetivo, volte para conversar comigo.`
       : 'Acompanhe o objetivo e o destino no diário. A missão avança pelas ações indicadas; quando estiver pronta, retorne ao responsável para concluir.',
       choices: [{ id: 'mission', label: 'Entendi. Vamos retomar o trabalho.', nextId: 'mission' }, ...topics.filter((choice) => choice.id !== 'mission')] }
+    if (quest.id.startsWith('rosetta_tutorial_')) nodes.guidance.text = npcQuestBriefs[quest.id]
     nodes.payment = { id: 'payment', text: status === 'completed' ? 'Essa entrega já foi concluída e a recompensa foi registrada. Não há um novo pagamento por este mesmo trabalho.' : quest.rewards.length
       ? `Ao concluir, você recebe ${quest.rewards.map((reward) => `${reward.value} ${reward.type === 'gold' ? 'Ouro' : reward.type === 'characterXp' ? 'XP' : 'Essência'}`).join(', ')}. A recompensa só é aplicada na entrega.${quest.turnInItems ? ' Os materiais combinados são consumidos uma única vez.' : ''}`
       : 'Este trabalho faz parte do seu progresso. A conclusão exige sua confirmação; conversar não aplica recompensas.',

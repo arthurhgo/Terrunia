@@ -1,4 +1,6 @@
 import { executeForgeRecipe } from '../domain/terran/forge'
+import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmor'
+import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
 import { create } from 'zustand'
 import { content } from '../content/catalog'
 import {
@@ -104,6 +106,8 @@ type GameState = {
   receiveDaerynAid: () => void
   buyFromSylwen: (itemId: string, quantity?: number) => void
   forge: (recipeId: string) => void
+  equipArmor: (instanceId: string | null) => void
+  refineArmor: (instanceId: string) => void
   buyFromMarket: (npcId: string, itemId: string, quantity?: number) => void
   recordCutsceneViewed: (sceneId: CutsceneId) => void
   enterAstravel: () => void
@@ -167,7 +171,7 @@ export const useGameStore = create<GameState>((set, get) => {
   }
 
   const commit = (candidate: GameSave) => {
-    const save = refreshDeliveryQuestProgress(candidate, content, candidate.updatedAt)
+    const save = refreshTutorialQuestProgress(refreshDeliveryQuestProgress(candidate, content, candidate.updatedAt), content, candidate.updatedAt)
     set({ save, status: 'ready', error: null })
     return persist(save)
   }
@@ -490,6 +494,25 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!result.ok) return failAction(result.message)
       commit(result.value)
       show('Compra realizada', `${quantity}× ${content.items[itemId].name} adicionado à mochila.`, 'success')
+    },
+
+    equipArmor: (instanceId) => {
+      const save = get().save
+      if (!save) return
+      const result = equipBasicArmor(save, instanceId, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      if (result.value === save) return
+      commit(result.value)
+      show(instanceId ? 'Proteção equipada' : 'Proteção retirada', instanceId ? 'Sua defesa foi atualizada. A peça continua na mochila.' : 'Você pode escolher outra proteção na mochila.', 'success')
+    },
+
+    refineArmor: (instanceId) => {
+      const save = get().save
+      if (!save) return
+      const result = refineBasicArmor(save, instanceId, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+      show('Proteção aprimorada', 'A peça alcançou +1 e ganhou 1 de Defesa.', 'success')
     },
 
     forge: (recipeId) => {

@@ -5,6 +5,7 @@ import type { GameSave, QuestProgress } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
 import { gainCharacterXp } from '../character/attributeProgression'
 import { consumeQuestDelivery, refreshDeliveryQuestProgress } from './questInventory'
+import { refreshTutorialQuestProgress } from './tutorialProgress'
 
 export const SLOT_OCCUPYING_QUEST_STATUSES = ['active', 'ready_to_turn_in'] as const
 
@@ -21,6 +22,7 @@ export type QuestEvent =
   | { type: 'visit'; targetId: string; amount?: number }
   | { type: 'interact'; targetId: string; amount?: number }
   | { type: 'completeRite'; targetId: string; amount?: number }
+  | { type: 'purchase' | 'equip' | 'refine'; targetId: string; amount?: number }
 
 export const createQuestProgress = (definition: QuestDefinition): QuestProgress => ({
   questId: definition.id,
@@ -108,6 +110,13 @@ export const acceptQuest = (
   }
   const capacity = canAcceptQuest(save)
   if (!capacity.ok) return capacity
+  if (definition.giverNpcId === 'npc_rosetta' && (save.battle || save.world.currentLocationId !== 'location_terran_portal_plaza')) {
+    return fail('TUTORIAL_LOCATION', 'Converse com Rosetta na Praça do Portal para começar esta lição.')
+  }
+  for (const input of definition.acceptanceItems ?? []) {
+    if (!catalog.items[input.itemId] || !Number.isSafeInteger(input.quantity) || input.quantity < 1 ||
+      save.inventory.some((item) => item.instanceId === `lesson_${questId}_${input.itemId}`)) return fail('TUTORIAL_SUPPLIES', 'Os materiais desta lição não estão disponíveis para um novo recebimento.')
+  }
   const next = structuredClone(save)
   next.quests[questId].status = 'active'
   next.quests[questId].tracked = true
@@ -115,6 +124,11 @@ export const acceptQuest = (
   next.updatedAt = now
   next.revision += 1
   next.eventLog.push(`QuestAccepted:${questId}`)
+  for (const input of definition.acceptanceItems ?? []) {
+    next.inventory.push({ instanceId: `lesson_${questId}_${input.itemId}`, definitionId: input.itemId, quantity: input.quantity,
+      rarity: catalog.items[input.itemId].rarity, locked: false, favorite: false, acquiredAt: now })
+    next.eventLog.push(`QuestSuppliesGranted:${questId}:${input.itemId}:${input.quantity}`)
+  }
   // A recovered landmark is permanent evidence. Late acceptance and migrated
   // campaigns must not require replaying one-time story combats.
   let reconciled = next
@@ -123,7 +137,7 @@ export const acceptQuest = (
       reconciled = applyQuestEvent(reconciled, { type: 'visit', targetId: objective.targetId, amount: objective.required }, catalog, now)
     }
   }
-  return ok(refreshDeliveryQuestProgress(reconciled, catalog, now))
+  return ok(refreshTutorialQuestProgress(refreshDeliveryQuestProgress(reconciled, catalog, now), catalog, now))
 }
 
 export const setQuestTracked = (
@@ -189,6 +203,7 @@ export const turnInQuest = (
   if (!definition || !progress) return fail('UNKNOWN_QUEST', 'Missão desconhecida.')
   if (progress.status !== 'ready_to_turn_in') return fail('QUEST_NOT_READY', 'Os objetivos desta missão ainda não foram concluídos.')
   if (definition.turnInNpcId !== npcId) return fail('WRONG_TURN_IN_NPC', 'Esta missão deve ser entregue a outro NPC.')
+  if (npcId === 'npc_rosetta' && (save.battle || save.world.currentLocationId !== 'location_terran_portal_plaza')) return fail('TUTORIAL_LOCATION', 'Retorne a Rosetta na Praça do Portal para concluir esta lição.')
 
   const delivery = consumeQuestDelivery(save, definition, catalog)
   if (!delivery.ok) return delivery

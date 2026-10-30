@@ -223,6 +223,10 @@ for (const classDefinition of Object.values(content.classes)) {
 for (const quest of Object.values(content.quests)) {
   assertReference(content.npcs[quest.giverNpcId], `${quest.id} → ${quest.giverNpcId}`)
   assertReference(content.npcs[quest.turnInNpcId], `${quest.id} → ${quest.turnInNpcId}`)
+  for (const input of quest.acceptanceItems ?? []) {
+    assertReference(content.items[input.itemId], `${quest.id} → suprimento ${input.itemId}`)
+    if (!Number.isSafeInteger(input.quantity) || input.quantity < 1 || (content.items[input.itemId].basicArmor && input.quantity !== 1)) throw new Error(`Suprimento inválido: ${quest.id}`)
+  }
   const deliveryIds = new Set<string>()
   for (const input of quest.turnInItems ?? []) {
     const item = content.items[input.itemId]

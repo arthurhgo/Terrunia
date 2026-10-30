@@ -2,7 +2,7 @@
 
 O registro central fica em `src/assets/assetRegistry.ts`. Telas solicitam um `assetId`; o componente `AssetImage` resolve caminho, texto alternativo e fallback.
 
-Atualização v0.11: o manifest pixelado inclui 129 entradas (66 itens, 10 monstros, 51 NPCs e 2 aparências de jogador). `item.echo-fragment` é um novo cristal violeta nativo 16×16 para contratos comerciais. Os 51 NPCs mantêm os PNGs de 32×32 compartilhados com os retratos e são desenhados no mundo com 28 px; a escala não altera os arquivos-fonte. A tabela abaixo registra a base histórica inicial.
+Atualização v0.13: o manifest pixelado inclui 133 entradas (70 itens, 10 monstros, 51 NPCs e 2 aparências de jogador). Quatro ícones nativos 16×16 representam Túnica de Linho Gasta, Túnica de Aprendiz, Armadura de Couro Simples e Linha de Linho, sob os IDs `item.worn-linen-tunic`, `item.apprentice-tunic`, `item.simple-leather-armor` e `item.linen-thread`. São desenhos da mesma matriz pixelada do projeto, reproduzíveis por `python scripts/build_pixel_assets.py --tutorial-only`. O atlas foi ampliado sem redesenhar os sprites anteriores. Os 51 NPCs mantêm os PNGs de 32×32 compartilhados com os retratos e são desenhados no mundo com 28 px; a escala não altera os arquivos-fonte. A tabela abaixo registra a base histórica inicial.
 
 | Grupo | Estado | Local |
 |---|---|---|

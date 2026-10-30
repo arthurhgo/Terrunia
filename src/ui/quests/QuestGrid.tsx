@@ -1,5 +1,5 @@
 import { BookOpen, CheckCircle2, ChevronDown, Circle, Coins, Diamond, Gem, MapPin, Radio, RadioTower, ScrollText, Swords, X } from 'lucide-react'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { content } from '../../content/catalog'
 import type { QuestCategory } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
@@ -43,6 +43,8 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
   const setTracked = useGameStore((state) => state.setQuestTracked)
   const [category, setCategory] = useState<Category>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [completedExpanded, setCompletedExpanded] = useState(false)
+  const historyId = useId()
   const entries = getQuestJournalEntries(save, content)
   const filtered = entries.filter(({ definition, progress }) =>
     category === 'all' || (category === 'completed' ? progress.status === 'completed' :
@@ -63,8 +65,11 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
     </div>
     {groups.length ? <div className="quest-board__rows">
       {groups.map((group) => <section key={group.id} className={'quest-journal-group quest-journal-group--' + group.id} aria-label={group.label}>
-        <h3>{group.label}<small>{group.entries.length}</small></h3>
-        <div className="quest-board__grid">{group.entries.map((entry) => {
+        {group.id === 'completed' ? <h3><button type="button" className="quest-history-toggle" aria-expanded={completedExpanded} aria-controls={historyId}
+          aria-label={`${completedExpanded ? 'Recolher' : 'Expandir'} missões concluídas (${group.entries.length})`}
+          onClick={() => setCompletedExpanded((expanded) => !expanded)}><CheckCircle2 size={16} /> Concluídas <small>{group.entries.length}</small><ChevronDown size={16} /></button></h3>
+          : <h3>{group.label}<small>{group.entries.length}</small></h3>}
+        <div id={group.id === 'completed' ? historyId : undefined} hidden={group.id === 'completed' && !completedExpanded} className="quest-board__grid">{(group.id !== 'completed' || completedExpanded) && group.entries.map((entry) => {
           const { definition, progress } = entry
           const selected = selectedId === progress.questId
           const total = definition.objectives.reduce((sum, objective) => sum + objective.required, 0)

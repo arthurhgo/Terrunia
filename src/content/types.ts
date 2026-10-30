@@ -13,7 +13,7 @@ export type ItemDefinition = {
   id: string
   name: string
   description: string
-  category: 'drop' | 'material' | 'fragment' | 'gem' | 'consumable' | 'quest' | 'lore' | 'trade'
+  category: 'drop' | 'material' | 'fragment' | 'gem' | 'consumable' | 'quest' | 'lore' | 'trade' | 'equipment'
   rarity: Rarity
   convertToEssence: boolean
   essenceValue: number
@@ -26,6 +26,8 @@ export type ItemDefinition = {
   combatEffects: CombatEffectDefinition[]
   combatKind?: 'throwable' | 'rune' | 'essence'
   combatTarget?: 'self' | 'enemy'
+  /** Starter protection worn before the permanent armor bond; never replaces a bound piece. */
+  basicArmor?: { mitigation: number; initiative: number; maxRefinement: number }
   affinityTags: string[]
   iconAssetId: string
   status: DraftStatus
@@ -202,7 +204,7 @@ export type CharacterClassDefinition = {
 
 export type QuestObjectiveDefinition = {
   id: string
-  type: 'talk' | 'kill' | 'collect' | 'visit' | 'interact' | 'completeRite'
+  type: 'talk' | 'kill' | 'collect' | 'visit' | 'interact' | 'completeRite' | 'purchase' | 'equip' | 'refine'
   targetId: string
   required: number
   label: string
@@ -240,6 +242,8 @@ export type QuestDefinition = {
   objectives: QuestObjectiveDefinition[]
   /** Delivery contracts consume the specified inventory at the NPC, once. */
   turnInItems?: Array<{ itemId: string; quantity: number }>
+  /** One-time supplies for an explicitly accepted tutorial. */
+  acceptanceItems?: Array<{ itemId: string; quantity: number }>
   rewards: Array<
     | { type: 'characterXp'; value: number }
     | { type: 'rawEssence'; value: number }

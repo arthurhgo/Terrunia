@@ -41,6 +41,7 @@ import { BASE_LOCATION_ID } from '../../domain/terran/base'
 import { getNpcActionableQuests } from '../../domain/quests/questSelectors'
 import { type TerranLandmark } from '../../content/terranExploration'
 import { CityLandmarkDialog } from '../terran/CityLandmarkDialog'
+import { getRosettaQuestRoutes } from '../../domain/terran/rosettaGuide'
 
 type Drawer = 'local' | 'location' | 'inventory' | 'quests' | 'market' | 'home' | 'chest' | 'records' | 'forge' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
@@ -120,6 +121,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [inspected, setInspected] = useState<RoomFurniture | null>(null)
   const [eldamarOpen, setEldamarOpen] = useState(false)
   const [rosettaOpen, setRosettaOpen] = useState(false)
+  const [rosettaPathsPinned, setRosettaPathsPinned] = useState(false)
   const [socialQuestId, setSocialQuestId] = useState<string | null>(null)
   const [dialogue, setDialogue] = useState<Presence | null>(null)
   const [localQuestId, setLocalQuestId] = useState<string | null>(null)
@@ -200,6 +202,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   }
   const talk = (presence: Presence, sourceId: TerranLocationId = locationId) => {
     if (presence.npcId === 'npc_rosetta') {
+      travel('location_terran_portal_plaza')
+      setLocationId('location_terran_portal_plaza')
       setDialogue(null)
       setDrawer(null)
       setRosettaOpen(true)
@@ -273,6 +277,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                   homeUnlocked={true} onEnterHome={enterHome}
                   enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
                   actors={cityCast} onEnter={openLocation} onTalk={(id, presence) => talk(presence, id)}
+                  questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned} onHideQuestRoutes={() => setRosettaPathsPinned(false)}
                   landmarkFlags={save.world.worldFlags} onInspectLandmark={(landmark) => {
                     useGameStore.getState().inspectCityLandmark(landmark.id)
                     setCityLandmark(landmark)
@@ -284,6 +289,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               <button type="button" onClick={() => setInspected(null)}>Continuar explorando</button>
             </div>}
             {rosettaOpen && <RosettaGuide save={save} onClose={() => setRosettaOpen(false)}
+              onOpenInventory={() => { setRosettaOpen(false); setDrawer('inventory') }}
+              onShowPaths={() => { setRosettaOpen(false); setDrawer(null); setRosettaPathsPinned(true) }}
               onOpenQuests={() => { setRosettaOpen(false); setDrawer('quests') }} />}
             {dialogue && <DialogueBox save={save} presence={dialogue} onClose={() => setDialogue(null)} />}
           </section>

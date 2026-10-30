@@ -40,8 +40,8 @@ export const createNewSave = (
   )
 
   const save: GameSave = {
-    schemaVersion: 14,
-    gameVersion: '0.12.0',
+    schemaVersion: 15,
+    gameVersion: '0.13.0',
     saveId: ids.saveId,
     campaignId: campaign.campaignId,
     campaignGeneration: campaign.campaignGeneration,
@@ -75,6 +75,7 @@ export const createNewSave = (
         necklace: null,
         bracelet: null,
       },
+      basicArmorInstanceId: null,
     },
     essence: {
       current: 0,

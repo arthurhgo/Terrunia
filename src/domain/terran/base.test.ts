@@ -80,7 +80,7 @@ describe('Base individual e mundo isolado por campanha', () => {
     const legacy = structuredClone(save) as unknown as Record<string, unknown>
     delete legacy.baseStorage
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(14)
+    expect(migrated.schemaVersion).toBe(15)
     expect(migrated.baseStorage).toEqual([])
     expect(migrated.world.trailNodeStates.astravel_entry).toBe('completed')
     expect(migrated.quests.vs_astravel_first_contact.status).toBe('completed')

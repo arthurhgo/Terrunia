@@ -22,6 +22,7 @@ Nunca silencie um conflito. Registre a resolução em `docs/CANON_DECISIONS.md`.
 - Clã exige três provas, elegibilidade, convite, confirmação e rito; Classe exige Clã ativo, prova e confirmação.
 - Reset de campanha preserva autenticação e preferências, invalida a geração cloud e limpa o save local.
 - Os cinco equipamentos vinculados são permanentes e não podem ser substituídos por loot.
+- Proteções simples do tutorial podem ser recebidas, compradas, equipadas e trocadas no eixo Armadura enquanto ele não possui Vínculo permanente (decisão posterior de 2026-10-30, v0.13). Não criar um sexto slot nem substituir uma peça vinculada.
 - Cada barra completa gera exatamente um Ponto de Essência e preserva o excedente.
 - Abates e níveis não concedem Pontos de Essência diretamente.
 - Existem exatamente sete Graus por item vinculado.

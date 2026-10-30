@@ -29,6 +29,8 @@
 
 O save possui `schemaVersion`, `gameVersion`, `campaignId`, `campaignGeneration`, `revision`, `createdAt` e `updatedAt`. O carregador atual aceita apenas a versão conhecida. Migrações devem ser explícitas e cobertas por fixtures antes de incrementar o schema.
 
+Schema 15 / app 0.13.0: `character.basicArmorInstanceId` referencia uma peça simples da mochila e `refinementLevel` conserva seu reforço. A validação rejeita referência ausente, coexistência com Armadura vinculada, pilhas de proteção e reforço em item incompatível. A migração 14→15 inicia a referência em `null` e cadastra as quatro lições de Rosetta, sem aceite, túnicas, Ouro ou recompensas automáticas. Conta, geração cloud, Vínculos, inventário e missões anteriores são preservados. O baú exige retirar a proteção antes de guardá-la; o reforço acompanha a instância.
+
 ## Pendência
 
 A preservação automática da versão perdedora em conflitos de nuvem é `OWNER_DECISION`. O slice usa a política determinística descrita acima.

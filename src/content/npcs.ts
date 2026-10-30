@@ -1,15 +1,16 @@
 import type { NPCDefinition } from './types'
 import { streetNpcDefinitions } from './streetNpcs'
 import { collectionQuestIdsForNpc } from './collectionContracts'
+import { rosettaTutorialQuests } from './rosettaTutorial'
 
 const baseNpcDefinitions = [
   {
     id: 'npc_rosetta', name: 'Rosetta', title: 'Guardiã do Portal',
-    settlementId: 'terran', roles: ['lore', 'normal'], questIds: [],
+    settlementId: 'terran', roles: ['lore', 'normal', 'questGiver'], questIds: [],
     portraitAssetId: 'npc.rosetta.portrait',
     dialogue: [
-      'Bem-vindo a Terran, aventureiro. Sou Rosetta, Guardiã do Portal. Posso ajudar a escolher seus próximos passos.',
-      'Diga-me quais missões procura. Vou consultar o que está disponível para você e onde falar com cada responsável.',
+      'Bem-vindo a Terran. Sou Rosetta. Antes da estrada, vamos aprender a usar sua mochila, vestir uma proteção e negociar no Mercado.',
+      'Cada lição pede uma ação sua. Vou lhe dar duas túnicas simples e orientar suas primeiras compras e o primeiro reforço com Durnan.',
       'Na Biblioteca de Eldamar há uma Estante dos Registros. Leia seus manuais e relatos sempre que precisar de orientação.',
     ],
     status: 'CONTENT_DRAFT',
@@ -115,7 +116,7 @@ const baseNpcDefinitions = [
 export const npcDefinitions: NPCDefinition[] = [
   ...baseNpcDefinitions.map((npc) => ({
     ...npc,
-    questIds: npc.id === 'npc_rosetta' ? [] : [...npc.questIds, 'side_' + npc.id, ...collectionQuestIdsForNpc(npc.id)],
+    questIds: npc.id === 'npc_rosetta' ? rosettaTutorialQuests.map((quest) => quest.id) : [...npc.questIds, 'side_' + npc.id, ...collectionQuestIdsForNpc(npc.id)],
   })),
   ...streetNpcDefinitions,
 ]

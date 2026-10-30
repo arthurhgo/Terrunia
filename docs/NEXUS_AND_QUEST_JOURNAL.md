@@ -1,6 +1,6 @@
 # Nexo e Quest Journal — direção oficial
 
-**Status:** decisão do criador aprovada em 2026-08-12, com capacidade, diálogos, marcadores e organização dos painéis atualizados pelo criador em 2026-10-30 (v0.12). Prevalece sobre interpretações anteriores no domínio de Nexo, Personagem e missões.
+**Status:** decisão do criador aprovada em 2026-08-12, com capacidade, diálogos, marcadores, tutorial e organização dos painéis atualizados pelo criador em 2026-10-30 (v0.13). Prevalece sobre interpretações anteriores no domínio de Nexo, Personagem e missões.
 
 ## Nexo
 
@@ -58,6 +58,16 @@ O Journal apresenta uma missão por linha horizontal de largura inteira, empilha
 O seletor de missões de um NPC também usa linhas empilhadas: principal destacada acima das secundárias, seguida das provas de Clã/Classe. Narrativa aparece somente na caixa de fala; objetivos, contagens, materiais e ações de aceite/entrega ficam na área de missão. Escolhas de conversa não aceitam nem concluem missões.
 
 O Tracker exibe apenas missões `ACTIVE` ou `READY_TO_TURN_IN` marcadas como `tracked`. Desativar o Tracker também remove o destaque correspondente do minimapa, sem alterar o estado da missão.
+
+**Decisão posterior v0.13:** a lista de Concluídas inicia recolhida, mostrando apenas título, quantidade e botão para expandir/recolher. O histórico não desaparece e a expansão não muda estado, rastreamento ou recompensa. A regra vale para o painel da cidade e a página de missões.
+
+## Rosetta como tutorial — decisão posterior v0.13
+
+Rosetta ensina equipamento, compra de suprimento, compra/equipamento de armadura simples e primeiro reforço em quatro missões encadeadas. Cada lição exige aceite e entrega explícitos; a seguinte só é oferecida após concluir a anterior. As túnicas e a linha são entregues uma vez, ao aceitar a lição correspondente. Outras missões continuam com seus NPCs responsáveis.
+
+Túnicas e Armadura de Couro Simples entram na Mochila, com seleção e ação Equipar. São proteções comuns de preparação, trocáveis antes do Vínculo permanente da Armadura. Usam o mesmo eixo de armadura, sem adicionar slot; uma peça já vinculada permanece protegida. O reforço +1 de Durnan melhora a peça simples, sem promover Grau ou conceder Pontos de Essência.
+
+Passar o cursor sobre Rosetta ou focá-la pelo teclado exibe caminhos finos dourados até as principais e secundárias realmente disponíveis, oferecidas, em andamento ou prontas para entrega, incluindo as não rastreadas. O destino corresponde à próxima ação: NPC responsável, entrada da instituição, Portal ou jogador/mochila. Rosetta já é a origem para suas próprias ofertas e entregas. A opção de fixar os caminhos pelo diálogo permite o mesmo uso no celular. O hover é leitura e não aceita missões.
 
 ## Capacidade global
 
