@@ -315,7 +315,7 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
           style={{ left: `${actor.point.x / CITY_WIDTH * 100}%`, top: `${(actor.point.y - CITY_NPC_SIZE / 2) / CITY_HEIGHT * 100}%`, width: `${CITY_NPC_SIZE / CITY_WIDTH * 100}%`, height: `${CITY_NPC_SIZE / CITY_HEIGHT * 100}%` }}
           aria-label={`Conversar com ${actor.presence.label}`} title={actor.presence.label}
           disabled={!enabled} onClick={() => walkToActor(actor)}>
-          <NpcMarker state={actor.marker} />
+          <NpcMarker state={actor.marker} phase={actor.markerPhase} />
         </button>)}
         {terranLandmarks.map((landmark) => <button key={landmark.id} type="button" className="pixel-city__landmark"
           ref={(button) => { if (button) landmarkButtonsRef.current.set(landmark.id, button); else landmarkButtonsRef.current.delete(landmark.id) }}
@@ -344,11 +344,11 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
             </g>
           })}
           {terranLandmarks.map((landmark) => <circle key={landmark.id} cx={landmark.point.x} cy={landmark.point.y} r="9" fill={landmarkFlags.includes(cityLandmarkFlag(landmark.id)) ? '#8caf8a' : '#d0ac69'} />)}
-          {actors.filter((actor) => actor.marker).map((actor) => <circle key={actor.id} cx={actor.point.x} cy={actor.point.y} r="8" fill={actor.marker === '?' ? '#d56b72' : actor.marker === '!' ? '#f4ce65' : '#70c5df'} />)}
+          {actors.filter((actor) => actor.marker).map((actor) => <circle key={actor.id} cx={actor.point.x} cy={actor.point.y} r="8" fill={actor.markerPhase === 'active' ? '#9da2a5' : actor.marker === '?' ? '#d56b72' : actor.marker === '!' ? '#f4ce65' : '#70c5df'} />)}
           <rect ref={mapViewRef} x={cameraRef.current.x} y={cameraRef.current.y} width={CITY_VIEW_WIDTH} height={CITY_VIEW_HEIGHT} fill="none" stroke="#e5d6ad" strokeWidth="5" pointerEvents="none" />
           <circle ref={mapPlayerRef} cx={playerRef.current.x} cy={playerRef.current.y} r="11" fill="#ffe6a1" stroke="#17272d" strokeWidth="4" pointerEvents="none" />
         </svg>
-        <small>! Missão · ◇ Sidequest</small>
+        <small>! Missão · ◇ Sidequest · cinza: aceita</small>
         <small>{terranLandmarks.filter((landmark) => landmarkFlags.includes(cityLandmarkFlag(landmark.id))).length}/{terranLandmarks.length} pontos explorados</small>
       </aside>
       <select className="city-destination" aria-label="Destino em Terran" defaultValue="" disabled={!enabled} onChange={(event) => {

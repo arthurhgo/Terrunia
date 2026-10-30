@@ -20,7 +20,7 @@ function DerivedStatCard({ label, stat, icon: Icon }: { label: string; stat: Der
   )
 }
 
-/** Shared live Nexo data for the combined Inventário / Nexo tab, without changing saves. */
+/** Dedicated live Nexo data, separate from the backpack. */
 export function NexusOverview({ save }: { save: GameSave }) {
   const stats = deriveCharacterStats(save, content)
   const { character, essence } = save

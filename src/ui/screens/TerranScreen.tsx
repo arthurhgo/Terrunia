@@ -12,7 +12,7 @@ import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { ClanHallPanel } from '../dashboard/ClanHallPanel'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
-import { NexusOverview } from '../dashboard/NexusOverview'
+import { BoundItemsPanel } from '../dashboard/BoundItemsPanel'
 import { QuestGrid } from '../quests/QuestGrid'
 import { TerranContinentMap } from '../world/TerranContinentMap'
 import { NpcDialog } from '../dashboard/NpcDialog'
@@ -47,15 +47,15 @@ type Presence = TerranLocationDefinition['npcPresences'][number]
 
 const hud = [
   { id: 'local', label: 'Local', icon: MapPin },
-  { id: 'inventory', label: 'Inventário e Nexo', icon: Package },
+  { id: 'inventory', label: 'Inventário', icon: Package },
   { id: 'quests', label: 'Missões', icon: BookOpen },
   { id: 'menu', label: 'Menu', icon: Grid2X2 },
 ] as const
 
-function DialogueBox({ save, presence, line, onNext, onClose }: { save: GameSave; presence: Presence; line: number; onNext: () => void; onClose: () => void }) {
+function DialogueBox({ save, presence, onClose }: { save: GameSave; presence: Presence; onClose: () => void }) {
   const script = getTerranDialogue(save, presence)
   return <DialogueWindow save={save} title={presence.label} portraitAssetId={getPresencePortrait(presence)}
-    lines={[script[line]]} onClose={onClose} footer={<button type="button" onClick={onNext}>{line < script.length - 1 ? 'Continuar ›' : 'Encerrar ×'}</button>} />
+    lines={[...script]} eyebrow={presence.roleLabel} onClose={onClose} />
 }
 
 function QuestDrawer({ save }: { save: GameSave }) {
@@ -122,7 +122,6 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [rosettaOpen, setRosettaOpen] = useState(false)
   const [socialQuestId, setSocialQuestId] = useState<string | null>(null)
   const [dialogue, setDialogue] = useState<Presence | null>(null)
-  const [dialogueLine, setDialogueLine] = useState(0)
   const [localQuestId, setLocalQuestId] = useState<string | null>(null)
   const [marketNpc, setMarketNpc] = useState<Presence | null>(null)
   const [cityLandmark, setCityLandmark] = useState<TerranLandmark | null>(null)
@@ -155,7 +154,6 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setLocalQuestId(null)
     setMarketNpc(null)
     setDialogue(null)
-    setDialogueLine(0)
     // The seven institutions have walkable interiors; the Portal remains outdoors.
     if (hasTerranInterior(id)) {
       setInteriorId(id)
@@ -234,14 +232,13 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     }
     if (quest) { setLocalQuestId(quest.id); return }
     if (isStreetNpc) setDrawer(null)
-    setDialogueLine(0)
     setDialogue(presence)
   }
   const currentLabel = interiorId ? getRoomName(interiorId) : content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
   const forgeQuest = getNpcActionableQuests(save, 'npc_durnan', content)[0]
   const activeTitle = drawer === 'forge' ? 'Casa do Ferreiro' : drawer === 'location' ? (
     localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
-  ) : drawer === 'local' ? 'Mapa de Terran' : drawer === 'market' ? `Mercado · ${marketNpc?.label ?? 'Serviços'}` : drawer === 'inventory' ? 'Inventário e Nexo' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
+  ) : drawer === 'local' ? 'Mapa de Terran' : drawer === 'market' ? `Mercado · ${marketNpc?.label ?? 'Serviços'}` : drawer === 'inventory' ? 'Inventário' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
 
   const sceneContent = (
     <div className="terran-game">
@@ -288,14 +285,10 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             </div>}
             {rosettaOpen && <RosettaGuide save={save} onClose={() => setRosettaOpen(false)}
               onOpenQuests={() => { setRosettaOpen(false); setDrawer('quests') }} />}
-            {dialogue && <DialogueBox save={save} presence={dialogue} line={dialogueLine} onClose={() => setDialogue(null)} onNext={() => {
-              const length = getTerranDialogue(save, dialogue).length
-              if (dialogueLine + 1 < length) setDialogueLine(dialogueLine + 1)
-              else setDialogue(null)
-            }} />}
+            {dialogue && <DialogueBox save={save} presence={dialogue} onClose={() => setDialogue(null)} />}
           </section>
           <TerranCharacterHud save={save} />
-          {drawer && <aside className="terran-game__drawer" aria-label={`Painel lateral: ${activeTitle}`}>
+          {drawer && <aside className={`terran-game__drawer ${eldamarOpen || socialQuestId || localQuestId || dialogue || drawer === 'market' || drawer === 'forge' ? 'terran-game__drawer--dialogue' : ''}`} aria-label={`Painel lateral: ${activeTitle}`}>
             <header><span className="eyebrow">NEXO · INTERAÇÃO CONTÍNUA</span><h2>{activeTitle}</h2>
               <button type="button" onClick={() => { setDrawer(null); setLocalQuestId(null) }} aria-label="Fechar painel"><X size={19} /></button>
             </header>
@@ -303,9 +296,9 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               {drawer === 'forge' && <ForgePanel save={save} onClose={() => setDrawer(null)}
                 onQuest={forgeQuest ? () => { setLocalQuestId(forgeQuest.id); setDrawer('location') } : undefined} />}
               {drawer === 'local' && <LocalMapDrawer save={save} />}
-              {drawer === 'inventory' && <div className="terran-inventory-drawer" aria-label="Inventário e Nexo reunidos">
-                <NexusOverview save={save} />
+              {drawer === 'inventory' && <div className="terran-inventory-drawer" aria-label="Mochila e Vínculos">
                 <InventoryPanel save={save} />
+                <BoundItemsPanel save={save} />
               </div>}
               {drawer === 'location' && (localQuestId
                 ? <QuestNpcPanel save={save} questId={localQuestId} onSelectQuest={setLocalQuestId} onClose={() => {

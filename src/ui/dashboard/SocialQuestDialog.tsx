@@ -30,7 +30,7 @@ export function SocialQuestDialog({ questId, save, onClose }: Props) {
   const complete = () => { turnInQuest(definition.id, definition.turnInNpcId); onClose() }
 
   return (
-    <DialogueWindow save={save} portraitAssetId={npc.portraitAssetId} lines={npc.dialogue} open onClose={onClose} eyebrow={`${definition.category === 'clan' ? 'RECRUTAMENTO DE CLÃ' : definition.category === 'class' ? 'PROVA DE CLASSE' : 'MAIN LORE ADAPTADA'}`} title={npc?.name ?? 'Representante'} className="social-quest-modal" footer={
+    <DialogueWindow save={save} portraitAssetId={npc.portraitAssetId} lines={npc.dialogue} quest={definition} open onClose={onClose} eyebrow={`${definition.category === 'clan' ? 'RECRUTAMENTO DE CLÃ' : definition.category === 'class' ? 'PROVA DE CLASSE' : 'MAIN LORE ADAPTADA'}`} title={npc?.name ?? 'Representante'} className="social-quest-modal" footer={
       progress.status === 'available'
         ? <GameButton variant="primary" onClick={openOffer}><BookOpenCheck size={17} /> Conhecer a prova</GameButton>
         : progress.status === 'offered'
@@ -42,9 +42,7 @@ export function SocialQuestDialog({ questId, save, onClose }: Props) {
               : <GameButton variant="ghost" onClick={onClose}>Encerrar conversa</GameButton>
     }>
       <div className="social-quest-detail">
-        <p>{npc?.dialogue[0]}</p>
         <h3>{definition.title}</h3>
-        <p>{definition.summary}</p>
         <div className="quest-offer__objectives">
           {definition.objectives.map((objective) => <span key={objective.id}><Circle size={13} />{objective.label}<strong>{progress.objectives[objective.id] ?? 0}/{objective.required}</strong></span>)}
         </div>

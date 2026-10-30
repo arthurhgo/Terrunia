@@ -22,7 +22,7 @@ test('Terran conserva os atalhos laterais; somente MENU abre a tela de progress�
   await expect(page.getByRole('link', { name: 'Abrir Menu' })).toBeVisible()
   await expect(page.getByRole('navigation', { name: 'Navegação principal' })).toHaveCount(0)
 
-  const inventoryTab = rail.getByRole('button', { name: 'Abrir Inventário e Nexo' })
+  const inventoryTab = rail.getByRole('button', { name: 'Abrir Inventário' })
   await inventoryTab.hover()
   const [stageBounds, tabBounds] = await Promise.all([stage.boundingBox(), inventoryTab.boundingBox()])
   expect(stageBounds).not.toBeNull()
@@ -37,18 +37,18 @@ test('Terran conserva os atalhos laterais; somente MENU abre a tela de progress�
   await page.getByRole('button', { name: 'Fechar painel' }).click()
 
   await inventoryTab.click()
-  const drawer = page.getByRole('complementary', { name: 'Painel lateral: Inventário e Nexo' })
+  const drawer = page.getByRole('complementary', { name: 'Painel lateral: Inventário' })
   await expect(drawer).toBeVisible()
-  await expect(drawer.getByRole('heading', { name: 'Status do personagem' })).toBeVisible()
-  await expect(drawer.getByRole('heading', { name: 'Inventário' })).toBeVisible()
-  await expect(drawer.getByRole('group', { name: 'Seções de Inventário e Nexo' })).toHaveCount(0)
+  await expect(drawer.getByRole('heading', { name: 'Status do personagem' })).toHaveCount(0)
+  await expect(drawer.locator('.arcane-panel').first().getByRole('heading', { name: 'Mochila' })).toBeVisible()
+  await expect(drawer.getByRole('group', { name: 'Seções de Inventário' })).toHaveCount(0)
   const drawerBounds = await drawer.boundingBox()
   expect(drawerBounds).not.toBeNull()
   expect(drawerBounds!.x + drawerBounds!.width).toBeLessThanOrEqual(stageBounds!.x + 1)
   await page.getByRole('button', { name: 'Fechar painel' }).click()
 
   await rail.getByRole('button', { name: 'Abrir Missões' }).click()
-  await expect(page.getByRole('region', { name: 'Registro de missões em grid' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Diário de missões' })).toBeVisible()
   await expect(stage).toBeVisible()
   await page.getByRole('button', { name: 'Fechar painel' }).click()
 

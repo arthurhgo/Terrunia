@@ -29,13 +29,13 @@ export function NpcDialog({ open, onClose, save }: { open: boolean; onClose: () 
   const offered = ['available', 'offered'].includes(progress.status)
 
   return (
-    <DialogueWindow save={save} portraitAssetId={npc.portraitAssetId} lines={npc.dialogue} open={open} onClose={onClose} eyebrow="TERRAN · ARQUIVO DOS REGISTROS" title={`${npc.name}, ${npc.title}`} className="npc-modal" footer={
+    <DialogueWindow save={save} portraitAssetId={npc.portraitAssetId} lines={npc.dialogue} quest={quest} open={open} onClose={onClose} eyebrow={npc.title} title={npc.name} className="npc-modal" footer={
       offered ? <div className="quest-offer-actions"><GameButton variant="ghost" onClick={decline}><X size={17} /> Agora não</GameButton><GameButton variant="primary" onClick={accept}><BookOpenCheck size={17} /> Aceitar missão</GameButton></div>
         : progress.status === 'ready_to_turn_in' ? <GameButton variant="primary" onClick={complete}><CheckCheck size={17} /> Concluir missão</GameButton>
           : <GameButton variant="ghost" onClick={onClose}>Encerrar conversa</GameButton>
     }>
-      {offered ? <div className="quest-offer quest-offer--detailed"><ScrollText size={25} /><div><p className="eyebrow">OFERTA DE MISSÃO · {getQuestStatusLabel(progress.status)}</p><h3>{quest.title}</h3><p>{quest.summary}</p><div className="quest-offer__objectives">{quest.objectives.map((objective) => <span key={objective.id}><Circle size={13} />{objective.label}<strong>0/{objective.required}</strong></span>)}</div><div className="quest-offer__rewards"><small>RECOMPENSAS</small>{quest.rewards.map((reward) => <strong key={reward.type}>{reward.type}: +{reward.value}</strong>)}</div></div></div> : null}
-      {progress.status === 'ready_to_turn_in' ? <div className="quest-offer quest-offer--ready"><CheckCheck size={25} /><div><p className="eyebrow">OBJETIVOS CONCLUÍDOS</p><h3>{quest.title}</h3><p>O registro está pronto para entrega. As recompensas só serão aplicadas ao concluir a missão.</p></div></div> : null}
+      {offered ? <div className="quest-offer quest-offer--detailed"><ScrollText size={25} /><div><p className="eyebrow">OFERTA DE MISSÃO · {getQuestStatusLabel(progress.status)}</p><h3>{quest.title}</h3><div className="quest-offer__objectives">{quest.objectives.map((objective) => <span key={objective.id}><Circle size={13} />{objective.label}<strong>0/{objective.required}</strong></span>)}</div><div className="quest-offer__rewards"><small>RECOMPENSAS</small>{quest.rewards.map((reward) => <strong key={reward.type}>{reward.type}: +{reward.value}</strong>)}</div></div></div> : null}
+      {progress.status === 'ready_to_turn_in' ? <div className="quest-offer quest-offer--ready"><CheckCheck size={25} /><div><p className="eyebrow">OBJETIVOS CONCLUÍDOS</p><h3>{quest.title}</h3></div></div> : null}
     </DialogueWindow>
   )
 }

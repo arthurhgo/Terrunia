@@ -4,6 +4,7 @@ import { useGameStore } from '../../state/gameStore'
 
 const icons = {
   info: Info,
+  neutral: Info,
   success: CheckCircle2,
   warning: TriangleAlert,
   error: XCircle,
