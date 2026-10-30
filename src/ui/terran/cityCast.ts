@@ -1,4 +1,5 @@
 import type { TerranLocationId } from '../../content/terran'
+import { content } from '../../content/catalog'
 import { streetNpcPlacements } from '../../content/streetNpcs'
 import type { TerranNpcPresence } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
@@ -12,13 +13,14 @@ export type CityActor = {
   point: WorldPoint
   palette: string
   variant: number
-  marker: '!' | '✓' | null
+  marker: '!' | '✓' | '?' | null
+  stationary?: boolean
 }
 
 /** Street actors use designer-authored stable positions; the room roster is unrelated. */
 export function getCityCast(save: GameSave): CityActor[] {
   const eligible = new Map(getOutdoorCityNpcs(save).map(({ presence }) => [presence.id, presence]))
-  return streetNpcPlacements.flatMap((placement) => {
+  const street = streetNpcPlacements.flatMap((placement) => {
     const presence = eligible.get(placement.id)
     if (!presence) return []
     return [{
@@ -31,4 +33,17 @@ export function getCityCast(save: GameSave): CityActor[] {
       marker: getNpcQuestMarker(save, presence),
     }]
   })
+  const rosetta = content.terranLocations.location_terran_portal_plaza.npcPresences
+    .find((presence) => presence.id === 'presence_rosetta')
+  return rosetta ? [...street, {
+    id: rosetta.id,
+    presence: rosetta,
+    locationId: 'location_terran_portal_plaza' as const,
+    // Beside the Portal's spawn point (192,148), on the walkable plaza.
+    point: { x: 210, y: 155 },
+    palette: 'knowledge',
+    variant: 0,
+    marker: '?' as const,
+    stationary: true,
+  }] : street
 }
