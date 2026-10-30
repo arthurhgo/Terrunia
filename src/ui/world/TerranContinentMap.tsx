@@ -27,7 +27,7 @@ export function TerranContinentMap({ save }: { save: GameSave }) {
   return <div className="terran-continent">
     <div className="terran-continent__canvas">
       <svg className="terran-continent__art" viewBox="0 0 1000 630"
-        preserveAspectRatio="xMidYMid slice" role="img"
+        preserveAspectRatio="none" role="img"
         aria-label="Mapa cartográfico do continente de Terran com áreas descobertas e névoa de exploração">
         <defs>
           <linearGradient id="terr-sea" x1="0" y1="0" x2="1" y2="1">
