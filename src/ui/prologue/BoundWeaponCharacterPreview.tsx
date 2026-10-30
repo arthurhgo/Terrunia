@@ -35,7 +35,7 @@ export function BoundWeaponCharacterPreview({ save, weapon }: Props) {
           alt={`Terrírian ${save.character.name}`} />
         {weapon && <AssetImage key={weapon.assetId} assetId={weapon.assetId}
           style={gripStyle} className="prologue-hero-preview__equipped-weapon"
-          alt={`${weapon.name} equipada na mão do personagem (prévia)`} />}
+          alt={`${weapon.name} na mão do personagem (prévia)`} />}
       </div>
     </div>
     <div className="prologue-hero-preview__caption">
