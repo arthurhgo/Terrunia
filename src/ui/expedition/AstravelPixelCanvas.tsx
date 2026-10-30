@@ -168,7 +168,10 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
             nearbyActiveBattleRef.current = battleId
             setNearbyActiveBattleId(battleId)
           }
-          if (battleId) activateNode(battleId)
+          if (battleId && autoAttemptedRef.current !== battleId) {
+            autoAttemptedRef.current = battleId
+            activateNode(battleId)
+          } else if (!battleId) autoAttemptedRef.current = null
         }
       }
       drawAstravel(ctx, trail, statusesRef.current, playerRef.current, sheet, reducedMotion ? 0 : frame,
