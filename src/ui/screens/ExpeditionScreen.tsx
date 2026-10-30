@@ -118,8 +118,10 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
             <span>{activeNode ? `Siga até: ${activeNode.label}` : 'Expedição concluída · retorne a Terran'}
               <small>WASD / setas / toque para caminhar · E para investigar · combate por turnos</small></span>
           </div>
-        </section>
-        {drawer && <aside className="terran-game__drawer" aria-label={`Painel lateral: ${title}`}>
+          {drawer && <>
+            <button type="button" className="expedition-game__drawer-backdrop"
+              aria-label="Fechar janela da instância" onClick={() => { setDrawer(null); setSelectedId(null) }} />
+            <aside className="terran-game__drawer expedition-game__window" aria-label={`Painel lateral: ${title}`}>
           <header><span className="eyebrow">ASTRAVÉL · REGISTROS DA EXPEDIÇÃO</span><h2>{title}</h2>
             <button type="button" aria-label="Fechar painel" onClick={() => { setDrawer(null); setSelectedId(null) }}><X size={19} /></button>
           </header>
@@ -142,7 +144,9 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
               <p>As recompensas da missão exigem retorno ao NPC responsável em Terran.</p>
             </div>}
           </div>
-        </aside>}
+            </aside>
+          </>}
+        </section>
       </div>
       {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId}
         reducedMotion={save.settings.reducedMotion} onComplete={() => recordCutsceneViewed(scene.id)} />}
