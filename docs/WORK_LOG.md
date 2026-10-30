@@ -1,5 +1,15 @@
 # Registro de implementação
 
+## Terran v0.12 — conversas, diário e inventário (2026-10-30)
+
+- tornados cinza o marcador e a notificação de missão aceita, com prioridade de entrega pronta sobre aceita e nova oferta;
+- substituídos retratos grandes e texto duplicado por retrato lateral, caixa única de fala e respostas interativas, mantendo foco, Escape e layout móvel;
+- escritas 51 vozes com três assuntos exclusivos cada e 25 apresentações de missão na voz do NPC; perguntas sobre objetivo, drops e recompensa usam os dados reais;
+- reorganizados diário e seletor do NPC em linhas de largura inteira, principal destacada acima das secundárias e histórico no fim;
+- separado o Nexo do Inventário, que abre na Mochila e exibe os Vínculos depois, preservando o HUD;
+- cobertos ramos de conversa, ausência de mutações, ordenação, foco, cores, filtros, inventário e fluxo de navegador com fixtures explícitas;
+- versão do app 0.12.0, mantendo schema 14 e compatibilidade com saves anteriores; detalhes em `DIALOGUE_JOURNAL_INVENTORY_v0.12.md`.
+
 ## Terran v0.11 — cidade ampliada e encomendas de materiais (2026-10-30)
 
 - ampliado o mundo de Terran para 768×512 com câmera 384×256 seguindo o jogador, minimapa com viewport e navegação física até destinos;

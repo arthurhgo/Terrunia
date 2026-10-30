@@ -79,6 +79,18 @@ Esta atualização substitui as referências históricas a limite de três, seis
 
 Detalhes e validação em `TERRAN_EXPLORATION_AND_CONTRACTS_v0.11.md`. Esta atualização substitui as referências anteriores a marcadores uniformes e escala fixa da cidade.
 
+## Atualização posterior do criador — 2026-10-30, v0.12
+
+| Tema | Conflito encontrado | Decisão aplicada |
+|---|---|---|
+| Missão aceita | A v0.11 mantinha cores de oferta em missões já aceitas. | Aceite torna o marcador e a notificação cinza. A prioridade é entrega pronta → aceita → oferta, preservando acesso a outras ofertas na conversa. Rosetta mantém seu `?` vermelho; entrega pronta recupera destaque. |
+| Composição de diálogo | A v0.10 usava dois retratos grandes, e o corpo repetia nome, retrato e fala do NPC. | A nova referência usa retrato lateral do NPC, uma única caixa de fala e respostas do jogador abaixo. Os detalhes guardam apenas dados e ações da missão/serviço. Esta direção substitui a composição da v0.10. |
+| Interação narrativa | Conversas anteriores apenas paginavam uma introdução curta. | 51 vozes recebem três assuntos próprios e as missões oferecem perguntas contextuais sobre objetivo, materiais e recompensa. Escolhas são leitura; aceite, entrega, compra e forja continuam ações explícitas. Texto novo é `CONTENT_DRAFT`, sem novas regras de lore. |
+| Diário e seletor do NPC | Cartões em duas colunas comprimiam a leitura e misturavam missões principais e secundárias. | Uma missão por linha horizontal, empilhada. Principal destacada primeiro, secundárias abaixo, histórico concluído no fim. Detalhes do diário abrem por clique. |
+| Inventário e Nexo | O painel combinado abria com status antes dos itens. | Inventário abre na Mochila, seguida dos Vínculos, sem repetir a ficha de status. `/nexus` volta a ser um destino próprio; o HUD continua disponível. |
+
+Detalhes e validação em `DIALOGUE_JOURNAL_INVENTORY_v0.12.md`. Não há alteração de balanceamento, dados persistidos ou schema nesta rodada.
+
 ## OWNER_DECISION pendente
 
 - Curva final da barra de Essência e recompensas do encontro.

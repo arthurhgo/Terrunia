@@ -1,10 +1,10 @@
 # Nexo e Quest Journal — direção oficial
 
-**Status:** decisão do criador aprovada em 2026-08-12, com capacidade e representação dos NPCs atualizadas pelo criador em 2026-10-30. Prevalece sobre interpretações anteriores no domínio de Nexo, Personagem e missões.
+**Status:** decisão do criador aprovada em 2026-08-12, com capacidade, diálogos, marcadores e organização dos painéis atualizados pelo criador em 2026-10-30 (v0.12). Prevalece sobre interpretações anteriores no domínio de Nexo, Personagem e missões.
 
 ## Nexo
 
-`/nexus` é a visão integrada principal da build. Deve apresentar:
+`/nexus` é a visão própria dos status do personagem, separada do Inventário. Deve apresentar:
 
 - retrato, nome, nível, XP, Clã/Rank e Classe/Maestria;
 - Astúcia, Agilidade, Força, Vigor e Espírito;
@@ -14,6 +14,10 @@
 - exatamente Arma, Escudo/Protetor, Armadura, Colar e Pulseira.
 
 Os cinco Vínculos são permanentes. Não adicionar slots tradicionais substituíveis.
+
+## Inventário — decisão posterior de 2026-10-30, v0.12
+
+O painel da cidade e `/inventory` se chamam **Inventário**. A **Mochila** é a primeira caixa, seguida pelos cinco Vínculos. Não repetir os status do Nexo nessa área. Eles continuam disponíveis no HUD permanente e na rota própria `/nexus`; abrir o inventário não deve exigir passar pela ficha do personagem.
 
 ## Personagem
 
@@ -41,13 +45,17 @@ LOCKED → AVAILABLE → OFFERED → ACTIVE → READY_TO_TURN_IN → COMPLETED
 - Quest Journal;
 - Quest Tracker;
 - destino do minimapa;
-- estados dos marcadores dos NPCs: `?` vermelho exclusivo de Rosetta; `!` amarelo para missões principais, de Clã ou Classe disponíveis/em andamento; `◇` azul para sidequests e `◆` azul para entrega pronta. NPC sem missão disponível, oferecida, ativa ou pronta não recebe marcador. Esta decisão posterior da v0.11 substitui a padronização vermelha da v0.10.
+- estados dos marcadores dos NPCs: `?` vermelho exclusivo de Rosetta; `!` amarelo para ofertas principais, de Clã ou Classe; `◇` azul para ofertas secundárias. Após o aceite, `!` e `◇` ficam **cinza**. Entrega pronta volta ao destaque, com `!` amarelo ou `◆` azul. NPC sem missão disponível, oferecida, ativa ou pronta não recebe marcador. Esta decisão posterior da v0.12 substitui a sinalização colorida de missões em andamento da v0.11.
+
+Quando um NPC tem várias missões, a prioridade é entrega pronta, missão aceita e, depois, nova oferta. Assim, outra oferta não recolore imediatamente o marcador que acabou de ficar cinza. Todas as ofertas continuam acessíveis na conversa. A notificação de aceite também usa tom cinza.
 
 Não criar listas paralelas de missões na UI.
 
 ## Journal e Tracker
 
-O Journal possui: Principal, Clã, Classe, Secundárias, Caça/Contratos e Concluídas.
+O Journal apresenta uma missão por linha horizontal de largura inteira, empilhando **Missão principal**, **Secundárias**, Clã, Classe, Caça/Contratos e, por último, Concluídas. A principal tem destaque dourado; entregas prontas vêm primeiro dentro de cada grupo. Filtros ficam numa única faixa horizontal. Objetivos completos, destino e rastreamento abrem por clique, sem duplicar automaticamente o resumo em cada linha.
+
+O seletor de missões de um NPC também usa linhas empilhadas: principal destacada acima das secundárias, seguida das provas de Clã/Classe. Narrativa aparece somente na caixa de fala; objetivos, contagens, materiais e ações de aceite/entrega ficam na área de missão. Escolhas de conversa não aceitam nem concluem missões.
 
 O Tracker exibe apenas missões `ACTIVE` ou `READY_TO_TURN_IN` marcadas como `tracked`. Desativar o Tracker também remove o destaque correspondente do minimapa, sem alterar o estado da missão.
 
