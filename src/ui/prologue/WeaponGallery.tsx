@@ -97,7 +97,7 @@ export function WeaponGallery({ save, selectedId, onSelect }: Props) {
           <strong>{clan.name}</strong>
           <div className="weapon-gallery__bonus-list">
             {clan.bonuses.map((bonus) =>
-              <span key={bonus.label}>+${bonus.value} ${bonus.label}</span>)}
+              <span key={bonus.label}>{`+${bonus.value} ${bonus.label}`}</span>)}
           </div>
         </div>)}
       </div>
