@@ -30,9 +30,22 @@ describe('vida ambiental dos moradores de Terran', () => {
     expect(actors).toEqual(origin)
   })
 
+  it('Rosetta é a única NPC com ? e permanece junto ao Portal', () => {
+    const cast = makeCast()
+    const guide = cast.find((actor) => actor.id === 'presence_rosetta')
+    expect(guide?.presence.label).toBe('Rosetta')
+    expect(guide?.locationId).toBe('location_terran_portal_plaza')
+    expect(guide?.marker).toBe('?')
+    expect(cast.filter((actor) => actor.marker === '?')).toHaveLength(1)
+    expect(guide?.stationary).toBe(true)
+    for (const time of [0, 3, 8, 20]) {
+      expect(getNpcPatrol(guide!, time).point).toEqual(guide!.point)
+    }
+  })
+
   it('move moradores em ciclos determinísticos sem atravessar edifícios', () => {
     const actors = [hypotheticalStreetQuestActor]
-    expect(makeCast()).toHaveLength(6)
+    expect(makeCast()).toHaveLength(7)
     let animated = 0
     for (const actor of actors) {
       let changed = false
