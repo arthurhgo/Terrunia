@@ -1,0 +1,11 @@
+/* Shared visible polyhedral SVG dice, independent of the prologue route. */
+.die-icon { display: block; width: 41px; height: 41px; filter: drop-shadow(0 2px 5px #c69e5838); }
+.die-icon__shape { fill: #17394a; stroke: #eac083; stroke-width: 2.3; stroke-linejoin: round; }
+.die-icon__facet { fill: none; stroke: #72acc0; stroke-opacity: .83; stroke-width: 1; }
+.die-icon__number { fill: #ffe0a2; font: 700 19px Georgia,serif; paint-order: stroke; stroke: #07101a; stroke-width: 2.8; }
+.die-icon--d4 .die-icon__shape { fill: #264638; }
+.die-icon--d6 .die-icon__shape { fill: #263854; }
+.die-icon--d8 .die-icon__shape { fill: #503b27; }
+.die-icon--d10 .die-icon__shape { fill: #48304c; }
+.die-icon--d12 .die-icon__shape { fill: #564327; }
+.die-icon--d20 .die-icon__shape { fill: #563b40; }
