@@ -1,4 +1,4 @@
-import { BookOpen, Grid2X2, MapPin, Menu, Package, X } from 'lucide-react'
+import { BookOpen, Grid2X2, MapPin, Package, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
