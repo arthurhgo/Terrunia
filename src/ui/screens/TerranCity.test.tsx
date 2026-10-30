@@ -6,6 +6,7 @@ import { TERRAN_LOCATION_IDS } from '../../content/terran'
 import { bindPrologueWeapon, createNewSave } from '../../domain/game/createSave'
 import { useGameStore } from '../../state/gameStore'
 import { TerranLocationScreen } from './TerranLocationScreen'
+import { InventoryScreen } from './InventoryScreen'
 import { TerranScreen } from './TerranScreen'
 
 const createPlayableSave = () => {
@@ -130,6 +131,15 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('complementary', { name: 'Status permanente do personagem' })).toBe(status)
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Praça do Portal' }))
     expect(screen.getByRole('complementary', { name: 'Painel lateral: Praça do Portal' })).toBeInTheDocument()
+  })
+
+  it('mantém a biblioteca visual exclusivamente nos Registros de Eldamar', () => {
+    loadSave()
+    render(<MemoryRouter><InventoryScreen /></MemoryRouter>)
+    expect(screen.getByRole('heading', { name: 'Inventário e Equipamentos' })).toBeInTheDocument()
+    expect(screen.getByText(/O Arsenal Visual e o guia de jogo ficam na Estante dos Registros/)).toBeInTheDocument()
+    expect(screen.queryByText('BIBLIOTECA DE SPRITES · 16×16 PX')).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Tipos de equipamento' })).not.toBeInTheDocument()
   })
 
   it('abre a Skill Tree independente e mantém a Base fora do menu', () => {
