@@ -80,7 +80,8 @@ export default function App() {
           <Route path="/inventory" element={<GameBoot><InventoryScreen /></GameBoot>} />
           <Route path="/arsenal" element={<GameBoot><ArsenalScreen /></GameBoot>} />
           <Route path="/character" element={<GameBoot><CharacterScreen /></GameBoot>} />
-          <Route path="/skill-tree" element={<GameBoot><SkillTreeScreen /></GameBoot>} />
+          <Route path="/menu" element={<GameBoot><SkillTreeScreen /></GameBoot>} />
+          <Route path="/skill-tree" element={<GameBoot><Navigate to="/menu" replace /></GameBoot>} />
           <Route path="/battle" element={<GameBoot><Navigate to="/play" replace /></GameBoot>} />
           <Route path="/expedition" element={<GameBoot><Navigate to="/play" replace /></GameBoot>} />
           <Route path="/dungeon" element={<GameBoot><Navigate to="/play" replace /></GameBoot>} />
