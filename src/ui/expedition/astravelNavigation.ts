@@ -1,9 +1,16 @@
 import type { TrailDefinition, TrailNodeDefinition } from '../../content/types'
 import type { WorldPoint } from '../terran/pixelCityArt'
 
-export const ASTRAVEL_WIDTH = 384
-export const ASTRAVEL_HEIGHT = 256
+export const ASTRAVEL_WIDTH = 768
+export const ASTRAVEL_HEIGHT = 512
+export const ASTRAVEL_VIEW_WIDTH = 384
+export const ASTRAVEL_VIEW_HEIGHT = 256
 export const ASTRAVEL_GRID = 8
+
+export const getAstravelCamera = (point: WorldPoint): WorldPoint => ({
+  x: Math.max(0, Math.min(ASTRAVEL_WIDTH - ASTRAVEL_VIEW_WIDTH, Math.round(point.x - ASTRAVEL_VIEW_WIDTH / 2))),
+  y: Math.max(0, Math.min(ASTRAVEL_HEIGHT - ASTRAVEL_VIEW_HEIGHT, Math.round(point.y - ASTRAVEL_VIEW_HEIGHT / 2))),
+})
 const columns = ASTRAVEL_WIDTH / ASTRAVEL_GRID
 const rows = ASTRAVEL_HEIGHT / ASTRAVEL_GRID
 const anchorCache = new WeakMap<TrailDefinition, WorldPoint[]>()

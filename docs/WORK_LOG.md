@@ -1,5 +1,17 @@
 # Registro de implementação
 
+## Astravél v0.9 — remake de quinze combates (2026-10-30)
+
+- substituída a rota de seis marcos por chegada + 15 nós com combate, três trechos e grupos de até três inimigos;
+- ligadas as investigações de Vorren e Lithwynn a vitórias, aceite manual, gates, entrega e Journal existente;
+- ampliado mundo para 768×512, com câmera 384×256, minimapa, caminhada até objetivo e sprites dos grupos no terreno;
+- adicionados Titan Raiz-Negra, três materiais, Emblema protegido e dois refúgios com recuperação/suprimentos após vitória única;
+- recompensas derivadas dos monstros e proteção contra combate iniciado fora da instância ou durante outro combate;
+- criado save 12 com migração de campanhas parciais, em combate e concluídas, sem perder Vínculos, recursos ou snapshots;
+- atualizados manifest/atlas e reparados cinco PNGs de NPCs corrompidos a partir dos desenhos-fonte existentes;
+- criada integração dos 15 encontros, entregas, conversões, ritos II/III e reload; ampliados testes de migração e referências;
+- documentação detalhada e limites em `ASTRAVEL_REMAKE_v0.2.md`.
+
 ## Terran v0.8 — cadeia inicial, alojamento e comércio
 
 - adicionadas três etapas progressivas após Eldamar: Daeryn (casa), Vorren (bestiário) e Lithwynn (inscrições), com objetivo, aceite, entrega e recompensas declarativas;

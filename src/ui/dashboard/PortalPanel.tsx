@@ -8,7 +8,8 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
-import { getActiveTrailNode } from '../../domain/exploration/trailEngine'
+import { ASTRAVEL_SECTORS } from '../../content/astravel'
+import { checkTrailQuestGate, getActiveTrailNode } from '../../domain/exploration/trailEngine'
 import { PORTAL_HUNT_IDS } from '../../domain/combat/portalHunts'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
@@ -27,6 +28,8 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
   const trail = content.trails.trail_astravel_entry
   const quest = save.quests.vs_astravel_first_contact
   const currentNode = getActiveTrailNode(save, trail)
+  const gate = currentNode ? checkTrailQuestGate(save, currentNode, content) : null
+  const cleared = trail.nodes.filter((node) => node.type !== 'entry' && save.world.trailNodeStates[node.id] === 'completed').length
 
   const enter = () => {
     enterAstravel()
@@ -56,16 +59,18 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
         <div><p className="eyebrow">EXPLORAÇÃO DE TERRÚNIA</p><h3>{trail.name}</h3><small>{trail.actLabel}</small></div>
       </div>
 
-      <div className="difficulty-tabs" aria-label="Dificuldade">
-        <button type="button" className="active">Normal</button>
-        <button type="button" disabled>Elite <LockKeyhole size={11} /></button>
-        <button type="button" disabled>Pesadelo <LockKeyhole size={11} /></button>
+      <div className="portal-sectors" aria-label="Progressão dos três trechos de Astravél">
+        {ASTRAVEL_SECTORS.map((sector) => <div key={sector.id} style={{ borderColor: sector.color }}>
+          <strong>{sector.name}</strong><small>Encontros {sector.from}–{sector.to}</small>
+          <span>{trail.nodes.filter((node) => node.sectorId === sector.id && save.world.trailNodeStates[node.id] === 'completed').length}/5</span>
+        </div>)}
       </div>
-
-      <div className="trail-map" aria-label="Mapa de nós da Floresta de Astravél">
+      <div className="portal-route-progress"><span>{cleared}/15 combates concluídos</span><progress max={15} value={cleared} aria-label="Combates concluídos em Astravél" /></div>
+      {gate && !gate.ok && <p className="expedition-tactic">{gate.message}</p>}
+      <div className="trail-map trail-map--astravel" aria-label="Mapa de nós da Floresta de Astravél">
         <div className="trail-map__texture" aria-hidden="true" />
-        <svg viewBox="0 0 320 410" aria-hidden="true" className="trail-paths">
-          <path d="M58 54 C105 68 128 92 154 111 S122 177 100 197 S161 239 205 254 S132 305 128 327 S188 359 230 367" />
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" className="trail-paths">
+          <polyline points={trail.nodes.map((node) => `${node.position.x},${node.position.y}`).join(' ')} fill="none" vectorEffect="non-scaling-stroke" />
         </svg>
         {trail.nodes.map((node, index) => {
           const status = save.world.trailNodeStates[node.id] ?? 'locked'
@@ -80,7 +85,7 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
                 top: `${node.position.y}%`,
               } as React.CSSProperties}
             >
-              {node.type === 'boss' ? <Skull size={19} /> : node.index}
+              {node.type === 'boss' ? <Skull size={15} /> : node.type === 'entry' ? <Trees size={13} /> : node.index}
               <span>{node.label}</span>
             </div>
           )
@@ -107,7 +112,7 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
       {action}
       {save.world.trailNodeStates.astravel_fungorro_01 === 'completed' && !save.battle && (
         <div className="portal-wave-mode">
-          <p className="eyebrow">MODO ONDAS · BALANCE_DRAFT</p>
+          <p className="eyebrow">MODO ONDAS</p>
           <p>Encontros progressivos com até quatro criaturas, sentinela a cada cinco ondas e saída entre vitórias.</p>
           <p>Recorde pessoal: <strong>{save.world.portalWaveBest ?? 0} ondas</strong></p>
           <GameButton variant="secondary" full onClick={() => {
@@ -119,7 +124,7 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
 
       {save.world.trailNodeStates.astravel_fungorro_01 === 'completed' && !save.battle && (
         <section className="portal-hunts" aria-label="Caçadas repetíveis do Portal">
-          <p className="eyebrow">CAÇADAS DO PORTAL · CONTENT_DRAFT</p>
+          <p className="eyebrow">CAÇADAS DO PORTAL</p>
           <p>Três encontros de combate independentes da trilha principal. Os materiais encontrados podem ser vendidos ou convertidos em Essência.</p>
           {PORTAL_HUNT_IDS.map((id) => {
             const encounter = content.encounters[id]

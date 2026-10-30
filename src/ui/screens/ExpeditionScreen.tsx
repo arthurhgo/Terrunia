@@ -3,9 +3,13 @@ import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { TrailNodeDefinition } from '../../content/types'
-import { getActiveTrailNode } from '../../domain/exploration/trailEngine'
+import { ASTRAVEL_SECTORS, getAstravelSector } from '../../content/astravel'
+import type { GameSave } from '../../domain/game/types'
+import { getQuestJournalEntries, getQuestStatusLabel } from '../../domain/quests/questSelectors'
+import { checkTrailQuestGate, getActiveTrailNode } from '../../domain/exploration/trailEngine'
 import { getNextCutscene } from '../../domain/terran/cutscenes'
 import { useGameStore } from '../../state/gameStore'
+import { AssetImage } from '../components/AssetImage'
 import { GameShell } from '../components/GameShell'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
@@ -14,25 +18,32 @@ import { AstravelPixelCanvas } from '../expedition/AstravelPixelCanvas'
 type Drawer = 'trail' | 'node' | 'inventory' | 'quests' | null
 const trail = content.trails.trail_astravel_entry
 
-/** CONTENT_DRAFT: environmental fragments only; all progression uses the trail definition. */
-const vignettes: Record<string, string> = {
-  astravel_entry: 'A luz do Portal recua. Entre as árvores rúnicas, uma trilha de terra acompanha o murmúrio da energia natural.',
-  astravel_fungorro_01: 'Esporos flutuam à altura das raízes. Uma presença Fungorra interrompe o caminho à frente.',
-  astravel_camp_03: 'Um abrigo abandonado resiste sob folhas luminescentes. Ainda é possível vasculhar os suprimentos.',
-  astravel_spore_ambush_04: 'A vegetação escurece. Os esporos se adensam e denunciam uma emboscada.',
-  astravel_ruin_threshold_05: 'Runas rompidas conduzem ao limiar subterrâneo das Câmaras Fúngicas de Astravél.',
-  astravel_boss_preview: 'A praga assume forma dentro das Câmaras: o Colosso Micélio guarda a anomalia fúngica.',
-}
-
-function NodeDrawer({ node, status, onAction }: { node: TrailNodeDefinition; status: string; onAction: () => void }) {
+function NodeDrawer({ node, status, save, onAction, onReturn }: {
+  node: TrailNodeDefinition; status: string; save: GameSave; onAction: () => void; onReturn: () => void
+}) {
   const actionable = status === 'current' || status === 'bossCurrent' || (status === 'completed' && node.type === 'boss')
+  const gate = status === 'completed' ? { ok: true as const } : checkTrailQuestGate(save, node, content)
+  const encounter = node.encounterId ? content.encounters[node.encounterId] : null
+  const drops = encounter ? [...new Set(encounter.rewards.lootDefinitionIds)].map((id) => content.items[id]) : []
   return <article className="expedition-node-detail">
-    <span className="eyebrow">MARCO {node.index} · {status === 'completed' ? 'CONCLUÍDO' : actionable ? 'DISPONÍVEL' : 'BLOQUEADO'}</span>
-    <h3>{node.label}</h3>
-    <p>{vignettes[node.id]}</p>
-    {actionable && node.type !== 'entry' && <button type="button" onClick={onAction} className="expedition-node-detail__action">
+    <span className="eyebrow">ENCONTRO {node.index}/15 · {getAstravelSector(node.index).name.toUpperCase()}</span>
+    <h3>{node.label}</h3><p>{node.description}</p>
+    {node.tacticalHint && <p className="expedition-tactic">{node.tacticalHint}</p>}
+    {encounter && <>
+      <div className="expedition-enemies" aria-label="Criaturas deste encontro">
+        {encounter.enemyDefinitionIds.map((id, index) => <span key={`${id}_${index}`}>
+          <AssetImage assetId={content.enemies[id].assetId} /><small>{content.enemies[id].name}</small>
+        </span>)}
+      </div>
+      <small>Nível sugerido {node.recommendedLevel} · {encounter.rewards.characterXp} XP · {encounter.rewards.gold} Ouro · {encounter.rewards.boundResonance} Ressonância</small>
+      <div className="expedition-drops"><span className="eyebrow">MATERIAIS E SUPRIMENTOS</span>
+        {drops.map((item) => <span key={item.id}><AssetImage assetId={item.iconAssetId} />{item.name}</span>)}
+      </div>
+    </>}
+    {!gate.ok && <div className="expedition-quest-gate"><p>{gate.message}</p><button type="button" onClick={onReturn}>Retornar a Terran</button></div>}
+    {actionable && gate.ok && node.type !== 'entry' && <button type="button" onClick={onAction} className="expedition-node-detail__action">
       {node.type === 'battle' ? <Swords size={17} /> : <Compass size={17} />}
-      {node.type === 'boss' ? 'Adentrar Câmaras Fúngicas' : node.actionLabel ?? node.interaction?.actionLabel ?? 'Explorar'}
+      {node.type === 'boss' ? 'Adentrar Câmaras Fúngicas' : node.actionLabel ?? 'Explorar'}
     </button>}
     {status === 'completed' && <span className="expedition-node-detail__done">✓ Registro preservado na campanha</span>}
   </article>
@@ -57,9 +68,10 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const activeNode = getActiveTrailNode(save, trail)
   const scene = getNextCutscene(save)
   const selectedNode = trail.nodes.find((node) => node.id === selectedId) ?? null
-  const completed = trail.nodes.filter((node) => save.world.trailNodeStates[node.id] === 'completed').length
-  const quest = save.quests.vs_astravel_first_contact
-  const questDefinition = content.quests.vs_astravel_first_contact
+  const completed = trail.nodes.filter((node) => node.type !== 'entry' && save.world.trailNodeStates[node.id] === 'completed').length
+  const quests = getQuestJournalEntries(save, content).filter(({ progress }) => progress.status !== 'completed')
+  const sector = getAstravelSector(activeNode?.index ?? 15)
+  const activeGate = activeNode ? checkTrailQuestGate(save, activeNode, content) : null
 
   const leave = () => {
     returnToTerran()
@@ -69,6 +81,8 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const engage = (nodeId: string): boolean => {
     // The store enforces current trail status, encounter content, and remaining HP.
     // In the unified viewport, the persistent scene switches to combat automatically.
+    const node = trail.nodes.find((candidate) => candidate.id === nodeId)
+    if (node && !checkTrailQuestGate(save, node, content).ok) { inspect(nodeId); return false }
     startBattle(nodeId)
     const started = Boolean(useGameStore.getState().save?.battle)
     if (started && !unified) navigate('/battle')
@@ -94,11 +108,11 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const sceneContent = <div className="terran-game expedition-game">
       <header className="terran-game__topbar">
         <div><span className="eyebrow">EXPEDIÇÃO · INSTÂNCIA EXTERNA</span><h1>Astravél</h1></div>
-        <div className="terran-game__readout"><MapPin size={16} /> FLORESTA &gt; {activeNode?.label.toUpperCase() ?? 'CÂMARAS FÚNGICAS'}<span>{completed}/{trail.nodes.length} marcos</span></div>
+        <div className="terran-game__readout"><MapPin size={16} /> FLORESTA &gt; {activeNode?.label.toUpperCase() ?? 'CÂMARAS FÚNGICAS'}<span>{completed}/15 combates · {sector.name}</span></div>
       </header>
       <div className={`terran-game__layout expedition-game__layout ${drawer ? 'has-drawer' : ''}`}>
         <section className="terran-game__stage" aria-label="Cena contínua de Astravél">
-          <AstravelPixelCanvas trail={trail} statuses={save.world.trailNodeStates}
+          <AstravelPixelCanvas key={save.world.currentLocationId} trail={trail} statuses={save.world.trailNodeStates}
             currentLocationId={save.world.currentLocationId} portraitAssetId={save.character.portraitAssetId}
             reducedMotion={save.settings.reducedMotion} enabled={!scene} onInspect={inspect} onEngage={engage}
             onTravelStart={() => { if (drawer === 'node') { setDrawer(null); setSelectedId(null) } }} />
@@ -116,7 +130,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
           </button>
           <div className="terran-game__quest"><Trees size={17} />
             <span>{activeNode ? `Siga até: ${activeNode.label}` : 'Expedição concluída · retorne a Terran'}
-              <small>WASD / setas / toque para caminhar · E para investigar · combate por turnos</small></span>
+              <small>{activeGate && !activeGate.ok ? activeGate.message : 'WASD / setas / toque para caminhar · E para investigar · combate por turnos'}</small></span>
           </div>
         </section>
         {drawer && <>
@@ -127,22 +141,29 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
             <button type="button" aria-label="Fechar painel" onClick={() => { setDrawer(null); setSelectedId(null) }}><X size={19} /></button>
           </header>
           <div className="terran-game__drawer-content">
-            {drawer === 'node' && selectedNode && <NodeDrawer node={selectedNode} status={save.world.trailNodeStates[selectedNode.id] ?? 'locked'} onAction={act} />}
+            {drawer === 'node' && selectedNode && <NodeDrawer node={selectedNode} status={save.world.trailNodeStates[selectedNode.id] ?? 'locked'} save={save} onAction={act} onReturn={leave} />}
             {drawer === 'trail' && <div className="expedition-route-list">
               <p>Caminhe pelo terreno para alcançar o marco disponível. Locais bloqueados não ativam encontros nem recompensas.</p>
-              {trail.nodes.map((node) => <div key={node.id} className={`expedition-route-list__item expedition-route-list__item--${save.world.trailNodeStates[node.id] ?? 'locked'}`}>
-                <strong>{node.index}. {node.label}</strong>
-                <small>{save.world.trailNodeStates[node.id] === 'completed' ? 'Concluído' : ['current', 'bossCurrent'].includes(save.world.trailNodeStates[node.id]) ? 'Objetivo atual' : 'Não acessível'}</small>
-              </div>)}
+              {ASTRAVEL_SECTORS.map((section) => <section key={section.id} className="expedition-route-sector">
+                <h3>{section.name} <small>{section.from}–{section.to}</small></h3>
+                {trail.nodes.filter((node) => node.sectorId === section.id).map((node) => <button type="button" key={node.id}
+                  onClick={() => inspect(node.id)} className={`expedition-route-list__item expedition-route-list__item--${save.world.trailNodeStates[node.id] ?? 'locked'}`}>
+                  <strong>{node.index}. {node.label}</strong>
+                  <small>{save.world.trailNodeStates[node.id] === 'completed' ? '✓ Concluído' : ['current', 'bossCurrent'].includes(save.world.trailNodeStates[node.id]) ? 'Objetivo atual' : 'Bloqueado'}</small>
+                </button>)}
+              </section>)}
             </div>}
             {drawer === 'inventory' && <InventoryPanel save={save} />}
             {drawer === 'quests' && <div className="expedition-route-list">
-              <h3>{questDefinition.title}</h3><p>{questDefinition.summary}</p>
-              <small>{quest.status.replaceAll('_', ' ').toUpperCase()}</small>
-              {questDefinition.objectives.map((objective) => <div className="expedition-route-list__item" key={objective.id}>
-                <strong>{objective.label}</strong><small>{Math.min(quest.objectives[objective.id] ?? 0, objective.required)}/{objective.required}</small>
-              </div>)}
-              <p>As recompensas da missão exigem retorno ao NPC responsável em Terran.</p>
+              {quests.length === 0 && <p>Converse com os responsáveis em Terran para aceitar a próxima missão.</p>}
+              {quests.map(({ definition, progress }) => <section key={definition.id} className="expedition-route-sector">
+                <h3>{definition.title}</h3><p>{definition.summary}</p>
+                <small>{getQuestStatusLabel(progress.status)} · Entrega: {content.npcs[definition.turnInNpcId].name}</small>
+                {definition.objectives.map((objective) => <div className="expedition-route-list__item" key={objective.id}>
+                  <strong>{objective.label}</strong><small>{Math.min(progress.objectives[objective.id] ?? 0, objective.required)}/{objective.required}</small>
+                </div>)}
+              </section>)}
+              <p>Entregue a missão ao NPC responsável para receber a recompensa e abrir a próxima etapa.</p>
             </div>}
           </div>
           </aside>

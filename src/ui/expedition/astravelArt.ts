@@ -1,8 +1,9 @@
 import type { TrailDefinition, TrailNodeDefinition } from '../../content/types'
+import { getAstravelSector } from '../../content/astravel'
 import type { TrailNodeStatus } from '../../domain/game/types'
 import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, WORLD_ACTOR_SCALE, type ActorFacing } from '../terran/pixelActorArt'
 import type { WorldPoint } from '../terran/pixelCityArt'
-import { ASTRAVEL_HEIGHT, ASTRAVEL_WIDTH, getAstravelDecorations, getAstravelPoint } from './astravelNavigation'
+import { ASTRAVEL_HEIGHT, ASTRAVEL_WIDTH, ASTRAVEL_VIEW_WIDTH, ASTRAVEL_VIEW_HEIGHT, getAstravelDecorations, getAstravelPoint } from './astravelNavigation'
 
 type Statuses = Record<string, TrailNodeStatus>
 
@@ -67,19 +68,23 @@ function landmark(ctx: CanvasRenderingContext2D, node: TrailNodeDefinition, fram
   pixel(ctx, active && Math.floor(frame / 15) % 2 === 0 ? '#fff0b8' : '#203134', x - 2, y - 36, 4, 4)
 }
 
-/** VISUAL_DRAFT: 384×256, integer pixels and no art-defined collision. */
+/** VISUAL_DRAFT: 768×512 world, scrolling 384×256 viewport, integer pixels and no art-defined collision. */
 export function drawAstravel(
   ctx: CanvasRenderingContext2D, trail: TrailDefinition, statuses: Statuses,
   player: WorldPoint, sprite: HTMLImageElement | null, frame: number, walking: boolean,
-  facing: ActorFacing, variant: 'terririan' | 'sigil',
+  facing: ActorFacing, variant: 'terririan' | 'sigil', camera: WorldPoint = { x: 0, y: 0 },
+  enemySprites: Record<string, HTMLImageElement> = {},
 ) {
   ctx.imageSmoothingEnabled = false
-  ctx.clearRect(0, 0, ASTRAVEL_WIDTH, ASTRAVEL_HEIGHT)
+  ctx.clearRect(0, 0, ASTRAVEL_VIEW_WIDTH, ASTRAVEL_VIEW_HEIGHT)
+  ctx.save()
+  ctx.translate(-camera.x, -camera.y)
   pixel(ctx, '#152f31', 0, 0, ASTRAVEL_WIDTH, ASTRAVEL_HEIGHT)
-  for (let y = 0; y < ASTRAVEL_HEIGHT; y += 16) {
-    for (let x = 0; x < ASTRAVEL_WIDTH; x += 16) {
+  for (let y = Math.floor(camera.y / 16) * 16; y < camera.y + ASTRAVEL_VIEW_HEIGHT; y += 16) {
+    for (let x = Math.floor(camera.x / 16) * 16; x < camera.x + ASTRAVEL_VIEW_WIDTH; x += 16) {
       const seed = (x * 17 + y * 31 + x * y) % 13
-      pixel(ctx, seed < 5 ? '#1d3b38' : '#264a3e', x, y, 16, 16)
+      const colors = y < 194 ? ['#1d3b38', '#264a3e'] : y < 315 ? ['#293243', '#343b47'] : ['#262c35', '#34373c']
+      pixel(ctx, colors[seed < 5 ? 0 : 1], x, y, 16, 16)
       pixel(ctx, seed % 2 ? '#3a6552' : '#2e5850', x + seed % 8, y + 9, 3, 2)
       if (seed === 7) pixel(ctx, '#41796a', x + 12, y + 4, 2, 3)
     }
@@ -112,7 +117,22 @@ export function drawAstravel(
     const y = (i * 37 + 23) % ASTRAVEL_HEIGHT
     pixel(ctx, i % 2 ? '#8cd7a1' : '#8abbd2', x, y, 2, 2)
   }
-  trail.nodes.forEach((node) => landmark(ctx, node, frame, statuses[node.id]))
+  for (const node of trail.nodes) {
+    landmark(ctx, node, frame, statuses[node.id])
+    const point = getAstravelPoint(node)
+    if (node.index > 0) {
+      const sector = getAstravelSector(node.index)
+      pixel(ctx, sector.color, point.x - 14, point.y + 7, 28, 2)
+    }
+    const enemy = enemySprites[node.id]
+    if (enemy?.complete && enemy.naturalWidth && statuses[node.id] !== 'completed') {
+      ctx.drawImage(enemy, Math.round(point.x - 12), Math.round(point.y - 28), 24, 24)
+    }
+    if (node.checkpoint) {
+      pixel(ctx, '#78684d', point.x + 19, point.y - 6, 10, 6)
+      pixel(ctx, '#dbb674', point.x + 22, point.y - 13, 4, 8)
+    }
+  }
   drawPlayerAura(ctx, player.x, player.y, frame)
   pixel(ctx, '#11282b', player.x - 5, player.y - 2, 10, 3)
   const stride = walking ? Math.floor(frame / 8) % 3 : 0
@@ -120,4 +140,5 @@ export function drawAstravel(
     const row = { down: 0, left: 1, right: 2, up: 3 }[facing]
     ctx.drawImage(sprite, stride * 32, row * 32, 32, 32, Math.round(player.x - 8), Math.round(player.y - 16), 16, 16)
   } else drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[variant], WORLD_ACTOR_SCALE)
+  ctx.restore()
 }

@@ -3557,3 +3557,59 @@ code {
     max-height: min(70dvh, 520px);
   }
 }
+
+/* Astravél remake: larger world, three linked combat sectors. */
+.astravel-minimap { position: absolute; top: 12px; left: 12px; z-index: 5; width: clamp(96px, 13vw, 146px); border: 1px solid #6e8b7c; padding: 4px; background: #102222e8; pointer-events: none; }
+.astravel-minimap svg { display: block; width: 100%; aspect-ratio: 3 / 2; }
+.astravel-minimap > span { display: block; color: #b5c9ad; font-size: .48rem; letter-spacing: .07em; text-align: center; }
+.astravel-follow { position: absolute; bottom: 83px; right: 14px; z-index: 6; border: 1px solid #bea976; padding: 8px 12px; color: #f5d795; background: #162d2bed; cursor: pointer; font-size: .68rem; }
+.astravel-follow span { margin-left: 10px; }
+.expedition-route-sector { display: grid; gap: 9px; padding: 10px 0; }
+.expedition-route-sector h3 { display: flex; justify-content: space-between; gap: 10px; }
+.expedition-route-sector > small, .expedition-node-detail > small { color: #b4c6b4; font-size: .69rem; line-height: 1.6; }
+.expedition-route-sector button { width: 100%; border-top: 0; border-right: 0; border-bottom: 0; text-align: left; cursor: pointer; }
+.expedition-route-sector button:hover, .expedition-route-sector button:focus-visible { background: #243b36; outline: 1px solid #e6c17f; }
+.expedition-tactic { padding: 10px; border-left: 2px solid #bba374; color: #d8ccac; background: #223632; font-size: .75rem; line-height: 1.5; }
+.expedition-enemies { display: flex; gap: 8px; flex-wrap: wrap; }
+.expedition-enemies > span { display: grid; flex: 1; min-width: 75px; justify-items: center; gap: 4px; padding: 8px; background: #1b2c2d; text-align: center; }
+.expedition-enemies img { width: 52px; height: 52px; object-fit: contain; image-rendering: pixelated; }
+.expedition-enemies small { color: #c6c5b5; font-size: .62rem; }
+.expedition-drops { display: grid; gap: 6px; }
+.expedition-drops > span:not(.eyebrow) { display: flex; align-items: center; gap: 8px; font-size: .7rem; color: #c6ccbb; }
+.expedition-drops img { width: 24px; height: 24px; object-fit: contain; image-rendering: pixelated; }
+.expedition-quest-gate { display: grid; gap: 10px; border: 1px solid #a0855b; padding: 10px; }
+.expedition-quest-gate button { padding: 8px; border: 1px solid #c6a469; background: #314438; color: #f6d995; cursor: pointer; }
+.portal-sectors { display: grid; gap: 6px; }
+.portal-sectors > div { display: grid; grid-template-columns: 1fr auto; gap: 3px; border-left: 3px solid; padding: 8px; background: #16282c; }
+.portal-sectors strong { color: #d0c6a6; font-size: .7rem; }
+.portal-sectors small { color: #99aaa2; font-size: .62rem; }
+.portal-sectors span { grid-column: 2; grid-row: 1 / 3; align-self: center; color: #f2d192; font-size: .8rem; }
+.portal-route-progress { display: grid; gap: 6px; color: #d0c5a8; font-size: .7rem; }
+.portal-route-progress progress { width: 100%; height: 6px; accent-color: #bba274; }
+.trail-map--astravel .trail-node { width: 25px; height: 25px; border-width: 2px; font-size: .6rem; }
+.trail-map--astravel .trail-node > span { top: 27px; width: 66px; font-size: .43rem; line-height: 1.2; }
+.trail-map--astravel .trail-node--boss > span { top: auto; bottom: 32px; }
+.trail-map--astravel .trail-paths { height: 100%; width: 100%; }
+.trail-map--astravel .trail-paths polyline { stroke: #644922; stroke-width: 4px; stroke-dasharray: 6 3; }
+@media (max-width: 600px) {
+  .astravel-minimap { top: 5px; left: 5px; width: 82px; }
+  .astravel-minimap > span { font-size: .34rem; }
+  .astravel-follow { bottom: 57px; right: 6px; padding: 5px 7px; font-size: .55rem; }
+}
+/* Expedition controls stay inside the viewport; Terran's outside rail clips here. */
+.expedition-game .terran-game__hud {
+  top: auto; bottom: 88px; left: 12px; right: auto; width: auto; height: auto;
+  display: flex; flex-direction: row; align-items: center; gap: 6px; padding: 0; z-index: 8;
+}
+.expedition-game .terran-game__hud button,
+.expedition-game .terran-game__hud button:is(:hover, :focus-visible) {
+  display: flex; align-items: center; gap: 6px; flex: 0 0 auto; align-self: auto;
+  width: auto; min-width: 38px; min-height: 36px; height: auto; padding: 7px 9px; transition: none;
+}
+.expedition-game .terran-game__hud button span { display: inline; visibility: visible; opacity: 1; max-width: none; }
+@media (max-width: 600px) {
+  .expedition-game .terran-game__hud { bottom: 66px; left: 5px; gap: 3px; }
+  .expedition-game .terran-game__hud button,
+  .expedition-game .terran-game__hud button:is(:hover, :focus-visible) { min-width: 32px; min-height: 30px; padding: 5px; }
+  .expedition-game .terran-game__hud button span { display: none; }
+}

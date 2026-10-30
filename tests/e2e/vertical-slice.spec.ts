@@ -1,148 +1,106 @@
 import { expect, test, type Page } from '@playwright/test'
 
-async function visitTerran(page: Page, location: string) {
-  const skip = page.getByRole('button', { name: 'Pular cena' })
-  if (await skip.isVisible()) await skip.click()
-  await page.getByRole('button', { name: `Ir para ${location}` }).click()
-  await expect(page.getByRole('complementary', { name: `Painel lateral: ${location}` })).toBeVisible()
-}
-
-async function exploreAstravel(page: Page, node: string, action: string) {
-  const skip = page.getByRole('button', { name: 'Pular cena' })
-  if (await skip.isVisible()) await skip.click()
-  await page.getByRole('button', { name: `Aproximar-se de ${node}` }).click()
-  const detail = page.getByRole('complementary', { name: `Painel lateral: ${node}` })
-  await expect(detail).toBeVisible({ timeout: 15_000 })
-  await detail.getByRole('button', { name: action }).click()
-}
-
-test('vertical slice: criação, combate, Essência, node e reload', async ({ page }) => {
-  test.setTimeout(60_000)
-  const visualQa = process.env.VISUAL_QA === '1'
-  const browserErrors: string[] = []
-  page.on('pageerror', (error) => browserErrors.push(error.message))
-  page.on('console', (message) => {
-    if (message.type() === 'error') browserErrors.push(message.text())
-  })
+async function createExpedition(page: Page) {
+  page.setDefaultTimeout(12_000)
   await page.goto('/login')
-
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
-  await expect(page.getByRole('heading', { name: 'Criar Terrírian' })).toBeVisible()
-
   await page.getByPlaceholder('Ex.: Aron').fill('Aron')
   await page.getByRole('button', { name: 'Confirmar Terrírian' }).click()
-  await page.getByRole('button', { name: /Executar Vínculo da Arma/ }).click()
+  await page.getByRole('button', { name: 'Aumentar Força', exact: true }).click()
+  await page.getByRole('button', { name: 'Escolher Espada Longa', exact: true }).press('Enter')
+  await page.getByRole('button', { name: 'Vincular Espada Longa — Grau I', exact: true }).click()
+  // Setup through real domain actions. The browser then exercises movement,
+  // battle, manual drop collection, continuation and persistence through the UI.
+  await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    const store = () => useGameStore.getState()
+    store().recordCutsceneViewed('terran_arrival')
+    store().recordCutsceneViewed('astravel_call')
+    store().travelInTerran('location_terran_eldamar_house')
+    store().discoverEldamar()
+    store().offerQuest('vs_astravel_first_contact')
+    store().acceptQuest('vs_astravel_first_contact')
+    store().travelInTerran('location_terran_portal_plaza')
+    store().enterAstravel()
+  })
+  await expect(page.getByRole('heading', { name: 'Astravél', exact: true })).toBeVisible()
+}
 
-  await visitTerran(page, 'Casa de Eldamar')
-  await page.getByRole('button', { name: 'Falar com Eldamar' }).click()
-  await page.getByRole('button', { name: 'Aceitar missão' }).click()
-  await visitTerran(page, 'Praça do Portal')
-  await page.getByRole('button', { name: 'Entrar em Astravél' }).click()
-  await expect(page.getByRole('heading', { name: 'Astravél' })).toBeVisible()
-  await exploreAstravel(page, 'Presença Fungorra', 'Enfrentar Fungorro')
-
-  await page.getByRole('button', { name: 'Atacar' }).click()
-  await page.getByRole('button', { name: 'Atacar' }).click()
-  await expect(page.getByRole('heading', { name: 'A rota foi preservada' })).toBeVisible()
-  await page.getByRole('button', { name: 'Receber recompensas' }).click()
-  await page.getByRole('button', { name: 'Retornar a Terran' }).click()
-  await expect(page.getByText('TERRAN > PRAÇA DO PORTAL')).toBeVisible()
-  await visitTerran(page, 'Oficina dos Vínculos')
-
-  const lootSlot = page.locator('.inventory-slot').filter({ hasText: 'Núcleo Fúngico' }).first()
-  await lootSlot.click()
-  await expect(lootSlot).toHaveAttribute('aria-pressed', 'true')
-  const convertButton = page.getByRole('button', { name: 'Converter em Essência' })
-  await expect(convertButton).toBeEnabled()
-  await convertButton.click()
-  await page.getByRole('button', { name: 'Confirmar +100' }).click()
-  await expect(page.getByText('Pontos').locator('..').getByText('1')).toBeVisible()
-
-  await page.getByRole('button', { name: 'Abrir Evolução' }).click()
-  const initialNode = page.locator('.terran-skill').filter({ hasText: 'Núcleo do Vínculo' })
-  await initialNode.click()
-  await expect(initialNode).toContainText('Desbloqueado')
-
-  await page.reload()
-  await page.getByRole('button', { name: 'Abrir Evolução' }).click()
-  await expect(page.locator('.terran-skill').filter({ hasText: 'Núcleo do Vínculo' })).toContainText('Desbloqueado')
-  await expect(page.getByText('0 ponto(s) disponíveis')).toBeVisible()
-
-  await visitTerran(page, 'Praça do Portal')
-  await page.getByRole('button', { name: 'Retomar exploração em Astravél' }).click()
-  await exploreAstravel(page, 'Acampamento Abandonado', 'Vasculhar acampamento')
-  await page.getByRole('button', { name: 'Abrir Mochila' }).click()
-  await expect(page.locator('.inventory-slot').filter({ hasText: 'Tônico de Campo' })).toBeVisible()
-  await exploreAstravel(page, 'Emboscada de Esporos', 'Emboscada de Esporos')
-  await expect(page.getByRole('button', { name: /Selecionar alvo/ })).toHaveCount(3)
-
-  await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
-  await page.getByRole('button', { name: 'Tônico de Campo', exact: true }).click()
-  await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
-  await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
-  await expect(page.getByRole('heading', { name: 'A rota foi preservada' })).toBeVisible()
-  await page.getByRole('button', { name: 'Receber recompensas' }).click()
-  await page.getByRole('button', { name: 'Continuar expedição' }).click()
-  await exploreAstravel(page, 'Limiar da Ruína', 'Investigar o limiar')
-  await expect(page.getByRole('button', { name: 'Aproximar-se de Câmaras Fúngicas' })).toBeEnabled()
-  if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v03-portal-desktop.png', fullPage: true })
-
-  await exploreAstravel(page, 'Câmaras Fúngicas', 'Adentrar Câmaras Fúngicas')
-  await expect(page.getByRole('heading', { name: 'Câmaras Fúngicas' })).toBeVisible()
-  const descent = page.getByRole('button', { name: 'Pular cena' })
-  if (await descent.isVisible()) await descent.click()
-  await page.getByRole('button', { name: 'Aproximar-se de Núcleo da Ruína' }).click()
-  const nucleus = page.getByRole('complementary', { name: 'Painel lateral: Núcleo da Ruína' })
-  await expect(nucleus).toBeVisible({ timeout: 15_000 })
-  if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v05-dungeon-desktop.png', fullPage: true })
-  await nucleus.getByRole('button', { name: 'Enfrentar Colosso Micélio' }).click()
-  await expect(page.getByText('Câmaras Fúngicas de Astravél')).toBeVisible()
-  if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v03-boss-desktop.png', fullPage: true })
-  await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
-  await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
-  await page.getByRole('button', { name: /Golpe Ressonante/ }).click()
-  await page.getByRole('button', { name: 'Atacar' }).click()
-  await expect(page.getByRole('heading', { name: 'O núcleo da Ruína cedeu' })).toBeVisible()
-  await page.getByRole('button', { name: 'Receber recompensas' }).click()
-  await page.getByRole('button', { name: 'Continuar expedição' }).click()
-  await expect(page.getByRole('heading', { name: 'Câmaras Fúngicas' })).toBeVisible()
-  const aftermath = page.getByRole('button', { name: 'Pular cena' })
-  if (await aftermath.isVisible()) await aftermath.click()
-  await page.getByRole('button', { name: 'Sair das Câmaras para Astravél' }).click()
-  await page.getByRole('button', { name: 'Retornar a Terran pelo Portal' }).click()
-  await visitTerran(page, 'Oficina dos Vínculos')
-  await expect(page.locator('.inventory-slot').filter({ hasText: 'Fragmento de Essência Micelial' })).toBeVisible()
-  await expect(page.locator('.inventory-slot').filter({ hasText: 'Esmeralda do Crescimento' })).toBeVisible()
-
-  await page.getByRole('link', { name: 'Detalhes / Evoluir' }).first().click()
-  await expect(page.getByRole('button', { name: 'Executar Rito G2' })).toBeEnabled()
-  await page.getByRole('button', { name: 'Executar Rito G2' }).click()
-  if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v03-rite-desktop.png', fullPage: true })
-  await page.getByRole('button', { name: 'Confirmar Infusão' }).click()
-  await expect(page.locator('.grade-seal')).toContainText('2')
-  await expect(page.getByText('Essência Micelial', { exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Executar Rito G3' })).toBeEnabled()
-  await page.getByRole('button', { name: 'Executar Rito G3' }).click()
-  await expect(page.getByRole('heading', { name: 'Lapidar a primeira Joia' })).toBeVisible()
-  await expect(page.getByText('Vida máxima +2')).toBeVisible()
-  if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v04-rite-grade3-desktop.png', fullPage: true })
-  await page.getByRole('button', { name: 'Confirmar Lapidação' }).click()
-  await expect(page.locator('.grade-seal')).toContainText('3')
-  await expect(page.getByText('Esmeralda do Crescimento', { exact: true })).toBeVisible()
-  if (visualQa) {
-    await page.setViewportSize({ width: 390, height: 844 })
-    await page.screenshot({ path: '/tmp/terrunia-v04-grade3-mobile.png', fullPage: true })
-    await page.setViewportSize({ width: 1280, height: 720 })
+async function fightAndCollect(page: Page, expectedDropCount: number) {
+  for (let turn = 0; turn < 12; turn++) {
+    const attack = page.getByRole('button', { name: 'ATACAR', exact: true })
+    if (await page.getByRole('heading', { name: 'VITÓRIA', exact: true }).isVisible()) break
+    await expect(attack).toBeEnabled()
+    await attack.click()
   }
+  await expect(page.getByRole('heading', { name: 'VITÓRIA', exact: true })).toBeVisible()
+  const drops = page.locator('.pixel-battle__drops button')
+  await expect(drops).toHaveCount(expectedDropCount)
+  for (let i = 0; i < expectedDropCount; i++) await drops.nth(i).click()
+  await page.getByRole('button', { name: 'CONFIRMAR RECOMPENSAS', exact: true }).click()
+}
 
-  await page.getByRole('link', { name: 'Abrir Skill Tree' }).click()
-  await expect(page.getByRole('button', { name: /Memória Micelial: Disponível/ })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Foco Lapidado: Disponível/ })).toBeVisible()
-
+test('Astravél: câmera, dois combates, coleta manual de drops e retomada do save', async ({ page }) => {
+  test.setTimeout(90_000)
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await createExpedition(page)
+  await expect(page.getByLabel('Minimapa de Astravél: 15 encontros conectados')).toBeVisible()
+  await page.getByRole('button', { name: 'Abrir Trilha', exact: true }).click()
+  const route = page.getByRole('complementary', { name: 'Painel lateral: Rota de Astravél' })
+  await expect(route.locator('.expedition-route-sector')).toHaveCount(3)
+  await expect(route.locator('.expedition-route-list__item')).toHaveCount(15)
+  await page.getByRole('button', { name: 'Fechar painel', exact: true }).click()
+  await page.getByRole('button', { name: 'Seguir objetivo' }).click()
+  await expect(page.getByRole('heading', { name: 'Primeira Presença Fungorra', exact: true })).toBeVisible({ timeout: 20_000 })
+  await fightAndCollect(page, 1)
+  await page.getByRole('button', { name: 'CONTINUAR EXPEDIÇÃO', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Astravél', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Seguir objetivo' }).click()
+  await expect(page.getByRole('heading', { name: 'Clareira Luminescente', exact: true })).toBeVisible({ timeout: 20_000 })
+  await fightAndCollect(page, 3)
+  await page.getByRole('button', { name: 'CONTINUAR EXPEDIÇÃO', exact: true }).click()
+  await page.getByRole('button', { name: 'Abrir Mochila', exact: true }).click()
+  await expect(page.locator('.inventory-slot').filter({ hasText: 'Gel Luminescente' })).toHaveCount(2)
+  await expect(page.locator('.inventory-slot').filter({ hasText: 'Tônico de Campo' })).toHaveCount(1)
+  await page.getByRole('button', { name: 'Fechar painel', exact: true }).click()
+  // Both desktop and narrow layouts retain a visible viewport and reachable HUD.
+  for (const viewport of [{ width: 1366, height: 768 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport)
+    await expect(page.getByRole('button', { name: 'Seguir objetivo' })).toBeVisible()
+    const canvas = page.locator('.astravel-field canvas')
+    await expect(canvas).toBeVisible()
+    const box = await canvas.boundingBox()
+    expect(box!.x).toBeGreaterThanOrEqual(0)
+    expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width)
+  }
+  await page.setViewportSize({ width: 1366, height: 768 })
+  await expect(page.locator('.world-scene-transition')).toHaveCount(0)
+  await page.screenshot({ path: '/tmp/terrunia-astravel-remake.png' })
   await page.reload()
-  await expect(page.getByRole('button', { name: /Memória Micelial: Disponível/ })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Foco Lapidado: Disponível/ })).toBeVisible()
-  await expect(page.getByText('G3 · 300 R')).toBeVisible()
-  if (visualQa) await page.screenshot({ path: '/tmp/terrunia-v04-skill-tree-desktop.png', fullPage: true })
-  expect(browserErrors).toEqual([])
+  await page.getByRole('button', { name: 'Continuar com Aron', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Astravél', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Abrir Trilha', exact: true }).click()
+  await expect(page.locator('.expedition-route-list__item--completed')).toHaveCount(2)
+  await expect(page.locator('.expedition-route-list__item--current')).toContainText('Travessia das Mariposas')
+  expect(errors).toEqual([])
+})
+
+test('o próximo setor exige missão aceita e permite retornar sem iniciar combate', async ({ page }) => {
+  await createExpedition(page)
+  await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    const { content } = await import('/src/content/catalog.ts')
+    const save = structuredClone(useGameStore.getState().save!)
+    for (const node of content.trails.trail_astravel_entry.nodes) {
+      save.world.trailNodeStates[node.id] = node.index < 6 ? 'completed' : node.index === 6 ? 'current' : node.type === 'boss' ? 'boss' : 'locked'
+    }
+    save.world.currentLocationId = 'astravel_hunter_tracks_06'
+    useGameStore.setState({ save })
+  })
+  await expect(page.getByRole('complementary', { name: 'Painel lateral: Rastros dos Caçadores' })).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByText(/aceite “Caçadores Perdidos” com Vorren/).first()).toBeVisible()
+  await expect(page.getByRole('button', { name: 'ATACAR', exact: true })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Retornar a Terran', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Terran', exact: true })).toBeVisible()
 })

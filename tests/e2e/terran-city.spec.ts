@@ -9,7 +9,9 @@ test('Terran conserva os atalhos laterais; somente MENU abre a tela de progress�
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
   await page.getByPlaceholder('Ex.: Aron').fill('Lysa')
   await page.getByRole('button', { name: 'Confirmar Terrírian' }).click()
-  await page.getByRole('button', { name: /Executar Vínculo da Arma/ }).click()
+  await page.getByRole('button', { name: 'Aumentar Força', exact: true }).click()
+  await page.getByRole('button', { name: 'Escolher Espada Longa', exact: true }).press('Enter')
+  await page.getByRole('button', { name: 'Vincular Espada Longa — Grau I', exact: true }).click()
 
   await expect(page.getByRole('heading', { name: 'Terran', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Pular cena' }).click()
