@@ -73,8 +73,8 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
     expect(placement.animationName).toBe('none')
   }
 
-  // The Long Sword has its own smaller silhouette and stays BEHIND the hand,
-  // so the character's fist visually covers the weapon handle.
+  // The Long Sword has its own smaller silhouette and must be rendered IN FRONT
+  // of the character, with its handle positioned at the right-hand anchor.
   await page.getByRole('button', { name: 'Escolher Espada Longa' }).click()
   const sword = characterPreview.getByRole('img', { name: 'Espada Longa na mão do personagem (prévia)' })
   await expect(sword).toBeVisible()
@@ -93,7 +93,7 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
     }
   })
   expect(handRig.ratio).toBeLessThan(.45)
-  expect(handRig.weaponZ).toBeLessThan(handRig.characterZ)
+  expect(handRig.weaponZ).toBeGreaterThan(handRig.characterZ)
   expect(handRig.animationName).toBe('none')
   expect(handRig.weaponSize).toBe('27%')
   expect(handRig.gripX).toBe('61%')
