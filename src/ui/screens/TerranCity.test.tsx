@@ -84,6 +84,7 @@ describe('interfaces de Terran', () => {
     render(<MemoryRouter initialEntries={['/terran']}>
       <Routes>
         <Route path="/terran" element={<TerranScreen />} />
+        <Route path="/play" element={<TerranScreen />} />
         <Route path="/local" element={<LocalScreen />} />
         <Route path="/inventory" element={<InventoryScreen />} />
         <Route path="/quests" element={<QuestsScreen />} />
