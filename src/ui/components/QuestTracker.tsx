@@ -28,7 +28,7 @@ export function QuestTracker({ save }: { save: GameSave }) {
       }}
     >
       <button type="button" className="quest-tracker__trigger" aria-expanded={open}
-        aria-controls="quest-tracker-details" onClick={() => setPinnedOpen((value) => !value)}>
+        aria-controls="quest-tracker-details" onClick={() => { setFocused(false); setPinnedOpen((value) => !value) }}>
         <RadioTower size={15} aria-hidden="true" />
         <strong>Objetivos rastreados</strong>
         <span className="quest-tracker__count">{entries.length}</span>
