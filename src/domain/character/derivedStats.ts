@@ -4,6 +4,8 @@ import { BALANCE } from '../../content/balance'
 import type { GameSave } from '../game/types'
 import { getFlatStatBonus } from '../skillTree/skillTree'
 import { getAttributeScore } from './attributeProgression'
+import { getEquippedBasicArmor } from '../inventory/basicArmor'
+import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
 
 export type StatContribution = { label: string; value: number }
 export type DerivedStat = { value: number; contributions: StatContribution[] }
@@ -23,6 +25,7 @@ const sum = (contributions: StatContribution[]): DerivedStat => ({
 
 export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) => {
   const { attributes, bondedEquipment } = save.character
+  const basicArmor = getEquippedBasicArmor(save, catalog)
   const weapon = bondedEquipment.weapon ? save.boundItems[bondedEquipment.weapon] : null
   const weaponBase = weapon ? catalog.boundItemBases[weapon.baseItemId] : null
   const boundDefinitions = Object.values(bondedEquipment)
@@ -72,6 +75,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
     defense: sum([
       { label: 'Vigor', value: Math.floor(getAttributeScore(attributes.vigor) / 4) },
       { label: 'Equipamentos', value: equipmentBonus('mitigation') },
+      { label: basicArmor?.definition.name ?? 'Proteção simples', value: basicArmor ? basicArmor.armor.mitigation + (basicArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel : 0 },
       { label: 'Vínculos e Skills', value: defenseBonus },
       { label: 'Clã', value: clanBonuses.mitigation ?? 0 },
     ]),
@@ -93,6 +97,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
     initiative: sum([
       { label: 'Agilidade', value: getAttributeScore(attributes.agility) },
       { label: 'Equipamentos', value: equipmentBonus('initiative') },
+      { label: basicArmor?.definition.name ?? 'Proteção simples', value: basicArmor?.armor.initiative ?? 0 },
       { label: 'Vínculos e Skills', value: getFlatStatBonus(save, catalog, 'initiative') },
     ]),
   }

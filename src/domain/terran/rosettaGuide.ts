@@ -12,14 +12,50 @@ export type RosettaQuestHint = {
   instruction: string
 }
 
-const locationForNpc = (npcId: string, catalog: ContentCatalog) => {
+export const getRosettaNpcLocation = (npcId: string, catalog: ContentCatalog): string => {
   const location = Object.values(catalog.terranLocations).find((place) =>
     place.npcPresences.some((presence) => presence.npcId === npcId))
-  if (location) return location.name
+  if (location) return location.id
   const street = streetNpcPlacements.find((entry) => entry.npcId === npcId)
-  if (street) return `Ruas de Terran · ${catalog.terranLocations[street.locationId]?.shortName ?? 'Centro'}`
-  if (npcId.startsWith('npc_master_')) return 'Salão dos Clãs'
-  return 'Ruas de Terran'
+  if (street) return street.locationId
+  if (npcId.startsWith('npc_master_')) return 'location_terran_clan_hall'
+  return 'location_terran_portal_plaza'
+}
+
+const locationForNpc = (npcId: string, catalog: ContentCatalog) => {
+  const id = getRosettaNpcLocation(npcId, catalog)
+  const street = streetNpcPlacements.find((entry) => entry.npcId === npcId)
+  return street ? `Ruas de Terran · ${catalog.terranLocations[id]?.shortName ?? 'Centro'}` : catalog.terranLocations[id]?.name ?? 'Ruas de Terran'
+}
+
+export type RosettaQuestRoute = { id: string; npcId: string | null; locationId: string; player: boolean; questIds: string[]; titles: string[] }
+
+/** Every eligible main/secondary quest participates, even when it is not tracked. Shared destinations are coalesced. */
+export function getRosettaQuestRoutes(save: GameSave, catalog: ContentCatalog): RosettaQuestRoute[] {
+  const routes = new Map<string, RosettaQuestRoute>()
+  for (const quest of Object.values(catalog.quests)) {
+    if (!['main', 'secondary'].includes(quest.category)) continue
+    const progress = save.quests[quest.id]
+    if (!progress || !['available', 'offered', 'active', 'ready_to_turn_in'].includes(progress.status)) continue
+    let npcId: string | null = progress.status === 'ready_to_turn_in' ? quest.turnInNpcId : quest.giverNpcId
+    let locationId = getRosettaNpcLocation(npcId, catalog)
+    let player = false
+    if (progress.status === 'active') {
+      const objective = quest.objectives.find((entry) => (progress.objectives[entry.id] ?? 0) < entry.required)
+      npcId = null
+      if (objective?.type === 'equip') player = true
+      else if (objective?.type === 'purchase') { npcId = 'npc_neris'; locationId = 'location_terran_bond_workshop' }
+      else if (objective?.type === 'refine') { npcId = 'npc_durnan'; locationId = 'location_terran_forge' }
+      else if (objective?.type === 'talk' && catalog.npcs[objective.targetId]) { npcId = objective.targetId; locationId = getRosettaNpcLocation(npcId, catalog) }
+      else locationId = quest.terranFlow?.active ?? 'location_terran_portal_plaza'
+    }
+    if (npcId === 'npc_rosetta') continue // Rosetta is already the origin of the guidance.
+    const id = player ? 'player:inventory' : npcId ? `npc:${npcId}` : `location:${locationId}`
+    const route = routes.get(id) ?? { id, npcId, locationId, player, questIds: [], titles: [] }
+    route.questIds.push(quest.id); route.titles.push(quest.title)
+    routes.set(id, route)
+  }
+  return [...routes.values()]
 }
 
 const hint = (quest: QuestDefinition, npcId: string, catalog: ContentCatalog, instruction: string): RosettaQuestHint => ({

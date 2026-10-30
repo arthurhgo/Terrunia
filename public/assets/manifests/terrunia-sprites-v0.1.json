@@ -2139,6 +2139,74 @@
         "width": 16,
         "height": 16
       }
+    },
+    {
+      "assetId": "item.worn-linen-tunic",
+      "path": "/assets/items/item_worn_linen_tunic.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 32,
+        "y": 128,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.apprentice-tunic",
+      "path": "/assets/items/item_apprentice_tunic.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 48,
+        "y": 128,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.simple-leather-armor",
+      "path": "/assets/items/item_simple_leather_armor.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 64,
+        "y": 128,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.linen-thread",
+      "path": "/assets/items/item_linen_thread.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 80,
+        "y": 128,
+        "width": 16,
+        "height": 16
+      }
     }
   ]
 }

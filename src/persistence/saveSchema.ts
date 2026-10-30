@@ -6,7 +6,7 @@ import type { GameSave } from '../domain/game/types'
 import { deriveCharacterStats } from '../domain/character/derivedStats'
 import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 
-export const CURRENT_SAVE_SCHEMA = 14
+export const CURRENT_SAVE_SCHEMA = 15
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -75,6 +75,7 @@ const characterSchema = z.object({
     necklace: z.string().nullable(),
     bracelet: z.string().nullable(),
   }),
+  basicArmorInstanceId: idSchema.nullable(),
 })
 
 const boundComponentsSchema = z.object({
@@ -139,6 +140,7 @@ const inventoryItemSchema = z.object({
   locked: z.boolean(),
   favorite: z.boolean(),
   acquiredAt: z.string(),
+  refinementLevel: z.number().int().min(0).max(1).optional(),
 })
 
 const questProgressSchema = z.object({
@@ -290,6 +292,10 @@ export const gameSaveSchema = z.object({
   }
 
   const inventoryIds = new Set<string>()
+  const equippedArmor = save.inventory.find((item) => item.instanceId === save.character.basicArmorInstanceId)
+  if (save.character.basicArmorInstanceId && (!equippedArmor || !content.items[equippedArmor.definitionId]?.basicArmor || save.character.bondedEquipment.armor)) {
+    context.addIssue({ code: 'custom', path: ['character', 'basicArmorInstanceId'], message: 'A proteção simples equipada precisa estar na mochila e não pode substituir uma Armadura vinculada.' })
+  }
   for (const [index, item] of save.inventory.entries()) {
     if (inventoryIds.has(item.instanceId)) {
       context.addIssue({
@@ -299,6 +305,9 @@ export const gameSaveSchema = z.object({
       })
     }
     inventoryIds.add(item.instanceId)
+    if ((content.items[item.definitionId]?.basicArmor && item.quantity !== 1) || (item.refinementLevel && !content.items[item.definitionId]?.basicArmor)) {
+      context.addIssue({ code: 'custom', path: ['inventory', index], message: 'Proteções simples são peças individuais; somente elas recebem reforço.' })
+    }
     if (!content.items[item.definitionId]) {
       context.addIssue({
         code: 'custom',
@@ -309,6 +318,9 @@ export const gameSaveSchema = z.object({
   }
 
   for (const [index, item] of save.baseStorage.entries()) {
+    if ((content.items[item.definitionId]?.basicArmor && item.quantity !== 1) || (item.refinementLevel && !content.items[item.definitionId]?.basicArmor)) {
+      context.addIssue({ code: 'custom', path: ['baseStorage', index], message: 'A proteção guardada deve preservar uma peça e seu reforço válido.' })
+    }
     if (inventoryIds.has(item.instanceId)) {
       context.addIssue({ code: 'custom', path: ['baseStorage', index, 'instanceId'], message: 'O baú e a mochila não podem compartilhar IDs de instância.' })
     }
@@ -774,6 +786,15 @@ const migrateV13ToV14 = (legacy: Record<string, unknown>): unknown => {
   return refreshDeliveryQuestProgress(refreshQuestAvailability(next, content, next.updatedAt), content, next.updatedAt)
 }
 
+const migrateV14ToV15 = (legacy: Record<string, unknown>): unknown => {
+  const next = structuredClone(legacy) as unknown as GameSave
+  next.character.basicArmorInstanceId = null
+  for (const quest of Object.values(content.quests)) next.quests[quest.id] ??= createQuestProgress(quest)
+  next.schemaVersion = 15; next.gameVersion = '0.13.0'; next.revision += 1
+  next.eventLog.push('SaveMigrated:14->15')
+  return refreshQuestAvailability(next, content, next.updatedAt)
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -831,6 +852,7 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   }
   if (version === 12) { candidate = migrateV12ToV13(candidate as Record<string, unknown>); version = 13 }
   if (version === 13) { candidate = migrateV13ToV14(candidate as Record<string, unknown>); version = 14 }
+  if (version === 14) { candidate = migrateV14ToV15(candidate as Record<string, unknown>); version = 15 }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)
   }

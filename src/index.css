@@ -3816,9 +3816,56 @@ code {
   .forge-recipe button { grid-column: 2; justify-self: end; }
 }
 
-/* Completed quest history: opt-in expansion. */
+/* Rosetta's practical lessons and ordinary protection before the permanent armor bond. */
 .quest-history-toggle { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px; color: #b8c1bb; border: 1px solid #445451; background: #13212a; font: inherit; cursor: pointer; text-align: left; }
 .quest-history-toggle > svg:last-child { margin-left: auto; transition: transform .15s; }
 .quest-history-toggle[aria-expanded="true"] > svg:last-child { transform: rotate(180deg); }
 .quest-history-toggle:hover, .quest-history-toggle:focus-visible { color: #efca83; border-color: #b29a68; }
 .quest-board--rows .quest-board__grid[hidden] { display: none; }
+.inventory-worn { display: flex; align-items: center; gap: 7px; padding: 8px 0; color: #ddc38e; font-size: .66rem; }
+.inventory-worn span { flex: 1; }
+.inventory-worn small { color: #8fbca4; }
+.inventory-slot.is-equipped { border-color: #b8bd8a; box-shadow: inset 0 0 0 1px #6a805a; }
+.inventory-slot .equipped-mark { position: absolute; right: 3px; top: 3px; color: #a8d5ac; }
+.inventory-slot .refinement-mark { position: absolute; left: 3px; top: 3px; color: #eac37d; font-size: .65rem; }
+.inventory-equipment-detail { display: grid; grid-template-columns: 36px minmax(0,1fr); gap: 9px; margin-top: 12px; padding: 10px; border: 1px solid #8e7950; background: #14232c; }
+.inventory-equipment-detail > img { width: 36px; height: 36px; }
+.inventory-equipment-detail strong { color: #edd0a1; font: .77rem var(--display); }
+.inventory-equipment-detail p { margin: 6px 0; font-size: .68rem; line-height: 1.5; color: #bacbc7; }
+.inventory-equipment-detail small { color: #9cc1ca; font-size: .67rem; }
+.inventory-equipment-detail > button { grid-column: 1 / -1; padding: 9px; border: 1px solid #c3a368; color: #efdab0; background: #304439; cursor: pointer; font-size: .72rem; }
+.inventory-equipment-detail > button:disabled { opacity: .5; cursor: default; }
+.bound-card--starter { border-color: #637565; }
+.bound-card--starter > strong { font: .77rem var(--display); color: #dcca9e; }
+.bound-card--starter > p, .bound-card--starter > small { color: #a7bbb5; font-size: .65rem; line-height: 1.4; }
+.terran-character-hud__slot.is-starter { border-color: #7b957d; }
+.forge-starter { margin: 12px 0 18px; padding: 10px; border: 1px solid #a08049; background: #1c272a; }
+.forge-starter > h3 { margin: 0; color: #ecc98b; font: .85rem var(--display); }
+.forge-starter > p { font-size: .7rem; color: #b8c9bf; }
+.forge-starter .forge-recipe { margin-top: 8px; }
+.vn-details .rosetta-tutorial { grid-column: 1 / -1; padding: 13px; border: 1px solid #c2a166; border-left-width: 3px; background: #1e2d30; }
+.rosetta-tutorial > .eyebrow { font-size: .62rem; color: #d6b573; }
+.rosetta-guide__content .rosetta-tutorial > h3 { color: #f0d19a; margin-top: 7px; }
+.rosetta-tutorial__objective { display: flex; align-items: center; gap: 7px; }
+.rosetta-tutorial__objective svg { flex-shrink: 0; color: #91bfa8; }
+.rosetta-tutorial__objective span { flex: 1; }
+.rosetta-tutorial__gifts { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 16px; margin: 8px 0; }
+.rosetta-tutorial__gifts > small { width: 100%; }
+.rosetta-tutorial__gifts > span { display: inline-flex; align-items: center; gap: 6px; font-size: .7rem; color: #d5d8bf; }
+.rosetta-tutorial__gifts img { width: 25px; height: 25px; }
+.rosetta-tutorial__actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 11px; }
+.rosetta-tutorial__actions > button, .rosetta-guide__paths { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 12px; border: 1px solid #9c8b67; color: #e8d5af; background: #182e38; font-size: .73rem; cursor: pointer; }
+.rosetta-tutorial__actions > .rosetta-tutorial__accept { background: #3b4b34; border-color: #d9b87b; color: #fff0c8; }
+.rosetta-guide__paths { grid-column: 1 / -1; border-color: #bca064; background: #28332e; }
+.rosetta-tutorial__done { display: flex; gap: 8px; grid-column: 1 / -1; }
+.rosetta-guide__missions details { margin-top: 8px; color: #c8c9b2; font-size: .73rem; }
+.rosetta-guide__missions summary { cursor: pointer; padding: 6px 0; }
+.rosetta-quest-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.rosetta-quest-lines path { fill: none; stroke: #e5bd6c; stroke-width: .8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 5 2; filter: drop-shadow(0 0 1px #bd9854); animation: rosetta-gold-flow 1.1s linear infinite; }
+.rosetta-quest-lines[data-reduced-motion="true"] path { animation: none; stroke-dasharray: none; }
+.rosetta-minimap-lines path { fill: none; stroke: #f2ce7c; stroke-width: 4; stroke-linecap: round; pointer-events: none; }
+.rosetta-routes-caption { position: absolute; top: 7px; left: 7px; display: grid; gap: 6px; max-width: 44%; padding: 6px; border: 1px solid #9c8651; color: #ecd29d; background: #10222ae8; pointer-events: none; font-size: .53rem; }
+.rosetta-routes-caption button { pointer-events: auto; color: #f0dcb7; background: #263b3c; border: 1px solid #a99461; padding: 5px; cursor: pointer; font-size: .6rem; }
+@keyframes rosetta-gold-flow { to { stroke-dashoffset: -14; } }
+@media(prefers-reduced-motion: reduce) { .rosetta-quest-lines path { animation: none; stroke-dasharray: none; } }
+@media(max-width:600px) { .vn-details .rosetta-tutorial { padding: 9px; } .rosetta-tutorial__gifts { display: grid; gap: 5px; } .rosetta-routes-caption { max-width: 45%; font-size: .48rem; } }

@@ -9,7 +9,7 @@ describe('contratos secundários dos NPCs', () => {
   it('tem um contrato por NPC com alvo real e entrega manual', () => {
     const questGivers = npcDefinitions.filter((npc) => npc.id !== 'npc_rosetta')
     expect(sideQuestDefinitions.filter((quest) => !quest.turnInItems)).toHaveLength(questGivers.length)
-    expect(content.npcs.npc_rosetta.questIds).toHaveLength(0)
+    expect(content.npcs.npc_rosetta.questIds).toHaveLength(4)
     for (const npc of questGivers) {
       const quest = content.quests[npc.questIds.find((id) => content.quests[id]?.category === 'secondary') ?? '']
       expect(quest.giverNpcId).toBe(npc.id)
@@ -33,7 +33,7 @@ describe('contratos secundários dos NPCs', () => {
     old.wallet.gold = 77
     delete old.quests.side_npc_eldamar
     const migrated = migrateAndValidateSave(old)
-    expect(migrated.schemaVersion).toBe(14)
+    expect(migrated.schemaVersion).toBe(15)
     expect(migrated.wallet.gold).toBe(77)
     expect(migrated.quests.vs_astravel_first_contact.status).toBe('completed')
     expect(migrated.quests.side_npc_eldamar.status).toBe('available')

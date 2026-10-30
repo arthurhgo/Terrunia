@@ -1,6 +1,7 @@
 import type { QuestDefinition, QuestProgressionOutcome } from './types'
 import { clanDefinitions, classDefinitions } from './progression'
 import { sideQuestDefinitions } from './sidequests'
+import { rosettaTutorialQuests } from './rosettaTutorial'
 
 const mainLoreClassVariants = Object.fromEntries(classDefinitions.map((classDefinition) => [
   classDefinition.id,
@@ -65,6 +66,7 @@ const classTrial = (
 ], { type: 'classEligibility', classId })
 
 export const questDefinitions = [
+  ...rosettaTutorialQuests,
   {
     id: 'vs_astravel_first_contact',
     title: 'O Primeiro Rastro',

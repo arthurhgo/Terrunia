@@ -1,11 +1,16 @@
 import type { ContentCatalog } from '../../content/catalog'
 import type { GameSave } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
+import { refreshTutorialQuestProgress } from '../quests/tutorialProgress'
 
 export const MARKET_LOCATION_ID = 'location_terran_bond_workshop' as const
 
 /** BALANCE_DRAFT: trade offers are separated by the NPC who actually sells them. */
 export const MARKET_STOCK = [
+  { npcId: 'presence_neris', itemId: 'equipment_simple_leather_armor', price: 35 },
+  { npcId: 'presence_neris', itemId: 'equipment_worn_linen_tunic', price: 12 },
+  { npcId: 'presence_neris', itemId: 'equipment_apprentice_tunic', price: 12 },
+  { npcId: 'presence_neris', itemId: 'material_linen_thread', price: 4 },
   { npcId: 'presence_neris', itemId: 'drop_ruin_shard', price: 60 },
   { npcId: 'presence_neris', itemId: 'drop_mycelial_fiber', price: 48 },
   { npcId: 'presence_neris', itemId: 'drop_blackroot_core', price: 72 },
@@ -50,6 +55,7 @@ export function buyMarketItem(
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
     return fail('MARKET_QUANTITY', 'Escolha entre 1 e 99 unidades.')
   }
+  if (item.basicArmor && quantity !== 1) return fail('MARKET_EQUIPMENT_QUANTITY', 'Compre uma peça de proteção por vez.')
   const cost = offer.price * quantity
   if (!Number.isSafeInteger(cost) || save.wallet.gold < cost) {
     return fail('MARKET_GOLD', 'Ouro insuficiente para a compra.')
@@ -67,5 +73,5 @@ export function buyMarketItem(
   next.updatedAt = now
   next.revision += 1
   next.eventLog.push(`MarketPurchase:${npcId}:${itemId}:${quantity}:${cost}`)
-  return ok(next)
+  return ok(refreshTutorialQuestProgress(next, catalog, now))
 }

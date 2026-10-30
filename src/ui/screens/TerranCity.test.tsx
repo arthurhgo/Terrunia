@@ -210,7 +210,7 @@ describe('interfaces de Terran', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Praça do Portal' }))
     fireEvent.click(screen.getByRole('button', { name: 'Falar com Rosetta' }))
     expect(screen.getByRole('dialog', { name: 'Orientações de Rosetta' })).toBeInTheDocument()
-    expect(screen.getByText(/Bem-vindo a Terran, aventureiro/)).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Vou lhe entregar duas túnicas simples.')
     expect(screen.getByText('Estante dos Registros')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Missões que pode receber' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Consultar diário de missões' }))

@@ -14,6 +14,13 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
+  ...[
+    { name: 'worn-linen-tunic', label: 'Túnica de Linho Gasta' }, { name: 'apprentice-tunic', label: 'Túnica de Aprendiz' },
+    { name: 'simple-leather-armor', label: 'Armadura de Couro Simples' }, { name: 'linen-thread', label: 'Linha de Linho' },
+  ].map(({ name, label }) => ({
+    id: `item.${name}`, path: `/assets/items/item_${name.replaceAll('-', '_')}.png`,
+    fallback: '/assets/placeholders/item.svg', alt: label, pixelArt: true,
+  })),
   { id: 'enemy.blackroot-titan', path: '/assets/enemies/fungorros/enemy_blackroot_titan_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'Titan Raiz-Negra', pixelArt: true },
   ...['fungal-gel', 'mycelial-fiber', 'blackroot-core', 'hunter-insignia'].map((name) => ({
     id: `item.${name}`, path: `/assets/items/item_${name.replaceAll('-', '_')}.png`,

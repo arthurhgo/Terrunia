@@ -38,6 +38,7 @@ export type Character = {
     unlockedNodeIds: string[]
   }
   bondedEquipment: Record<BoundSlot, string | null>
+  basicArmorInstanceId: string | null
 }
 
 export type EssenceProgress = {
@@ -104,6 +105,7 @@ export type InventoryItemInstance = {
   locked: boolean
   favorite: boolean
   acquiredAt: string
+  refinementLevel?: number
 }
 
 export type QuestStatus =

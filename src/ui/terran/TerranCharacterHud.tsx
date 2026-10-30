@@ -6,6 +6,7 @@ import { BOUND_SLOTS, BOUND_SLOT_LABELS } from '../../domain/shared/types'
 import type { GameSave } from '../../domain/game/types'
 import { AssetImage } from '../components/AssetImage'
 import { ProgressBar } from '../components/ProgressBar'
+import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
 
 const attributeLabels = {
   cunning: 'AST',
@@ -30,6 +31,7 @@ export function TerranCharacterHud({ save }: { save: GameSave }) {
   const { character, essence } = save
   const [attributesExpanded, setAttributesExpanded] = useState(true)
   const derived = deriveCharacterStats(save, content)
+  const basicArmor = getEquippedBasicArmor(save, content)
   const equippedCount = BOUND_SLOTS.filter((slot) => {
     const itemId = character.bondedEquipment[slot]
     const instance = itemId ? save.boundItems[itemId] : null
@@ -69,20 +71,21 @@ export function TerranCharacterHud({ save }: { save: GameSave }) {
           const definition = instance ? content.boundItemBases[instance.baseItemId] : null
           const EmptyIcon = emptySlotIcons[slot]
           const equipped = Boolean(instance && definition)
+          const basic = slot === 'armor' ? basicArmor : null
           const spriteId = instance && definition
             ? definition.assetIdByGrade[instance.grade] ?? definition.assetIdByGrade[1]
-            : undefined
-          return <div className={`terran-character-hud__slot ${equipped ? 'is-bound' : 'is-empty'}`} key={slot}
-            title={`${BOUND_SLOT_LABELS[slot]} · ${equipped ? definition!.name : 'Não vinculado'}`}>
+            : basic?.definition.iconAssetId
+          return <div className={`terran-character-hud__slot ${equipped ? 'is-bound' : basic ? 'is-starter' : 'is-empty'}`} key={slot}
+            title={`${BOUND_SLOT_LABELS[slot]} · ${equipped ? definition!.name : basic?.definition.name ?? 'Não vinculado'}`}>
             <span>{BOUND_SLOT_LABELS[slot]}</span>
             <div className="terran-character-hud__slot-art">
-              {spriteId && definition
-                ? <AssetImage assetId={spriteId} alt={definition.name} />
+              {spriteId
+                ? <AssetImage assetId={spriteId} alt={definition?.name ?? basic?.definition.name} />
                 : <span className="terran-character-hud__empty-icon" aria-hidden="true">
                     <EmptyIcon size={26} strokeWidth={1.7} />
                   </span>}
             </div>
-            <small>{equipped ? `G${instance!.grade}` : 'Vazio'}</small>
+            <small>{equipped ? `G${instance!.grade}` : basic ? basic.instance.refinementLevel ? 'Simples +1' : 'Simples' : 'Vazio'}</small>
           </div>
         })}
       </div>

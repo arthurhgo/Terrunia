@@ -1,6 +1,11 @@
 import type { BoundItemBaseDefinition, ItemDefinition } from './types'
+import { basicArmorItems } from './rosettaTutorial'
 
 export const itemDefinitions = [
+  ...basicArmorItems,
+  { id: 'material_linen_thread', name: 'Linha de Linho', description: 'Linha resistente usada por Durnan para o primeiro reforço das proteções simples.',
+    category: 'material', rarity: 'common', convertToEssence: false, essenceValue: 0, sellable: false, sellValue: 0,
+    questLocked: false, canInfuseBoundItem: false, combatEffects: [], affinityTags: ['starter', 'sewing'], iconAssetId: 'item.linen-thread', status: 'BALANCE_DRAFT' },
   {
     id: 'fragment_echo_crystal', name: 'Fragmento de Eco', description: 'Cristal inerte desprendido de uma Sentinela. Serve a encomendas comerciais; não é um componente de Infusão.',
     category: 'fragment', rarity: 'uncommon', convertToEssence: true, essenceValue: 35,

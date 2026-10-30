@@ -51,6 +51,47 @@ def sheet(width: int = 16, height: int = 16):
     return image, ImageDraw.Draw(image)
 
 
+def tutorial_gear(kind: str):
+    """Native 16×16 starter gear, matching the existing outlined pixel icon language."""
+    im, d = sheet()
+    if kind == 'linen_thread':
+        d.rectangle((4, 2, 12, 3), fill='#785025')
+        d.rectangle((5, 4, 11, 12), fill='#a18c6d')
+        for y in range(4, 13, 2):
+            d.line((5, y, 11, y), fill='#eee1be')
+        d.rectangle((4, 13, 12, 14), fill='#503831')
+        d.point((13, 11), fill='#d8c79d')
+        d.line((12, 12, 13, 11), fill='#d8c79d')
+        return im
+    leather = kind == 'simple_leather_armor'
+    apprentice = kind == 'apprentice_tunic'
+    base, light, shade = ('#85624b', '#b18b62', '#503831') if leather else \
+        ('#50738a', '#86a5ad', '#294654') if apprentice else ('#d8c79d', '#eee1be', '#a18c6d')
+    d.polygon([(4, 2), (6, 1), (9, 1), (12, 2), (15, 6), (13, 8),
+               (11, 6), (12, 13), (10, 15), (4, 14), (4, 7), (2, 8), (0, 6)], fill='#11131a')
+    d.polygon([(4, 3), (6, 2), (9, 2), (11, 3), (13, 6), (12, 6),
+               (10, 5), (11, 13), (9, 14), (5, 13), (5, 5), (2, 7), (1, 6)], fill=base)
+    d.polygon([(9, 3), (11, 4), (10, 6), (11, 13), (9, 14), (9, 6)], fill=shade)
+    d.line((5, 3, 6, 2, 8, 3), fill=light)
+    d.line((5, 5, 5, 10), fill=light)
+    d.rectangle((6, 2, 8, 3), fill='#222936')
+    d.rectangle((5, 10, 10, 11), fill='#503831')
+    d.point((8, 10), fill='#b18b62')
+    if leather:
+        d.line((6, 5, 8, 7), fill=light)
+        d.line((8, 5, 6, 7), fill=shade)
+        d.rectangle((3, 3, 4, 4), fill=shade)
+        d.line((6, 12, 9, 12), fill=light)
+    elif apprentice:
+        d.line((2, 6, 4, 4), fill=light)
+        d.line((6, 13, 8, 13), fill=light)
+    else:
+        d.rectangle((6, 6, 7, 8), fill=shade)
+        d.point((6, 7), fill=light)
+        d.point((4, 13), fill='#00000000')
+    return im
+
+
 def p(draw, color: str, *points):
     draw.polygon(points, fill=COLORS[color])
 
@@ -850,6 +891,7 @@ def astravel_material(kind):
 
 
 ASSETS = {
+    **{f'items/item_{kind}.png': (lambda kind=kind: tutorial_gear(kind)) for kind in ('worn_linen_tunic', 'apprentice_tunic', 'simple_leather_armor', 'linen_thread')},
     'npcs/npc_rosetta_portrait.png': lambda: imported_visual('npcs/npc_rosetta_portrait.png'),
     'enemies/fungorros/enemy_blackroot_titan_idle.png': blackroot_titan,
     **{f'items/item_{name}.png': (lambda name=name: astravel_material(name)) for name in (
@@ -929,6 +971,10 @@ ASSETS = {
 
 
 ITEM_IDS = {
+    'items/item_worn_linen_tunic.png': 'item.worn-linen-tunic',
+    'items/item_apprentice_tunic.png': 'item.apprentice-tunic',
+    'items/item_simple_leather_armor.png': 'item.simple-leather-armor',
+    'items/item_linen_thread.png': 'item.linen-thread',
     **{f'items/item_{name}.png': f'item.{name.replace("_", "-")}' for name in (
         'fungal_gel', 'mycelial_fiber', 'blackroot_core', 'hunter_insignia')},
     'items/item_fungal_nucleus.png': 'item.fungal-nucleus',
@@ -1203,12 +1249,14 @@ def build():
 
 if __name__ == "__main__":
     import sys
-    if '--astravel-only' in sys.argv:
+    if '--astravel-only' in sys.argv or '--tutorial-only' in sys.argv:
         # Preserve hand-edited and imported sprites. Rebuild only this remake's assets.
         images = {}
         names = ('fungal_gel', 'mycelial_fiber', 'blackroot_core', 'hunter_insignia')
         new_paths = {'enemies/fungorros/enemy_blackroot_titan_idle.png',
                      *(f'items/item_{name}.png' for name in names)}
+        if '--tutorial-only' in sys.argv:
+            new_paths = {f'items/item_{kind}.png' for kind in ('worn_linen_tunic', 'apprentice_tunic', 'simple_leather_armor', 'linen_thread')}
         manifest_file = ROOT / 'manifests' / 'terrunia-sprites-v0.1.json'
         existing = json.loads(manifest_file.read_text())['entries']
         ordered_paths = [entry['path'].removeprefix('/assets/') for entry in existing]
@@ -1228,7 +1276,8 @@ if __name__ == "__main__":
                 (ROOT / path).parent.mkdir(parents=True, exist_ok=True)
                 image.save(ROOT / path)
         build_sprite_manifest(images)
-        for family in ('item', 'monster'):
-            build_sprite_preview(images, family)
+        if '--astravel-only' in sys.argv:
+            for family in ('item', 'monster'):
+                build_sprite_preview(images, family)
     else:
         build()
