@@ -107,10 +107,10 @@ export const questDefinitions = [
   },
   {
     id: 'main_lithwynn_signs',
-    title: 'Sinais na Oficina',
+    title: 'Sinais no Mercado',
     summary: 'Lithwynn identifica alterações nas inscrições trazidas de Astravél. Auxilie na leitura antes da próxima expedição.',
     giverNpcId: 'npc_lithwynn', turnInNpcId: 'npc_lithwynn', category: 'main',
-    objectives: [{ id: 'examine_marks', type: 'interact', targetId: 'examine_lithwynn_marks', required: 1, label: 'Analisar a marca de Astravél na Oficina' }],
+    objectives: [{ id: 'examine_marks', type: 'interact', targetId: 'examine_lithwynn_marks', required: 1, label: 'Analisar a marca de Astravél no Mercado' }],
     rewards: [{ type: 'characterXp', value: 55 }, { type: 'gold', value: 25 }, { type: 'rawEssence', value: 40 }],
     prerequisites: [{ type: 'questCompleted', questId: 'main_vorren_bestiary' }],
     initialStatus: 'locked',
