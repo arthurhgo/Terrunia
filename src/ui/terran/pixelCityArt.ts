@@ -157,6 +157,7 @@ export const drawPixelCity = (
       ctx.fillRect(actor.point.x - 3, actor.point.y - 23, 6, 6)
       ctx.fillStyle = colors.ink
       ctx.fillRect(actor.point.x, actor.point.y - 22, 1, 3)
-    }  }
+    }
+  }
   if (!playerDrawn) renderPlayer()
 }
