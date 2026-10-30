@@ -71,14 +71,14 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
   return (
     <>
       <ArcanePanel
-        title="Inventário"
-        eyebrow="LOOT É POTENCIAL"
-        subtitle={tradeMode === 'browse' ? 'Gerencie os recursos. Para trocar itens por Essência ou Ouro, visite Lorian ou Feril no Mercado.' : 'Escolha quais recursos deseja entregar a este comerciante.'}
+        title="Mochila"
+        eyebrow="ITENS COLETADOS"
+        subtitle={tradeMode === 'browse' ? undefined : 'Selecione os materiais para negociar.'}
         className="inventory-panel"
         action={
           <label className="compact-select">
             <Filter size={14} />
-            <select value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}>
+            <select aria-label="Filtrar itens da mochila" value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}>
               <option value="all">Todos</option>
               <option value="convertible">Conversíveis</option>
               <option value="sellable">Vendáveis</option>

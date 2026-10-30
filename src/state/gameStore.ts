@@ -64,7 +64,7 @@ export type GameNotification = {
   id: number
   title: string
   message: string
-  tone: 'info' | 'success' | 'warning' | 'error'
+  tone: 'info' | 'success' | 'warning' | 'error' | 'neutral'
 }
 
 type GameState = {
@@ -342,7 +342,7 @@ export const useGameStore = create<GameState>((set, get) => {
         next.world.trailNodeStates.astravel_fungorro_01 = 'locked'
       }
       commit(next)
-      show('Missão aceita', content.quests[questId]?.title ?? questId, 'success')
+      show('Missão aceita', content.quests[questId]?.title ?? questId, 'neutral')
     },
 
     turnInQuest: (questId, npcId) => {

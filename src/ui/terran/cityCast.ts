@@ -5,7 +5,7 @@ import type { TerranNpcPresence } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
 import { getNpcQuestMarker, getOutdoorCityNpcs } from '../../domain/terran/cityNpcs'
 import type { WorldPoint } from './pixelCityArt'
-import type { NpcWorldMarker } from '../../domain/quests/questSelectors'
+import { getNpcQuestNotice, type NpcMarkerPhase, type NpcWorldMarker } from '../../domain/quests/questSelectors'
 import { getCityDoor } from './cityWorld'
 
 export type CityActor = {
@@ -16,6 +16,7 @@ export type CityActor = {
   palette: string
   variant: number
   marker: NpcWorldMarker
+  markerPhase?: NpcMarkerPhase
   stationary?: boolean
 }
 
@@ -33,6 +34,7 @@ export function getCityCast(save: GameSave): CityActor[] {
       palette: placement.palette,
       variant: placement.variant,
       marker: getNpcQuestMarker(save, presence),
+      markerPhase: presence.npcId ? getNpcQuestNotice(save, presence.npcId, content).phase : undefined,
     }]
   })
   const rosetta = content.terranLocations.location_terran_portal_plaza.npcPresences
@@ -45,6 +47,7 @@ export function getCityCast(save: GameSave): CityActor[] {
     palette: 'knowledge',
     variant: 0,
     marker: '?' as const,
+    markerPhase: 'guide' as const,
     stationary: true,
   }] : street
 }

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('personagens coerentes, diálogo com dois retratos, mercado, forja e arma em combate', async ({ page }) => {
+test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e arma em combate', async ({ page }) => {
   test.setTimeout(100_000)
   page.setDefaultTimeout(15_000)
   const errors: string[] = []

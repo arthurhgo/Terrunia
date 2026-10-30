@@ -17,7 +17,6 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
   const stock = MARKET_STOCK.filter((offer) => offer.npcId === npcId)
   return <section className="terran-shop" aria-label="Comprar itens no Mercado">
     <h3><ShoppingBasket size={18} /> Itens à venda</h3>
-    <p>Componentes e suprimentos para sua próxima expedição. Os ritos continuam exigindo Ressonância e compatibilidade.</p>
     <p className="terran-shop__wallet"><Coins size={16} /> {save.wallet.gold} Ouro</p>
     <div className="terran-shop__stock">
       {stock.map(({ itemId, price }) => {
@@ -76,8 +75,6 @@ export function MarketNpcPanel({
   const service = MARKET_SERVICES[presence.id as MarketNpcId]
   if (!service) return null
   return <DialogueWindow save={save} title={presence.label} portraitAssetId={getPresencePortrait(presence)} lines={[...getTerranDialogue(save, presence)]} onClose={onClose}><div className="terran-drawer__section market-npc" aria-label={`Serviços de ${presence.label}`}>
-    <button type="button" onClick={onClose}>← Voltar ao Mercado</button>
-    <header className="market-npc__header"><h3>{presence.label}</h3><small>{presence.roleLabel}</small></header>
     {onQuest && <button type="button" className="terran-service-action" onClick={onQuest}>Consultar missão deste NPC</button>}
     {(service === 'merchant' || service === 'supplies') && <Merchant save={save} npcId={presence.id as MarketNpcId} />}
     {service === 'infusion' && <Upgrade save={save} grade={2} />}

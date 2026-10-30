@@ -144,21 +144,24 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest }: { save:
   if (!definition || !progress) return null
   const npc = content.npcs[definition.giverNpcId]
   const conversations = getNpcActionableQuests(save, npc.id, content)
-  return <DialogueWindow save={save} title={npc.name} portraitAssetId={npc.portraitAssetId} lines={npc.dialogue} onClose={onClose}><section className="terran-drawer__section terran-quest-dialog" aria-label={`Conversa com ${npc.name}`}>
-    <button type="button" onClick={onClose}>← Voltar ao local</button>
-    <div className="terran-quest-dialog__npc"><AssetImage assetId={npc.portraitAssetId} /><div><strong>{npc.name}</strong><small>{npc.title}</small></div></div>
-    <p>{npc.dialogue[0]}</p>
+  return <DialogueWindow save={save} title={npc.name} eyebrow={npc.title} portraitAssetId={npc.portraitAssetId} lines={npc.dialogue} quest={definition} onClose={onClose}><section className="terran-drawer__section terran-quest-dialog" aria-label={`Missão de ${npc.name}`}>
     {onSelectQuest && conversations.length > 1 && <nav className="npc-quest-choices" aria-label={`Missões de ${npc.name}`}>
-      {conversations.map((quest) => <button type="button" key={quest.id} aria-pressed={quest.id === questId}
-        onClick={() => onSelectQuest(quest.id)}>{quest.category === 'secondary' || quest.category === 'bounty' ? '◇' : '!'} {quest.title}
-        <small>{getQuestStatusLabel(save.quests[quest.id].status)}</small></button>)}
+      {(['main', 'secondary', 'other'] as const).map((group) => {
+        const quests = conversations.filter((quest) => group === 'main' ? quest.category === 'main'
+          : group === 'secondary' ? quest.category === 'secondary' || quest.category === 'bounty'
+          : quest.category === 'clan' || quest.category === 'class')
+        return quests.length > 0 && <div className={`npc-quest-group npc-quest-group--${group}`} key={group}>
+          <h3>{group === 'main' ? 'Missão principal' : group === 'secondary' ? 'Secundárias' : 'Clã e Classe'}</h3>
+          {quests.map((quest) => <button type="button" key={quest.id} aria-pressed={quest.id === questId} data-quest-status={save.quests[quest.id].status}
+            onClick={() => onSelectQuest(quest.id)}><strong>{quest.category === 'secondary' || quest.category === 'bounty' ? '◇' : '!'} {quest.title}</strong>
+            <small>{getQuestStatusLabel(save.quests[quest.id].status)}</small></button>)}
+        </div>
+      })}
     </nav>}
-    <h3>{definition.category === 'secondary' || definition.category === 'bounty' ? '◇ ' : ''}{definition.title}</h3>
-    <p>{definition.summary}</p>
+    {(!onSelectQuest || conversations.length < 2) && <h3>{definition.category === 'secondary' || definition.category === 'bounty' ? '◇ ' : ''}{definition.title}</h3>}
     {definition.objectives.map((objective) => <p key={objective.id}>{objective.label} · {progress.objectives[objective.id] ?? 0}/{objective.required}</p>)}
     <p>{definition.rewards.map((reward) => `${reward.type === 'gold' ? 'Ouro' : reward.type === 'characterXp' ? 'XP' : 'Essência'} +${reward.value}`).join(' · ')}</p>
     {definition.turnInItems && <div className="quest-delivery-items">
-      <p>A entrega consome estes materiais e paga a recompensa uma única vez. Favoritos e itens protegidos são preservados.</p>
       {definition.turnInItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />
         {content.items[input.itemId].name}<strong>{getDeliverableCount(save, input.itemId, content)}/{input.quantity}</strong></span>)}
     </div>}
@@ -168,8 +171,7 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest }: { save:
       <button type="button" onClick={() => { accept(questId); onClose() }}>Aceitar missão</button>
     </div>}
     {progress.status === 'ready_to_turn_in' && <button type="button" className="terran-service-action" onClick={() => { complete(questId, definition.turnInNpcId); onClose() }}><Check size={17} /> Entregar missão</button>}
-    {progress.status === 'active' && (definition.category === 'main' && definition.objectives.some((objective) => objective.type === 'interact')
-      ? <button type="button" className="terran-service-action" onClick={() => perform(questId)}>Realizar objetivo no local</button>
-      : <p>Missão em andamento. Realize o objetivo antes da entrega.</p>)}
+    {progress.status === 'active' && definition.category === 'main' && definition.objectives.some((objective) => objective.type === 'interact') &&
+      <button type="button" className="terran-service-action" onClick={() => perform(questId)}>Realizar objetivo no local</button>}
   </section></DialogueWindow>
 }

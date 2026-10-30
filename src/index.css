@@ -790,7 +790,7 @@ code {
 .brand strong { color: var(--gold-bright); font-family: var(--display); font-size: 1rem; letter-spacing: 0.09em; text-transform: uppercase; }
 .brand small { color: #6f7880; font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase; }
 
-.main-nav { display: flex; min-width: 0; align-items: stretch; justify-content: center; overflow-x: auto; scrollbar-width: none; }
+.main-nav { display: flex; min-width: 0; align-items: stretch; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
 .main-nav::-webkit-scrollbar { display: none; }
 .main-nav a { display: inline-flex; min-height: 57px; align-items: center; gap: 6px; border-bottom: 2px solid transparent; padding: 0 13px; color: #817d75; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
 .main-nav a:hover { color: #d1c7b5; }
@@ -3702,6 +3702,83 @@ code {
 .npc-quest-choices button { display: grid; gap: 4px; flex: 1; min-width: 150px; padding: 9px; border: 1px solid #4c7482; background: #142c39; color: #a7ddea; cursor: pointer; text-align: left; font-size: .74rem; }
 .npc-quest-choices button[aria-pressed="true"] { border-color: #f2d397; color: #ffdda0; }
 .npc-quest-choices small { font-size: .61rem; color: #b3c2b8; }
+
+/* Dialogue revision: one portrait, spoken content and player replies share one window. */
+.vn-dialog { width: min(1020px,100%); }
+.vn-textbox { max-height: calc(100dvh - 28px); }
+.vn-textbox > header, .vn-textbox > footer { flex: 0 0 auto; }
+.vn-conversation { display: grid; grid-template-columns: 108px minmax(0,1fr); align-items: start; gap: 13px; padding: 13px 16px; min-height: 0; max-height: 48dvh; overflow-y: auto; flex: 0 1 auto; }
+.vn-conversation > .vn-cast__npc { width: 108px; height: 108px; border: 2px solid #a48657; background: linear-gradient(145deg,#1a3540,#101d2a); box-shadow: inset 0 0 0 2px #07151d; }
+.vn-conversation .vn-cast__npc > img { display: block; position: static; transform: none; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.vn-conversation__body { min-width: 0; }
+.vn-conversation .vn-speech { min-height: 72px; padding: 12px 14px; border: 1px solid #9b805c; box-shadow: inset 0 0 0 1px #d0b78e; outline: none; }
+.vn-conversation .vn-speech:focus-visible { outline: 2px solid #9bd6dd; }
+.vn-player-reply { display: flex; align-items: center; gap: 8px; min-width: 0; margin: 8px 0; color: #aebfc3; font-size: .69rem; }
+.vn-player-reply .vn-cast__player { flex: 0 0 32px; width: 32px; height: 32px; opacity: 1; }
+.vn-player-reply .vn-cast__player > .equipped-character { position: relative; top: auto; left: auto; transform: none; width: 32px; height: 32px; filter: none; }
+.vn-player-reply > span { display: grid; gap: 3px; }
+.vn-player-reply strong { color: #d9cba7; font: .7rem var(--display); }
+.vn-replies { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
+.vn-replies button { display: flex; align-items: start; gap: 7px; min-height: 34px; padding: 7px 10px; text-align: left; border: 1px solid #44626e; background: #152b37; color: #d3ddd6; font-size: .71rem; line-height: 1.4; cursor: pointer; }
+.vn-replies button > span { color: #efce8d; font-size: 1rem; line-height: 1; }
+.vn-replies button:hover, .vn-replies button:focus-visible { background: #28434d; border-color: #ddb97b; }
+.vn-details { flex: 0 1 auto; border-top: 1px solid #5d5944; max-height: 30dvh; }
+.vn-details .terran-quest-dialog > h3 { margin: 5px 0 10px; }
+.vn-details .terran-quest-dialog > p { font-size: .76rem; }
+.terran-game__drawer.terran-game__drawer--dialogue { visibility: hidden; pointer-events: none; }
+.npc-quest-choices { display: grid; grid-template-columns: minmax(0,1fr); gap: 12px; margin-top: 0; }
+.npc-quest-group { display: grid; gap: 6px; min-width: 0; }
+.npc-quest-group > h3 { margin: 0; color: #91cfde; font: .72rem var(--display); }
+.npc-quest-group--main > h3 { color: #edc77f; }
+.npc-quest-group button { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 9px; min-width: 0; width: 100%; }
+.npc-quest-group button strong { font-size: .76rem; }
+.npc-quest-group--main button { border-left: 4px solid #dcba73; background: #2a2b29; }
+.npc-quest-group button[data-quest-status="active"] small, .quest-state-label { color: #a5abb0; }
+.npc-quest-marker[data-quest-state="active"], .pixel-city__npc .npc-quest-marker[data-quest-state="active"], .pixel-interior__npc .npc-quest-marker[data-quest-state="active"] { color: #9da2a5; }
+.notification--neutral { border-color: #6d767e; background: #101b26f5; }
+.notification--neutral > svg, .notification--neutral strong { color: #bfc5ca; }
+.notification--neutral small { color: #a0a8ad; }
+
+/* Mission journal: full-width rows, main story first, history last. */
+.quest-board--rows .quest-board__filters { display: flex; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px; scrollbar-width: thin; }
+.quest-board--rows .quest-board__filters button { flex: 0 0 auto; white-space: nowrap; }
+.quest-board__rows { display: grid; gap: 18px; }
+.quest-journal-group { min-width: 0; }
+.quest-journal-group > h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 9px; color: #9ecbd5; font: .82rem var(--display); }
+.quest-journal-group > h3 small { padding: 2px 5px; border: 1px solid #426370; color: #c5d4cd; font-size: .61rem; }
+.quest-journal-group--main > h3 { color: #efca83; }
+.quest-board--rows .quest-board__grid { display: grid; grid-template-columns: minmax(0,1fr); gap: 8px; }
+.quest-board--rows .quest-tile { display: grid; grid-template-columns: 28px minmax(0,1fr) minmax(58px,94px); align-items: center; gap: 10px; width: 100%; min-height: 90px; padding: 12px; text-align: left; }
+.quest-row__icon { display: grid; place-items: center; color: #87cbdc; }
+.quest-row__body { display: grid; gap: 5px; min-width: 0; }
+.quest-row__body > strong { color: #eed5a2; font: .9rem/1.3 var(--display); }
+.quest-row__category { color: #8fb6c1; text-transform: uppercase; font-size: .57rem; letter-spacing: .08em; }
+.quest-row__meta { display: grid; gap: 6px; justify-items: end; color: #c3d0c9; font-size: .7rem; }
+.quest-row__meta small { color: #bfae8d; font-size: .6rem; line-height: 1.4; text-align: right; }
+.quest-row__meta svg { transition: transform .15s; }
+.quest-tile[aria-expanded="true"] .quest-row__meta svg { transform: rotate(180deg); }
+.quest-board--rows .quest-tile--main { border-left: 4px solid #d8b56f; background: linear-gradient(110deg,#333023,#13202a); }
+.quest-tile--main .quest-row__icon { color: #edc777; }
+.quest-tile[data-quest-status="active"] .quest-tile__status { color: #a5abb0; }
+.quest-tile[data-quest-status="ready_to_turn_in"] .quest-tile__status { color: #8ad7c4; }
+.quest-tile[data-quest-status="completed"] .quest-tile__status { color: #829697; }
+.quest-journal-group--completed { opacity: .78; }
+.quest-board--rows .quest-board__details { margin-top: -1px; border-top: 0; }
+.inventory-nexus__unified { display: grid; grid-template-columns: minmax(0,1fr); gap: 16px; }
+.inventory-screen__summary { color: #acb9b8; font-size: .76rem; }
+@media(max-width:600px) {
+  .vn-overlay { padding: 7px; }
+  .vn-textbox { max-height: calc(100dvh - 14px); }
+  .vn-conversation { grid-template-columns: 58px minmax(0,1fr); gap: 8px; padding: 10px; max-height: 49dvh; }
+  .vn-conversation > .vn-cast__npc { width: 58px; height: 58px; }
+  .vn-conversation .vn-speech { min-height: 62px; padding: 9px 10px; }
+  .vn-replies { gap: 5px; }
+  .vn-replies button { font-size: .65rem; padding: 6px; }
+  .vn-details { max-height: 29dvh; }
+  .npc-quest-group button { grid-template-columns: minmax(0,1fr); }
+  .quest-board--rows .quest-tile { grid-template-columns: 23px minmax(0,1fr) 60px; padding: 9px; gap: 7px; }
+  .quest-row__body > strong { font-size: .78rem; }
+}
 .quest-delivery-items { display: grid; gap: 6px; margin: 12px 0; padding: 10px; border: 1px solid #4f707a; background: #10232d; }
 .quest-delivery-items p { margin: 0 0 4px; color: #b9cbbd; font-size: .72rem; }
 .quest-delivery-items > span { display: flex; gap: 8px; align-items: center; font-size: .75rem; }

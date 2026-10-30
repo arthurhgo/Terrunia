@@ -3,7 +3,7 @@ import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran
 import type { TerranNpcPresence } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
 import { getNpcQuestMarker, getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
-import type { NpcWorldMarker } from '../../domain/quests/questSelectors'
+import { getNpcQuestNotice, type NpcMarkerPhase, type NpcWorldMarker } from '../../domain/quests/questSelectors'
 import { PLAYER_HOME_INTERIOR_ID, type TerranInteriorId } from './roomContent'
 import type { WorldPoint } from './pixelCityArt'
 import { getRoomPlan, isRoomWalkable } from './roomGeometry'
@@ -19,6 +19,7 @@ export type InteriorResident = {
   position: WorldPoint
   palette: string
   marker: NpcWorldMarker
+  markerPhase?: NpcMarkerPhase
 }
 
 /** Backwards-compatible workshop coordinates for older callers/tests. */
@@ -42,6 +43,7 @@ export function getInteriorResidents(save: GameSave, id: TerranInteriorId): Inte
       position: positions[index],
       palette: paletteByTone[location.tone] ?? 'knowledge',
       marker: getNpcQuestMarker(save, presence),
+      markerPhase: presence.npcId ? getNpcQuestNotice(save, presence.npcId, content).phase : undefined,
     }
   })
 }
