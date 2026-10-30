@@ -39,4 +39,27 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
     return { leftBottom: left.bottom, rightTop: right.top }
   })
   expect(mobile.rightTop).toBeGreaterThan(mobile.leftBottom)
+
+  // Selecting a foundation puts the weapon BESIDE the hero at every supported viewport.
+  await page.getByRole('button', { name: 'Escolher Machado de Guerra' }).click()
+  const characterPreview = page.getByRole('region', { name: 'Prévia do personagem com arma selecionada' })
+  const heroSprite = characterPreview.getByRole('img', { name: 'Terrírian Lysa' })
+  const weaponSprite = characterPreview.getByRole('img', { name: 'Machado de Guerra ao lado do personagem (prévia)' })
+  await expect(heroSprite).toBeVisible()
+  await expect(weaponSprite).toBeVisible()
+
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 800, height: 700 },
+    { width: 1024, height: 640 },
+    { width: 1360, height: 580 },
+  ]) {
+    await page.setViewportSize(viewport)
+    const hero = await heroSprite.boundingBox()
+    const weapon = await weaponSprite.boundingBox()
+    expect(hero).not.toBeNull()
+    expect(weapon).not.toBeNull()
+    expect(hero!.x + hero!.width, `Sprite separado em ${viewport.width}x${viewport.height}`)
+      .toBeLessThanOrEqual(weapon!.x)
+  }
 })
