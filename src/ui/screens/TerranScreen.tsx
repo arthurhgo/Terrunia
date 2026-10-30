@@ -231,7 +231,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const currentLabel = interiorId ? getRoomName(interiorId) : content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
   const activeTitle = drawer === 'location' ? (
     localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
-  ) : drawer === 'local' ? 'Mapa de Terran' : drawer === 'market' ? `Mercado · ${marketNpc?.label ?? 'Serviços'}` : drawer === 'inventory' ? 'Inventário e Nexo' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'menu' ? 'Menu' : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
+  ) : drawer === 'local' ? 'Mapa de Terran' : drawer === 'market' ? `Mercado · ${marketNpc?.label ?? 'Serviços'}` : drawer === 'inventory' ? 'Inventário e Nexo' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
 
   const sceneContent = (
     <div className="terran-game">
