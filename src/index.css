@@ -3393,3 +3393,86 @@ code {
 @media (max-width: 600px) {
   .astravel-field__fight-action { bottom: 12%; font-size: .6rem; padding: 6px 8px; min-width: 160px; }
 }
+
+/* Rosetta — the Portal's one permanent question-mark tutor. */
+.pixel-city__npc--guide { z-index: 5; }
+.pixel-city__question-mark {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 19px;
+  border: 2px solid #e1bb72;
+  background: #102b38;
+  color: #f9dfa0;
+  font: 900 13px var(--display);
+  box-shadow: 0 0 9px #7fc5d982;
+  pointer-events: none;
+}
+.pixel-city__question-mark::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 3px;
+  border-width: 4px 4px 0 0;
+  border-style: solid;
+  border-color: #e1bb72 transparent transparent transparent;
+}
+.rosetta-guide {
+  position: absolute;
+  z-index: 25;
+  inset: 4% 5%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  border: 2px solid #c69b5f;
+  background: #09141def;
+  box-shadow: 0 12px 40px #000c, inset 0 0 15px #39677d36;
+  color: #e7d6b6;
+}
+.rosetta-guide__header {
+  position: relative;
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 10px 42px 10px 12px;
+  border-bottom: 1px solid #90714b;
+  background: #142632;
+}
+.rosetta-guide__portrait {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border: 1px solid #9b8258;
+  background: #0a1824;
+}
+.rosetta-guide__portrait img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.rosetta-guide__header h2 { display: flex; align-items: center; gap: 8px; margin: 3px 0; color: #f2d092; font: 700 1.15rem var(--display); }
+.rosetta-guide__header p { margin: 3px 0 0; color: #c6d4d2; font-size: .69rem; line-height: 1.45; }
+.rosetta-guide__close { position: absolute; right: 9px; top: 9px; padding: 5px; border: 1px solid #80674a; background: #112431; color: #f5d4a1; cursor: pointer; }
+.rosetta-guide__content { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; gap: 9px; padding: 12px; min-height: 0; overflow-y: auto; }
+.rosetta-guide__content article { min-width: 0; padding: 10px; border: 1px solid #4b625d; background: #0f212a; }
+.rosetta-guide__content h3 { display: flex; gap: 6px; align-items: center; margin: 0 0 8px; font: 700 .83rem var(--display); color: #9ad6e5; }
+.rosetta-guide__content strong { color: #f2d4a0; font-size: .77rem; }
+.rosetta-guide__content p { margin: 6px 0; font-size: .7rem; line-height: 1.5; color: #c9d0c9; }
+.rosetta-guide__content small { color: #99bac3; font-size: .62rem; line-height: 1.4; }
+.rosetta-guide__missions { grid-row: span 2; }
+.rosetta-guide__mission { display: grid; gap: 3px; margin-top: 6px; padding: 6px; border-left: 2px solid #a78d57; background: #19252e; }
+.rosetta-guide__mission strong { font-size: .69rem; }
+.rosetta-guide__mission span { color: #aec5c6; font-size: .61rem; }
+.rosetta-guide__missions button { margin-top: 9px; width: 100%; padding: 8px; border: 1px solid #c8a365; background: #304033; color: #ffe4b2; font: 700 .68rem var(--display); cursor: pointer; }
+.rosetta-guide__missions button:hover { background: #42604c; }
+@media (max-width: 650px) {
+  .rosetta-guide { inset: 2%; }
+  .rosetta-guide__content { grid-template-columns: minmax(0, 1fr); }
+  .rosetta-guide__missions { grid-row: auto; }
+  .rosetta-guide__header { grid-template-columns: 45px minmax(0,1fr); gap: 7px; padding: 7px 35px 7px 7px; }
+  .rosetta-guide__portrait { width: 43px; height: 43px; }
+  .rosetta-guide__header h2 { font-size: .95rem; }
+  .rosetta-guide__header p { font-size: .61rem; }
+}
