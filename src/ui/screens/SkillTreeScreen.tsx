@@ -140,7 +140,7 @@ export function SkillTreeScreen() {
   return (
     <GameShell fluid>
       <div className="skill-tree-screen">
-        <ArcanePanel className="skill-tree-header" title="Skill Tree" eyebrow="IDENTIDADE DA BUILD">
+        <ArcanePanel className="skill-tree-header" title="Menu" eyebrow="IDENTIDADE DA BUILD">
           <div className="skill-tree-header__stats">
             <div><Gem size={18} /><span>Pontos de Essência<strong>{save.essence.essencePoints}</strong></span></div>
             <ProgressBar value={save.essence.current} max={save.essence.required} label="Próximo ponto" tone="essence" compact />
