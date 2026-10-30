@@ -195,7 +195,7 @@ export const terranLocationDefinitions = [
       { id: 'service_portal_registry', name: 'Registro de expedição', description: 'Registra partida e retorno a Terran.', state: 'available' },
     ],
     npcPresences: [
-      { id: 'presence_portal_guardian', label: 'Guardião do Portal', presence: 'resident', roleLabel: 'Validação e registro de expedições' },
+      { id: 'presence_rosetta', label: 'Rosetta', npcId: 'npc_rosetta', presence: 'resident', roleLabel: 'Guardiã do Portal · Orientação do aventureiro' },
     ],
     status: 'CANON',
   },
