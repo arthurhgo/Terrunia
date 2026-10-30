@@ -1,7 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { useGameStore } from '../../state/gameStore'
 import { BoundItemsPanel } from '../dashboard/BoundItemsPanel'
-import { EquipmentCatalog } from '../dashboard/EquipmentCatalog'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { AssetImage } from '../components/AssetImage'
 import { GameShell } from '../components/GameShell'
@@ -18,7 +17,7 @@ export function InventoryScreen() {
         <header className="screen-heading">
           <p className="eyebrow">TERRÚNIA / ARQUIVO DO TERRÍRIAN</p>
           <h1>Inventário e Equipamentos</h1>
-          <p>Seus recursos obtidos, os cinco Vínculos permanentes e a biblioteca de armas em pixel art.</p>
+          <p>Seus recursos obtidos e os cinco Vínculos permanentes. O Arsenal Visual e o guia de jogo ficam na Estante dos Registros da Casa de Eldamar.</p>
         </header>
         <div className="inventory-screen__hero">
           <AssetImage assetId={save.character.portraitAssetId} />
@@ -26,10 +25,7 @@ export function InventoryScreen() {
           <span className="pixel-draft-label">GRADE 16×16 / 32×32</span>
         </div>
         <BoundItemsPanel save={save} />
-        <div className="inventory-screen__columns">
-          <InventoryPanel save={save} />
-          <EquipmentCatalog />
-        </div>
+        <InventoryPanel save={save} />
       </div>
     </GameShell>
   )
