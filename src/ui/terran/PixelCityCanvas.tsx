@@ -249,12 +249,12 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
           style={{ left: `${PLAYER_HOME_CENTER.x / CITY_WIDTH * 100}%`, top: `${(PLAYER_HOME_CENTER.y - 31) / CITY_HEIGHT * 100}%` }}
           aria-label="Ir para Base do Terrírian" title="Base do Terrírian · entrar"
           onClick={walkToHome} disabled={!enabled}>Base</button>
-        {actors.map((actor) => <button key={actor.id} type="button" className="pixel-city__npc"
+        {actors.map((actor) => <button key={actor.id} type="button" className={`pixel-city__npc ${actor.marker === '?' ? 'pixel-city__npc--guide' : ''}`}
           ref={(button) => { if (button) npcButtonsRef.current.set(actor.id, button); else npcButtonsRef.current.delete(actor.id) }}
           style={{ left: `${actor.point.x / CITY_WIDTH * 100}%`, top: `${(actor.point.y - 9) / CITY_HEIGHT * 100}%` }}
           aria-label={`Conversar com ${actor.presence.label}`} title={actor.presence.label}
           disabled={!enabled} onClick={() => walkToActor(actor)}>
-          {actor.marker ? <span aria-hidden="true">{actor.marker}</span> : null}
+          {actor.marker ? <span className={actor.marker === '?' ? 'pixel-city__question-mark' : undefined} aria-hidden="true">{actor.marker}</span> : null}
         </button>)}
       </div>
       <div className="pixel-city__dpad" aria-label="Controle de movimento">
