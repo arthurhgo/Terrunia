@@ -26,7 +26,7 @@ describe('Galeria do primeiro Vínculo', () => {
     rerender(<WeaponGallery save={save} selectedId="bound_weapon_war_axe" onSelect={onSelect} />)
     expect(axe).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByText(/Sinergias e caminhos de Clã · Machado de Guerra/)).toBeInTheDocument()
-    expect(screen.getByText(/Bônus condicionais à filiação/)).toBeInTheDocument()
+    expect(screen.getByText(/Bônus futuros, somente após filiação/)).toBeInTheDocument()
     expect(screen.getByText(/Sentinela da Luz: Proteção e prioridade/)).toBeInTheDocument()
 
     fireEvent.mouseEnter(screen.getByRole('button', { name: 'Escolher Cetro Arcano' }))
