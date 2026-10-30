@@ -1,0 +1,716 @@
+[
+  {
+    "npcId": "npc_neris",
+    "name": "Neris",
+    "assetId": "npc.neris.portrait",
+    "path": "/assets/npcs/npc_neris_portrait.png",
+    "design": [
+      "ember_dark",
+      "gold_light",
+      "cyan",
+      "skin",
+      "purse",
+      "merchant"
+    ]
+  },
+  {
+    "npcId": "npc_durnan",
+    "name": "Durnan",
+    "assetId": "npc.durnan.portrait",
+    "path": "/assets/npcs/npc_durnan_portrait.png",
+    "design": [
+      "leather",
+      "ember",
+      "ember_dark",
+      "skin_dark",
+      "hammer",
+      "apron"
+    ]
+  },
+  {
+    "npcId": "npc_rosetta",
+    "name": "Rosetta",
+    "assetId": "npc.rosetta.portrait",
+    "path": "/assets/npcs/npc_rosetta_portrait.png",
+    "design": [
+      "violet_dark",
+      "gold_light",
+      "leather",
+      "skin",
+      "staff",
+      "robe"
+    ]
+  },
+  {
+    "npcId": "npc_eldamar",
+    "name": "Eldamar",
+    "assetId": "npc.eldamar.portrait",
+    "path": "/assets/npcs/npc_eldamar_portrait.png",
+    "design": [
+      "navy",
+      "cyan",
+      "ice",
+      "skin_light",
+      "scroll",
+      "scholar"
+    ]
+  },
+  {
+    "npcId": "npc_daeryn",
+    "name": "Daeryn",
+    "assetId": "npc.daeryn.portrait",
+    "path": "/assets/npcs/npc_daeryn_portrait.png",
+    "design": [
+      "moss_dark",
+      "skin_light",
+      "ember_dark",
+      "skin",
+      "herbs",
+      "herbalist"
+    ]
+  },
+  {
+    "npcId": "npc_sylwen",
+    "name": "Sylwen",
+    "assetId": "npc.sylwen.portrait",
+    "path": "/assets/npcs/npc_sylwen_portrait.png",
+    "design": [
+      "violet",
+      "cyan",
+      "outline",
+      "skin_dark",
+      "potion",
+      "apron"
+    ]
+  },
+  {
+    "npcId": "npc_vorren",
+    "name": "Vorren",
+    "assetId": "npc.vorren.portrait",
+    "path": "/assets/npcs/npc_vorren_portrait.png",
+    "design": [
+      "moss_dark",
+      "leather_light",
+      "leather",
+      "skin",
+      "bow",
+      "ranger"
+    ]
+  },
+  {
+    "npcId": "npc_lithwynn",
+    "name": "Lithwynn",
+    "assetId": "npc.lithwynn.portrait",
+    "path": "/assets/npcs/npc_lithwynn_portrait.png",
+    "design": [
+      "blue",
+      "cyan",
+      "steel_light",
+      "skin_light",
+      "gem",
+      "robe"
+    ]
+  },
+  {
+    "npcId": "npc_mireya_dunavar",
+    "name": "Mireya Dûn’Avar",
+    "assetId": "npc.mireya.portrait",
+    "path": "/assets/npcs/npc_mireya_dunavar_portrait.png",
+    "design": [
+      "navy",
+      "gold_light",
+      "gold",
+      "skin",
+      "shield",
+      "armor"
+    ]
+  },
+  {
+    "npcId": "npc_master_rustal",
+    "name": "Mestre Rustal",
+    "assetId": "npc.rustal.portrait",
+    "path": "/assets/npcs/npc_master_rustal_portrait.png",
+    "design": [
+      "leather",
+      "gold",
+      "ember_dark",
+      "skin_dark",
+      "hammer",
+      "apron"
+    ]
+  },
+  {
+    "npcId": "npc_observador_cebios",
+    "name": "Observador Cebios",
+    "assetId": "npc.cebios.portrait",
+    "path": "/assets/npcs/npc_observador_cebios_portrait.png",
+    "design": [
+      "violet_dark",
+      "ice",
+      "steel",
+      "skin",
+      "staff",
+      "scholar"
+    ]
+  },
+  {
+    "npcId": "npc_guardador_estres",
+    "name": "Guardador do Ét",
+    "assetId": "npc.estres.portrait",
+    "path": "/assets/npcs/npc_guardador_estres_portrait.png",
+    "design": [
+      "ember_dark",
+      "violet_light",
+      "ice",
+      "skin_dark",
+      "gem",
+      "mystic"
+    ]
+  },
+  {
+    "npcId": "npc_curador_nexo",
+    "name": "Curador do Nexo",
+    "assetId": "npc.curador.nexo.portrait",
+    "path": "/assets/npcs/npc_curador_nexo_portrait.png",
+    "design": [
+      "violet_dark",
+      "gold",
+      "outline",
+      "skin_dark",
+      "book",
+      "robe"
+    ]
+  },
+  {
+    "npcId": "npc_master_sentinela",
+    "name": "Mestra da Luz",
+    "assetId": "npc_master_sentinela.portrait",
+    "path": "/assets/npcs/npc_master_sentinela_portrait.png",
+    "design": [
+      "blue",
+      "sun",
+      "gold_light",
+      "skin_light",
+      "shield",
+      "armor"
+    ]
+  },
+  {
+    "npcId": "npc_master_gladiador",
+    "name": "Mestre da Barreira",
+    "assetId": "npc_master_gladiador.portrait",
+    "path": "/assets/npcs/npc_master_gladiador_portrait.png",
+    "design": [
+      "steel",
+      "gold",
+      "leather",
+      "skin_dark",
+      "shield",
+      "armor"
+    ]
+  },
+  {
+    "npcId": "npc_master_batedor",
+    "name": "Mestre da Vigília",
+    "assetId": "npc_master_batedor.portrait",
+    "path": "/assets/npcs/npc_master_batedor_portrait.png",
+    "design": [
+      "moss_dark",
+      "cyan",
+      "outline",
+      "skin",
+      "bow",
+      "ranger"
+    ]
+  },
+  {
+    "npcId": "npc_master_forjador",
+    "name": "Mestre Forjador",
+    "assetId": "npc_master_forjador.portrait",
+    "path": "/assets/npcs/npc_master_forjador_portrait.png",
+    "design": [
+      "steel",
+      "ember",
+      "gold",
+      "skin",
+      "hammer",
+      "apron"
+    ]
+  },
+  {
+    "npcId": "npc_master_inscricoes",
+    "name": "Mestra das Inscrições",
+    "assetId": "npc_master_inscricoes.portrait",
+    "path": "/assets/npcs/npc_master_inscricoes_portrait.png",
+    "design": [
+      "navy",
+      "ice",
+      "violet",
+      "skin_light",
+      "book",
+      "robe"
+    ]
+  },
+  {
+    "npcId": "npc_master_gravador",
+    "name": "Mestre Gravador",
+    "assetId": "npc_master_gravador.portrait",
+    "path": "/assets/npcs/npc_master_gravador_portrait.png",
+    "design": [
+      "shade",
+      "violet_light",
+      "outline",
+      "skin",
+      "gem",
+      "hood"
+    ]
+  },
+  {
+    "npcId": "npc_master_astrologo",
+    "name": "Mestre Astrólogo",
+    "assetId": "npc_master_astrologo.portrait",
+    "path": "/assets/npcs/npc_master_astrologo_portrait.png",
+    "design": [
+      "blue",
+      "sun",
+      "ice",
+      "skin",
+      "staff",
+      "scholar"
+    ]
+  },
+  {
+    "npcId": "npc_master_profeta",
+    "name": "Mestra do Orbe",
+    "assetId": "npc_master_profeta.portrait",
+    "path": "/assets/npcs/npc_master_profeta_portrait.png",
+    "design": [
+      "violet",
+      "cyan",
+      "gold_light",
+      "skin_dark",
+      "gem",
+      "mystic"
+    ]
+  },
+  {
+    "npcId": "npc_master_cacador",
+    "name": "Mestre das Constelações",
+    "assetId": "npc_master_cacador.portrait",
+    "path": "/assets/npcs/npc_master_cacador_portrait.png",
+    "design": [
+      "navy",
+      "cyan",
+      "leather_light",
+      "skin",
+      "bow",
+      "ranger"
+    ]
+  },
+  {
+    "npcId": "npc_master_canalizador",
+    "name": "Mestre Canalizador",
+    "assetId": "npc_master_canalizador.portrait",
+    "path": "/assets/npcs/npc_master_canalizador_portrait.png",
+    "design": [
+      "ember",
+      "gold_light",
+      "steel_light",
+      "skin_dark",
+      "staff",
+      "mystic"
+    ]
+  },
+  {
+    "npcId": "npc_master_ruptura",
+    "name": "Mestra da Ruptura",
+    "assetId": "npc_master_ruptura.portrait",
+    "path": "/assets/npcs/npc_master_ruptura_portrait.png",
+    "design": [
+      "shade",
+      "ember_light",
+      "violet",
+      "skin_light",
+      "shield",
+      "armor"
+    ]
+  },
+  {
+    "npcId": "npc_master_ruina",
+    "name": "Mestre da Ruína",
+    "assetId": "npc_master_ruina.portrait",
+    "path": "/assets/npcs/npc_master_ruina_portrait.png",
+    "design": [
+      "violet_dark",
+      "ember",
+      "gold_light",
+      "skin_dark",
+      "book",
+      "hood"
+    ]
+  },
+  {
+    "npcId": "npc_street_arlen",
+    "name": "Arlen",
+    "assetId": "npc.street.arlen",
+    "path": "/assets/npcs/npc_street_arlen_portrait.png",
+    "design": [
+      "gold_dark",
+      "sun",
+      "leather",
+      "skin",
+      "scroll",
+      "merchant"
+    ]
+  },
+  {
+    "npcId": "npc_street_liora",
+    "name": "Liora",
+    "assetId": "npc.street.liora",
+    "path": "/assets/npcs/npc_street_liora_portrait.png",
+    "design": [
+      "moss",
+      "moss_light",
+      "leather_light",
+      "skin_light",
+      "herbs",
+      "herbalist"
+    ]
+  },
+  {
+    "npcId": "npc_street_garrik",
+    "name": "Garrik",
+    "assetId": "npc.street.garrik",
+    "path": "/assets/npcs/npc_street_garrik_portrait.png",
+    "design": [
+      "ember_dark",
+      "steel_light",
+      "outline",
+      "skin_dark",
+      "shield",
+      "armor"
+    ]
+  },
+  {
+    "npcId": "npc_street_siven",
+    "name": "Siven",
+    "assetId": "npc.street.siven",
+    "path": "/assets/npcs/npc_street_siven_portrait.png",
+    "design": [
+      "blue",
+      "skin_light",
+      "gold",
+      "skin",
+      "map",
+      "scholar"
+    ]
+  },
+  {
+    "npcId": "npc_street_nara",
+    "name": "Nara",
+    "assetId": "npc.street.nara",
+    "path": "/assets/npcs/npc_street_nara_portrait.png",
+    "design": [
+      "violet",
+      "violet_light",
+      "outline",
+      "skin_dark",
+      "staff",
+      "mystic"
+    ]
+  },
+  {
+    "npcId": "npc_street_ruven",
+    "name": "Ruven",
+    "assetId": "npc.street.ruven",
+    "path": "/assets/npcs/npc_street_ruven_portrait.png",
+    "design": [
+      "steel",
+      "leather_light",
+      "steel_light",
+      "skin_dark",
+      "purse",
+      "ranger"
+    ]
+  },
+  {
+    "presenceId": "presence_torvynn",
+    "name": "Torvynn",
+    "assetId": "npc.city.torvynn",
+    "path": "/assets/npcs/presence_torvynn_portrait.png",
+    "design": [
+      "navy",
+      "gold",
+      "leather",
+      "skin",
+      "book",
+      "hood"
+    ]
+  },
+  {
+    "presenceId": "presence_gethin",
+    "name": "Gethin",
+    "assetId": "npc.city.gethin",
+    "path": "/assets/npcs/presence_gethin_portrait.png",
+    "design": [
+      "gold_dark",
+      "skin_light",
+      "ice",
+      "skin_dark",
+      "scroll",
+      "apron"
+    ]
+  },
+  {
+    "presenceId": "presence_elvira",
+    "name": "Elvira",
+    "assetId": "npc.city.elvira",
+    "path": "/assets/npcs/presence_elvira_portrait.png",
+    "design": [
+      "violet_dark",
+      "ember_light",
+      "outline",
+      "skin_light",
+      "book",
+      "hood"
+    ]
+  },
+  {
+    "presenceId": "presence_elric",
+    "name": "Elric",
+    "assetId": "npc.city.elric",
+    "path": "/assets/npcs/presence_elric_portrait.png",
+    "design": [
+      "moss",
+      "gold_light",
+      "leather",
+      "skin",
+      "bow",
+      "ranger"
+    ]
+  },
+  {
+    "presenceId": "presence_draelis",
+    "name": "Draelis",
+    "assetId": "npc.city.draelis",
+    "path": "/assets/npcs/presence_draelis_portrait.png",
+    "design": [
+      "moss_dark",
+      "steel_light",
+      "gold",
+      "skin_dark",
+      "map",
+      "hood"
+    ]
+  },
+  {
+    "presenceId": "presence_keldron",
+    "name": "Keldron",
+    "assetId": "npc.city.keldron",
+    "path": "/assets/npcs/presence_keldron_portrait.png",
+    "design": [
+      "shade",
+      "ember",
+      "outline",
+      "skin",
+      "bow",
+      "ranger"
+    ]
+  },
+  {
+    "presenceId": "presence_nerion",
+    "name": "Nerion",
+    "assetId": "npc.city.nerion",
+    "path": "/assets/npcs/presence_nerion_portrait.png",
+    "design": [
+      "blue",
+      "cyan",
+      "skin_light",
+      "skin_dark",
+      "map",
+      "merchant"
+    ]
+  },
+  {
+    "presenceId": "presence_valmira",
+    "name": "Valmira",
+    "assetId": "npc.city.valmira",
+    "path": "/assets/npcs/presence_valmira_portrait.png",
+    "design": [
+      "ember_dark",
+      "gold_light",
+      "ice",
+      "skin_light",
+      "gem",
+      "merchant"
+    ]
+  },
+  {
+    "presenceId": "presence_talia",
+    "name": "Talia",
+    "assetId": "npc.city.talia",
+    "path": "/assets/npcs/presence_talia_portrait.png",
+    "design": [
+      "navy",
+      "skin_light",
+      "gold_light",
+      "skin",
+      "gem",
+      "apron"
+    ]
+  },
+  {
+    "presenceId": "presence_edran",
+    "name": "Edran",
+    "assetId": "npc.city.edran",
+    "path": "/assets/npcs/presence_edran_portrait.png",
+    "design": [
+      "leather",
+      "moss_light",
+      "leather_light",
+      "skin_dark",
+      "purse",
+      "apron"
+    ]
+  },
+  {
+    "presenceId": "presence_feril",
+    "name": "Feril",
+    "assetId": "npc.city.feril",
+    "path": "/assets/npcs/presence_feril_portrait.png",
+    "design": [
+      "gold_dark",
+      "sun",
+      "ember_dark",
+      "skin",
+      "purse",
+      "merchant"
+    ]
+  },
+  {
+    "presenceId": "presence_lorian",
+    "name": "Lorian",
+    "assetId": "npc.city.lorian",
+    "path": "/assets/npcs/presence_lorian_portrait.png",
+    "design": [
+      "blue",
+      "cyan",
+      "shade",
+      "skin_dark",
+      "book",
+      "scholar"
+    ]
+  },
+  {
+    "presenceId": "presence_zareth",
+    "name": "Capitão Zareth",
+    "assetId": "npc.city.zareth",
+    "path": "/assets/npcs/presence_zareth_portrait.png",
+    "design": [
+      "steel",
+      "ember",
+      "steel_light",
+      "skin",
+      "shield",
+      "armor"
+    ]
+  },
+  {
+    "presenceId": "presence_kaedin",
+    "name": "Kaedin",
+    "assetId": "npc.city.kaedin",
+    "path": "/assets/npcs/presence_kaedin_portrait.png",
+    "design": [
+      "shade",
+      "steel_light",
+      "outline",
+      "skin_light",
+      "staff",
+      "armor"
+    ]
+  },
+  {
+    "presenceId": "presence_torvan",
+    "name": "Torvan",
+    "assetId": "npc.city.torvan",
+    "path": "/assets/npcs/presence_torvan_portrait.png",
+    "design": [
+      "gold_dark",
+      "gold_light",
+      "leather",
+      "skin_dark",
+      "shield",
+      "armor"
+    ]
+  },
+  {
+    "presenceId": "presence_dremor",
+    "name": "Dremor",
+    "assetId": "npc.city.dremor",
+    "path": "/assets/npcs/presence_dremor_portrait.png",
+    "design": [
+      "steel",
+      "violet_light",
+      "ice",
+      "skin_dark",
+      "staff",
+      "hood"
+    ]
+  },
+  {
+    "presenceId": "presence_mireya",
+    "name": "Mireya",
+    "assetId": "npc.city.mireya",
+    "path": "/assets/npcs/presence_mireya_portrait.png",
+    "design": [
+      "moss_dark",
+      "gold",
+      "leather",
+      "skin",
+      "shield",
+      "armor"
+    ]
+  },
+  {
+    "presenceId": "presence_class_masters",
+    "name": "Mestres de Classe",
+    "assetId": "npc.city.class_masters",
+    "path": "/assets/npcs/presence_class_masters_portrait.png",
+    "design": [
+      "violet",
+      "sun",
+      "ice",
+      "skin_dark",
+      "book",
+      "scholar"
+    ]
+  },
+  {
+    "presenceId": "presence_briana",
+    "name": "Briana",
+    "assetId": "npc.city.briana",
+    "path": "/assets/npcs/presence_briana_portrait.png",
+    "design": [
+      "moss",
+      "skin_light",
+      "ember",
+      "skin",
+      "herbs",
+      "herbalist"
+    ]
+  },
+  {
+    "presenceId": "presence_orlan",
+    "name": "Orlan",
+    "assetId": "npc.city.orlan",
+    "path": "/assets/npcs/presence_orlan_portrait.png",
+    "design": [
+      "moss_dark",
+      "gold_dark",
+      "ice",
+      "skin_light",
+      "herbs",
+      "hood"
+    ]
+  }
+]

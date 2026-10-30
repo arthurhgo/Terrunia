@@ -10,13 +10,19 @@ export type RoomPlan = {
   exit: WorldPoint
   service: WorldPoint
   residents: readonly WorldPoint[]
-  tile: 'slate' | 'moss' | 'arcane' | 'stone' | 'ceremony' | 'wood' | 'home'
+  tile: 'slate' | 'moss' | 'arcane' | 'stone' | 'ceremony' | 'wood' | 'home' | 'forge'
 }
 
 const rect = (x: number, y: number, w: number, h: number): RoomRect => ({ x, y, w, h })
 const point = (x: number, y: number): WorldPoint => ({ x, y })
 
 export const ROOM_PLANS: Record<TerranInteriorId, RoomPlan> = {
+  location_terran_forge: {
+    floor: [rect(49, 73, 288, 167), rect(83, 57, 69, 35)],
+    obstacles: [rect(163, 125, 56, 28), rect(270, 99, 35, 30)],
+    spawn: point(192, 219), exit: point(192, 233), service: point(284, 191),
+    residents: [point(127, 133), point(244, 160)], tile: 'forge',
+  },
   location_terran_eldamar_house: {
     floor: [rect(103, 67, 178, 173), rect(72, 108, 240, 106)],
     obstacles: [rect(173, 127, 42, 18)],

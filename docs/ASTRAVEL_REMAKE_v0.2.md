@@ -31,7 +31,7 @@ A quantidade de encontros e a ampliação são autorizadas. Topografia, nomes de
 - `vs_astravel_first_contact` continua sendo oferecida por Eldamar e ensinando o primeiro combate. A entrega libera o contato de Vorren, além da cadeia urbana já existente.
 - `main_astravel_lost_hunters` precisa ser **aceita explicitamente** com Vorren antes dos combates 6–10. Os três vestígios são registrados **após** as vitórias nos nós 6, 8 e 10. A entrega é em Vorren.
 - `main_astravel_corruption` aparece depois da entrega a Vorren e precisa ser **aceita explicitamente** com Lithwynn antes dos combates 11–15. Seus objetivos são as vitórias nos nós 11, 14 e 15. A entrega é em Lithwynn.
-- O limite global de três missões não mudou. Nenhuma missão entra automaticamente no Journal. Missões só pagam recompensas durante a entrega ao NPC correto.
+- Na entrega v0.9, o limite global era de três missões. A decisão posterior do criador de 2026-10-30 removeu esse limite na v0.10, conforme `NEXUS_AND_QUEST_JOURNAL.md`. Nenhuma missão entra automaticamente no Journal. Missões só pagam recompensas durante a entrega ao NPC correto.
 - O jogador pode retornar ao Portal, repousar na Base, negociar no Mercado, comprar nodes e retomar a rota. O Modo Ondas e as três caçadas repetíveis permanecem acessíveis depois do primeiro combate.
 - O painel de missões da expedição usa os mesmos seletores do Journal e apresenta todas as missões aceitas. Cada encontro informa grupo, dica, materiais e recursos possíveis.
 

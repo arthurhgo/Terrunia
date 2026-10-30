@@ -276,9 +276,9 @@ export type TerranLocationDefinition = {
   role: string
   description: string
   category: 'institution' | 'portal'
-  viewKind: 'eldamar' | 'vorren' | 'workshop' | 'zareth' | 'clanHall' | 'daeryn' | 'portal'
+  viewKind: 'eldamar' | 'vorren' | 'workshop' | 'forge' | 'zareth' | 'clanHall' | 'daeryn' | 'portal'
   iconId: 'book' | 'compass' | 'anvil' | 'shield' | 'clan' | 'flask' | 'portal'
-  tone: 'knowledge' | 'exploration' | 'bond' | 'defense' | 'clan' | 'healing' | 'portal'
+  tone: 'knowledge' | 'exploration' | 'bond' | 'defense' | 'clan' | 'healing' | 'portal' | 'forge'
   mapPosition: { x: number; y: number }
   services: TerranServiceDefinition[]
   npcPresences: TerranNpcPresence[]

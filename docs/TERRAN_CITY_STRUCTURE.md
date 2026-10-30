@@ -1,34 +1,38 @@
 # Estrutura oficial da cidade de Terran
 
-Status: decisão do criador aprovada em 2026-08-12.
+Status: decisão do criador aprovada em 2026-08-12; expansão do Mercado e nova Casa do Ferreiro autorizadas em 2026-10-30.
 
-Este documento é o adendo mais recente para Terran. Ele substitui representações anteriores que tratavam o Portal como Home/tela principal ou que usavam Taverna, Ferreiro, Armeiro, Mercador e outros prédios legados como matriz inicial da cidade.
+Este documento é o adendo mais recente para Terran. Ele substitui representações anteriores que tratavam o Portal como Home/tela principal. A matriz inicial de seis instituições foi ampliada pelo criador em 2026-10-30 para incluir a Casa do Ferreiro e um novo vendedor no Mercado.
 
 ## Regra central
 
 **TERRAN É A HOME/CIDADE BASE DO JOGADOR. O PORTAL É UMA ÁREA NO CENTRO DE TERRAN E SERVE COMO ACESSO ÀS INSTÂNCIAS.**
 
-Terran possui exatamente seis instituições jogáveis ao redor da Praça do Portal:
+Terran possui sete instituições jogáveis ao redor da Praça do Portal:
 
 | ID | Instituição | Verbo | Função |
 |---|---|---|---|
 | `location_terran_eldamar_house` | Casa de Eldamar | Compreender | conhecimento, história, investigação, prólogo, Lore e Codex |
 | `location_terran_vorren_post` | Posto de Vorren | Descobrir | caça, exploração, rastreamento, bestiário, mapas e materiais de criaturas |
-| `location_terran_bond_workshop` | Oficina dos Vínculos | Evoluir | cinco itens vinculados, Ressonância, Graus, Essências, Joias, Runas, Memórias e Cicatrizes |
+| `location_terran_bond_workshop` | Mercado | Evoluir e negociar | comerciantes, materiais, cinco itens vinculados, Ressonância, Graus, Essências, Joias, Runas, Memórias e Cicatrizes |
 | `location_terran_zareth_barracks` | Quartel de Zareth | Proteger | segurança, patrulhas, defesa, treinamento, contratos, bounties e ameaças |
 | `location_terran_clan_hall` | Salão dos Clãs | Tornar-se | Clã, Classe, reputação, provas, ritos, mestres e Main Lore |
 | `location_terran_daeryn_house` | Casa de Daeryn | Preparar-se | cura, alquimia, poções, antídotos, herbalismo, purificação e resistências temporárias |
+| `location_terran_forge` | Casa do Ferreiro | Produzir e aprimorar | materiais novos, reforços permanentes da mesma arma e novos ramos na Skill Tree |
 | `location_terran_portal_plaza` | Praça do Portal | Partir | validação, despacho e registro de expedições para instâncias externas |
 
 ## Distribuição de NPCs
 
 - Casa de Eldamar: Eldamar, Torvynn, Gethin e Elvira condicional.
 - Posto de Vorren: Vorren, Elric, Draelis, Keldron condicional e Nerion visitante.
-- Oficina dos Vínculos: Lithwynn, Valmira, Talia, Edran, Feril, Lorian e Durnan condicional.
+- Mercado: Lithwynn, Valmira, Talia, Edran, Feril, Lorian e Neris, nova vendedora de materiais.
+- Casa do Ferreiro: Durnan como ferreiro residente; substitui sua presença condicional no Mercado.
 - Quartel de Zareth: Capitão Zareth, Kaedin, Torvan, Dremor e Mireya.
 - Salão dos Clãs: representantes Dûn’Avar, Rustal, Cebios Esti e Estres do Ét; mestres de Classe progressivos; Conselho da Main Lore.
 - Casa de Daeryn: Daeryn, Sylwen, Briana e Orlan condicional.
-- Praça do Portal: Guardião do Portal. Nome definitivo permanece `OWNER_DECISION`.
+- Praça do Portal: Rosetta, Guardiã do Portal na representação atual (`CONTENT_DRAFT`).
+
+Neris, as falas, a distribuição visual e os números das receitas permanecem `CONTENT_DRAFT`/`VISUAL_DRAFT`/`BALANCE_DRAFT`. A autorização da nova casa não transforma armas de loot em equipamentos substituíveis. Durnan reforça o Vínculo existente e produz componentes, mantendo os sete Graus e o custo em Pontos de Essência para comprar nodes da árvore.
 
 ## Salão dos Clãs
 
@@ -53,7 +57,7 @@ Ele verifica missão ativa, pré-requisitos, autorização e dificuldade; aprese
 Enquanto estiver em Terran, o jogador deve ver:
 
 - posição atual;
-- seis instituições;
+- sete instituições;
 - Praça do Portal;
 - destino da missão;
 - locais descobertos;
@@ -91,6 +95,8 @@ Uma missão não precisa visitar todas as casas. Cada etapa deve existir nos dad
 - localização e primeira descoberta persistem no save.
 - o Portal é o único ponto de entrada em instâncias externas.
 - retorno de instância ocorre na Praça do Portal.
-- Ritos e gestão dos cinco Vínculos pertencem à Oficina dos Vínculos; NPC, custo e cerimônia final continuam `OWNER_DECISION`.
+- Ritos e gestão dos cinco Vínculos continuam na instituição de ID `location_terran_bond_workshop`, apresentada como Mercado; NPC, custo e cerimônia final dos ritos continuam `OWNER_DECISION`.
+- A Casa do Ferreiro possui interior, acesso pelas ruas, produção de materiais e aprimoramentos da mesma arma. Receitas e bônus ficam em dados, e novas sinergias exigem compra normal na Skill Tree.
+- Sprites de NPCs e retratos de diálogo devem resolver a mesma identidade visual no registro central. Todos usam a janela vermelha com `?` acima da cabeça.
 - coordenadas do minimapa são `VISUAL_DRAFT` e não definem escala, distância ou geografia canônica.
 - NPCs condicionais/visitantes/progressivos não devem aparecer como residentes permanentes desbloqueados.

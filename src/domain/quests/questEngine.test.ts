@@ -8,7 +8,6 @@ import {
   canAcceptQuest,
   declineQuest,
   getActiveQuestCount,
-  MAX_ACTIVE_QUESTS,
   offerQuest,
   turnInQuest,
 } from './questEngine'
@@ -81,26 +80,19 @@ describe('quest engine', () => {
     expect(turnedIn.value.essence.current).toBe(15)
   })
 
-  it('aceita três missões e bloqueia a quarta sem substituir nenhuma', () => {
-    const save = createNewSave('quest-user', 'Iria', 'character.terririan.default', content)
-    const questIds = ['clan_dunavar_01', 'clan_rustal_01', 'clan_cebios_01', 'clan_estres_01']
-    for (const clanId of ['dunavar', 'rustal', 'cebios_esti', 'estres_do_et']) save.character.clan.knownClanIds.push(clanId)
-    for (const questId of questIds) save.quests[questId].status = 'offered'
-    let current = save
-    for (const questId of questIds.slice(0, 3)) {
-      const result = acceptQuest(current, questId, content, '2026-08-12T15:00:00.000Z')
-      expect(result.ok).toBe(true)
-      if (result.ok) current = result.value
+  it('aceita mais de três missões sem substituir nenhuma e preserva todas após reload', () => {
+    let save = createNewSave('quest-user', 'Iria', 'character.terririan.default', content)
+    const ids = ['clan_dunavar_01', 'clan_rustal_01', 'clan_cebios_01', 'clan_estres_01']
+    for (const id of ids) {
+      save.quests[id].status = 'offered'
+      const result = acceptQuest(save, id, content, save.updatedAt)
+      if (!result.ok) throw new Error(result.message)
+      save = result.value
     }
-    expect(getActiveQuestCount(current)).toBe(MAX_ACTIVE_QUESTS)
-    expect(canAcceptQuest(current)).toMatchObject({ ok: false, code: 'QUEST_LIMIT_REACHED' })
-    const fourth = acceptQuest(current, questIds[3], content, '2026-08-12T15:01:00.000Z')
-    expect(fourth).toMatchObject({ ok: false, code: 'QUEST_LIMIT_REACHED' })
-    expect(current.quests[questIds[0]].status).toBe('active')
-    expect(current.quests[questIds[3]].status).toBe('offered')
-    const reloaded = migrateAndValidateSave(structuredClone(current))
-    expect(getActiveQuestCount(reloaded)).toBe(MAX_ACTIVE_QUESTS)
-    expect(reloaded.quests[questIds[3]].status).toBe('offered')
+    expect(getActiveQuestCount(save)).toBe(4)
+    expect(canAcceptQuest(save).ok).toBe(true)
+    const reloaded = migrateAndValidateSave(save)
+    expect(ids.every((id) => reloaded.quests[id].status === 'active')).toBe(true)
   })
 
   it('mantém pronta para entrega ocupando slot e libera o slot após concluir', () => {

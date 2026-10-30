@@ -13,7 +13,7 @@ export function enterPlayerBase(save: GameSave, now: string): Result<GameSave> {
     'location_terran_portal_plaza', 'location_terran_eldamar_house',
     'location_terran_vorren_post', 'location_terran_bond_workshop',
     'location_terran_zareth_barracks', 'location_terran_clan_hall',
-    'location_terran_daeryn_house',
+    'location_terran_daeryn_house', 'location_terran_forge',
   ]].includes(save.world.currentLocationId)) return fail('BASE_OUTSIDE_TERRAN', 'Retorne a Terran antes de entrar na Base.')
   if (save.world.currentLocationId === BASE_LOCATION_ID) return ok(save)
   const next = structuredClone(save)

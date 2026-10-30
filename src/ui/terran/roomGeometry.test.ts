@@ -10,9 +10,9 @@ const save = createNewSave('owner', 'Terrírian', 'character.terririan.default',
 const rooms = [...TERRAN_LOCATION_IDS.filter((id) => content.terranLocations[id].category === 'institution'), PLAYER_HOME_INTERIOR_ID]
 
 describe('Plantas distintas e circulação de Terran', () => {
-  it('tem sete plantas diferentes e portas em posições distintas sem criar instituições', () => {
-    expect(rooms).toHaveLength(7)
-    expect(new Set(rooms.map((id) => JSON.stringify(getRoomPlan(id).floor))).size).toBe(7)
+  it('inclui a forja entre oito plantas distintas e mantém portas acessíveis', () => {
+    expect(rooms).toHaveLength(8)
+    expect(new Set(rooms.map((id) => JSON.stringify(getRoomPlan(id).floor))).size).toBe(8)
     expect(new Set(rooms.map((id) => getRoomPlan(id).exit.x)).size).toBeGreaterThanOrEqual(4)
     expect(getRoomPlan('location_terran_portal_plaza').floor).toEqual([])
   })

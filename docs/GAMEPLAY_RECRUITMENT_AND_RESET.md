@@ -1,15 +1,15 @@
 # Gameplay social, recrutamento e reset — direção oficial
 
-**Status:** decisão do criador aprovada em 2026-08-12. Esta direção prevalece no domínio de missões, Clãs, Classes e reset de campanha.
+**Status:** decisão do criador aprovada em 2026-08-12; limite de missões removido por decisão do criador em 2026-10-30. Esta direção prevalece no domínio de missões, Clãs, Classes e reset de campanha.
 
 ## Missões
 
 - NPC apresenta `AVAILABLE` como oferta; conversar produz `OFFERED`, não aceitação.
 - Somente a confirmação do jogador produz `ACTIVE` e inclui a missão no Journal.
 - `Agora não` retorna a missão a `AVAILABLE`.
-- O limite global é `MAX_ACTIVE_QUESTS = 3`, contando `ACTIVE` + `READY_TO_TURN_IN`.
-- `LOCKED`, `AVAILABLE`, `OFFERED` e `COMPLETED` não ocupam slot.
-- Provas de Clã e Classe usam o mesmo motor, autosave e capacidade.
+- Não há limite global de missões simultâneas. A direção de 2026-10-30 substitui o antigo limite de três e sua validação no save.
+- `OFFERED` continua fora do Journal até o aceite; missões concluídas continuam no histórico.
+- Provas de Clã e Classe usam o mesmo motor e autosave, sem limite de capacidade; as três provas de recrutamento continuam obrigatórias.
 - Abandono permanece `OWNER_DECISION`.
 
 ## Recrutamento de Clã

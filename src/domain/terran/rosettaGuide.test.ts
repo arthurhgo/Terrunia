@@ -28,15 +28,15 @@ describe('Rosetta orienta usando apenas dados do save', () => {
     expect(guide.next?.instruction).toContain('Retorne a Eldamar')
   })
 
-  it('nunca sugere receber nova missão com os três espaços ocupados', () => {
+  it('continua indicando novas missões mesmo com várias em andamento', () => {
     const save = fresh()
     for (const id of ['vs_astravel_first_contact', 'main_terran_first_home', 'main_vorren_bestiary']) {
       save.quests[id].status = 'active'
     }
     const guide = getRosettaGuidance(save, content)
-    expect(guide.canReceive).toBe(false)
+    expect(guide.canReceive).toBe(true)
     expect(guide.activeCount).toBe(3)
-    expect(guide.maxActive).toBe(3)
+    expect(guide.maxActive).toBeNull()
     expect(guide.next).not.toBeNull()
   })
 

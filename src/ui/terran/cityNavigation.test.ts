@@ -14,7 +14,7 @@ describe('navegação pela cidade pixelada', () => {
     }
   })
 
-  it('encontra caminhos para as seis instituições sem atravessar paredes', () => {
+  it('encontra caminhos para as sete instituições sem atravessar paredes', () => {
     const origin = getCityDoor('location_terran_portal_plaza')
     for (const id of TERRAN_LOCATION_IDS) {
       if (id === 'location_terran_portal_plaza') continue

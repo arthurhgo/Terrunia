@@ -7,8 +7,8 @@ import { findInteriorPath, getInteriorResidents, hasTerranInterior, INTERIOR_EXI
 const save = createNewSave('owner', 'Nira', 'character.terririan.default', content, '2026-10-29T15:00:00Z')
 
 describe('Interiores de Terran', () => {
-  it('tem exatamente seis instituições exploráveis e mantém o Portal exterior', () => {
-    expect(TERRAN_INTERIOR_IDS).toHaveLength(6)
+  it('tem as sete instituições com a forja exploráveis e mantém o Portal exterior', () => {
+    expect(TERRAN_INTERIOR_IDS).toHaveLength(7)
     for (const id of TERRAN_LOCATION_IDS) {
       expect(hasTerranInterior(id)).toBe(content.terranLocations[id].category === 'institution')
     }

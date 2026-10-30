@@ -2,6 +2,10 @@
 
 Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, primeira Ruína, Vínculos, Infusão, Lapidação de Joias, Skill Tree e save local-first.
 
+## Personagens, diálogos e forja v0.10
+
+O sprite do jogador usa a imagem escolhida na criação; 51 aparências de NPCs têm o mesmo desenho no mapa e nos diálogos. Conversas usam dois personagens acima da caixa inferior, e todos os NPCs, incluindo Rosetta, exibem a mesma interrogação vermelha. O combate mostra a arma vinculada na mão e o jogador voltado para os inimigos. Não há limite de missões simultâneas. Neris vende materiais no Mercado, e Durnan produz componentes e aprimora a arma na nova Casa do Ferreiro, revelando dois nodes na Skill Tree. Detalhes: [personagens e forja](docs/CHARACTERS_DIALOGUE_FORGE_v0.10.md).
+
 ## Astravél v0.9
 
 A rota do Portal agora tem **15 encontros de combate** em três trechos interligados a Eldamar, Vorren e Lithwynn, com monstros e materiais próprios, dois refúgios conquistados, minichefe e Colosso Micélio. Mundo pixelado 768×512 com câmera, minimapa, caminhada até objetivo e preservação dos saves anteriores. Detalhes: [remake de Astravél](docs/ASTRAVEL_REMAKE_v0.2.md).
@@ -13,7 +17,7 @@ O fluxo atual cobre:
 1. login com Google/Firebase ou convidado de desenvolvimento;
 2. criação de um Terrírian sem Clã e sem Classe;
 3. Vínculo da primeira arma permanente no prólogo;
-4. Terran como Home jogável, com seis instituições ao redor da Praça do Portal;
+4. Terran como Home jogável, com sete instituições ao redor da Praça do Portal;
 5. interfaces próprias, minimapa persistente, serviços e NPCs para cada área da cidade;
 6. conversa com Eldamar na Casa de Eldamar e aceitação da missão técnica `O Primeiro Rastro`;
 7. validação da missão na Praça do Portal e entrada na trilha de Astravél;
@@ -38,9 +42,10 @@ O fluxo atual cobre:
 26. persistência em IndexedDB e sincronização opcional com Firestore.
 27. recrutamento data-driven dos quatro Clãs por três provas e confirmação explícita;
 28. doze provas de Classe liberadas somente após o Vínculo do Clã;
-29. limite global de três missões aceitas, compartilhado por todas as categorias;
+29. missões simultâneas sem limite, com aceite e entrega explícitos em todas as categorias;
 30. Main Lore adaptada por contexto de Clã e variante de Classe;
-31. reset de campanha em duas etapas, com invalidação cloud e preservação da conta.
+31. reset de campanha em duas etapas, com invalidação cloud e preservação da conta;
+32. Mercado com nova vendedora e forja de materiais/aprimoramentos integrada à Skill Tree.
 
 ## Regras canônicas preservadas
 

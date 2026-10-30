@@ -1,3 +1,4 @@
+import { drawActorImage } from '../terran/worldSprites'
 import type { TrailDefinition, TrailNodeDefinition } from '../../content/types'
 import { getAstravelSector } from '../../content/astravel'
 import type { TrailNodeStatus } from '../../domain/game/types'
@@ -136,9 +137,6 @@ export function drawAstravel(
   drawPlayerAura(ctx, player.x, player.y, frame)
   pixel(ctx, '#11282b', player.x - 5, player.y - 2, 10, 3)
   const stride = walking ? Math.floor(frame / 8) % 3 : 0
-  if (sprite?.complete && sprite.naturalWidth >= 128 && sprite.naturalHeight >= 128) {
-    const row = { down: 0, left: 1, right: 2, up: 3 }[facing]
-    ctx.drawImage(sprite, stride * 32, row * 32, 32, 32, Math.round(player.x - 8), Math.round(player.y - 16), 16, 16)
-  } else drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[variant], WORLD_ACTOR_SCALE)
+  if (!drawActorImage(ctx, sprite, player.x, player.y, facing, stride)) drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[variant], WORLD_ACTOR_SCALE)
   ctx.restore()
 }

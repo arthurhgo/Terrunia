@@ -1,3 +1,5 @@
+import { getPresencePortrait } from '../../content/npcVisuals'
+import { drawActorImage, getWorldSprite } from './worldSprites'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { CityActor } from './cityCast'
@@ -38,7 +40,7 @@ const drawBuilding = (ctx: CanvasRenderingContext2D, id: TerranLocationId, frame
   }
   const roofs: Record<string, string> = {
     knowledge: '#55638b', exploration: '#7e6151', bond: '#586f75',
-    defense: '#7f5952', clan: '#785a80', healing: '#537b6a',
+    forge: '#9c573d', defense: '#7f5952', clan: '#785a80', healing: '#537b6a',
   }
   const location = content.terranLocations[id]
   const roof = roofs[location.tone] ?? colors.roof
@@ -55,6 +57,12 @@ const drawBuilding = (ctx: CanvasRenderingContext2D, id: TerranLocationId, frame
   ctx.fillStyle = colors.roofLit; ctx.fillRect(p.x - 12, p.y - 21, 23, 2)
   ctx.fillStyle = colors.ink; ctx.fillRect(p.x - 15, p.y + 1, 7, 7); ctx.fillRect(p.x + 8, p.y + 1, 7, 7)
   ctx.fillStyle = colors.glow; ctx.fillRect(p.x - 13, p.y + 3, 3, 3); ctx.fillRect(p.x + 10, p.y + 3, 3, 3)
+  if (location.viewKind === 'forge') {
+    ctx.fillStyle = '#382b29'; ctx.fillRect(p.x + 12, p.y - 30, 8, 20)
+    ctx.fillStyle = '#d99b62'; ctx.fillRect(p.x + 10, p.y - 33, 12, 4)
+    ctx.fillStyle = frame % 40 < 20 ? '#f0a15e' : '#df6745'; ctx.fillRect(p.x - 13, p.y + 3, 4, 4)
+    ctx.fillStyle = '#a5bdc6'; ctx.fillRect(p.x - 4, p.y - 13, 9, 3)
+  }
   ctx.fillStyle = '#584c41'; ctx.fillRect(p.x - 8, p.y + 17, 16, 3)
 }
 
@@ -131,12 +139,8 @@ export const drawPixelCity = (
   const renderPlayer = () => {
     drawPlayerAura(ctx, player.x, player.y, frame)
     ctx.fillStyle = '#162728'; ctx.fillRect(Math.round(player.x - 5), Math.round(player.y - 2), 10, 3)
-    if (playerSprite?.complete && playerSprite.naturalWidth >= 128 && playerSprite.naturalHeight >= 128) {
-      const row = { down: 0, left: 1, right: 2, up: 3 }[facing]
-      ctx.drawImage(playerSprite, stride * 32, row * 32, 32, 32, Math.round(player.x - 8), Math.round(player.y - 16), 16, 16)
-    } else {
-      drawPixelActor(ctx, player.x, player.y, facing, stride,
-        ACTOR_PALETTES[playerPalette] ?? ACTOR_PALETTES.terririan, WORLD_ACTOR_SCALE)
+    if (!drawActorImage(ctx, playerSprite, player.x, player.y, facing, stride)) {
+      drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[playerPalette] ?? ACTOR_PALETTES.terririan, WORLD_ACTOR_SCALE)
     }
   }
   const actors = [...cityCast].sort((a, b) => a.point.y - b.point.y)
@@ -149,14 +153,9 @@ export const drawPixelCity = (
       ? { ...palette, hair: '#c7b594', accent: '#a5c3b0' }
       : { ...palette, hair: '#5a434d', skin: '#c08e7c', accent: '#d3a0bd' }
     const movingActor = actor as MovingCityActor
-    drawPixelActor(ctx, actor.point.x, actor.point.y, movingActor.facing ?? 'down',
-      movingActor.moving ? Math.floor(frame / 8) % 3 : 0, variantPalette, 1)
-    // Rosetta's interactive HTML button owns the single question bubble.
-    if (actor.marker && actor.marker !== '?') {
-      ctx.fillStyle = actor.marker === '!' ? '#f1c76c' : '#77d2a8'
-      ctx.fillRect(actor.point.x - 3, actor.point.y - 23, 6, 6)
-      ctx.fillStyle = colors.ink
-      ctx.fillRect(actor.point.x, actor.point.y - 22, 1, 3)
+    if (!drawActorImage(ctx, getWorldSprite(getPresencePortrait(actor.presence)), actor.point.x, actor.point.y,
+      movingActor.facing ?? 'down', movingActor.moving ? Math.floor(frame / 8) % 3 : 0)) {
+      drawPixelActor(ctx, actor.point.x, actor.point.y, movingActor.facing ?? 'down', 0, variantPalette, 1)
     }
   }
   if (!playerDrawn) renderPlayer()

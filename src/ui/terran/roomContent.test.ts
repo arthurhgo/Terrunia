@@ -12,9 +12,9 @@ import { getInteriorResidents, isInteriorWalkable } from './interiorLayout'
 const save = createNewSave('owner', 'Terrírian', 'character.terririan.default', content, '2026-10-29T18:30:00Z')
 
 describe('Casa do Terrírian e interiores temáticos', () => {
-  it('a residência adicional não substitui uma das seis instituições', () => {
+  it('a residência adicional não substitui as instituições da cidade', () => {
     expect(getRoomName(PLAYER_HOME_INTERIOR_ID)).toBe('Base do Terrírian')
-    expect(Object.keys(content.terranLocations)).toHaveLength(7)
+    expect(Object.keys(content.terranLocations)).toHaveLength(8)
     expect(PLAYER_HOME_CENTER.x).toBe(192)
     expect(isCityWalkable(PLAYER_HOME_CENTER)).toBe(false)
     expect(isCityWalkable(PLAYER_HOME_DOOR)).toBe(true)

@@ -972,6 +972,18 @@ NPC_IDS = {
 }
 
 
+# The extended cast is authored once and shared by map actors and dialogue portraits.
+CAST_PROFILES = json.loads((ROOT.parents[1] / 'src/content/npcVisuals.json').read_text())
+for profile in CAST_PROFILES:
+    path = profile['path'].removeprefix('/assets/')
+    ASSETS[path] = (lambda path=path: imported_visual(path))
+    NPC_IDS[Path(path).stem.removesuffix('_portrait')] = profile['assetId']
+for name in ('runic_alloy', 'weapon_core', 'mycelial_resin'):
+    path = f'items/item_{name}.png'
+    ASSETS[path] = (lambda path=path: imported_visual(path))
+    ITEM_IDS[path] = 'item.' + name.replace('_', '-')
+
+
 def sprite_identity(path: str):
     """Return registry key and asset family; no gameplay rules live here."""
     file_name = Path(path).stem

@@ -56,6 +56,18 @@ Registro das ambiguidades encontradas durante a implementação do vertical slic
 | Remake de Astravél v0.9 (2026-10-30) | A rota técnica anterior continha seis marcos e apenas três encontros; o criador autorizou 15 nós com combate e integração de missões/drops/progressão. | A chegada passa a marco 0; existem 15 combates em três trechos. Acampamento e Limiar exigem vitória. Vorren e Lithwynn oferecem duas investigações com aceite explícito, gates e entrega oficial. Master spec 0B, limite de três missões, Vínculos e dungeon do Colosso são preservados. Topografia/conteúdo/números continuam drafts, conforme `ASTRAVEL_REMAKE_v0.2.md`. |
 | Compatibilidade da rota ampliada | Inserir encontros entre marcos antigos podia apagar conclusão, criar objetivos simultâneos ou repetir recompensas. | Save 11→12 preserva estados concluídos, combate/snapshot em andamento e rota finalizada, cadastra novos objetivos e escolhe um único marco pendente. Evidências de visitas já registradas contam após aceitação manual de uma missão. Migração e revisita não pagam recompensas. |
 
+## Atualização do criador — 2026-10-30, v0.10
+
+| Tema | Conflito encontrado | Decisão aplicada |
+|---|---|---|
+| Capacidade do Journal | A direção de agosto limitava a três missões; o criador pediu retirar o limite. | A decisão nova prevalece: todas as categorias aceitam missões simultâneas sem limite. Aceite, gates e entrega continuam explícitos. Três provas de recrutamento de Clã continuam obrigatórias. |
+| Matriz urbana | A matriz inicial tinha seis instituições e Durnan condicional; o criador autorizou Casa do Ferreiro e vendedor novo no Mercado. | Terran passa a ter sete instituições mais a Praça. Durnan reside na Casa do Ferreiro, e Neris vende materiais no Mercado. O ID histórico da Oficina dos Vínculos é preservado para os serviços existentes no Mercado. Nomes novos e receitas são drafts. |
+| Forja e permanência | Produzir/aprimorar armas poderia sugerir substituir os cinco equipamentos vinculados. | A forja produz componentes novos e reforça a mesma arma vinculada, preservando ID, Grau, sete Graus e componentes. As melhorias revelam nodes que exigem Pontos de Essência; forjar não concede pontos. Bônus e custos são `BALANCE_DRAFT`. |
+| Sprites e retratos | Atores procedurais genéricos não correspondiam à imagem do personagem nem aos retratos dos NPCs. | A imagem selecionada do jogador é desenhada no mundo; 51 aparências distintas compartilham o asset entre ator e diálogo. A arma real usa o Grau e a empunhadura cadastrados, com protagonista voltado para os inimigos. Arte permanece `VISUAL_DRAFT`. |
+| Conversa e sinalização | Janelas distintas e marcadores diferentes para Rosetta e demais NPCs contrariavam as referências novas. | Todos usam a janela vermelha com `?`; o estado de missão permanece acessível. Diálogos têm dois personagens acima da caixa inferior, mantendo a pixel art do projeto. A referência orienta a composição, sem introduzir personagens de outro jogo. |
+
+Esta atualização substitui as referências históricas a limite de três, seis instituições e sprites genéricos nas linhas anteriores. Detalhes: `CHARACTERS_DIALOGUE_FORGE_v0.10.md`.
+
 ## OWNER_DECISION pendente
 
 - Curva final da barra de Essência e recompensas do encontro.

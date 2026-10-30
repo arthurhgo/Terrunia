@@ -1,3 +1,4 @@
+import { executeForgeRecipe } from '../domain/terran/forge'
 import { create } from 'zustand'
 import { content } from '../content/catalog'
 import {
@@ -100,6 +101,7 @@ type GameState = {
   transferBaseItem: (direction: 'deposit' | 'withdraw', instanceId: string, quantity: number) => void
   receiveDaerynAid: () => void
   buyFromSylwen: (itemId: string, quantity?: number) => void
+  forge: (recipeId: string) => void
   buyFromMarket: (npcId: string, itemId: string, quantity?: number) => void
   recordCutsceneViewed: (sceneId: CutsceneId) => void
   enterAstravel: () => void
@@ -477,6 +479,15 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!result.ok) return failAction(result.message)
       commit(result.value)
       show('Compra realizada', `${quantity}× ${content.items[itemId].name} adicionado à mochila.`, 'success')
+    },
+
+    forge: (recipeId) => {
+      const save = get().save
+      if (!save) return
+      const result = executeForgeRecipe(save, recipeId, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+      show('Forja concluída', 'O trabalho de Durnan foi registrado. Consulte os novos caminhos da sua arma.', 'success')
     },
 
     buyFromMarket: (npcId, itemId, quantity = 1) => {

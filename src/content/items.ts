@@ -2,6 +2,13 @@ import type { BoundItemBaseDefinition, ItemDefinition } from './types'
 
 export const itemDefinitions = [
   ...[
+    { id: 'material_runic_alloy', name: 'Liga Rúnica', description: 'Metal produzido por Durnan para componentes vinculados.', iconAssetId: 'item.runic-alloy' },
+    { id: 'material_weapon_core', name: 'Núcleo de Arma', description: 'Componente de forja para a arma que já pertence ao Terrírian.', iconAssetId: 'item.weapon-core' },
+    { id: 'material_mycelial_resin', name: 'Resina Micelial Tratada', description: 'Acabamento de fibras para reforçar a arma vinculada.', iconAssetId: 'item.mycelial-resin' },
+  ].map((item) => ({ ...item, category: 'material' as const, rarity: 'uncommon' as const,
+    convertToEssence: false, essenceValue: 0, sellable: false, sellValue: 0, questLocked: false,
+    canInfuseBoundItem: false, combatEffects: [], affinityTags: ['forge'], status: 'BALANCE_DRAFT' as const })),
+  ...[
     { id: 'drop_fungal_gel', name: 'Gel Fúngico Denso', essenceValue: 65, sellValue: 24, iconAssetId: 'item.fungal-gel', description: 'Material da Bola de Gosma Fúngica. Converte-se em Essência ou Ouro.' },
     { id: 'drop_mycelial_fiber', name: 'Fibra Micelial', essenceValue: 85, sellValue: 30, iconAssetId: 'item.mycelial-fiber', description: 'Filamentos do Horror Esporulante; matéria para conversão e comércio.' },
     { id: 'drop_blackroot_core', name: 'Cerne Raiz-Negra', essenceValue: 120, sellValue: 45, iconAssetId: 'item.blackroot-core', description: 'Cerne do Titan Raiz-Negra. Não substitui nenhum equipamento vinculado.' },

@@ -1,7 +1,7 @@
 import type { BoundSlot } from '../domain/shared/types'
 import { visualEquipmentCatalog } from '../content/visualEquipment'
 import { gemComponentDefinitions } from '../content/gems'
-import { npcDefinitions } from '../content/npcs'
+import { npcVisualDefinitions } from '../content/npcVisuals'
 
 export type AssetEntry = {
   id: string
@@ -41,12 +41,13 @@ const entries: AssetEntry[] = [
     alt: 'Spritesheet opcional de quatro direções do Terrírian (4 colunas × 4 linhas, quadros 32×32)',
     pixelArt: true,
   },
-  ...npcDefinitions.map((npc) => ({
-    id: npc.portraitAssetId,
-    path: `/assets/npcs/${npc.id}_portrait.png`,
-    fallback: '/assets/placeholders/npc.svg',
-    alt: `Retrato pixel art de ${npc.name}`,
-    pixelArt: true,
+  ...npcVisualDefinitions.map((profile) => ({
+    id: profile.assetId, path: profile.path, fallback: '/assets/placeholders/npc.svg',
+    alt: `Retrato pixel art de ${profile.name}`, pixelArt: true,
+  })),
+  ...['runic-alloy', 'weapon-core', 'mycelial-resin'].map((id) => ({
+    id: `item.${id}`, path: `/assets/items/item_${id.replaceAll('-', '_')}.png`,
+    fallback: '/assets/placeholders/item.svg', alt: id, pixelArt: true,
   })),
   {
     id: 'enemy.fungorro-crawler',

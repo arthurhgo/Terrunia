@@ -1697,6 +1697,431 @@
         "width": 16,
         "height": 16
       }
+    },
+    {
+      "assetId": "npc.neris.portrait",
+      "path": "/assets/npcs/npc_neris_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 160,
+        "y": 128,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.durnan.portrait",
+      "path": "/assets/npcs/npc_durnan_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 0,
+        "y": 160,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.torvynn",
+      "path": "/assets/npcs/presence_torvynn_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 32,
+        "y": 160,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.gethin",
+      "path": "/assets/npcs/presence_gethin_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 64,
+        "y": 160,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.elvira",
+      "path": "/assets/npcs/presence_elvira_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 96,
+        "y": 160,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.elric",
+      "path": "/assets/npcs/presence_elric_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 128,
+        "y": 160,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.draelis",
+      "path": "/assets/npcs/presence_draelis_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 160,
+        "y": 160,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.keldron",
+      "path": "/assets/npcs/presence_keldron_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 0,
+        "y": 192,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.nerion",
+      "path": "/assets/npcs/presence_nerion_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 32,
+        "y": 192,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.valmira",
+      "path": "/assets/npcs/presence_valmira_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 64,
+        "y": 192,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.talia",
+      "path": "/assets/npcs/presence_talia_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 96,
+        "y": 192,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.edran",
+      "path": "/assets/npcs/presence_edran_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 128,
+        "y": 192,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.feril",
+      "path": "/assets/npcs/presence_feril_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 160,
+        "y": 192,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.lorian",
+      "path": "/assets/npcs/presence_lorian_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 0,
+        "y": 224,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.zareth",
+      "path": "/assets/npcs/presence_zareth_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 32,
+        "y": 224,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.kaedin",
+      "path": "/assets/npcs/presence_kaedin_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 64,
+        "y": 224,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.torvan",
+      "path": "/assets/npcs/presence_torvan_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 96,
+        "y": 224,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.dremor",
+      "path": "/assets/npcs/presence_dremor_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 128,
+        "y": 224,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.mireya",
+      "path": "/assets/npcs/presence_mireya_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 160,
+        "y": 224,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.class_masters",
+      "path": "/assets/npcs/presence_class_masters_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 0,
+        "y": 256,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.briana",
+      "path": "/assets/npcs/presence_briana_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 32,
+        "y": 256,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "npc.city.orlan",
+      "path": "/assets/npcs/presence_orlan_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-npc-v0.1.png",
+        "x": 64,
+        "y": 256,
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "assetId": "item.runic-alloy",
+      "path": "/assets/items/item_runic_alloy.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 96,
+        "y": 112,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.weapon-core",
+      "path": "/assets/items/item_weapon_core.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 112,
+        "y": 112,
+        "width": 16,
+        "height": 16
+      }
+    },
+    {
+      "assetId": "item.mycelial-resin",
+      "path": "/assets/items/item_mycelial_resin.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": {
+        "path": "/assets/atlas/terrunia-item-v0.1.png",
+        "x": 0,
+        "y": 128,
+        "width": 16,
+        "height": 16
+      }
     }
   ]
 }

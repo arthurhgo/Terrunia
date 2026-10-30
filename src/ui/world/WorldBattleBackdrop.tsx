@@ -45,10 +45,10 @@ export function WorldBattleBackdrop({ save }: { save: GameSave }) {
     const ctx = canvasRef.current?.getContext('2d')
     if (!ctx) return
     const sheet = new Image()
-    sheet.src = resolveAsset('character.terririan.map').path
+    sheet.src = resolveAsset(save.character.portraitAssetId).path
     sheet.onerror = () => {
       sheet.onerror = null
-      sheet.src = resolveAsset('character.terririan.map').fallback
+      sheet.src = resolveAsset(save.character.portraitAssetId).fallback
     }
     let raf = 0
     let frame = 0
@@ -64,7 +64,7 @@ export function WorldBattleBackdrop({ save }: { save: GameSave }) {
     }
     raf = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(raf)
-  }, [discoveredRooms, dungeonOrigin, playerPoint, portraitVariant, reducedMotion, trailNodeStates])
+  }, [discoveredRooms, dungeonOrigin, playerPoint, portraitVariant, reducedMotion, trailNodeStates, save.character.portraitAssetId])
 
   return <canvas ref={canvasRef} width={384} height={256} className="battle-world-canvas" aria-hidden="true" />
 }

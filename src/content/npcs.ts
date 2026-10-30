@@ -97,6 +97,18 @@ const baseNpcDefinitions = [
     id, name, title, settlementId: 'terran', roles: ['classTrainer', 'questGiver'] as NPCDefinition['roles'],
     questIds: [questId], portraitAssetId: `${id}.portrait`, dialogue: [`A prova de ${title} exige ação, não uma escolha de menu.`], status: 'CONTENT_DRAFT' as const,
   })),
+  {
+    id: 'npc_neris', name: 'Neris', title: 'Mercadora de Materiais', settlementId: 'terran',
+    roles: ['vendor', 'questGiver'], questIds: [], portraitAssetId: 'npc.neris.portrait',
+    dialogue: ['Cada material guarda um caminho. Trago ligas, peças e suprimentos para quem deseja explorar e forjar.', 'Durnan transforma os componentes na Casa do Ferreiro. Sua arma conserva a história que você construiu.'],
+    status: 'CONTENT_DRAFT',
+  },
+  {
+    id: 'npc_durnan', name: 'Durnan', title: 'Ferreiro dos Vínculos', settlementId: 'terran',
+    roles: ['artisan', 'questGiver'], questIds: [], portraitAssetId: 'npc.durnan.portrait',
+    dialogue: ['O metal muda sob o martelo, mas o Vínculo pertence a você. Traga materiais e trabalharemos sua própria arma.', 'A têmpera abre novos caminhos na árvore. A escolha de aprendê-los continua sendo sua.'],
+    status: 'CONTENT_DRAFT',
+  },
 ] satisfies NPCDefinition[]
 
 export const npcDefinitions: NPCDefinition[] = [

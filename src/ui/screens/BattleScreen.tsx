@@ -6,6 +6,7 @@ import { boundSlotPreviewAssetIds } from '../../assets/assetRegistry'
 import { BOUND_SLOTS } from '../../domain/shared/types'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { useGameStore } from '../../state/gameStore'
+import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { AssetImage } from '../components/AssetImage'
 import { GameShell } from '../components/GameShell'
 import { BattleArenaBackdrop } from '../battle/BattleArenaBackdrop'
@@ -144,7 +145,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
       <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} />
       <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''}`}>
-        <AssetImage assetId={save.character.portraitAssetId} alt={player.alive ? 'Terrírian em posição de batalha' : 'Terrírian derrotado'} />
+        <EquippedCharacter save={save} alt={player.alive ? 'Terrírian voltado para os inimigos' : 'Terrírian derrotado'} />
       </div>
       <div className={`pixel-battle__enemies pixel-battle__enemies--${enemies.length}`}>
         {enemies.map((enemy, i) => <button type="button" key={enemy.id}

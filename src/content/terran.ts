@@ -8,11 +8,24 @@ export const TERRAN_LOCATION_IDS = [
   'location_terran_clan_hall',
   'location_terran_daeryn_house',
   'location_terran_portal_plaza',
+  'location_terran_forge',
 ] as const
 
 export type TerranLocationId = (typeof TERRAN_LOCATION_IDS)[number]
 
 export const terranLocationDefinitions = [
+  {
+    id: 'location_terran_forge', settlementId: 'city_terran', name: 'Casa do Ferreiro', shortName: 'Ferreiro',
+    verb: 'Forjar', role: 'Produção de materiais, têmpera e caminhos da arma',
+    description: 'Durnan produz componentes e aprimora a arma vinculada. Têmperas revelam caminhos próprios na Skill Tree.',
+    category: 'institution', viewKind: 'forge', iconId: 'anvil', tone: 'forge', mapPosition: { x: 50, y: 81 },
+    services: [
+      { id: 'service_forge_materials', name: 'Produção de materiais', description: 'Transforme drops em ligas e componentes de arma.', state: 'available' },
+      { id: 'service_forge_upgrades', name: 'Têmpera de Vínculos', description: 'Aprimore sua arma e revele novos nodes.', state: 'available' },
+    ],
+    npcPresences: [{ id: 'presence_durnan_forge', npcId: 'npc_durnan', label: 'Durnan', presence: 'resident', roleLabel: 'Ferreiro · produção e têmpera' }],
+    status: 'CONTENT_DRAFT',
+  },
   {
     id: 'location_terran_eldamar_house',
     settlementId: 'city_terran',
@@ -91,7 +104,7 @@ export const terranLocationDefinitions = [
       { id: 'presence_edran', label: 'Edran', presence: 'resident', roleLabel: 'Venda de suprimentos de combate' },
       { id: 'presence_feril', label: 'Feril', presence: 'resident', roleLabel: 'Compra de drops por Ouro' },
       { id: 'presence_lorian', label: 'Lorian', presence: 'resident', roleLabel: 'Conversão de drops em Essência' },
-      { id: 'presence_durnan', label: 'Durnan', presence: 'conditional', roleLabel: 'Ferreiro errante' },
+      { id: 'presence_neris', label: 'Neris', npcId: 'npc_neris', presence: 'resident', roleLabel: 'Venda de materiais e peças para forja' },
     ],
     status: 'CANON',
   },

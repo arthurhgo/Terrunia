@@ -17,7 +17,8 @@ Nunca silencie um conflito. Registre a resolução em `docs/CANON_DECISIONS.md`.
 
 - O jogador cria um Terrírian original, sem Clã, Classe ou identidade de NPC/herói.
 - Clã e Classe são conquistas de gameplay.
-- Missões só entram no Journal após aceitação explícita; o limite global é três `ACTIVE` + `READY_TO_TURN_IN`.
+- Missões só entram no Journal após aceitação explícita; não há limite de missões simultâneas (decisão do criador de 2026-10-30).
+- Terran possui sete instituições e a Praça do Portal, incluindo Mercado e Casa do Ferreiro.
 - Clã exige três provas, elegibilidade, convite, confirmação e rito; Classe exige Clã ativo, prova e confirmação.
 - Reset de campanha preserva autenticação e preferências, invalida a geração cloud e limpa o save local.
 - Os cinco equipamentos vinculados são permanentes e não podem ser substituídos por loot.
