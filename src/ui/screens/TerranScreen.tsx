@@ -12,7 +12,6 @@ import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { BoundItemsPanel } from '../dashboard/BoundItemsPanel'
 import { ClanHallPanel } from '../dashboard/ClanHallPanel'
-import { EquipmentCatalog } from '../dashboard/EquipmentCatalog'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { NpcDialog } from '../dashboard/NpcDialog'
 import { PortalPanel } from '../dashboard/PortalPanel'
@@ -22,6 +21,7 @@ import { GameShell } from '../components/GameShell'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { PixelCityCanvas } from '../terran/PixelCityCanvas'
 import { PixelInteriorCanvas } from '../terran/PixelInteriorCanvas'
+import { EldamarRecords } from '../terran/EldamarRecords'
 import { TerranCharacterHud } from '../terran/TerranCharacterHud'
 import { hasTerranInterior } from '../terran/interiorLayout'
 import { getRoomName, PLAYER_HOME_DOOR, PLAYER_HOME_INTERIOR_ID, type RoomFurniture, type TerranInteriorId } from '../terran/roomContent'
@@ -31,7 +31,7 @@ import { getCityCast } from '../terran/cityCast'
 import { BaseChest, DaerynServices, HomeDrawer, QuestNpcPanel, VorrenBestiary } from '../terran/TerranServices'
 import { BASE_LOCATION_ID } from '../../domain/terran/base'
 
-type Drawer = 'location' | 'inventory' | 'quests' | 'home' | 'chest' | null
+type Drawer = 'location' | 'inventory' | 'quests' | 'home' | 'chest' | 'records' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
 
 const hud = [
@@ -153,7 +153,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const guidance = getTerranQuestDestination(save, content)
   const discovered = getDiscoveredTerranLocationIds(save).length
   const location = content.terranLocations[locationId]
-  const gameEnabled = !scene && !eldamarOpen && !socialQuestId && !dialogue && !inspected
+  const gameEnabled = !scene && !eldamarOpen && !socialQuestId && !dialogue && !inspected && drawer !== 'records'
 
   const openLocation = (id: TerranLocationId) => {
     setStreetSpawn(null)
@@ -185,7 +185,9 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setLocalQuestId(null)
   }
   const inspectFurniture = (furniture: RoomFurniture) => {
-    if (furniture.behavior === 'storage') {
+    if (furniture.behavior === 'archive' && interiorId === 'location_terran_eldamar_house') {
+      setDrawer('records')
+    } else if (furniture.behavior === 'storage') {
       setDrawer('chest')
     } else if (furniture.behavior === 'rest') {
       restAtHome()
@@ -228,7 +230,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const currentLabel = interiorId ? getRoomName(interiorId) : content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
   const activeTitle = drawer === 'location' ? (
     localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
-  ) : drawer === 'inventory' ? 'Inventário e Arsenal' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'home' ? 'Minha Base' : 'Baú Pessoal'
+  ) : drawer === 'inventory' ? 'Inventário e Arsenal' : drawer === 'quests' ? 'Diário de Missões' : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
 
   const sceneContent = (
     <div className="terran-game">
@@ -285,7 +287,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                   setLocalQuestId(null)
                 }} />
                 : <LocationDrawer save={save} location={location} onTalk={talk} onVisit={openLocation} unified={unified} />)}
-              {drawer === 'inventory' && <><InventoryPanel save={save} /><EquipmentCatalog /></>}
+              {drawer === 'inventory' && <InventoryPanel save={save} />}
+              {drawer === 'records' && interiorId === 'location_terran_eldamar_house' && <EldamarRecords save={save} />}
               {drawer === 'quests' && <QuestDrawer save={save} />}
               {drawer === 'home' && <HomeDrawer save={save} canRest={interiorId === PLAYER_HOME_INTERIOR_ID} />}
               {drawer === 'chest' && <BaseChest save={save} />}

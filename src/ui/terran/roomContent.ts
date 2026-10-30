@@ -11,14 +11,14 @@ export type RoomFurniture = {
   id: string
   name: string
   point: WorldPoint
-  behavior: 'inspect' | 'services' | 'rest' | 'storage'
+  behavior: 'inspect' | 'services' | 'rest' | 'storage' | 'archive'
   description: string
 }
 
 /** VISUAL_DRAFT — objects are identified independently from canvas art or sprite paths. */
 export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> = {
   location_terran_eldamar_house: [
-    { id: 'eldamar_archive', name: 'Estante dos Registros', point: { x: 111, y: 181 }, behavior: 'inspect', description: 'Documentos e inscrições repousam em estantes protegidas. Eldamar orienta a investigação dos registros.' },
+    { id: 'eldamar_archive', name: 'Estante dos Registros', point: { x: 111, y: 181 }, behavior: 'archive', description: 'Manuais do viajante, Arsenal Visual e registros de sistemas do mundo. Consulte os documentos nesta estante.' },
     { id: 'eldamar_desk', name: 'Mesa de Pesquisa', point: { x: 274, y: 181 }, behavior: 'services', description: 'Consulta aos serviços e registros desta instituição.' },
   ],
   location_terran_vorren_post: [
