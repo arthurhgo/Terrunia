@@ -26,18 +26,25 @@ export function WeaponGallery({ save, selectedId, onSelect }: Props) {
   const inspected = weapons.find((weapon) => weapon.id === inspectedId) ?? selectedWeapon
   const preview = inspected ? deriveWeaponPreview(save, content, inspected) : null
   const clans = selectedWeapon ? Object.values(content.clans).map((clan) => ({
-    ...clan,
+    id: clan.id,
+    name: clan.name,
     combatBonus: selectedWeapon.powerType === 'magical'
       ? clan.bonuses.magicalAttack ?? 0
       : clan.bonuses.physicalAttack ?? 0,
-    classes: clan.classIds.map((id) => content.classes[id]).filter(Boolean),
+    // Only save-backed, numeric clan bonuses; no future class paths or hypothetical synergies.
+    bonuses: [
+      { label: 'Vida', value: clan.bonuses.maxHp ?? 0 },
+      { label: 'Defesa', value: clan.bonuses.mitigation ?? 0 },
+      { label: 'Mana', value: clan.bonuses.mana ?? 0 },
+      { label: 'Ataque físico', value: clan.bonuses.physicalAttack ?? 0 },
+      { label: 'Ataque mágico', value: clan.bonuses.magicalAttack ?? 0 },
+    ].filter((bonus) => bonus.value > 0),
   })).sort((a, b) => b.combatBonus - a.combatBonus) : []
   const strongestBonus = Math.max(0, ...clans.map((clan) => clan.combatBonus))
 
   return <section className="weapon-gallery" aria-label="Galeria flutuante de armas vinculadas">
     <header className="weapon-gallery__heading">
       <span className="eyebrow">ARSENAL DO PRIMEIRO VÍNCULO</span>
-      <span>Inspecione ao passar o mouse · clique para selecionar</span>
     </header>
     <div className="weapon-gallery__grid" aria-label="Armas iniciais">
       {weapons.map((weapon, i) => {
@@ -83,18 +90,15 @@ export function WeaponGallery({ save, selectedId, onSelect }: Props) {
       </> : <p className="weapon-gallery__hint">Sem arma vinculada — escolha uma das sete armas para ver suas habilidades.</p>}
     </div>
     {selectedWeapon && <div className="weapon-gallery__clans" aria-label={`Sinergias de Clã para ${selectedWeapon.name}`}>
-      <h4><Shield size={14} /> Sinergias e caminhos de Clã · {selectedWeapon.name}</h4>
-      <small className="weapon-gallery__notice">Bônus futuros, somente após filiação a um Clã.</small>
+      <h4><Shield size={14} /> Sinergias e caminhos de Clã</h4>
       <div className="weapon-gallery__clan-grid">
         {clans.map((clan) => <div className={`weapon-gallery__clan ${clan.combatBonus === strongestBonus && strongestBonus > 0 ? 'is-affine' : ''}`}
-          key={clan.id}
-          title={`${clan.philosophy}\n${clan.bonusLabel}\n${clan.classes.map((classe) => `${classe.name}: ${classe.role}`).join(' · ')}`}>
+          key={clan.id}>
           <strong>{clan.name}</strong>
-          <span>{clan.combatBonus > 0
-            ? `+${clan.combatBonus} ataque ${selectedWeapon.powerType === 'magical' ? 'mágico' : 'físico'}`
-            : 'Sem bônus direto'}</span>
-          <small>{clan.classes.map((classe) => classe.name).join(' · ')}</small>
-          <span className="weapon-gallery__clan-extra">Padrão do Clã: {clan.philosophy} · {clan.classes.map((classe) => `${classe.name}: ${classe.role}`).join(' · ')}</span>
+          <div className="weapon-gallery__bonus-list">
+            {clan.bonuses.map((bonus) =>
+              <span key={bonus.label}>+${bonus.value} ${bonus.label}</span>)}
+          </div>
         </div>)}
       </div>
     </div>}
