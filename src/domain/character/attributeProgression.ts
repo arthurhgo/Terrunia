@@ -4,10 +4,9 @@ import { fail, ok, type Result } from '../shared/types'
 
 export const getAttributeScore = (attribute: AttributeValue) => attribute.die + attribute.bonus
 
-const nextDie = (current: AttributeValue['die'], direction: 1 | -1) => {
-  const index = BALANCE.attributeDieOrder.indexOf(current)
-  return BALANCE.attributeDieOrder[index + direction]
-}
+/** A rank transition is always exactly +2/-2 faces, never an intermediate die. */
+export const nextAttributeDie = (current: AttributeValue['die'], direction: 1 | -1) =>
+  BALANCE.attributeDieOrder.find((die) => die === current + BALANCE.attributeDieFaceStep * direction)
 
 export const adjustCharacterAttribute = (
   save: GameSave,
@@ -16,7 +15,7 @@ export const adjustCharacterAttribute = (
   now: string,
 ): Result<GameSave> => {
   const current = save.character.attributes[attributeId]
-  const targetDie = nextDie(current.die, direction)
+  const targetDie = nextAttributeDie(current.die, direction)
   if (!targetDie) {
     return fail(
       direction === 1 ? 'ATTRIBUTE_AT_MAXIMUM' : 'ATTRIBUTE_AT_MINIMUM',
