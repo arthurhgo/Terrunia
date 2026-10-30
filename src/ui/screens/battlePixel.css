@@ -90,3 +90,54 @@
 .portal-hunts__entry{display:grid;gap:6px;padding:9px;background:#112330;border:1px solid #485866;}
 .portal-hunts__entry strong{color:#f0d69c;font-family:Georgia,serif;font-size:.83rem}
 .portal-hunts__entry small{font-size:.71rem;color:#9fc5cb}
+
+/* Battle dice altar: visually simulates throwing a polyhedral die; real damage remains engine-owned. */
+.battle-dice-platform {
+  position: absolute; z-index: 11; left: 50%; top: 47%; transform: translate(-50%,-50%);
+  width: min(265px,60%); display: grid; gap: 4px; padding: 9px 12px;
+  border: 2px solid #c29b5a; background: linear-gradient(160deg,#09192bf2,#060c17ed);
+  box-shadow: 0 0 28px #081c27ee, inset 0 0 20px #6ea6bb22; text-align: center; pointer-events: none;
+}
+.battle-dice-platform header { display: flex; justify-content: space-between; gap: 8px; align-items: center; color: #86d5ee; font: 700 .64rem var(--display); letter-spacing: .04em; }
+.battle-dice-platform header strong { color: #f5d79c; }
+.battle-dice-platform__stage { position: relative; display: grid; height: 124px; place-items: center; perspective: 420px; }
+.battle-dice-platform__rune {
+  position: absolute; left: 50%; bottom: 1px; width: 155px; height: 75px; border: 2px solid #ad8a55; border-radius: 50%;
+  transform: translateX(-50%) rotateX(65deg);
+  box-shadow: 0 0 0 12px #0d35404a, 0 0 30px #64b5e755, inset 0 0 19px #d6b2645e;
+  background: radial-gradient(ellipse,#183e4b,#13212b 70%,#08111a);
+}
+.battle-dice-platform__rune::before,.battle-dice-platform__rune::after {
+  position: absolute; content: ''; inset: 13px 22px; border: 1px solid #bda672; transform: rotate(45deg);
+}
+.battle-dice-platform__rune::after { transform: rotate(-45deg); }
+.battle-dice-platform__shadow { position: absolute; z-index: 1; bottom: 16px; width: 47px; height: 17px; border-radius: 50%; background: #01070c99; filter: blur(6px); }
+.battle-dice-platform__die { position: relative; z-index: 2; display: grid; place-items: center; transform-origin: 50% 75%; }
+.battle-dice-platform__die .die-icon { width: 72px; height: 72px; filter: drop-shadow(0 5px 9px #000a) drop-shadow(0 0 12px #f8b65c75); }
+.battle-dice-platform.is-rolling .battle-dice-platform__die { animation: battle-die-throw .78s cubic-bezier(.21,.68,.25,1) both; }
+.battle-dice-platform.is-settled .battle-dice-platform__die { transform: translateY(17px) rotate(9deg); }
+.battle-dice-platform.is-rolling .battle-dice-platform__rune { animation: battle-altar-glow .78s ease-in-out both; }
+.battle-dice-platform__result { display: flex; align-items: baseline; justify-content: center; gap: 9px; min-height: 25px; }
+.battle-dice-platform__result small { color: #9dc2cf; font-size: .65rem; }
+.battle-dice-platform__result strong { color: #ffdb95; font: 700 1.05rem var(--display); }
+.battle-dice-platform > p { margin: 1px 0 0; color: #91a7ae; font-size: .57rem; line-height: 1.35; }
+@keyframes battle-die-throw {
+  0% { transform: translate(-75px,-95px) rotate(-530deg) scale(.65); opacity: .35; }
+  43% { transform: translate(20px,8px) rotate(110deg) scale(1.08); opacity: 1; }
+  63% { transform: translate(2px,-24px) rotate(290deg) scale(.98); }
+  82% { transform: translate(-5px,12px) rotate(380deg) scale(.96); }
+  100% { transform: translate(0,17px) rotate(369deg) scale(1); opacity: 1; }
+}
+@keyframes battle-altar-glow {
+  0%,100% { box-shadow: 0 0 18px #4f9ab34a, inset 0 0 19px #d6b2645e; }
+  55% { box-shadow: 0 0 36px #f1bd718c, inset 0 0 28px #d6b26477; }
+}
+@media(max-width:560px) {
+  .battle-dice-platform { top: 41%; width: min(244px,76%); padding: 6px 9px; }
+  .battle-dice-platform__stage { height: 92px; }
+  .battle-dice-platform__rune { width: 128px; height: 62px; }
+  .battle-dice-platform__die .die-icon { width: 56px; height: 56px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .battle-dice-platform__die, .battle-dice-platform__rune { animation: none !important; }
+}
