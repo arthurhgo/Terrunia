@@ -44,7 +44,7 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
   await page.getByRole('button', { name: 'Escolher Machado de Guerra' }).click()
   const characterPreview = page.getByRole('region', { name: 'Prévia do personagem com arma selecionada' })
   const heroSprite = characterPreview.getByRole('img', { name: 'Terrírian Lysa' })
-  const weaponSprite = characterPreview.getByRole('img', { name: 'Machado de Guerra equipada na mão do personagem (prévia)' })
+  const weaponSprite = characterPreview.getByRole('img', { name: 'Machado de Guerra na mão do personagem (prévia)' })
   await expect(heroSprite).toBeVisible()
   await expect(weaponSprite).toBeVisible()
 
