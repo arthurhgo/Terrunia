@@ -27,7 +27,7 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
   ],
   location_terran_bond_workshop: [
     { id: 'bond_anvil', name: 'Bigorna Rúnica', point: { x: 82, y: 195 }, behavior: 'inspect', description: 'Uma bigorna marcada por padrões arcanos. Os Vínculos evoluem, não são substituídos.' },
-    { id: 'bond_station', name: 'Bancada dos Vínculos', point: { x: 310, y: 198 }, behavior: 'services', description: 'Inspeção e desenvolvimento dos cinco itens vinculados.' },
+    { id: 'bond_station', name: 'Balcão Central do Mercado', point: { x: 310, y: 198 }, behavior: 'services', description: 'Consulte os serviços disponíveis. Para negociar, vender, converter ou evoluir itens, fale diretamente com os NPCs.' },
   ],
   location_terran_zareth_barracks: [
     { id: 'zareth_weapons', name: 'Arsenal do Quartel', point: { x: 92, y: 163 }, behavior: 'inspect', description: 'Equipamentos de treinamento e escudos de patrulha permanecem organizados.' },
@@ -54,7 +54,7 @@ export const getRoomName = (id: TerranInteriorId) =>
   ({
     location_terran_eldamar_house: 'Casa de Eldamar',
     location_terran_vorren_post: 'Posto de Vorren',
-    location_terran_bond_workshop: 'Oficina dos Vínculos',
+    location_terran_bond_workshop: 'Mercado',
     location_terran_zareth_barracks: 'Quartel de Zareth',
     location_terran_clan_hall: 'Salão dos Clãs',
     location_terran_daeryn_house: 'Casa de Daeryn',
