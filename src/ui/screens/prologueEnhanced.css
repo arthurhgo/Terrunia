@@ -10,7 +10,7 @@
 .prologue-screen--enhanced .prologue-copy h1 { font-size: clamp(2.5rem, 4.6vw, 4.9rem); }
 .prologue-screen--enhanced .prologue-copy > p { font-size: .92rem; }
 .prologue-screen--enhanced .prologue-rule { margin: 20px 0 16px; }
-.prologue-screen--enhanced .prologue-arsenal { max-width: none; width: 100%; min-width: 0; justify-self: stretch; align-self: start; position: sticky; top: 20px; }
+.prologue-screen--enhanced .prologue-arsenal { max-width: none; width: 100%; min-width: 0; justify-self: stretch; align-self: start; position: relative; }
 .prologue-screen--enhanced .prologue-arsenal .arcane-panel__content { max-height: none; overflow: visible; }
 .prologue-screen--enhanced .attribute-allocator__grid { grid-template-columns: repeat(5, minmax(0,1fr)); gap: 5px; }
 .prologue-screen--enhanced .attribute-allocator__grid > article { padding: 7px 5px; min-width: 0; }
@@ -68,6 +68,12 @@
 .weapon-gallery__skills small { color: #86bfd5; font-size: .6rem; }
 .weapon-gallery__skills p { margin: 0; color: #bdc4c5; font-size: .65rem; }
 .weapon-gallery__clans { display: grid; gap: 5px; }
+.weapon-gallery__clans > h4, .weapon-gallery__clans > .weapon-gallery__notice { grid-column: 1 / -1; }
+@media (min-width: 1360px) {
+  .weapon-gallery__clans { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .weapon-gallery__clan { grid-template-columns: 1fr; }
+  .weapon-gallery__clan > span { text-align: left; }
+}
 .weapon-gallery__notice { margin: 0 0 4px; color: #8fb0bf; font-size: .62rem; line-height: 1.45; }
 .weapon-gallery__clan { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 3px 6px; padding: 7px; border: 1px solid #313f42; background: #101922; }
 .weapon-gallery__clan.is-affine { border-color: #ab8649; background: #222017; }
@@ -95,3 +101,5 @@
 @media (prefers-reduced-motion: reduce) {
   .weapon-gallery__choice,.weapon-gallery__sprite,.weapon-gallery__artifact img { animation: none !important; transition: none; }
 }
+
+.prologue-weapon-preview__empty { padding: 14px; border: 1px dashed #705a36; background: #0a131e; color: #c8c6bd; font-size: .75rem; line-height: 1.55; }
