@@ -40,11 +40,11 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
   })
   expect(mobile.rightTop).toBeGreaterThan(mobile.leftBottom)
 
-  // Selecting a foundation puts the weapon BESIDE the hero at every supported viewport.
+  // Selecting a weapon anchors a proportional, motionless sprite at the actor's hand.
   await page.getByRole('button', { name: 'Escolher Machado de Guerra' }).click()
   const characterPreview = page.getByRole('region', { name: 'Prévia do personagem com arma selecionada' })
   const heroSprite = characterPreview.getByRole('img', { name: 'Terrírian Lysa' })
-  const weaponSprite = characterPreview.getByRole('img', { name: 'Machado de Guerra ao lado do personagem (prévia)' })
+  const weaponSprite = characterPreview.getByRole('img', { name: 'Machado de Guerra equipada na mão do personagem (prévia)' })
   await expect(heroSprite).toBeVisible()
   await expect(weaponSprite).toBeVisible()
 
@@ -55,11 +55,21 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
     { width: 1360, height: 580 },
   ]) {
     await page.setViewportSize(viewport)
-    const hero = await heroSprite.boundingBox()
-    const weapon = await weaponSprite.boundingBox()
-    expect(hero).not.toBeNull()
-    expect(weapon).not.toBeNull()
-    expect(hero!.x + hero!.width, `Sprite separado em ${viewport.width}x${viewport.height}`)
-      .toBeLessThanOrEqual(weapon!.x)
+    const placement = await characterPreview.evaluate((root) => {
+      const character = root.querySelector('.prologue-hero-preview__character')!.getBoundingClientRect()
+      const weapon = root.querySelector('.prologue-hero-preview__equipped-weapon')!.getBoundingClientRect()
+      const css = getComputedStyle(root.querySelector('.prologue-hero-preview__equipped-weapon')!)
+      return { character: { x: character.x, y: character.y, width: character.width, height: character.height },
+        weapon: { x: weapon.x, y: weapon.y, width: weapon.width, height: weapon.height },
+        animationName: css.animationName }
+    })
+    const hero = placement.character
+    const equipped = placement.weapon
+    expect(equipped.width, `Arma proporcional em ${viewport.width}x${viewport.height}`).toBeLessThan(hero.width * .72)
+    expect(equipped.x, `Arma na área da mão em ${viewport.width}x${viewport.height}`).toBeLessThan(hero.x + hero.width)
+    expect(equipped.x + equipped.width).toBeGreaterThan(hero.x + hero.width * .45)
+    expect(equipped.y).toBeLessThan(hero.y + hero.height)
+    expect(equipped.y + equipped.height).toBeGreaterThan(hero.y + hero.height * .3)
+    expect(placement.animationName).toBe('none')
   }
 })
