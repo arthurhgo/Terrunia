@@ -22,8 +22,6 @@ import type { GameSave } from '../../domain/game/types'
 import { getNpcQuestMarker } from '../../domain/quests/questSelectors'
 import { isTerranLocationId } from '../../domain/terran/cityEngine'
 import { useGameStore } from '../../state/gameStore'
-import { BoundItemsPanel } from '../dashboard/BoundItemsPanel'
-import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { NpcDialog } from '../dashboard/NpcDialog'
 import { PortalPanel } from '../dashboard/PortalPanel'
 import { ClanHallPanel } from '../dashboard/ClanHallPanel'
@@ -124,17 +122,16 @@ function VorrenFeature({ save, goToPortal }: { save: GameSave; goToPortal: () =>
 }
 
 function WorkshopFeature({ save }: { save: GameSave }) {
-  return (
-    <div className="workshop-feature">
-      <BoundItemsPanel save={save} />
-      <InventoryPanel save={save} />
-      <div className="economy-strip">
-        <span><i className="essence-gem" /> Essência <strong>{save.essence.current}</strong></span>
-        <span><i className="essence-gem" /> Pontos <strong>{save.essence.essencePoints}</strong></span>
-        <span><i className="gold-coin" /> Ouro <strong>{save.wallet.gold.toLocaleString('pt-BR')}</strong></span>
-      </div>
+  const market = content.terranLocations.location_terran_bond_workshop
+  return <ArcanePanel title="Mercado de Terran" eyebrow="SERVIÇOS POR NPC" className="workshop-feature">
+    <p>Compras, vendas, conversões em Essência e melhorias são realizadas falando diretamente com cada personagem dentro do Mercado.</p>
+    <div className="terran-drawer__services">
+      {market.npcPresences.filter((entry) => entry.presence === 'resident').map((entry) =>
+        <div key={entry.id}><strong>{entry.label}</strong><small>{entry.roleLabel}</small></div>)}
     </div>
-  )
+    <p>Ouro disponível: <strong>{save.wallet.gold.toLocaleString('pt-BR')}</strong> · Essência atual: <strong>{save.essence.current}</strong></p>
+    <Link className="panel-link" to="/play">Ir ao Mercado e conversar com NPCs <ArrowRight size={16} /></Link>
+  </ArcanePanel>
 }
 
 function ZarethFeature({ save }: { save: GameSave }) {
