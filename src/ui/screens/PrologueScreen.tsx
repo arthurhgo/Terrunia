@@ -1,4 +1,4 @@
-import { Check, Link2, LockKeyhole, Swords, Waypoints } from 'lucide-react'
+import { Check, LockKeyhole, Swords, Waypoints } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -35,10 +35,6 @@ export function PrologueScreen() {
       <p className="eyebrow">PRÓLOGO · TERRÚNIA</p>
       <h1>O primeiro Vínculo</h1>
       <p>Escolha sua arma permanente e distribua os atributos do Terrírian.</p>
-      <div className="prologue-rule">
-        <Link2 size={18} aria-hidden="true" />
-        <span>Seu Vínculo é permanente. Drops fortalecem a arma, não a substituem.</span>
-      </div>
       <AttributeAllocator save={save} compact />
     </section>
 
