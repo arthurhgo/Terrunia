@@ -1,4 +1,5 @@
 import type { AttributeDie } from '../../domain/game/types'
+import './dice.css'
 
 type DieIconProps = {
   sides: AttributeDie | 20
