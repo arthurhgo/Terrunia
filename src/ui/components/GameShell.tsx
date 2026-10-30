@@ -56,7 +56,13 @@ export function GameShell({ children, fluid = false, immersive = false }: GameSh
             </NavLink>
           ))}
         </nav>}
-        {immersive && save ? <WorldJourneyBar save={save} /> : null}
+        {immersive && save ? <div className="world-header-nav">
+          <WorldJourneyBar save={save} />
+          <NavLink to="/menu" className="world-header-nav__menu" aria-label="Abrir Menu">
+            <Grid2X2 size={17} aria-hidden="true" />
+            <span>MENU</span>
+          </NavLink>
+        </div> : null}
         <div className="header-actions">
           <span className={`save-state save-state--${syncStatus}`} title={`Persistência ${syncMode ?? 'local'}`}>
             <i aria-hidden="true" />
