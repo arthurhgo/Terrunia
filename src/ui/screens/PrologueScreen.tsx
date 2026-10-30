@@ -1,66 +1,78 @@
-import { Check, Link2, LockKeyhole, Sparkles, Swords, Waypoints } from 'lucide-react'
+import { Check, Link2, LockKeyhole, Swords, Waypoints } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { deriveWeaponPreview, evaluateEquipmentRequirements } from '../../domain/bond/equipmentLoadout'
 import { useGameStore } from '../../state/gameStore'
 import { AttributeAllocator } from '../character/AttributeAllocator'
+import { BoundWeaponCharacterPreview } from '../prologue/BoundWeaponCharacterPreview'
 import { WeaponGallery } from '../prologue/WeaponGallery'
-import './prologueEnhanced.css'
 import { ArcanePanel } from '../components/ArcanePanel'
-import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
+import './prologueEnhanced.css'
 
 export function PrologueScreen() {
   const save = useGameStore((state) => state.save)
   const bindWeapon = useGameStore((state) => state.bindPrologueWeapon)
   const navigate = useNavigate()
-  const weapons = Object.values(content.boundItemBases).filter((definition) => definition.slot === 'weapon' && definition.id !== 'bound_weapon_prologue_base')
   const [selectedWeaponId, setSelectedWeaponId] = useState<string | null>(null)
 
   if (!save) return <Navigate to="/character/create" replace />
   if (save.character.bondedEquipment.weapon) return <Navigate to="/terran" replace />
 
-  const selectedWeapon = (selectedWeaponId ? content.boundItemBases[selectedWeaponId] : undefined) ?? weapons[0]
-  const eligibility = evaluateEquipmentRequirements(save.character, selectedWeapon)
-  const preview = deriveWeaponPreview(save, content, selectedWeapon)
+  const selectedWeapon = selectedWeaponId ? content.boundItemBases[selectedWeaponId] : undefined
+  const eligibility = selectedWeapon ? evaluateEquipmentRequirements(save.character, selectedWeapon) : null
+  const preview = selectedWeapon ? deriveWeaponPreview(save, content, selectedWeapon) : null
 
   const complete = () => {
-    if (!selectedWeaponId || !eligibility.eligible) return
+    if (!selectedWeapon || !eligibility?.eligible) return
     if (bindWeapon(selectedWeapon.id)) navigate('/terran')
   }
 
-  return (
-    <main className="prologue-screen prologue-screen--enhanced">
-      <div className="prologue-screen__rune" aria-hidden="true" />
-      <section className="prologue-copy">
-        <p className="eyebrow">PRÓLOGO TÉCNICO · CONTEÚDO DE DESENVOLVIMENTO</p>
-        <h1>O primeiro Vínculo</h1>
-        <p>
-          Antes de cruzar Terran, seu Terrírian precisa reconhecer uma peça-base. A origem narrativa definitiva dos cinco equipamentos permanece em <code>OWNER_DECISION</code>.
-        </p>
-        <div className="prologue-rule">
-          <Link2 size={22} />
-          <span><strong>Vínculo é permanente.</strong> Drops futuros alimentam sua evolução; não substituem esta peça.</span>
-        </div>
-        <AttributeAllocator save={save} />
-      </section>
+  return <main className="prologue-screen prologue-screen--enhanced">
+    <div className="prologue-screen__rune" aria-hidden="true" />
+    <section className="prologue-copy">
+      <p className="eyebrow">PRÓLOGO · TERRÚNIA</p>
+      <h1>O primeiro Vínculo</h1>
+      <p>Escolha sua arma permanente e distribua os atributos do Terrírian.</p>
+      <div className="prologue-rule">
+        <Link2 size={18} aria-hidden="true" />
+        <span>Seu Vínculo é permanente. Drops fortalecem a arma, não a substituem.</span>
+      </div>
+      <AttributeAllocator save={save} compact />
+    </section>
 
-      <ArcanePanel title="Escolha da Arma Vinculada" subtitle="Qualquer arquétipo · requisitos do personagem" className="prologue-bindings prologue-arsenal">
-        <WeaponGallery save={save} selectedId={selectedWeaponId} onSelect={setSelectedWeaponId} />
-        {selectedWeaponId ? <div className="prologue-weapon-preview">
-          <div className="prologue-weapon-preview__visual"><AssetImage assetId={selectedWeapon.assetIdByGrade[1] ?? ''} /><span>RANK I · GRAU I</span></div>
-          <div>
-            <p className="eyebrow">FUNDAÇÃO SELECIONADA</p><h3>{selectedWeapon.name}</h3><p>{selectedWeapon.description}</p>
-            <div className="arsenal-card__metrics"><span>{selectedWeapon.powerType === 'magical' ? 'Ataque mágico' : 'Ataque físico'}</span><span>{selectedWeapon.weightClass}</span><strong><Swords size={14} /> Total {preview.totalAttack}</strong></div>
-            <div className="arsenal-requirements">{eligibility.requirements.map((requirement) => <span key={requirement.id} className={requirement.met ? 'met' : 'unmet'}>{requirement.met ? <Check size={12} /> : <LockKeyhole size={12} />}{requirement.label}</span>)}</div>
-            {preview.skills.map((skill) => <div className="arsenal-skill" key={skill.skillId}><Sparkles size={15} /><span><strong>{skill.definition?.name}</strong><small>{skill.definition?.mpCost} MP · poder projetado {skill.projectedPower}</small></span></div>)}
-          </div>
-        </div> : <p className="prologue-weapon-preview__empty">Selecione uma arma no Arsenal do Primeiro Vínculo para examinar os requisitos e confirmar seu Vínculo permanente.</p>}
-        <GameButton variant="primary" full onClick={complete} disabled={!selectedWeaponId || !eligibility.eligible}>
-          {selectedWeaponId && eligibility.eligible ? <Waypoints size={18} /> : <LockKeyhole size={18} />} {!selectedWeaponId ? 'Escolha sua arma vinculada' : eligibility.eligible ? `Vincular ${selectedWeapon.name} — Grau I` : 'Distribua atributos para cumprir os requisitos'}
-        </GameButton>
-      </ArcanePanel>
-    </main>
-  )
+    <ArcanePanel title="Escolha da Arma Vinculada"
+      subtitle="Sete arquétipos · escolha uma arma para iniciar"
+      className="prologue-bindings prologue-arsenal">
+      <WeaponGallery save={save} selectedId={selectedWeaponId} onSelect={setSelectedWeaponId} />
+      <div className="prologue-choice-summary">
+        <BoundWeaponCharacterPreview save={save}
+          weapon={selectedWeapon ? { name: selectedWeapon.name, assetId: selectedWeapon.assetIdByGrade[1] ?? '' } : null} />
+        <div className="prologue-choice-detail">
+          {selectedWeapon && preview && eligibility ? <>
+            <span className="eyebrow">FUNDAÇÃO SELECIONADA</span>
+            <h3>{selectedWeapon.name}</h3>
+            <p><Swords size={14} aria-hidden="true" /> {selectedWeapon.powerType === 'magical' ? 'Ataque mágico' : 'Ataque físico'}: {preview.totalAttack} · Grau I</p>
+            <div className="arsenal-requirements" aria-label="Requisitos da arma selecionada">
+              {eligibility.requirements.map((requirement) =>
+                <span key={requirement.id} className={requirement.met ? 'met' : 'unmet'}>
+                  {requirement.met ? <Check size={12} /> : <LockKeyhole size={12} />}{requirement.label}
+                </span>)}
+            </div>
+          </> : <>
+            <span className="eyebrow">FUNDAÇÃO INICIAL</span>
+            <h3>Sem arma vinculada</h3>
+            <p>Selecione uma arma no arsenal. A prévia aparece na mão do personagem.</p>
+          </>}
+        </div>
+      </div>
+      <GameButton variant="primary" full onClick={complete} disabled={!selectedWeapon || !eligibility?.eligible}>
+        {selectedWeapon && eligibility?.eligible ? <Waypoints size={18} /> : <LockKeyhole size={18} />}
+        {!selectedWeapon ? 'Selecione uma arma' : eligibility?.eligible
+          ? `Vincular ${selectedWeapon.name} — Grau I`
+          : 'Atributos insuficientes para o Vínculo'}
+      </GameButton>
+    </ArcanePanel>
+  </main>
 }
