@@ -2997,3 +2997,19 @@ code {
   padding: 8px;
   font-size: .72rem;
 }
+
+/* Mercado de Terran — serviços distribuídos por NPC. */
+.market-npc__header { display: grid; gap: 4px; padding: 10px; border: 1px solid #826d48; background: #182732; }
+.market-npc__header h3 { margin: 0; color: #f0d5a4; font-family: var(--display); }
+.market-npc__header small { color: #b1bac1; }
+.market-npc .terran-shop { min-width: 0; }
+.market-npc .inventory-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.market-npc .terran-shop__stock article { min-width: 0; }
+.market-upgrade { display: grid; gap: 10px; }
+.market-upgrade h3 { display: flex; align-items: center; gap: 7px; margin: 0; font-size: .86rem; color: #e9c78b; }
+.market-upgrade p { margin: 0; font-size: .72rem; color: #bfbbb1; line-height: 1.5; }
+.market-upgrade__item { display: grid; gap: 7px; padding: 10px; border: 1px solid #655741; background: #111c28; }
+.market-upgrade__item strong { font-size: .74rem; color: #f2d8ac; }
+.market-upgrade__item small { font-size: .67rem; color: #bac7c5; line-height: 1.45; }
+.market-upgrade__item .terran-service-action { display: flex; justify-content: center; align-items: center; gap: 6px; }
+.market-upgrade__item .terran-service-action:disabled { cursor: not-allowed; opacity: .55; }
