@@ -96,7 +96,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
         <div><span className="eyebrow">EXPEDIÇÃO · INSTÂNCIA EXTERNA</span><h1>Astravél</h1></div>
         <div className="terran-game__readout"><MapPin size={16} /> FLORESTA &gt; {activeNode?.label.toUpperCase() ?? 'CÂMARAS FÚNGICAS'}<span>{completed}/{trail.nodes.length} marcos</span></div>
       </header>
-      <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
+      <div className={`terran-game__layout expedition-game__layout ${drawer ? 'has-drawer' : ''}`}>
         <section className="terran-game__stage" aria-label="Cena contínua de Astravél">
           <AstravelPixelCanvas trail={trail} statuses={save.world.trailNodeStates}
             currentLocationId={save.world.currentLocationId} portraitAssetId={save.character.portraitAssetId}
