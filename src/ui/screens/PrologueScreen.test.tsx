@@ -1,0 +1,41 @@
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { afterEach, describe, expect, it } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
+import { content } from '../../content/catalog'
+import { createNewSave } from '../../domain/game/createSave'
+import { useGameStore } from '../../state/gameStore'
+import { PrologueScreen } from './PrologueScreen'
+
+afterEach(() => {
+  cleanup()
+  useGameStore.getState().resetSession()
+})
+
+describe('Layout da escolha da Arma Vinculada', () => {
+  it('mantém atributos à esquerda e arsenal à direita; libera sinergias apenas após seleção', () => {
+    const save = createNewSave('ui-owner', 'Lysa', 'character.terririan.default', content)
+    useGameStore.setState({
+      save, ownerId: save.ownerId, status: 'ready',
+      syncStatus: 'saved', syncMode: 'local',
+    })
+    render(<MemoryRouter><PrologueScreen /></MemoryRouter>)
+
+    const introduction = screen.getByRole('heading', { name: 'O primeiro Vínculo' }).closest('.prologue-copy')
+    const bindingPanel = screen.getByRole('heading', { name: 'Escolha da Arma Vinculada' }).closest('.arcane-panel')
+    expect(introduction).toBeInTheDocument()
+    expect(bindingPanel).toBeInTheDocument()
+    expect(within(introduction as HTMLElement).getByRole('region', { name: 'Distribuição de atributos' })).toBeInTheDocument()
+    expect(within(introduction as HTMLElement).queryByRole('region', { name: 'Galeria flutuante de armas vinculadas' })).not.toBeInTheDocument()
+    expect(within(bindingPanel as HTMLElement).getByRole('region', { name: 'Galeria flutuante de armas vinculadas' })).toBeInTheDocument()
+    expect(screen.queryByText(/Sinergias e caminhos de Clã/)).not.toBeInTheDocument()
+
+    const axe = screen.getByRole('button', { name: 'Escolher Machado de Guerra' })
+    fireEvent.mouseEnter(axe)
+    expect(screen.getByText('Ruptura do Machado')).toBeInTheDocument()
+    expect(screen.queryByText(/Sinergias e caminhos de Clã/)).not.toBeInTheDocument()
+
+    fireEvent.click(axe)
+    expect(screen.getByText(/Sinergias e caminhos de Clã · Machado de Guerra/)).toBeInTheDocument()
+    expect(within(bindingPanel as HTMLElement).getByText('FUNDAÇÃO SELECIONADA')).toBeInTheDocument()
+  })
+})
