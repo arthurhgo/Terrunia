@@ -43,11 +43,11 @@ export function PrologueScreen() {
           <Link2 size={22} />
           <span><strong>Vínculo é permanente.</strong> Drops futuros alimentam sua evolução; não substituem esta peça.</span>
         </div>
+        <AttributeAllocator save={save} />
         <WeaponGallery save={save} selectedId={selectedWeapon.id} onSelect={setSelectedWeaponId} />
       </section>
 
       <ArcanePanel title="Escolha da Arma Vinculada" subtitle="Qualquer arquétipo · requisitos do personagem" className="prologue-bindings prologue-arsenal">
-        <AttributeAllocator save={save} />
         <div className="prologue-weapon-preview">
           <div className="prologue-weapon-preview__visual"><AssetImage assetId={selectedWeapon.assetIdByGrade[1] ?? ''} /><span>RANK I · GRAU I</span></div>
           <div>
