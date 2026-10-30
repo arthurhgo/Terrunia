@@ -3362,3 +3362,10 @@ code {
   .world-header-nav__menu { min-height: 33px; padding: 0 8px; }
   .terran-local-drawer__map .terran-continent__canvas { height: 210px; min-height: 210px; }
 }
+
+@media (max-width: 900px) {
+  .game-shell--immersive .game-header {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+}
