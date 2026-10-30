@@ -39,17 +39,31 @@ describe('expedição pixelada de Astravél', () => {
     expect(screen.getByRole('img', { name: /Astravél em pixels/ })).toBeInTheDocument()
   })
 
-  it('apenas inicia combate ao interagir com o nó disponível, preservando o save', () => {
+  it('entra no combate ao alcançar a Presença Fungorra sem exigir segundo clique no painel', () => {
     seedExpedition('astravel_fungorro_01')
     render(<MemoryRouter initialEntries={['/expedition']}>
       <Routes><Route path="/expedition" element={<ExpeditionScreen />} /><Route path="/battle" element={<div>Combate ativo</div>} /></Routes>
     </MemoryRouter>)
-    fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Presença Fungorra' }))
-    expect(screen.getByRole('complementary', { name: 'Painel lateral: Presença Fungorra' })).toBeInTheDocument()
     expect(useGameStore.getState().save?.battle).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Enfrentar Fungorro' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Presença Fungorra' }))
     expect(screen.getByText('Combate ativo')).toBeInTheDocument()
+    expect(screen.queryByRole('complementary', { name: 'Painel lateral: Presença Fungorra' })).not.toBeInTheDocument()
     expect(useGameStore.getState().save?.battle?.encounterId).toBe('encounter_fungorro_01')
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_fungorro_01')
+  })
+
+  it('não dispara encontros em marcos já concluídos ou bloqueados', () => {
+    seedExpedition('astravel_fungorro_01')
+    const save = useGameStore.getState().save!
+    save.world.trailNodeStates.astravel_fungorro_01 = 'completed'
+    save.world.trailNodeStates.astravel_camp_03 = 'current'
+    render(<MemoryRouter initialEntries={['/expedition']}>
+      <Routes><Route path="/expedition" element={<ExpeditionScreen />} /><Route path="/battle" element={<div>Combate ativo</div>} /></Routes>
+    </MemoryRouter>)
+    fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Presença Fungorra' }))
+    expect(useGameStore.getState().save?.battle).toBeNull()
+    expect(screen.getByRole('complementary', { name: 'Painel lateral: Presença Fungorra' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Aproximar-se de Emboscada de Esporos' })).toBeDisabled()
   })
 
   it('o marco final abre a dungeon, não dispara o chefe na floresta', () => {
