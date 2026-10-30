@@ -9,6 +9,7 @@ import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
 import { GameShell } from '../components/GameShell'
 import { BattleArenaBackdrop } from '../battle/BattleArenaBackdrop'
+import { BattleDicePlatform, type BattleDiceEvent } from '../battle/BattleDicePlatform'
 import './battlePixel.css'
 
 type Menu = 'skills' | 'items' | 'throwables' | 'magic' | 'runes' | 'essences' | null
@@ -34,6 +35,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const [hit, setHit] = useState<'player' | 'enemy' | null>(null)
   const [turnCue, setTurnCue] = useState(false)
   const [showLog, setShowLog] = useState(false)
+  const [lastDice, setLastDice] = useState<BattleDiceEvent | null>(null)
   const previous = useRef<{ id: string; hp: Record<string, number> } | null>(null)
   const reducedMotion = Boolean(save?.settings.reducedMotion)
   const defeated = battle?.phase === 'Defeat' && player?.hp === 0
@@ -52,6 +54,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   useEffect(() => {
     setCollected([])
     setMenu(null)
+    setLastDice(null)
     previous.current = null
   }, [battle?.id])
   useEffect(() => {
@@ -102,8 +105,24 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
 
   const send = (command: Parameters<typeof submit>[0]) => {
     if (!isPlayerTurn) return
+    const lastLogCount = battle.log.length
     setMenu(null)
     submit(command)
+    if (command.type !== 'attack' && command.type !== 'skill') return
+    const resolvedBattle = useGameStore.getState().save?.battle
+    const playerDamage = resolvedBattle?.log.slice(lastLogCount).find((entry) =>
+      entry.tone === 'damage' && entry.message.startsWith(`${player.name} causa `))
+    const damage = playerDamage?.message.match(/ causa (\\d+) de dano /)
+    if (!playerDamage || !damage) return
+    const bondedWeapon = save.character.bondedEquipment.weapon
+    const baseId = bondedWeapon ? save.boundItems[bondedWeapon]?.baseItemId : null
+    const scaling = baseId ? content.boundItemBases[baseId]?.scalingAttribute ?? 'strength' : 'strength'
+    const sides = save.character.attributes[scaling].die
+    const face = playerDamage.id.split('').reduce((seed, char) => (seed * 31 + char.charCodeAt(0)) % 2147483647, 17) % sides + 1
+    setLastDice({
+      id: playerDamage.id, sides, face, damage: Number(damage[1]),
+      action: command.type === 'attack' ? 'Ataque da arma' : content.combatSkills[command.skillId]?.name ?? 'Habilidade',
+    })
   }
   const end = (toCity: boolean) => {
     if (toCity) returnToTerran()
@@ -146,6 +165,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             title={actor.name}>{actor.side === 'player' ? '★' : '✦'}</span>
         })}
       </div>
+      {lastDice && !defeated && <BattleDicePlatform roll={lastDice} reducedMotion={reducedMotion} />}
       {turnCue && !defeated && <div className="pixel-battle__turn-cue" role="status">TURNO DOS INIMIGOS</div>}
       {defeated && <div className="pixel-battle__death" role="status" aria-label="Terrírian derrotado">
         <div className="pixel-battle__death-aura" aria-hidden="true" />
