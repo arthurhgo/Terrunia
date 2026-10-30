@@ -10,7 +10,7 @@ import { Modal } from '../components/Modal'
 
 type Action = 'convert' | 'sell' | null
 
-export function InventoryPanel({ save }: { save: GameSave }) {
+export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave; tradeMode?: 'browse' | 'convert' | 'sell' }) {
   const convert = useGameStore((state) => state.convertItems)
   const sell = useGameStore((state) => state.sellItems)
   const toggleFavorite = useGameStore((state) => state.toggleFavorite)
@@ -73,7 +73,7 @@ export function InventoryPanel({ save }: { save: GameSave }) {
       <ArcanePanel
         title="Inventário"
         eyebrow="LOOT É POTENCIAL"
-        subtitle="Drops não substituem seus vínculos. Escolha o destino de cada recurso."
+        subtitle={tradeMode === 'browse' ? 'Gerencie os recursos. Para trocar itens por Essência ou Ouro, visite Lorian ou Feril no Mercado.' : 'Escolha quais recursos deseja entregar a este comerciante.'}
         className="inventory-panel"
         action={
           <label className="compact-select">
@@ -123,17 +123,17 @@ export function InventoryPanel({ save }: { save: GameSave }) {
           )}
         </div>
 
-        <div className="inventory-actions">
+        {tradeMode !== 'browse' && <div className="inventory-actions">
           <span>{selectedForBoundProgression ? <><Gem size={14} /> Componente reservado para o Vínculo</> : selected.length ? `${selected.length} selecionado(s)` : 'Selecione um drop'}</span>
           <div>
-            <GameButton variant="secondary" disabled={!canConvert} onClick={() => setAction('convert')}>
-              <FlaskConical size={16} /> Converter em Essência
-            </GameButton>
-            <GameButton variant="ghost" disabled={!canSell} onClick={() => setAction('sell')}>
-              <Coins size={16} /> Vender
-            </GameButton>
+            {tradeMode === 'convert' && <GameButton variant="secondary" disabled={!canConvert} onClick={() => setAction('convert')}>
+              <FlaskConical size={16} /> Trocar por Essência
+            </GameButton>}
+            {tradeMode === 'sell' && <GameButton variant="ghost" disabled={!canSell} onClick={() => setAction('sell')}>
+              <Coins size={16} /> Trocar por Ouro
+            </GameButton>}
           </div>
-        </div>
+        </div>}
       </ArcanePanel>
 
       <Modal
