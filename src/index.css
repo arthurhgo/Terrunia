@@ -3150,3 +3150,147 @@ code {
 @media (prefers-reduced-motion: reduce) {
   .local-board__filters button,.quest-board__filters button { transition: none; }
 }
+
+
+/* Terran v1.1 — compact tracked-objectives trigger. Hover/focus/tap reveal the journal. */
+.quest-tracker.quest-tracker--popover {
+  position: fixed;
+  top: 73px;
+  right: 18px;
+  bottom: auto;
+  left: auto;
+  z-index: 85;
+  width: max-content;
+  max-width: min(345px, calc(100vw - 22px));
+  padding: 0;
+  border: 1px solid #447b92;
+  background: rgb(4 13 22 / 97%);
+  box-shadow: 0 12px 35px rgb(0 0 0 / 57%);
+  backdrop-filter: blur(9px);
+}
+.quest-tracker--popover.is-expanded { width: min(345px, calc(100vw - 22px)); border-color: #66a8c7; }
+.quest-tracker__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 37px;
+  padding: 8px 11px;
+  border: 0;
+  background: #061727;
+  color: #80d5f4;
+  font: 700 .66rem var(--display);
+  text-transform: uppercase;
+  letter-spacing: .035em;
+  cursor: pointer;
+}
+.quest-tracker__trigger:focus-visible { outline: 2px solid #e0bb73; outline-offset: -3px; }
+.quest-tracker__trigger:hover { background: #142b3b; }
+.quest-tracker__trigger strong { white-space: nowrap; }
+.quest-tracker__count { display: grid; place-items: center; min-width: 19px; height: 19px; border: 1px solid #38718a; border-radius: 50%; color: #ecd08a; font-size: .68rem; }
+.quest-tracker__chevron { margin-left: auto; transition: transform .2s ease; }
+.quest-tracker--popover.is-expanded .quest-tracker__chevron { transform: rotate(180deg); }
+.quest-tracker__details { padding: 0 12px 12px; max-height: min(61dvh, 490px); overflow-y: auto; border-top: 1px solid #355567; }
+.quest-tracker__details article + article { margin-top: 8px; border-top: 1px solid #203440; }
+.quest-tracker__details article > strong { font-size: .92rem; color: #edc681; }
+.quest-tracker__details article span { display: grid; grid-template-columns: 14px minmax(0,1fr) auto; align-items: start; column-gap: 6px; line-height: 1.4; }
+.quest-tracker__details article span b { color: #dec591; }
+.quest-tracker__details article span.quest-tracker__return { grid-template-columns: 14px minmax(0,1fr); }
+.quest-tracker__more { display: block; padding: 10px 3px 2px; color: #92bbcc; font-size: .68rem; }
+.local-map-screen { width: 100%; max-width: 1720px; min-width: 0; margin: 0 auto; }
+.terran-continent { display: grid; gap: 7px; }
+.terran-continent__canvas {
+  position: relative; width: 100%; height: clamp(450px, calc(100dvh - 162px), 830px);
+  min-width: 0; overflow: hidden; isolation: isolate;
+  border: 1px solid #af8550; background: #091928;
+  box-shadow: inset 0 0 0 5px #071019, 0 0 20px rgb(0 0 0 / 45%);
+}
+.terran-continent__canvas::after {
+  position: absolute; content: ''; pointer-events: none; z-index: 12; inset: 10px;
+  border: 1px solid rgb(226 184 108 / 21%);
+  clip-path: polygon(0 0,100% 0,100% 100%,0 100%); 
+}
+.terran-continent__art { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.terran-continent__title {
+  position: absolute; left: 2.6%; top: 3.7%; z-index: 4;
+  max-width: min(310px, 32%);
+  padding: 13px 16px; background: linear-gradient(90deg, #06101ddc, #07111b2b);
+  text-shadow: 0 2px 7px #01050a;
+}
+.terran-continent__title h1 { margin: 4px 0 7px; color: #f2c780; font: 700 clamp(1.5rem, 4vw, 3.4rem) var(--display); }
+.terran-continent__title p { margin: 0; color: #d4d3c7; font-size: clamp(.66rem, 1vw, .88rem); line-height: 1.5; }
+.terran-continent__title .eyebrow { color: #7dc4d7; font-size: .62rem; }
+.terran-continent__marker {
+  position: absolute; z-index: 5; transform: translate(-50%,-50%);
+  display: flex; align-items: center; flex-direction: column; gap: 4px;
+  max-width: 160px; padding: 4px; border: 0;
+  background: none; color: #f1d49b; cursor: pointer; text-shadow: 0 2px 5px #010409, 0 0 8px #010409;
+}
+.terran-continent__marker:focus-visible { outline: 2px solid #fae1a0; border-radius: 5px; }
+.terran-continent__pin {
+  display: grid; place-items: center;
+  width: 25px; height: 25px; transform: rotate(-45deg);
+  border: 2px solid #e4bc71; border-radius: 3px;
+  background: #071a29; box-shadow: 0 0 17px #e7b85e55;
+}
+.terran-continent__pin svg { transform: rotate(45deg); color: #b5e8f5; }
+.terran-continent__marker strong { max-width: 155px; text-align: center; color: #f4dba9; white-space: nowrap; font: 700 clamp(.7rem,1.1vw,.98rem) var(--display); }
+.terran-continent__marker:hover .terran-continent__pin,.terran-continent__marker.is-selected .terran-continent__pin { background: #684b28; border-color: #ffde99; }
+.terran-continent__marker--city { z-index: 6; }
+.terran-continent__marker--city .terran-continent__pin { width: 35px; height: 35px; border-color: #f4c177; background: #293e41; }
+.terran-continent__marker--institution { z-index: 7; }
+.terran-continent__marker--institution .terran-continent__pin { width: 15px; height: 15px; border: 1px solid #bedbd5; background: #183847; }
+.terran-continent__marker--institution .terran-continent__pin svg { width: 10px; height: 10px; }
+.terran-continent__marker--institution strong { display: none; font-size: .66rem; background: #071321ee; border: 1px solid #86754f; padding: 3px 5px; }
+.terran-continent__marker--institution:is(:hover,:focus-visible) { z-index: 9; }
+.terran-continent__marker--institution:is(:hover,:focus-visible) strong { display: block; }
+.terran-continent__unknown {
+  position: absolute; z-index: 4; transform: translate(-50%,-50%) rotate(-45deg);
+  display: grid; place-items: center; width: 28px; height: 28px;
+  border: 1px solid #5b7080; background: #09131cd9;
+  color: #8496a3; font: 700 1rem var(--display);
+}
+.terran-continent__unknown::first-letter { transform: rotate(45deg); }
+.terran-continent__legend {
+  position: absolute; bottom: 3%; left: 2.5%; z-index: 7;
+  width: min(252px, 32%); display: grid; gap: 9px;
+  padding: 11px 13px; border: 1px solid #9b7847; background: #06101ce9;
+}
+.terran-continent__legend > strong { display: flex; align-items: center; gap: 7px; padding-bottom: 6px; border-bottom: 1px solid #294758; color: #7cd3e8; font: 700 .71rem var(--display); text-transform: uppercase; }
+.terran-continent__legend > span { display: flex; align-items: center; gap: 8px; color: #c2ccd1; font-size: .67rem; }
+.terran-continent__legend-known { flex: 0 0 auto; width: 14px; height: 14px; border: 2px solid #e8bf79; border-radius: 50%; }
+.terran-continent__legend-unknown { flex: 0 0 auto; width: 13px; height: 13px; transform: rotate(45deg); border: 1px solid #8e96a6; }
+.terran-continent__selection {
+  position: absolute; right: 3%; bottom: 3%; z-index: 8;
+  display: grid; gap: 8px; width: min(280px,32%);
+  padding: 13px; background: #061220f0; border: 1px solid #97784e; box-shadow: 0 8px 30px #0009;
+}
+.terran-continent__selection small { display: flex; align-items: center; gap: 6px; color: #8fcbe1; font-size: .65rem; }
+.terran-continent__selection strong { font: 700 .98rem var(--display); color: #f5d69d; }
+.terran-continent__selection p { margin: 0; color: #cad0d0; line-height: 1.45; font-size: .7rem; }
+.terran-continent__selection button {
+  display: flex; justify-content: center; align-items: center; gap: 6px;
+  min-height: 32px; padding: 5px; border: 1px solid #b58a47; background: #292015;
+  color: #ffe0a1; cursor: pointer; font: 700 .64rem var(--display);
+}
+.terran-continent__selection button:hover { background: #46321b; }
+.terran-continent__rose { position: absolute; right: 3.5%; top: 15%; z-index: 4; color: #d9af6e; opacity: .85; display: grid; place-items: center; }
+.terran-continent__rose span { position: absolute; top: -16px; font: 700 .7rem var(--display); }
+.terran-continent__footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 9px; padding: 5px 11px; color: #96afbd; font-size: .68rem; }
+.terran-continent__footer span { display: flex; align-items: center; gap: 6px; }
+@media (max-width: 750px) {
+  .quest-tracker.quest-tracker--popover { top: 106px; right: 10px; max-width: min(300px, calc(100vw - 20px)); }
+  .quest-tracker--popover.is-expanded { width: min(300px, calc(100vw - 20px)); }
+  .terran-continent__canvas { height: min(72dvh, 600px); min-height: 420px; }
+  .terran-continent__title { max-width: 65%; padding: 6px; }
+  .terran-continent__title h1 { font-size: 1.55rem; }
+  .terran-continent__legend { bottom: 1.5%; left: 2%; width: 47%; gap: 5px; padding: 7px; }
+  .terran-continent__legend > span { font-size: .57rem; }
+  .terran-continent__selection { right: 2%; bottom: 1.5%; width: 47%; padding: 8px; gap: 5px; }
+  .terran-continent__selection p { font-size: .59rem; }
+  .terran-continent__marker strong { font-size: .64rem; white-space: normal; }
+  .terran-continent__marker--city .terran-continent__pin { width: 25px; height: 25px; }
+  .terran-continent__marker--institution .terran-continent__pin { width: 12px; height: 12px; }
+  .terran-continent__rose { display: none; }
+}
+@media (prefers-reduced-motion:reduce) { .quest-tracker__chevron { transition: none; } }
