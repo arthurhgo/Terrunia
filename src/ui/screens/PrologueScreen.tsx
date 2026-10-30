@@ -59,7 +59,7 @@ export function PrologueScreen() {
           </> : <>
             <span className="eyebrow">FUNDAÇÃO INICIAL</span>
             <h3>Sem arma vinculada</h3>
-            <p>Selecione uma arma no arsenal. A prévia aparece na mão do personagem.</p>
+            <p>Selecione uma arma no arsenal. A prévia aparece ao lado do personagem.</p>
           </>}
         </div>
       </div>
