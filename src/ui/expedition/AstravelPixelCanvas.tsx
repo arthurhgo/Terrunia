@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState, type PointerEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
+import { content } from '../../content/catalog'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { TrailDefinition, TrailNodeDefinition } from '../../content/types'
 import type { TrailNodeStatus } from '../../domain/game/types'
 import type { ActorFacing } from '../terran/pixelActorArt'
 import type { WorldPoint } from '../terran/pixelCityArt'
 import { drawAstravel } from './astravelArt'
-import { ASTRAVEL_HEIGHT, ASTRAVEL_WIDTH, findAstravelPath, getAstravelPoint, isAstravelWalkable } from './astravelNavigation'
+import { ASTRAVEL_HEIGHT, ASTRAVEL_WIDTH, ASTRAVEL_VIEW_WIDTH, ASTRAVEL_VIEW_HEIGHT, getAstravelCamera, findAstravelPath, getAstravelPoint, isAstravelWalkable } from './astravelNavigation'
 
 type Destination = { path: WorldPoint[]; nodeId: string | null }
 type Props = {
@@ -42,6 +43,8 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
     ?? [...trail.nodes].reverse().find((node) => statuses[node.id] === 'completed')
     ?? trail.nodes[0]
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [view, setView] = useState(() => ({ ...getAstravelCamera(getAstravelPoint(start)), player: getAstravelPoint(start) }))
+  const viewRef = useRef(view)
   const [nearbyActiveBattleId, setNearbyActiveBattleId] = useState<string | null>(null)
   const nearbyActiveBattleRef = useRef<string | null>(null)
   const playerRef = useRef<WorldPoint>(getAstravelPoint(start))
@@ -69,7 +72,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
    * Active combat landmarks are encounter triggers, not a two-click inspection
    * drawer. Completed/locked landmarks cannot spawn another encounter.
    */
-  const activateNode = (nodeId: string) => {
+  const activateNode = useCallback((nodeId: string) => {
     if (!enabledRef.current || engagingRef.current) return
     const node = trail.nodes.find((candidate) => candidate.id === nodeId)
     if (!node || !reachable(statusesRef.current[nodeId])) return
@@ -82,7 +85,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
         directionsRef.current.clear()
       }
     } else inspectRef.current(nodeId)
-  }
+  }, [trail])
 
   const walkTo = (point: WorldPoint, nodeId: string | null) => {
     if (!enabledRef.current) return
@@ -104,6 +107,17 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
     const sheet = new Image()
     sheet.src = resolveAsset('character.terririan.map').path
     sheet.onerror = () => { sheet.onerror = null; sheet.src = resolveAsset('character.terririan.map').fallback }
+    const enemySprites: Record<string, HTMLImageElement> = {}
+    for (const node of trail.nodes) {
+      const encounter = node.encounterId ? content.encounters[node.encounterId] : null
+      const enemy = encounter ? content.enemies[encounter.enemyDefinitionIds[0]] : null
+      if (!enemy) continue
+      const image = new Image()
+      const asset = resolveAsset(enemy.assetId)
+      image.src = asset.path
+      image.onerror = () => { image.onerror = null; image.src = asset.fallback }
+      enemySprites[node.id] = image
+    }
     const keydown = (event: KeyboardEvent) => {
       if (!enabledRef.current || event.altKey || event.ctrlKey || event.metaKey) return
       const target = event.target
@@ -174,8 +188,16 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
           } else if (!battleId) autoAttemptedRef.current = null
         }
       }
+      const camera = getAstravelCamera(playerRef.current)
+      const player = { x: Math.round(playerRef.current.x), y: Math.round(playerRef.current.y) }
+      if (viewRef.current.x !== camera.x || viewRef.current.y !== camera.y
+        || viewRef.current.player.x !== player.x || viewRef.current.player.y !== player.y) {
+        const nextView = { ...camera, player }
+        viewRef.current = nextView
+        setView(nextView)
+      }
       drawAstravel(ctx, trail, statusesRef.current, playerRef.current, sheet, reducedMotion ? 0 : frame,
-        walking && !reducedMotion, facingRef.current, portraitAssetId.includes('sigil') ? 'sigil' : 'terririan')
+        walking && !reducedMotion, facingRef.current, portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', camera, enemySprites)
       raf = requestAnimationFrame(tick)
     }
     window.addEventListener('keydown', keydown)
@@ -188,20 +210,20 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', blur)
     }
-  }, [trail, portraitAssetId, reducedMotion])
+  }, [trail, portraitAssetId, reducedMotion, activateNode])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return
     const bounds = event.currentTarget.getBoundingClientRect()
     if (!bounds.width || !bounds.height) return
-    const point = { x: Math.round((event.clientX - bounds.left) / bounds.width * ASTRAVEL_WIDTH), y: Math.round((event.clientY - bounds.top) / bounds.height * ASTRAVEL_HEIGHT) }
+    const point = { x: Math.round((event.clientX - bounds.left) / bounds.width * ASTRAVEL_VIEW_WIDTH + viewRef.current.x), y: Math.round((event.clientY - bounds.top) / bounds.height * ASTRAVEL_VIEW_HEIGHT + viewRef.current.y) }
     const node = nearestReachableNode(point, 16, trail, statusesRef.current)
     if (node) walkToNode(node)
     else walkTo(point, null)
   }
 
   return <div className="pixel-city astravel-field" aria-label="Exploração pixelada da Floresta de Astravél">
-    <canvas ref={canvasRef} width={ASTRAVEL_WIDTH} height={ASTRAVEL_HEIGHT} className="pixel-city__canvas"
+    <canvas ref={canvasRef} width={ASTRAVEL_VIEW_WIDTH} height={ASTRAVEL_VIEW_HEIGHT} className="pixel-city__canvas"
       role="img" tabIndex={0} aria-label="Astravél em pixels, vista superior 3/4; caminhe por WASD, setas ou toque" onPointerDown={pointerWalk} />
     <div className="astravel-field__nodes">
       {trail.nodes.map((node) => {
@@ -210,12 +232,28 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
         return <button key={node.id} type="button" disabled={!enabled || !reachable(status)}
           aria-label={`Aproximar-se de ${node.label}`} title={`${node.label} — ${status === 'current' && node.type === 'battle' ? 'encontro de combate' : status}`}
           className={`astravel-field__node astravel-field__node--${status}`}
-          style={{ left: `${point.x / ASTRAVEL_WIDTH * 100}%`, top: `${(point.y - 26) / ASTRAVEL_HEIGHT * 100}%` }}
+          style={{ left: `${(point.x - view.x) / ASTRAVEL_VIEW_WIDTH * 100}%`, top: `${(point.y - view.y - 35) / ASTRAVEL_VIEW_HEIGHT * 100}%`,
+            display: point.x < view.x + 12 || point.x > view.x + ASTRAVEL_VIEW_WIDTH - 12
+              || point.y < view.y + 42 || point.y > view.y + ASTRAVEL_VIEW_HEIGHT ? 'none' : undefined }}
           onClick={() => walkToNode(node)}>
           <strong>{node.index}</strong><span>{node.label}</span>
         </button>
       })}
     </div>
+    <div className="astravel-minimap" aria-label="Minimapa de Astravél: 15 encontros conectados">
+      <svg viewBox={`0 0 ${ASTRAVEL_WIDTH} ${ASTRAVEL_HEIGHT}`} role="img" aria-label="Posição do jogador e sequência dos encontros">
+        <polyline points={trail.nodes.map((node) => { const point = getAstravelPoint(node); return `${point.x},${point.y}` }).join(' ')} fill="none" stroke="#6d8078" strokeWidth="5" />
+        {trail.nodes.map((node) => { const point = getAstravelPoint(node); const status = statuses[node.id]; return <circle key={node.id} cx={point.x} cy={point.y} r={node.type === 'boss' ? 11 : 8}
+          fill={status === 'completed' ? '#88c8a4' : ['current', 'bossCurrent'].includes(status ?? '') ? '#f4d38d' : '#475a59'} /> })}
+        <rect x={view.x} y={view.y} width={ASTRAVEL_VIEW_WIDTH} height={ASTRAVEL_VIEW_HEIGHT} fill="none" stroke="#a8c7bc" strokeWidth="3" />
+        <circle cx={view.player.x} cy={view.player.y} r="9" fill="#fff2c8" stroke="#162323" strokeWidth="3" />
+      </svg><span>ASTRAVÉL · 15 ENCONTROS</span>
+    </div>
+    {enabled && trail.nodes.some((node) => ['current', 'bossCurrent'].includes(statuses[node.id] ?? '')) && <button type="button"
+      className="astravel-follow" onClick={() => {
+        const active = trail.nodes.find((node) => ['current', 'bossCurrent'].includes(statuses[node.id] ?? ''))
+        if (active) walkToNode(active)
+      }}>Seguir objetivo <span>→</span></button>}
     {nearbyActiveBattleId && enabled && <button type="button"
       className="astravel-field__fight-action"
       aria-label="Enfrentar Fungorro próximo"

@@ -13,6 +13,7 @@ function seedDungeon(allRooms = false) {
   if (!bound.ok) throw new Error(bound.message)
   const save = bound.value
   save.eventLog.push('CutsceneViewed:fungal_descent')
+  save.quests.main_astravel_corruption.status = 'active'
   save.world.currentLocationId = 'dungeon_fungal_chambers'
   save.world.trailNodeStates.astravel_boss_preview = 'bossCurrent'
   save.world.worldFlags.push('dungeon_fungal_entered', dungeonRoomFlag('fungal_vestibule'))

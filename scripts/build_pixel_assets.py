@@ -800,7 +800,60 @@ IMPORTED_PR17_ASSETS = (
     'items/item_ruin_shard.png',
 )
 
+def blackroot_titan():
+    """32x32 VISUAL_DRAFT, same palette and native pixel scale as the Fungorros."""
+    im, d = sheet(32, 32)
+    p(d, 'outline', (9, 13), (5, 9), (3, 13), (5, 22), (2, 28), (7, 29), (11, 25),
+      (13, 29), (18, 31), (21, 26), (28, 30), (30, 27), (25, 20), (28, 13), (25, 9), (22, 13))
+    p(d, 'leather', (10, 13), (6, 12), (6, 22), (4, 27), (7, 27), (12, 22),
+      (14, 27), (18, 29), (20, 23), (28, 28), (24, 21), (26, 14), (24, 12), (22, 15))
+    p(d, 'moss_dark', (10, 10), (19, 7), (24, 12), (23, 21), (18, 25), (11, 22), (8, 17))
+    r(d, 'leather_light', (12, 14, 14, 22))
+    r(d, 'gold_dark', (19, 16, 21, 23))
+    p(d, 'outline', (8, 8), (11, 5), (12, 2), (16, 5), (22, 3), (24, 8), (23, 14), (18, 17), (10, 14))
+    p(d, 'moss_dark', (10, 8), (14, 5), (18, 7), (22, 5), (23, 11), (19, 14), (11, 13))
+    r(d, 'moss', (12, 7, 15, 8))
+    r(d, 'ice', (12, 10, 14, 11))
+    r(d, 'cyan', (19, 10, 21, 11))
+    r(d, 'outline', (15, 14, 19, 15))
+    p(d, 'violet_dark', (4, 9), (5, 6), (8, 5), (11, 8), (10, 10))
+    r(d, 'violet', (5, 7, 9, 8))
+    px(d, 'violet_light', 7, 6)
+    r(d, 'moss', (22, 18, 24, 19))
+    r(d, 'moss_light', (17, 19, 18, 21))
+    return im
+
+
+def astravel_material(kind):
+    """16x16 resource silhouettes; no equipment logic in the drawing."""
+    im, d = sheet()
+    if kind == 'fungal_gel':
+        p(d, 'outline', (4, 3), (10, 2), (13, 6), (14, 11), (11, 14), (4, 14), (1, 10), (2, 5))
+        p(d, 'moss_dark', (4, 4), (10, 3), (12, 7), (13, 10), (10, 13), (4, 13), (2, 10), (3, 6))
+        r(d, 'moss', (4, 6, 10, 10)); r(d, 'moss_light', (5, 4, 7, 5)); px(d, 'ice', 9, 7)
+    elif kind == 'mycelial_fiber':
+        for a, b in ((2, 3), (5, 1), (8, 3), (11, 2)):
+            p(d, 'outline', (a, b), (a + 2, b), (a + 3, 10), (a + 1, 14), (a - 1, 12))
+            r(d, 'violet', (a, b + 1, a + 1, 11)); px(d, 'violet_light', a, b + 2)
+        r(d, 'gold_dark', (3, 9, 12, 11)); r(d, 'gold_light', (4, 9, 11, 9))
+    elif kind == 'blackroot_core':
+        p(d, 'outline', (7, 1), (12, 3), (14, 9), (11, 14), (5, 14), (1, 10), (3, 4))
+        p(d, 'leather', (7, 2), (11, 4), (13, 9), (10, 13), (5, 13), (2, 10), (4, 5))
+        p(d, 'gold_dark', (7, 4), (10, 6), (11, 10), (7, 12), (4, 9), (5, 6))
+        r(d, 'moss', (6, 6, 8, 10)); r(d, 'moss_light', (6, 7, 7, 8))
+    else:
+        r(d, 'outline', (3, 1, 12, 4)); r(d, 'leather', (4, 2, 11, 6))
+        p(d, 'outline', (2, 5), (13, 5), (13, 11), (8, 15), (2, 11))
+        p(d, 'gold_dark', (3, 6), (12, 6), (12, 10), (8, 14), (3, 10))
+        r(d, 'gold_light', (4, 7, 10, 8)); r(d, 'moss', (6, 9, 9, 11)); px(d, 'sun', 8, 12)
+    return im
+
+
 ASSETS = {
+    'npcs/npc_rosetta_portrait.png': lambda: imported_visual('npcs/npc_rosetta_portrait.png'),
+    'enemies/fungorros/enemy_blackroot_titan_idle.png': blackroot_titan,
+    **{f'items/item_{name}.png': (lambda name=name: astravel_material(name)) for name in (
+        'fungal_gel', 'mycelial_fiber', 'blackroot_core', 'hunter_insignia')},
     "characters/terririan/player_default.png": lambda: character(False),
     "characters/terririan/player_sigil.png": lambda: character(True),
     "equipment/slot-previews/weapon.png": weapon,
@@ -876,6 +929,8 @@ ASSETS = {
 
 
 ITEM_IDS = {
+    **{f'items/item_{name}.png': f'item.{name.replace("_", "-")}' for name in (
+        'fungal_gel', 'mycelial_fiber', 'blackroot_core', 'hunter_insignia')},
     'items/item_fungal_nucleus.png': 'item.fungal-nucleus',
     'items/item_spore_cluster.png': 'item.spore-cluster',
     'items/item_minor_tonic.png': 'item.minor-tonic',
@@ -890,6 +945,7 @@ ITEM_IDS = {
     )},
 }
 ENEMY_IDS = {
+    'enemy_blackroot_titan_idle': 'enemy.blackroot-titan',
     'enemy_fungorro_crawler_idle': 'enemy.fungorro-crawler',
     'enemy_spore_sower_idle': 'enemy.spore-sower',
     'enemy_fungal_slime_idle': 'enemy.fungal-slime',
@@ -900,6 +956,7 @@ ENEMY_IDS = {
     )},
 }
 NPC_IDS = {
+    'npc_rosetta': 'npc.rosetta.portrait',
     'npc_eldamar': 'npc.eldamar.portrait',
     'npc_daeryn': 'npc.daeryn.portrait',
     'npc_sylwen': 'npc.sylwen.portrait',
@@ -1133,4 +1190,33 @@ def build():
 
 
 if __name__ == "__main__":
-    build()
+    import sys
+    if '--astravel-only' in sys.argv:
+        # Preserve hand-edited and imported sprites. Rebuild only this remake's assets.
+        images = {}
+        names = ('fungal_gel', 'mycelial_fiber', 'blackroot_core', 'hunter_insignia')
+        new_paths = {'enemies/fungorros/enemy_blackroot_titan_idle.png',
+                     *(f'items/item_{name}.png' for name in names)}
+        manifest_file = ROOT / 'manifests' / 'terrunia-sprites-v0.1.json'
+        existing = json.loads(manifest_file.read_text())['entries']
+        ordered_paths = [entry['path'].removeprefix('/assets/') for entry in existing]
+        ordered_paths += [path for path in ASSETS if path not in ordered_paths]
+        for path in ordered_paths:
+            generator = ASSETS.get(path)
+            regenerate = path in new_paths
+            try:
+                image = generator() if regenerate else Image.open(ROOT / path).convert('RGBA')
+                image.load()
+            except OSError:
+                # Repair a corrupt checked-in PNG from its existing pixel drawing.
+                image = generator()
+                regenerate = True
+            images[path] = image
+            if regenerate:
+                (ROOT / path).parent.mkdir(parents=True, exist_ok=True)
+                image.save(ROOT / path)
+        build_sprite_manifest(images)
+        for family in ('item', 'monster'):
+            build_sprite_preview(images, family)
+    else:
+        build()

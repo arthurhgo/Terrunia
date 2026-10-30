@@ -50,6 +50,7 @@ export type BattleRewards = {
   gold: number
   lootDefinitionIds: string[]
   boundResonance: number
+  fieldRecovery?: { hp: number; mp: number }
   worldFlags?: string[]
   boundMemory?: {
     type: 'boss' | 'quest' | 'survival' | 'bond' | 'ruin' | 'special'

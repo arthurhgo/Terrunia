@@ -4,7 +4,7 @@ import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import { dungeonRoomFlag, FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { drawAstravel } from '../expedition/astravelArt'
-import { findAstravelPath, getAstravelPoint } from '../expedition/astravelNavigation'
+import { ASTRAVEL_HEIGHT, findAstravelPath, getAstravelPoint, getAstravelCamera } from '../expedition/astravelNavigation'
 import { drawFungalDungeon } from '../expedition/fungalDungeonArt'
 import { findDungeonPath } from '../expedition/dungeonNavigation'
 import type { WorldPoint } from '../terran/pixelCityArt'
@@ -15,7 +15,7 @@ const dungeon = content.dungeons.dungeon_fungal_chambers
 function astravelBattlePoint(currentLocationId: string): WorldPoint {
   const node = trail.nodes.find((candidate) => candidate.id === currentLocationId) ?? trail.nodes[0]
   const origin = getAstravelPoint(node)
-  const target = { x: Math.max(28, origin.x - 42), y: Math.min(232, origin.y + 21) }
+  const target = { x: Math.max(28, origin.x - 42), y: Math.min(ASTRAVEL_HEIGHT - 24, origin.y + 21) }
   return findAstravelPath(origin, target, trail).at(-1) ?? origin
 }
 
@@ -58,7 +58,7 @@ export function WorldBattleBackdrop({ save }: { save: GameSave }) {
         drawFungalDungeon(ctx, dungeon, playerPoint, sheet, frame, false, 'right',
           portraitVariant, { discovered: discoveredRooms, defeated: false })
       } else {
-        drawAstravel(ctx, trail, trailNodeStates, playerPoint, sheet, frame, false, 'right', portraitVariant)
+        drawAstravel(ctx, trail, trailNodeStates, playerPoint, sheet, frame, false, 'right', portraitVariant, getAstravelCamera(playerPoint))
       }
       raf = requestAnimationFrame(draw)
     }

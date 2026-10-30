@@ -142,6 +142,7 @@ export type EncounterDefinition = {
     gold: number
     boundResonance: number
     lootDefinitionIds: string[]
+    fieldRecovery?: { hp: number; mp: number }
     worldFlags?: string[]
     boundMemory?: {
       type: 'boss' | 'quest' | 'survival' | 'bond' | 'ruin' | 'special'
@@ -336,6 +337,11 @@ export type TrailNodeDefinition = {
   actionLabel?: string
   encounterId?: string
   requiresQuestId?: string
+  description?: string
+  tacticalHint?: string
+  sectorId?: string
+  recommendedLevel?: number
+  checkpoint?: boolean
   position: { x: number; y: number }
   interaction?: {
     actionLabel: string

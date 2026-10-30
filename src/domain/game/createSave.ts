@@ -40,8 +40,8 @@ export const createNewSave = (
   )
 
   const save: GameSave = {
-    schemaVersion: 11,
-    gameVersion: '0.8.3',
+    schemaVersion: 12,
+    gameVersion: '0.9.0',
     saveId: ids.saveId,
     campaignId: campaign.campaignId,
     campaignGeneration: campaign.campaignGeneration,
@@ -113,14 +113,8 @@ export const createNewSave = (
     world: {
       currentLocationId: 'terran',
       unlockedLocationIds: ['terran'],
-      trailNodeStates: {
-        astravel_entry: 'locked',
-        astravel_fungorro_01: 'locked',
-        astravel_camp_03: 'locked',
-        astravel_spore_ambush_04: 'locked',
-        astravel_ruin_threshold_05: 'locked',
-        astravel_boss_preview: 'boss',
-      },
+      trailNodeStates: Object.fromEntries(Object.values(catalog.trails).flatMap((trail) =>
+        trail.nodes.map((node) => [node.id, node.type === 'boss' ? 'boss' as const : 'locked' as const]))),
       completedEncounterIds: [],
       portalWaveBest: 0,
       worldFlags: [],

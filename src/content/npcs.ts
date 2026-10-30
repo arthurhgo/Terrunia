@@ -43,14 +43,14 @@ const baseNpcDefinitions = [
   },
   {
     id: 'npc_vorren', name: 'Vorren', title: 'Rastreador de Terran', settlementId: 'terran',
-    roles: ['questGiver', 'lore'], questIds: ['main_vorren_bestiary'],
+    roles: ['questGiver', 'lore'], questIds: ['main_astravel_lost_hunters', 'main_vorren_bestiary'],
     portraitAssetId: 'npc.vorren.portrait',
     dialogue: ['Um caçador não precisa derrotar todas as criaturas. Primeiro deve compreendê-las.', 'Leia os sinais, reconheça as fraquezas e registre o que descobrir.'],
     status: 'CONTENT_DRAFT',
   },
   {
     id: 'npc_lithwynn', name: 'Lithwynn', title: 'Analista dos Vínculos', settlementId: 'terran',
-    roles: ['questGiver', 'bondMaster'], questIds: ['main_lithwynn_signs'],
+    roles: ['questGiver', 'bondMaster'], questIds: ['main_astravel_corruption', 'main_lithwynn_signs'],
     portraitAssetId: 'npc.lithwynn.portrait',
     dialogue: ['Toda alteração de um Vínculo deixa uma marca. Vamos observar antes de agir.', 'A Essência é um recurso de transformação, não um prêmio de abate.'],
     status: 'CONTENT_DRAFT',

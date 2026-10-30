@@ -2,6 +2,10 @@
 
 Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, primeira Ruína, Vínculos, Infusão, Lapidação de Joias, Skill Tree e save local-first.
 
+## Astravél v0.9
+
+A rota do Portal agora tem **15 encontros de combate** em três trechos interligados a Eldamar, Vorren e Lithwynn, com monstros e materiais próprios, dois refúgios conquistados, minichefe e Colosso Micélio. Mundo pixelado 768×512 com câmera, minimapa, caminhada até objetivo e preservação dos saves anteriores. Detalhes: [remake de Astravél](docs/ASTRAVEL_REMAKE_v0.2.md).
+
 ## O que já é jogável
 
 O fluxo atual cobre:
@@ -18,9 +22,9 @@ O fluxo atual cobre:
 10. conversão do drop em Essência ou venda por ouro;
 11. obtenção de 1 Ponto de Essência e desbloqueio do primeiro node da arma;
 12. liberação de `Golpe Ressonante` pelo efeito data-driven do node;
-13. progressão pelo acampamento abandonado e obtenção de um consumível;
-14. combate contra três Fungorros com alvos independentes, Mana e status temporários;
-15. descoberta do limiar das Câmaras Fúngicas;
+13. recuperação do acampamento em combate, suprimentos e repouso único;
+14. progressão por 15 combates e grupos variados, com alvos independentes, Mana e status temporários;
+15. missões dos caçadores/corrupção e abertura do limiar das Câmaras após vitória;
 16. confronto contra o Colosso Micélio;
 17. Fragmento de Essência preservado para Infusão, sem conversão ou venda;
 18. retorno pela Praça do Portal e Rito de Evolução atômico na Oficina dos Vínculos;

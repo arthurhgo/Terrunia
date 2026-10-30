@@ -1,5 +1,7 @@
 # Astravél — expedição contínua em pixels v0.1
 
+> Histórico: a rota e o tamanho do mapa foram substituídos pelo [remake v0.2](ASTRAVEL_REMAKE_v0.2.md), aprovado em 2026-10-30.
+
 Status: `VISUAL_DRAFT`/`CONTENT_DRAFT`, integração técnica de 2026-10-28.
 
 ## Identidade visual

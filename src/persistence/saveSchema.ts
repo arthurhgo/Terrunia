@@ -6,7 +6,7 @@ import type { GameSave } from '../domain/game/types'
 import { MAX_ACTIVE_QUESTS, SLOT_OCCUPYING_QUEST_STATUSES } from '../domain/quests/questEngine'
 import { deriveCharacterStats } from '../domain/character/derivedStats'
 
-export const CURRENT_SAVE_SCHEMA = 11
+export const CURRENT_SAVE_SCHEMA = 12
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -232,6 +232,7 @@ const battleSchema = z.object({
     gold: nonnegativeNumber,
     lootDefinitionIds: z.array(idSchema),
     boundResonance: nonnegativeNumber,
+    fieldRecovery: z.object({ hp: nonnegativeNumber, mp: nonnegativeNumber }).optional(),
     worldFlags: z.array(idSchema).optional(),
     boundMemory: z.object({
       type: z.enum(['boss', 'quest', 'survival', 'bond', 'ruin', 'special']),
@@ -734,6 +735,35 @@ const migrateV10ToV11 = (legacy: Record<string, unknown>): unknown => {
   }
 }
 
+const migrateV11ToV12 = (legacy: Record<string, unknown>): unknown => {
+  const next = structuredClone(legacy) as unknown as GameSave
+  const trail = content.trails.trail_astravel_entry
+  const states = next.world.trailNodeStates
+  const cleared = states.astravel_boss_preview === 'completed'
+    || next.world.completedEncounterIds.includes('encounter_colossus_mycelium_01')
+  const battleIndex = next.battle && !next.battle.waveIndex && !next.battle.portalHuntId
+    ? trail.nodes.findIndex((node) => node.id === next.battle?.trailNodeId) : -1
+  const started = states.astravel_entry === 'completed' || battleIndex >= 0
+  let assignedCurrent = false
+  for (const [index, node] of trail.nodes.entries()) {
+    if (cleared || index < battleIndex || states[node.id] === 'completed') {
+      states[node.id] = 'completed'
+    } else if (started && !assignedCurrent) {
+      states[node.id] = node.type === 'boss' ? 'bossCurrent' : 'current'
+      assignedCurrent = true
+    } else states[node.id] = node.type === 'boss' ? 'boss' : 'locked'
+  }
+  if (!started && legacy.world && (legacy.world as GameSave['world']).trailNodeStates.astravel_entry === 'current') {
+    states.astravel_entry = 'current'
+  }
+  for (const definition of Object.values(content.quests)) next.quests[definition.id] ??= createQuestProgress(definition)
+  next.schemaVersion = 12
+  next.gameVersion = '0.9.0'
+  next.revision += 1
+  next.eventLog.push('SaveMigrated:11->12')
+  return refreshQuestAvailability(next, content, next.updatedAt)
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -784,6 +814,10 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 10) {
     candidate = migrateV10ToV11(candidate as Record<string, unknown>)
     version = 11
+  }
+  if (version === 11) {
+    candidate = migrateV11ToV12(candidate as Record<string, unknown>)
+    version = 12
   }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)

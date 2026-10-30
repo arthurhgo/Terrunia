@@ -14,6 +14,11 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
+  { id: 'enemy.blackroot-titan', path: '/assets/enemies/fungorros/enemy_blackroot_titan_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'Titan Raiz-Negra', pixelArt: true },
+  ...['fungal-gel', 'mycelial-fiber', 'blackroot-core', 'hunter-insignia'].map((name) => ({
+    id: `item.${name}`, path: `/assets/items/item_${name.replaceAll('-', '_')}.png`,
+    fallback: '/assets/placeholders/item.svg', alt: name, pixelArt: true,
+  })),
   {
     id: 'character.terririan.default',
     path: '/assets/characters/terririan/player_default.png',

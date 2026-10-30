@@ -22,6 +22,16 @@ export const getActiveTrailNode = (save: GameSave, trail: TrailDefinition) =>
 export const getTrailByNodeId = (catalog: ContentCatalog, nodeId: string) =>
   Object.values(catalog.trails).find((trail) => trail.nodes.some((node) => node.id === nodeId)) ?? null
 
+/** Sector gates use the same explicit quest acceptance as the Journal. */
+export const checkTrailQuestGate = (save: GameSave, node: TrailNodeDefinition, catalog: ContentCatalog): Result<true> => {
+  if (!node.requiresQuestId) return ok(true)
+  const status = save.quests[node.requiresQuestId]?.status
+  if (status && ['active', 'ready_to_turn_in', 'completed'].includes(status)) return ok(true)
+  const quest = catalog.quests[node.requiresQuestId]
+  const npc = quest ? catalog.npcs[quest.giverNpcId] : null
+  return fail('TRAIL_QUEST_REQUIRED', `Retorne a Terran e aceite “${quest?.title ?? node.requiresQuestId}” com ${npc?.name ?? 'o responsável'} antes de avançar.`)
+}
+
 export const completeTrailNode = (
   save: GameSave,
   trail: TrailDefinition,
@@ -38,7 +48,8 @@ export const completeTrailNode = (
 
   const next = structuredClone(save)
   next.world.trailNodeStates[node.id] = 'completed'
-  const nextNode = trail.nodes[nodeIndex + 1] ?? null
+  // Migrated campaigns can contain completed legacy landmarks farther along the route.
+  const nextNode = trail.nodes.slice(nodeIndex + 1).find((candidate) => next.world.trailNodeStates[candidate.id] !== 'completed') ?? null
   if (nextNode) {
     next.world.trailNodeStates[nextNode.id] =
       nextNode.type === 'boss' ? 'bossCurrent' : 'current'
