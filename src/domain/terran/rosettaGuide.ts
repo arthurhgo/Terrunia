@@ -2,6 +2,7 @@ import type { ContentCatalog } from '../../content/catalog'
 import type { QuestDefinition } from '../../content/types'
 import type { GameSave } from '../game/types'
 import { MAX_ACTIVE_QUESTS, getActiveQuestCount } from '../quests/questEngine'
+import { streetNpcPlacements } from '../../content/streetNpcs'
 
 export type RosettaQuestHint = {
   id: string
@@ -15,7 +16,9 @@ const locationForNpc = (npcId: string, catalog: ContentCatalog) => {
   const location = Object.values(catalog.terranLocations).find((place) =>
     place.npcPresences.some((presence) => presence.npcId === npcId))
   if (location) return location.name
-  // Street quest givers are located outdoors, not registered as room residents.
+  const street = streetNpcPlacements.find((entry) => entry.npcId === npcId)
+  if (street) return `Ruas de Terran · ${catalog.terranLocations[street.locationId]?.shortName ?? 'Centro'}`
+  if (npcId.startsWith('npc_master_')) return 'Salão dos Clãs'
   return 'Ruas de Terran'
 }
 
