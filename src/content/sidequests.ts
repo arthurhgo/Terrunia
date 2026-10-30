@@ -48,7 +48,7 @@ const prerequisitesForNpc = (npcId: string): QuestPrerequisite[] => {
   return [{ type: 'questCompleted', questId: storyGate[npcId] ?? 'vs_astravel_first_contact' }]
 }
 
-const baseSideQuestDefinitions: QuestDefinition[] = npcDefinitions.filter((npc) => !npc.id.startsWith('npc_street_')).map((npc, index) => {
+const baseSideQuestDefinitions: QuestDefinition[] = npcDefinitions.filter((npc) => npc.id !== 'npc_rosetta' && !npc.id.startsWith('npc_street_')).map((npc, index) => {
   const targetId = index % 3 === 0 ? 'enemy_spore_sower' : 'enemy_fungorro_crawler'
   const required = 2 + index % 3
   return {
