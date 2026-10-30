@@ -1,4 +1,4 @@
-import { useEffect, useRef, type PointerEvent } from 'react'
+import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { TrailDefinition, TrailNodeDefinition } from '../../content/types'
 import type { TrailNodeStatus } from '../../domain/game/types'
@@ -16,7 +16,7 @@ type Props = {
   reducedMotion: boolean
   enabled: boolean
   onInspect: (nodeId: string) => void
-  onEngage: (nodeId: string) => void
+  onEngage: (nodeId: string) => boolean
   onTravelStart: () => void
 }
 
@@ -42,6 +42,8 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
     ?? [...trail.nodes].reverse().find((node) => statuses[node.id] === 'completed')
     ?? trail.nodes[0]
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [nearbyActiveBattleId, setNearbyActiveBattleId] = useState<string | null>(null)
+  const nearbyActiveBattleRef = useRef<string | null>(null)
   const playerRef = useRef<WorldPoint>(getAstravelPoint(start))
   const facingRef = useRef<ActorFacing>('down')
   const directionsRef = useRef(new Set<ActorFacing>())
@@ -71,10 +73,13 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
     const node = trail.nodes.find((candidate) => candidate.id === nodeId)
     if (!node || !reachable(statusesRef.current[nodeId])) return
     if (node.type === 'battle' && statusesRef.current[nodeId] === 'current') {
-      engagingRef.current = nodeId
-      destinationRef.current = null
-      directionsRef.current.clear()
-      engageRef.current(nodeId)
+      // Lock only after the battle actually starts. Failed preconditions (HP,
+      // quest, encounter state) must never permanently disable interaction.
+      if (engageRef.current(nodeId)) {
+        engagingRef.current = nodeId
+        destinationRef.current = null
+        directionsRef.current.clear()
+      }
     } else inspectRef.current(nodeId)
   }
 
@@ -108,9 +113,8 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
         directionsRef.current.add(keys[key]); destinationRef.current = null; event.preventDefault()
       }
       if (key === 'e' || key === 'enter') {
-        const nearby = nearestReachableNode(playerRef.current, 23, trail, statusesRef.current)
-        if (nearby) activateNode(nearby.id)
-        event.preventDefault()
+        const nearby = nearestReachableNode(playerRef.current, 27, trail, statusesRef.current)
+        if (nearby) { activateNode(nearby.id); event.preventDefault() }
       }
     }
     const keyup = (event: KeyboardEvent) => {
@@ -152,9 +156,18 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
           else if (isAstravelWalkable({ x: playerRef.current.x, y: next.y }, trail)) { playerRef.current.y = next.y; walking = true }
           else destinationRef.current = null
         }
-        if (walking && !engagingRef.current) {
-          const nearby = nearestReachableNode(playerRef.current, 14, trail, statusesRef.current)
-          if (nearby?.type === 'battle' && statusesRef.current[nearby.id] === 'current') activateNode(nearby.id)
+        // Check proximity regardless of input mode. Previously arriving by
+        // mouse/touch or stopping a step short could leave the player stuck at
+        // the marker without entering the encounter.
+        if (!engagingRef.current) {
+          const nearest = nearestReachableNode(playerRef.current, 26, trail, statusesRef.current)
+          const battleId = nearest?.type === 'battle' && statusesRef.current[nearest.id] === 'current'
+            ? nearest.id : null
+          if (nearbyActiveBattleRef.current !== battleId) {
+            nearbyActiveBattleRef.current = battleId
+            setNearbyActiveBattleId(battleId)
+          }
+          if (battleId) activateNode(battleId)
         }
       }
       drawAstravel(ctx, trail, statusesRef.current, playerRef.current, sheet, reducedMotion ? 0 : frame,
@@ -199,6 +212,12 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
         </button>
       })}
     </div>
+    {nearbyActiveBattleId && enabled && <button type="button"
+      className="astravel-field__fight-action"
+      aria-label="Enfrentar Fungorro próximo"
+      onClick={() => activateNode(nearbyActiveBattleId)}>
+      ⚔ Enfrentar {trail.nodes.find((node) => node.id === nearbyActiveBattleId)?.label ?? 'inimigo'}
+    </button>}
     <div className="pixel-city__dpad" aria-label="Controle de movimento da trilha">
       {(['up', 'left', 'down', 'right'] as const).map((direction) => <button key={direction} type="button"
         className={`pixel-city__direction pixel-city__direction--${direction}`} aria-label={`Mover ${direction}`} disabled={!enabled}
@@ -208,8 +227,8 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
         {{ up: '▲', left: '◀', down: '▼', right: '▶' }[direction]}
       </button>)}
       <button type="button" className="pixel-city__interact" disabled={!enabled} onClick={() => {
-        const nearby = nearestReachableNode(playerRef.current, 23, trail, statusesRef.current)
-        if (nearby) inspectRef.current(nearby.id)
+        const nearby = nearestReachableNode(playerRef.current, 27, trail, statusesRef.current)
+        if (nearby) activateNode(nearby.id)
       }} aria-label="Interagir com ponto próximo">E</button>
     </div>
   </div>
