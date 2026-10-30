@@ -40,7 +40,9 @@ describe('Layout da escolha da Arma Vinculada', () => {
     expect(screen.queryByText(/Sinergias e caminhos de Clã/)).not.toBeInTheDocument()
     expect(within(bindingPanel as HTMLElement).getByRole('heading', { name: 'Sem arma vinculada' })).toBeInTheDocument()
     expect(within(bindingPanel as HTMLElement).getByRole('region', { name: 'Prévia do personagem com arma selecionada' })).toBeInTheDocument()
-    expect(within(bindingPanel as HTMLElement).queryByRole('img', { name: /na mão do personagem/ })).not.toBeInTheDocument()
+    const heroPreview = within(bindingPanel as HTMLElement).getByRole('region', { name: 'Prévia do personagem com arma selecionada' })
+    expect(heroPreview.querySelector('.prologue-hero-preview__stage')).toHaveClass('is-unarmed')
+    expect(within(heroPreview).queryByRole('img', { name: /ao lado do personagem/ })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Selecione uma arma' })).toBeDisabled()
 
     const axe = screen.getByRole('button', { name: 'Escolher Machado de Guerra' })
@@ -50,7 +52,9 @@ describe('Layout da escolha da Arma Vinculada', () => {
 
     fireEvent.click(axe)
     expect(within(bindingPanel as HTMLElement).queryByRole('heading', { name: 'Sem arma vinculada' })).not.toBeInTheDocument()
-    expect(within(bindingPanel as HTMLElement).getByRole('img', { name: 'Machado de Guerra na mão do personagem (prévia)' })).toBeInTheDocument()
+    expect(within(heroPreview).getByRole('img', { name: 'Machado de Guerra ao lado do personagem (prévia)' })).toHaveClass('prologue-hero-preview__weapon')
+    expect(heroPreview.querySelector('.prologue-hero-preview__stage')).toHaveClass('is-armed')
+    expect(within(heroPreview).getByRole('img', { name: 'Terrírian Lysa' })).toHaveClass('prologue-hero-preview__character')
     expect(screen.getByRole('region', { name: 'Sinergias de Clã para Machado de Guerra' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Sinergias e caminhos de Clã' })).toBeInTheDocument()
     expect(screen.getByText('+4 Vida')).toBeInTheDocument()
