@@ -102,7 +102,7 @@ const baseNpcDefinitions = [
 export const npcDefinitions: NPCDefinition[] = [
   ...baseNpcDefinitions.map((npc) => ({
     ...npc,
-    questIds: [...npc.questIds, 'side_' + npc.id],
+    questIds: npc.id === 'npc_rosetta' ? [] : [...npc.questIds, 'side_' + npc.id],
   })),
   ...streetNpcDefinitions,
 ]
