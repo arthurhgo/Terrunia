@@ -37,10 +37,9 @@ export function RosettaGuide({ save, onClose, onOpenQuests }: {
         <small>{guidance.activeCount}/{guidance.maxActive} espaços de missão ocupados</small>
         {!guidance.canReceive && <p>Seu diário está cheio. Conclua ou entregue uma missão antes de aceitar outra.</p>}
         {guidance.canReceive && !guidance.available.length && <p>Nenhuma nova missão está disponível pelos requisitos atuais.</p>}
-        {guidance.canReceive && guidance.available.slice(0, 4).map((entry) => <div key={entry.id} className="rosetta-guide__mission">
+        {guidance.canReceive && guidance.available.map((entry) => <div key={entry.id} className="rosetta-guide__mission">
           <strong>{entry.title}</strong><span>Fale com {entry.npcName} · {entry.locationName}</span>
         </div>)}
-        {guidance.canReceive && guidance.available.length > 4 && <small>+{guidance.available.length - 4} ofertas no diário de missões.</small>}
         <button type="button" onClick={onOpenQuests}>Consultar diário de missões</button>
       </article>
       <article className="rosetta-guide__library">
