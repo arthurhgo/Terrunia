@@ -7,8 +7,10 @@ import { migrateAndValidateSave } from '../persistence/saveSchema'
 
 describe('contratos secundários dos NPCs', () => {
   it('tem um contrato por NPC com alvo real e entrega manual', () => {
-    expect(sideQuestDefinitions).toHaveLength(npcDefinitions.length)
-    for (const npc of npcDefinitions) {
+    const questGivers = npcDefinitions.filter((npc) => npc.id !== 'npc_rosetta')
+    expect(sideQuestDefinitions).toHaveLength(questGivers.length)
+    expect(content.npcs.npc_rosetta.questIds).toHaveLength(0)
+    for (const npc of questGivers) {
       const quest = content.quests[npc.questIds.find((id) => content.quests[id]?.category === 'secondary') ?? '']
       expect(quest.giverNpcId).toBe(npc.id)
       expect(quest.turnInNpcId).toBe(npc.id)
