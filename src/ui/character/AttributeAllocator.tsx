@@ -13,12 +13,12 @@ const labels: Record<AttributeId, { name: string; role: string; combat: string }
   spirit: { name: 'Espírito', role: 'mana, cajados e focos', combat: 'Aumenta a reserva de Mana e escala armas vinculadas ao Espírito.' },
 }
 
-export function AttributeAllocator({ save, compact = false }: { save: GameSave; compact?: boolean }) {
+export function AttributeAllocator({ save, compact = false, layout = 'grid' }: { save: GameSave; compact?: boolean; layout?: 'grid' | 'vertical' }) {
   const adjust = useGameStore((state) => state.adjustAttribute)
   const locked = Boolean(save.character.bondedEquipment.weapon)
 
   return (
-    <section className={`attribute-allocator ${compact ? 'attribute-allocator--compact' : ''}`} aria-label="Distribuição de atributos">
+    <section className={`attribute-allocator ${compact ? 'attribute-allocator--compact' : ''} ${layout === 'vertical' ? 'attribute-allocator--vertical' : ''}`} aria-label="Distribuição de atributos">
       <header>
         <div><span className="eyebrow">LIMITES DO TERRÍRIAN</span><strong>Distribuição de atributos</strong></div>
         <span className="attribute-point-pool"><b>{save.character.unspentAttributePoints}</b> ponto(s)</span>
