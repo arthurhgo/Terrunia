@@ -89,7 +89,7 @@ export function WeaponGallery({ save, selectedId, onSelect }: Props) {
         </div>
       </> : <p className="weapon-gallery__hint">Sem arma vinculada — escolha uma das sete armas para ver suas habilidades.</p>}
     </div>
-    {selectedWeapon && <div className="weapon-gallery__clans" aria-label={`Sinergias de Clã para ${selectedWeapon.name}`}>
+    {selectedWeapon && <section className="weapon-gallery__clans" aria-label={`Sinergias de Clã para ${selectedWeapon.name}`}>
       <h4><Shield size={14} /> Sinergias e caminhos de Clã</h4>
       <div className="weapon-gallery__clan-grid">
         {clans.map((clan) => <div className={`weapon-gallery__clan ${clan.combatBonus === strongestBonus && strongestBonus > 0 ? 'is-affine' : ''}`}
@@ -101,6 +101,6 @@ export function WeaponGallery({ save, selectedId, onSelect }: Props) {
           </div>
         </div>)}
       </div>
-    </div>}
+    </section>}
   </section>
 }
