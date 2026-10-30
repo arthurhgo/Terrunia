@@ -25,6 +25,7 @@ function isPatrolClear(actor: CityActor, offset: WorldPoint): boolean {
 
 /** VISUAL_DRAFT: predictable ambient patrols; NPCs never move the story or change the save. */
 export function getNpcPatrol(actor: CityActor, timeSeconds: number): MovingCityActor {
+  if (actor.stationary) return { ...actor, facing: 'down', moving: false }
   const offset = patrolOffsets[actor.variant % patrolOffsets.length]
   const start = actor.point
   const end = { x: start.x + offset.x, y: start.y + offset.y }
