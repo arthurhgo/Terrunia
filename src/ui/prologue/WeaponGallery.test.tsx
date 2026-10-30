@@ -19,7 +19,7 @@ describe('Galeria do primeiro Vínculo', () => {
     fireEvent.mouseEnter(axe)
     expect(screen.getByText('Ruptura do Machado')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: `Dado d${save.character.attributes.strength.die}` })).toBeInTheDocument()
-    expect(screen.queryByText(/Bônus condicionais à filiação/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Bônus futuros, somente após filiação/)).not.toBeInTheDocument()
 
     fireEvent.click(axe)
     expect(onSelect).toHaveBeenCalledWith('bound_weapon_war_axe')
