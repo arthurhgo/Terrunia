@@ -35,7 +35,7 @@ export function PrologueScreen() {
       <p className="eyebrow">PRÓLOGO · TERRÚNIA</p>
       <h1>O primeiro Vínculo</h1>
       <p>Escolha sua arma permanente e distribua os atributos do Terrírian.</p>
-      <AttributeAllocator save={save} compact />
+      <AttributeAllocator save={save} compact layout="vertical" />
     </section>
 
     <ArcanePanel title="Escolha da Arma Vinculada"
