@@ -1,0 +1,96 @@
+/* Primeiro Vínculo — animated weapon gallery and illustrated attribute dice. */
+.prologue-screen.prologue-screen--enhanced {
+  align-items: start;
+  gap: clamp(20px, 3.5vw, 58px);
+  padding: clamp(25px, 5vw, 55px) clamp(18px, 4vw, 70px);
+  grid-template-columns: minmax(330px, .97fr) minmax(430px, 1fr);
+  overflow: visible;
+}
+.prologue-screen--enhanced .prologue-copy { position: relative; min-width: 0; z-index: 1; }
+.prologue-screen--enhanced .prologue-copy h1 { font-size: clamp(2.5rem, 4.6vw, 4.9rem); }
+.prologue-screen--enhanced .prologue-copy > p { font-size: .92rem; }
+.prologue-screen--enhanced .prologue-rule { margin: 20px 0 16px; }
+.prologue-screen--enhanced .prologue-arsenal { max-width: none; width: 100%; min-width: 0; justify-self: stretch; }
+.prologue-screen--enhanced .prologue-arsenal .arcane-panel__content { max-height: none; overflow: visible; }
+.prologue-screen--enhanced .attribute-allocator__grid { grid-template-columns: repeat(5, minmax(0,1fr)); gap: 5px; }
+.prologue-screen--enhanced .attribute-allocator__grid > article { padding: 7px 5px; min-width: 0; }
+.prologue-screen--enhanced .attribute-stepper { grid-template-columns: 23px minmax(0,1fr) 23px; gap: 3px; }
+.prologue-screen--enhanced .attribute-stepper button { height: 25px; width: 23px; }
+.attribute-stepper__die { display: grid; justify-items: center; align-content: center; gap: 1px; min-width: 0; }
+.attribute-stepper__die b { font: 700 .67rem var(--display); color: #f3ca80; }
+.attribute-allocator__combat { margin: 0; color: #aabfc7; font-size: .57rem; line-height: 1.35; }
+.die-icon { display: block; width: 41px; height: 41px; filter: drop-shadow(0 2px 5px #c69e5838); }
+.die-icon__shape { fill: #17394a; stroke: #eac083; stroke-width: 2.3; stroke-linejoin: round; }
+.die-icon__facet { fill: none; stroke: #72acc0; stroke-opacity: .83; stroke-width: 1; }
+.die-icon__number { fill: #ffe0a2; font: 700 19px Georgia,serif; paint-order: stroke; stroke: #07101a; stroke-width: 2.8; }
+.die-icon--d4 .die-icon__shape { fill: #264638; }
+.die-icon--d6 .die-icon__shape { fill: #263854; }
+.die-icon--d8 .die-icon__shape { fill: #503b27; }
+.die-icon--d10 .die-icon__shape { fill: #48304c; }
+.die-icon--d12 .die-icon__shape { fill: #564327; }
+.die-icon--d20 .die-icon__shape { fill: #563b40; }
+.weapon-gallery { display: grid; gap: 9px; min-width: 0; border: 1px solid #86643a; padding: 12px; background: linear-gradient(140deg,#121e29,#080d16 75%); box-shadow: inset 0 0 18px #1e405322; }
+.weapon-gallery__heading .eyebrow { color: #e0b46e; font-size: .61rem; }
+.weapon-gallery__heading h2 { color: #f6d597; font: 700 1.28rem var(--display); margin: 4px 0; }
+.weapon-gallery__heading p:last-child { margin: 0 0 5px; color: #b1bfc4; font-size: .7rem; line-height: 1.5; }
+.weapon-gallery__grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.weapon-gallery__choice {
+  position: relative; display: flex; flex-direction: column; align-items: center;
+  gap: 3px; padding: 11px 5px 8px; min-width: 0; min-height: 119px;
+  border: 1px solid #425d69; color: #b9c8cb; background: radial-gradient(ellipse at 50% 45%,#173744,#080f18 76%);
+  cursor: pointer; font-family: var(--display); animation: weapon-bob 3.5s ease-in-out infinite; transition: border-color .2s,box-shadow .2s,background .2s;
+}
+.weapon-gallery__choice:is(:hover,:focus-visible),.weapon-gallery__choice.is-selected {
+  border-color: #e5b969; background: radial-gradient(ellipse at 50% 45%,#28464a,#18190f 76%);
+  box-shadow: inset 0 0 22px #c29b4544, 0 0 12px #8a683d44; color: #ffe0a6;
+  animation-play-state: paused; outline-offset: 2px;
+}
+.weapon-gallery__choice:is(:hover,:focus-visible) { transform: translateY(-3px); }
+.weapon-gallery__aura { position: absolute; top: 10px; width: 75px; height: 66px; border-radius: 50%; background: radial-gradient(circle,#52c0dc25,transparent 70%); pointer-events: none; }
+.weapon-gallery__sprite { position: relative; width: 61px; height: 61px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 4px 6px #000c); animation: weapon-float 2.7s ease-in-out infinite; }
+.weapon-gallery__choice:is(:hover,:focus-visible) .weapon-gallery__sprite { animation-play-state: paused; transform: translateY(-7px) scale(1.13); }
+.weapon-gallery__choice strong { width: 100%; overflow-wrap: anywhere; font-size: .68rem; line-height: 1.22; text-align: center; }
+.weapon-gallery__choice small { font-size: .55rem; line-height: 1.25; text-align: center; color: #849eaa; }
+.weapon-gallery__check { position: absolute; top: 5px; right: 5px; display: flex; color: #e3bf83; }
+.weapon-gallery__choice.is-locked .weapon-gallery__check { color: #acb6bd; }
+.weapon-gallery__inspection { display: grid; gap: 9px; min-width: 0; padding: 9px; border: 1px solid #555346; background: #070f18; }
+.weapon-gallery__identity { display: grid; grid-template-columns: 80px minmax(0,1fr); gap: 10px; align-items: start; }
+.weapon-gallery__artifact { height: 82px; display: grid; place-items: center; border: 1px solid #58482b; background: radial-gradient(circle,#244458,#080d15 75%); }
+.weapon-gallery__artifact img { width: 72px; height: 72px; image-rendering: pixelated; object-fit: contain; animation: weapon-float 3s ease-in-out infinite; }
+.weapon-gallery__identity h3 { margin: 2px 0 4px; font: 700 1rem var(--display); color: #ffdb96; }
+.weapon-gallery__identity p { margin: 0 0 5px; font-size: .68rem; color: #bac2c2; line-height: 1.45; }
+.weapon-gallery__attack,.weapon-gallery__scale { display: inline-flex; gap: 5px; align-items: center; margin: 2px 8px 2px 0; font-size: .68rem; color: #e3cb99; }
+.weapon-gallery__scale .die-icon { width: 23px; height: 23px; }
+.weapon-gallery__scale .die-icon__number { font-size: 20px; }
+.weapon-gallery__inspection h4 { display: flex; align-items: center; gap: 6px; margin: 0 0 6px; font: 700 .8rem var(--display); color: #91dbec; }
+.weapon-gallery__skills > div { display: grid; gap: 3px; margin: 5px 0; padding: 6px 8px; border-left: 2px solid #a4773d; background: #15202a; }
+.weapon-gallery__skills strong { color: #f0ce91; font-size: .73rem; }
+.weapon-gallery__skills small { color: #86bfd5; font-size: .6rem; }
+.weapon-gallery__skills p { margin: 0; color: #bdc4c5; font-size: .65rem; }
+.weapon-gallery__clans { display: grid; gap: 5px; }
+.weapon-gallery__notice { margin: 0 0 4px; color: #8fb0bf; font-size: .62rem; line-height: 1.45; }
+.weapon-gallery__clan { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 3px 6px; padding: 7px; border: 1px solid #313f42; background: #101922; }
+.weapon-gallery__clan.is-affine { border-color: #ab8649; background: #222017; }
+.weapon-gallery__clan > div { display: grid; gap: 2px; }
+.weapon-gallery__clan strong { color: #f0d29b; font-size: .75rem; }
+.weapon-gallery__clan small { color: #a0bac4; font-size: .6rem; line-height: 1.45; }
+.weapon-gallery__clan > span { color: #d3a966; font-size: .6rem; text-align: right; }
+.weapon-gallery__clan > small { grid-column: 1 / -1; }
+@keyframes weapon-bob { 0%,100% { translate: 0 0; } 50% { translate: 0 -4px; } }
+@keyframes weapon-float { 0%,100% { translate: 0 1px; rotate: -2deg; } 50% { translate: 0 -5px; rotate: 3deg; } }
+@media (max-width: 1100px) {
+  .prologue-screen.prologue-screen--enhanced { grid-template-columns: minmax(0,1fr); max-width: 850px; margin: 0 auto; padding: 32px 18px; }
+  .prologue-screen--enhanced .prologue-copy > p { max-width: 700px; }
+}
+@media (max-width: 580px) {
+  .weapon-gallery__grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .weapon-gallery__choice { min-height: 116px; }
+  .prologue-screen--enhanced .attribute-allocator__grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .prologue-screen--enhanced .attribute-stepper { grid-template-columns: 30px minmax(0,1fr) 30px; }
+  .prologue-screen--enhanced .attribute-stepper button { width: 30px; }
+  .weapon-gallery__clan { grid-template-columns: 1fr; }
+  .weapon-gallery__clan > span { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .weapon-gallery__choice,.weapon-gallery__sprite,.weapon-gallery__artifact img { animation: none !important; transition: none; }
+}
