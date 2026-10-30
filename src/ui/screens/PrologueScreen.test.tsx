@@ -26,7 +26,15 @@ describe('Layout da escolha da Arma Vinculada', () => {
     expect(within(introduction as HTMLElement).queryByText(/Seu Vínculo é permanente/)).not.toBeInTheDocument()
     expect(within(introduction as HTMLElement).queryByText(/Drops fortalecem a arma/)).not.toBeInTheDocument()
     expect(bindingPanel).toBeInTheDocument()
-    expect(within(introduction as HTMLElement).getByRole('region', { name: 'Distribuição de atributos' })).toBeInTheDocument()
+    const attributes = within(introduction as HTMLElement).getByRole('region', { name: 'Distribuição de atributos' })
+    expect(attributes).toHaveClass('attribute-allocator--vertical')
+    expect(attributes).toHaveTextContent('LIMITES DO TERRÍRIAN')
+    expect(attributes).toHaveTextContent('Distribuição de atributos')
+    const rows = attributes.querySelectorAll('.attribute-allocator__grid > article')
+    expect(rows).toHaveLength(5)
+    expect(Array.from(rows, (row) => row.querySelector('strong')?.textContent)).toEqual([
+      'Astúcia', 'Agilidade', 'Força', 'Vigor', 'Espírito',
+    ])
     expect(within(introduction as HTMLElement).queryByRole('region', { name: 'Galeria flutuante de armas vinculadas' })).not.toBeInTheDocument()
     expect(within(bindingPanel as HTMLElement).getByRole('region', { name: 'Galeria flutuante de armas vinculadas' })).toBeInTheDocument()
     expect(screen.queryByText(/Sinergias e caminhos de Clã/)).not.toBeInTheDocument()
