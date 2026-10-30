@@ -15,12 +15,12 @@ test('Astravél mantém o mapa central e abre janela de instância centralizada 
       <div class="terran-game__layout expedition-game__layout has-drawer">
         <section class="terran-game__stage" aria-label="Cena contínua de Astravél">
           <nav class="terran-game__hud"><button>Trilha</button></nav>
-          <button class="expedition-game__drawer-backdrop" aria-label="Fechar janela da instância"></button>
-          <aside class="terran-game__drawer expedition-game__window" aria-label="Painel lateral: Acampamento Abandonado">
+        </section>
+        <button class="expedition-game__drawer-backdrop" aria-label="Fechar janela da instância"></button>
+        <aside class="terran-game__drawer expedition-game__window" aria-label="Painel lateral: Acampamento Abandonado">
             <header><h2>Acampamento Abandonado</h2><button aria-label="Fechar painel">×</button></header>
             <div class="terran-game__drawer-content">Vasculhar acampamento</div>
-          </aside>
-        </section>
+        </aside>
       </div>`
     document.body.append(fixture)
   })
@@ -41,6 +41,7 @@ test('Astravél mantém o mapa central e abre janela de instância centralizada 
         stage: { left: stage.left, right: stage.right, top: stage.top, bottom: stage.bottom },
         drawer: { left: drawer.left, right: drawer.right, top: drawer.top, bottom: drawer.bottom },
         close: { left: button.left, right: button.right },
+        modalAboveMap: Number(getComputedStyle(root.querySelector('.expedition-game__window')!).zIndex) > Number(getComputedStyle(root.querySelector('.expedition-game__drawer-backdrop')!).zIndex),
       }
     })
     const stageCenterX = (layout.stage.left + layout.stage.right) / 2
@@ -57,6 +58,7 @@ test('Astravél mantém o mapa central e abre janela de instância centralizada 
     expect(layout.drawer.bottom).toBeLessThanOrEqual(layout.stage.bottom + 1)
     expect(Math.abs(windowCenterX - stageCenterX), 'Janela centralizada horizontalmente no jogo').toBeLessThan(2)
     expect(Math.abs(windowCenterY - stageCenterY), 'Janela centralizada verticalmente no jogo').toBeLessThan(2)
+    expect(layout.modalAboveMap, 'Janela visível acima da máscara de fundo').toBe(true)
     expect(layout.close.left).toBeGreaterThanOrEqual(layout.drawer.left)
     expect(layout.close.right).toBeLessThanOrEqual(layout.drawer.right)
   }
