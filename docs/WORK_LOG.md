@@ -1,3 +1,11 @@
+## Batalha v0.21 — slots reais e status dos equipamentos (2026-11-03)
+
+- removidos ícones sempre ativos/placeholder da antiga linha de equips;
+- cinco slots reais com estados vinculado, temporário e vazio cinza, atualizados pelo save;
+- tooltip por hover, foco ou toque com Grau/Tier, ressonância, efeitos conhecidos e descrição;
+- resumo dos bônus diretos reais: Poder, Defesa, Vida, Mana e Iniciativa, sem somar duas vezes Skill Tree/Clã;
+- testes e regras no documento `BATTLE_EQUIPMENT_HUD_v0.21.md`, sem alteração de save schema.
+
 ## Personagem unificado e identificação de NPCs v0.20 (2026-11-03)
 
 - navegação principal troca 3 páginas sobrepostas por 1 entrada Personagem (`/nexus`); os caminhos antigos redirecionam;
