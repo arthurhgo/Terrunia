@@ -4,11 +4,12 @@ import { MemoryRouter } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { npcConversationVoices, npcQuestBriefs } from '../../content/npcConversations'
 import { createNewSave } from '../../domain/game/createSave'
+import { useGameStore } from '../../state/gameStore'
 import { DialogueWindow } from './DialogueWindow'
 import { QuestNpcPanel } from './TerranServices'
 import { RosettaGuide } from './RosettaGuide'
 
-afterEach(cleanup)
+afterEach(() => { cleanup(); useGameStore.getState().resetSession() })
 
 describe('janela única de conversa', () => {
   it('permite respostas do jogador, muda a fala do NPC e mantém o foco dentro do diálogo', () => {
@@ -29,6 +30,52 @@ describe('janela única de conversa', () => {
     expect(save).toEqual(original)
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+
+  it('aceita a missão secundária disponível direto, sem Ouvir a oferta, em uma única confirmação', () => {
+    const save = createNewSave('quest-direct', 'Thaur', 'character.terririan.default', content)
+    save.quests.vs_astravel_first_contact.status = 'completed'
+    save.quests.side_npc_eldamar.status = 'available'
+    useGameStore.setState({ status: 'ready', save, ownerId: save.ownerId, syncMode: 'local', syncStatus: 'saved' })
+    const onClose = vi.fn()
+    render(<MemoryRouter><QuestNpcPanel save={save} questId="side_npc_eldamar" onClose={onClose} /></MemoryRouter>)
+    const dialog = screen.getByRole('dialog', { name: 'Eldamar' })
+    expect(within(dialog).getByRole('group', { name: 'Confirmar missão: Fragmentos da Primeira Marca' })).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Aceitar missão' })).toBeEnabled()
+    expect(within(dialog).getByRole('button', { name: 'Agora não' })).toBeEnabled()
+    expect(within(dialog).queryByRole('button', { name: 'Ouvir a oferta' })).not.toBeInTheDocument()
+    expect(dialog).toHaveTextContent('Derrote 2 Semeadores de Esporos')
+    expect(dialog).toHaveTextContent('XP +20 · Ouro +10 · Essência +15')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Aceitar missão' }))
+    const next = useGameStore.getState().save!
+    expect(next.quests.side_npc_eldamar).toMatchObject({ status: 'active', tracked: true })
+    expect(next.eventLog).toContain('QuestOffered:side_npc_eldamar')
+    expect(next.eventLog).toContain('QuestAccepted:side_npc_eldamar')
+    expect(next.revision).toBe(save.revision + 2)
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('Agora não preserva missão disponível e recusa oferta antiga sem aceitar nada', () => {
+    const save = createNewSave('quest-deferred', 'Thaur', 'character.terririan.default', content)
+    save.quests.vs_astravel_first_contact.status = 'completed'
+    save.quests.side_npc_eldamar.status = 'available'
+    useGameStore.setState({ status: 'ready', save, ownerId: save.ownerId, syncMode: 'local', syncStatus: 'saved' })
+    const onClose = vi.fn()
+    const { rerender } = render(<MemoryRouter><QuestNpcPanel save={save} questId="side_npc_eldamar" onClose={onClose} /></MemoryRouter>)
+    fireEvent.click(screen.getByRole('button', { name: 'Agora não' }))
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(useGameStore.getState().save?.quests.side_npc_eldamar.status).toBe('available')
+    expect(useGameStore.getState().save?.revision).toBe(save.revision)
+
+    const offered = structuredClone(save)
+    offered.quests.side_npc_eldamar.status = 'offered'
+    useGameStore.setState({ save: offered })
+    rerender(<MemoryRouter><QuestNpcPanel save={offered} questId="side_npc_eldamar" onClose={onClose} /></MemoryRouter>)
+    expect(screen.queryByRole('button', { name: 'Ouvir a oferta' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Agora não' }))
+    expect(useGameStore.getState().save?.quests.side_npc_eldamar.status).toBe('available')
+    expect(onClose).toHaveBeenCalledTimes(2)
   })
 
   it('renderiza notas contextuais em cinza itálico na missão do NPC, não na fala', () => {
