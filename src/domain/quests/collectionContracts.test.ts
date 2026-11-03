@@ -14,7 +14,8 @@ const ready = () => {
   const save = createNewSave('collector', 'Aron', 'character.terririan.default', content, instant)
   for (const id of ['vs_astravel_first_contact', 'main_terran_first_home', 'main_vorren_bestiary', 'main_lithwynn_signs']) save.quests[id].status = 'completed'
   // This fixture represents a veteran who has already used Daeryn's key.
-  save.world.worldFlags.push('player_home_door_opened')
+  save.world.worldFlags.push('player_home_door_opened', 'player_home_key_used')
+  save.eventLog.push('DaerynKeyUsedOnHomeDoor')
   return refreshQuestAvailability(save, content, instant)
 }
 const add = (save: GameSave, id: string, quantity: number, favorite = false) => save.inventory.push({

@@ -3,7 +3,7 @@ import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
 import { migrateAndValidateSave } from '../../persistence/saveSchema'
 import { turnInQuest } from '../quests/questEngine'
-import { BASE_LOCATION_ID, PLAYER_HOME_DOOR_OPENED_FLAG, PLAYER_HOME_KEY_ITEM_ID,
+import { BASE_LOCATION_ID, PLAYER_HOME_DOOR_OPENED_FLAG, PLAYER_HOME_KEY_USED_FLAG, PLAYER_HOME_KEY_ITEM_ID,
   enterPlayerBase, hasPlayerHomeKey, isPlayerHomeDoorOpen, unlockPlayerBaseWithDaerynKey,
   leavePlayerBase, respawnDefeatedPlayer, transferBaseChestItem } from './base'
 
@@ -78,7 +78,8 @@ describe('Base individual e mundo isolado por campanha', () => {
     expect(respawn.value.eventLog).toContain('PlayerRespawnedAtPlaza')
     expect(migrateAndValidateSave(respawn.value).vitals.hp).toBe(1)
     const later = fresh()
-    later.world.worldFlags.push(PLAYER_HOME_DOOR_OPENED_FLAG)
+    later.world.worldFlags.push(PLAYER_HOME_DOOR_OPENED_FLAG, PLAYER_HOME_KEY_USED_FLAG)
+    later.quests.main_terran_first_home.status = 'completed'
     later.battle = { phase: 'Defeat', combatants: { combatant_player: { hp: 0 } } } as never
     const afterUnlock = respawnDefeatedPlayer(later, now)
     if (!afterUnlock.ok) throw new Error(afterUnlock.message)
@@ -144,8 +145,9 @@ describe('Base individual e mundo isolado por campanha', () => {
     const inside = structuredClone(legacy)
     inside.world.currentLocationId = BASE_LOCATION_ID
     const grandfathered = migrateAndValidateSave(inside)
-    expect(isPlayerHomeDoorOpen(grandfathered)).toBe(true)
-    expect(hasPlayerHomeKey(grandfathered)).toBe(false)
+    expect(isPlayerHomeDoorOpen(grandfathered)).toBe(false)
+    expect(hasPlayerHomeKey(grandfathered)).toBe(true)
+    expect(grandfathered.world.currentLocationId).toBe('location_terran_portal_plaza')
     const beforeQuest = fresh('legacy-premature')
     beforeQuest.world.currentLocationId = BASE_LOCATION_ID
     const rejected = migrateAndValidateSave(beforeQuest)
@@ -165,6 +167,39 @@ describe('Base individual e mundo isolado por campanha', () => {
     expect(migrated.baseStorage).toHaveLength(0)
     expect(transferBaseChestItem({ ...migrated, world: { ...migrated.world, currentLocationId: BASE_LOCATION_ID } },
       'deposit', migrated.inventory[0].instanceId, 1, content, now).ok).toBe(false)
+  })
+
+  it('revoga abertura herdada sem registro de uso, mesmo com missão concluída', () => {
+    const legacy = fresh('wrongly-unlocked')
+    legacy.world.currentLocationId = BASE_LOCATION_ID
+    legacy.world.worldFlags.push(PLAYER_HOME_DOOR_OPENED_FLAG, 'player_home_unlocked')
+    legacy.eventLog.push('LegacyHomeDoorRecognized')
+    legacy.quests.main_terran_first_home.status = 'completed'
+    expect(isPlayerHomeDoorOpen(legacy)).toBe(false)
+    expect(enterPlayerBase(legacy, now).ok).toBe(false)
+    const migrated = migrateAndValidateSave(legacy)
+    expect(migrated.world.currentLocationId).toBe('location_terran_portal_plaza')
+    expect(migrated.world.worldFlags).not.toContain(PLAYER_HOME_DOOR_OPENED_FLAG)
+    expect(migrated.world.worldFlags).not.toContain(PLAYER_HOME_KEY_USED_FLAG)
+    expect(hasPlayerHomeKey(migrated)).toBe(true)
+    const used = unlockPlayerBaseWithDaerynKey(migrated, now)
+    if (!used.ok) throw new Error(used.message)
+    expect(used.value.world.currentLocationId).toBe(BASE_LOCATION_ID)
+    expect(isPlayerHomeDoorOpen(used.value)).toBe(true)
+    expect(hasPlayerHomeKey(used.value)).toBe(false)
+    expect(migrateAndValidateSave(used.value)).toEqual(used.value)
+  })
+
+  it('reconstitui prova do uso da chave sem depender de flags legadas', () => {
+    const save = fresh('used-key-legacy')
+    save.quests.main_terran_first_home.status = 'completed'
+    save.eventLog.push('DaerynKeyUsedOnHomeDoor')
+    save.world.worldFlags.push(PLAYER_HOME_DOOR_OPENED_FLAG)
+    const migrated = migrateAndValidateSave(save)
+    expect(migrated.world.worldFlags).toContain(PLAYER_HOME_KEY_USED_FLAG)
+    expect(isPlayerHomeDoorOpen(migrated)).toBe(true)
+    expect(hasPlayerHomeKey(migrated)).toBe(false)
+    expect(enterPlayerBase(migrated, now).ok).toBe(true)
   })
 
 })
