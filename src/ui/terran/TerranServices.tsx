@@ -166,7 +166,7 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest }: { save:
       <AssetImage assetId={content.items[reward.itemId].iconAssetId} alt="" />
       <strong>Recompensa: {content.items[reward.itemId].name} ×{reward.quantity}</strong>
       <small>Receba ao entregar a missão.</small>
-    </p>)
+    </p>)}
     {definition.turnInItems && <div className="quest-delivery-items">
       {definition.turnInItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />
         {content.items[input.itemId].name}<strong>{getDeliverableCount(save, input.itemId, content)}/{input.quantity}</strong></span>)}
