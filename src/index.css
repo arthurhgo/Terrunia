@@ -3869,3 +3869,37 @@ code {
 @keyframes rosetta-gold-flow { to { stroke-dashoffset: -14; } }
 @media(prefers-reduced-motion: reduce) { .rosetta-quest-lines path { animation: none; stroke-dasharray: none; } }
 @media(max-width:600px) { .vn-details .rosetta-tutorial { padding: 9px; } .rosetta-tutorial__gifts { display: grid; gap: 5px; } .rosetta-routes-caption { max-width: 45%; font-size: .48rem; } }
+
+/* Quest v0.22 — confirm the selected sidequest without a redundant offer stage. */
+.terran-quest-dialog .terran-quest-dialog__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.terran-quest-dialog .terran-quest-dialog__actions button {
+  min-width: 0;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #6a8994;
+  background: #152734;
+  color: #c7d9d8;
+  font: 700 .8rem var(--display);
+  cursor: pointer;
+}
+.terran-quest-dialog .terran-quest-dialog__actions .terran-quest-dialog__accept {
+  border-color: #ba9449;
+  background: #26392b;
+  color: #f5ddab;
+}
+.terran-quest-dialog .terran-quest-dialog__actions button:is(:hover,:focus-visible) {
+  outline: 1px solid #efcd87;
+  outline-offset: 1px;
+  background: #31483c;
+}
+@media (max-width: 520px) {
+  .terran-quest-dialog .terran-quest-dialog__actions { grid-template-columns: 1fr; }
+}
