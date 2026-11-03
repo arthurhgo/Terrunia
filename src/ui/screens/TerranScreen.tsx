@@ -165,7 +165,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     // The seven institutions have walkable interiors; the Portal remains outdoors.
     if (hasTerranInterior(id)) {
       setInteriorId(id)
-      setDrawer(null)
+      // Keep the tracking drawer open across the outdoor -> interior transition.
+      setDrawer((current) => current === 'quests' ? 'quests' : null)
     } else {
       setInteriorId(null)
       setDrawer('location')
@@ -176,7 +177,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setStreetSpawn({ ...PLAYER_HOME_DOOR })
     setInteriorId(PLAYER_HOME_INTERIOR_ID)
     setLocationId('location_terran_portal_plaza')
-    setDrawer(null)
+    setDrawer((current) => current === 'quests' ? 'quests' : null)
     setInspected(null)
   }
   const openRoomServices = (id: TerranInteriorId) => {
@@ -200,7 +201,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const exitInterior = () => {
     if (interiorId === PLAYER_HOME_INTERIOR_ID) leaveBase()
     setInteriorId(null)
-    setDrawer(null)
+    setDrawer((current) => current === 'quests' ? 'quests' : null)
     setDialogue(null)
     setLocalQuestId(null)
     setMarketNpc(null)
