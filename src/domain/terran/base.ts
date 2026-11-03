@@ -88,6 +88,45 @@ export function respawnDefeatedPlayer(save: GameSave, now: string): Result<GameS
   return ok(next)
 }
 
+/** Legacy saves may predate Daeryn's physical key. Reconcile on load without
+ * resetting completed quests, items, HP, Vínculos or previous exploration.
+ */
+export function reconcileLegacyHomeKey(save: GameSave): GameSave {
+  const questDone = save.quests.main_terran_first_home?.status === 'completed'
+  const inside = save.world.currentLocationId === BASE_LOCATION_ID
+  const keyInChest = save.baseStorage.some((item) => item.definitionId === PLAYER_HOME_KEY_ITEM_ID && item.quantity > 0)
+  const needsUnlock = inside && !isPlayerHomeDoorOpen(save) && questDone
+  const needsRelocation = inside && !isPlayerHomeDoorOpen(save) && !questDone
+  const needsKey = questDone && !isPlayerHomeDoorOpen(save) && !inside && !hasPlayerHomeKey(save) && !keyInChest
+  const needsRetrieveKey = questDone && !isPlayerHomeDoorOpen(save) && keyInChest
+  if (!needsUnlock && !needsRelocation && !needsKey && !needsRetrieveKey) return save
+  const next = structuredClone(save)
+  if (needsUnlock) {
+    next.world.worldFlags.push(PLAYER_HOME_DOOR_OPENED_FLAG)
+    next.eventLog.push('LegacyHomeDoorRecognized')
+  }
+  if (needsRelocation) {
+    next.world.currentLocationId = BASE_RETURN_LOCATION_ID
+    if (!next.world.unlockedLocationIds.includes(BASE_RETURN_LOCATION_ID)) next.world.unlockedLocationIds.push(BASE_RETURN_LOCATION_ID)
+    next.eventLog.push('LegacyHomeLocked:ReturnedToPlaza')
+  }
+  if (needsRetrieveKey) {
+    const index = next.baseStorage.findIndex((item) => item.definitionId === PLAYER_HOME_KEY_ITEM_ID && item.quantity > 0)
+    if (index >= 0) next.inventory.push(...next.baseStorage.splice(index, 1))
+    next.eventLog.push('LegacyHomeKeyRetrieved')
+  }
+  if (needsKey) {
+    next.inventory.push({
+      instanceId: `quest_reward_main_terran_first_home_${save.saveId}_${PLAYER_HOME_KEY_ITEM_ID}`,
+      definitionId: PLAYER_HOME_KEY_ITEM_ID, quantity: 1, rarity: 'unique',
+      locked: true, favorite: false, acquiredAt: next.updatedAt,
+    })
+    next.eventLog.push('LegacyHomeKeyGranted')
+  }
+  next.revision += 1
+  return next
+}
+
 export type BaseChestTransfer = 'deposit' | 'withdraw'
 
 /** Stores only temporary items, not permanent bound equipment. No duplicate instance IDs. */
