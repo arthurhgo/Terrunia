@@ -31,16 +31,3 @@
 @media (prefers-reduced-motion: reduce) {
   .pixel-interior__quest-paths path { animation: none; }
 }
-.inventory-worn button {
-  margin-left: auto;
-  min-height: 25px;
-  padding: 3px 8px;
-  border: 1px solid #c49b61;
-  background: #162631;
-  color: #ebcf9d;
-  font: 700 .65rem var(--display);
-  cursor: pointer;
-}
-.inventory-worn button:disabled { opacity: .45; cursor: not-allowed; }
-.inventory-worn button:hover:enabled,
-.inventory-worn button:focus-visible { border-color: #ffdda6; background: #34402e; }
