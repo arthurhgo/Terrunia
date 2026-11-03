@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -61,7 +61,7 @@ afterEach(() => {
 })
 
 describe('interfaces de Terran', () => {
-  it('abre Missões com rota da missão atual e alterna dourado/azul conforme o rastreamento', () => {
+  it('mostra a rota rastreada no painel fixo e alterna dourado/azul ao trocar a missão', () => {
     loadSave()
     const save = useGameStore.getState().save!
     save.quests.vs_astravel_first_contact.status = 'active'
@@ -70,32 +70,26 @@ describe('interfaces de Terran', () => {
     save.eventLog.push('CutsceneViewed:astravel_call')
     useGameStore.setState({ save })
     const { container } = render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
-    expect(screen.queryByRole('img', { name: 'Caminho pontilhado da missão rastreada' })).not.toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Missões' }))
+    const dock = screen.getByRole('complementary', { name: 'Missões e inventário fixos' })
+    expect(within(dock).getByRole('region', { name: 'Missões fixas' })).toBeInTheDocument()
     const visible = screen.getByRole('img', { name: 'Caminho pontilhado da missão rastreada' })
     expect(visible).toHaveAttribute('data-route-tone', 'gold')
     expect(container.querySelectorAll('.rosetta-quest-lines path')).toHaveLength(1)
     expect(container.querySelector('.rosetta-minimap-lines')).toHaveAttribute('data-route-tone', 'gold')
-    expect(screen.getByText(/MISSÃO ATUAL/)).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Detalhes da missão Caminhos de Entrega' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Rastrear missão' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Rastrear Caminhos de Entrega' }))
     expect(useGameStore.getState().save?.quests.side_street_arlen.tracked).toBe(true)
     expect(useGameStore.getState().save?.quests.vs_astravel_first_contact.tracked).toBe(false)
     const path = container.querySelector('.rosetta-quest-lines')
     expect(path).toHaveAttribute('data-route-tone', 'blue')
-    expect(path?.querySelectorAll('path')).toHaveLength(1)
     expect(path?.querySelector('path')).toHaveAttribute('data-quest-ids', 'side_street_arlen')
     expect(container.querySelector('.rosetta-minimap-lines')).toHaveAttribute('data-route-tone', 'blue')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Remover rastreamento' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Remover rastreamento de Caminhos de Entrega' }))
     expect(useGameStore.getState().save?.quests.side_street_arlen.tracked).toBe(false)
     expect(container.querySelector('.rosetta-quest-lines')).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
-    expect(container.querySelector('.rosetta-quest-lines')).toBeNull()
+    expect(dock).toBeInTheDocument()
   })
-
 
   it('mantém a rota de missão e o marcador ! ao entrar na casa e exibe o título dos NPCs', () => {
     loadSave('location_terran_eldamar_house')
@@ -107,18 +101,16 @@ describe('interfaces de Terran', () => {
     const { container } = render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     const rosetta = screen.getByRole('button', { name: 'Conversar com Rosetta' })
     expect(rosetta.querySelector('.npc-nameplate__subtitle')).toHaveTextContent('Guardiã do Portal')
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Missões' }))
     expect(screen.getByRole('img', { name: 'Caminho pontilhado da missão rastreada' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Eldamar' }))
-    expect(screen.getByRole('complementary', { name: 'Painel lateral: Diário de Missões' })).toBeInTheDocument()
+    expect(screen.getByRole('complementary', { name: 'Missões e inventário fixos' })).toBeInTheDocument()
     const route = screen.getByRole('img', { name: 'Caminho pontilhado da missão no interior' })
     expect(route.querySelectorAll('path[data-route-tone="gold"]')).toHaveLength(1)
     expect(route.querySelector('path')).toHaveAttribute('data-target-kind', 'npc')
     const eldamar = screen.getByRole('button', { name: 'Falar com Eldamar dentro do local' })
     expect(eldamar.querySelector('.npc-nameplate__subtitle')).toHaveTextContent('Mestre dos Registros')
     expect(eldamar.querySelector('.npc-quest-marker')).toHaveTextContent('!')
-    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
-    expect(container.querySelector('.pixel-interior__quest-paths')).toBeNull()
+    expect(container.querySelector('.pixel-interior__quest-paths')).not.toBeNull()
   })
 
   it('mostra rota azul de sidequest dentro das casas até o NPC da missão', () => {
@@ -128,7 +120,6 @@ describe('interfaces de Terran', () => {
     save.quests.side_npc_daeryn.tracked = true
     useGameStore.setState({ save })
     render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Missões' }))
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Daeryn' }))
     const route = screen.getByRole('img', { name: 'Caminho pontilhado da missão no interior' })
     expect(route.querySelector('path')).toHaveAttribute('data-route-tone', 'blue')
@@ -172,7 +163,7 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('img', { name: /Interior pixelado de Casa de Daeryn/ })).toBeInTheDocument()
   })
 
-  it('mantém Local, Inventário/Nexo e Missões na lateral; somente Menu abre a tela da build', () => {
+  it('mantém Missões em cima e Mochila embaixo sem abas redundantes ou rolagem lateral', () => {
     loadSave()
     render(<MemoryRouter initialEntries={['/terran']}>
       <Routes>
@@ -184,45 +175,44 @@ describe('interfaces de Terran', () => {
         <Route path="/menu" element={<SkillTreeScreen />} />
       </Routes>
     </MemoryRouter>)
-    const city = screen.getByRole('img', { name: new RegExp('Terran vista superior 3/4') })
-    expect(city).toBeInTheDocument()
-    const rail = screen.getByRole('navigation', { name: 'Menu de Terran' })
-    expect(rail.querySelectorAll('button')).toHaveLength(4)
     const stage = screen.getByRole('region', { name: 'Cenário contínuo de Terran' })
-    const status = screen.getByRole('complementary', { name: 'Status permanente do personagem' })
+    const dock = screen.getByRole('complementary', { name: 'Missões e inventário fixos' })
+    const missions = within(dock).getByRole('region', { name: 'Missões fixas' })
+    const inventory = within(dock).getByRole('region', { name: 'Inventário fixo' })
+    expect(dock.children[0]).toBe(missions)
+    expect(dock.children[1]).toBe(inventory)
+    expect(inventory.querySelectorAll('.arcane-panel')).toHaveLength(1)
+    expect(inventory).toHaveTextContent('Mochila')
+    expect(inventory.querySelector('.bound-items-panel')).toBeNull()
+    expect(inventory).not.toHaveTextContent('NO QUE ESTOU ME TORNANDO')
+    expect(inventory).not.toHaveTextContent('Ressonância')
+    expect(inventory.querySelectorAll('.inventory-slot')).toHaveLength(12)
+    expect(screen.queryByRole('navigation', { name: 'Menu de Terran' })).not.toBeInTheDocument()
+    for (const name of ['Abrir Local', 'Abrir Inventário', 'Abrir Missões', 'Abrir Menu']) {
+      expect(screen.queryByRole('button', { name })).not.toBeInTheDocument()
+    }
     expect(screen.getByRole('link', { name: 'Abrir Menu' })).toBeInTheDocument()
-    expect(screen.queryByRole('navigation', { name: 'Navegação principal' })).not.toBeInTheDocument()
+    expect(within(missions).getByRole('link', { name: 'Diário completo' })).toHaveAttribute('href', '/quests')
+    expect(screen.getByRole('complementary', { name: 'Status permanente do personagem' })).toBeInTheDocument()
+    expect(stage).toBeInTheDocument()
+  })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Local' }))
-    const mapDrawer = screen.getByRole('complementary', { name: 'Painel lateral: Mapa de Terran' })
-    expect(mapDrawer).toBeInTheDocument()
-    expect(mapDrawer).toHaveTextContent('Explore o continente')
-    expect(screen.getByRole('link', { name: 'Ampliar mapa do continente' })).toHaveAttribute('href', '/local')
-    expect(screen.getByRole('region', { name: 'Cenário contínuo de Terran' })).toBe(stage)
-    expect(screen.queryByText('Modo Ondas do Portal')).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
-
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Inventário' }))
-    const inventoryDrawer = screen.getByRole('complementary', { name: 'Painel lateral: Inventário' })
-    expect(inventoryDrawer).toBeInTheDocument()
-    expect(inventoryDrawer).not.toHaveTextContent('Status do personagem')
-    expect(inventoryDrawer.querySelector('.arcane-panel')).toHaveTextContent('Mochila')
-    expect(inventoryDrawer.querySelectorAll('.arcane-panel')).toHaveLength(1)
-    expect(inventoryDrawer).not.toHaveTextContent('NO QUE ESTOU ME TORNANDO')
-    expect(inventoryDrawer.querySelector('.bound-items-panel')).toBeNull()
-    expect(screen.queryByRole('group', { name: 'Seções de Inventário' })).not.toBeInTheDocument()
-    expect(status).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
-
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Missões' }))
-    expect(screen.getByRole('complementary', { name: 'Painel lateral: Diário de Missões' })).toBeInTheDocument()
-    expect(screen.getByRole('region', { name: 'Diário de missões' })).toBeInTheDocument()
-    expect(city).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
-
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Menu' }))
-    expect(screen.getByRole('heading', { name: 'Menu' })).toBeInTheDocument()
-    expect(screen.getByRole('tablist', { name: 'Árvores de progressão' })).toBeInTheDocument()
+  it('pagina a mochila fixa para manter acessíveis itens além dos doze primeiros', () => {
+    loadSave()
+    const save = useGameStore.getState().save!
+    save.inventory = Array.from({ length: 14 }, (_, i) => ({
+      instanceId: `extra-item-${i}`, definitionId: 'drop_spore_cluster', quantity: 1,
+      rarity: 'uncommon' as const, locked: false, favorite: false, acquiredAt: save.updatedAt,
+    }))
+    useGameStore.setState({ save })
+    const { container } = render(<MemoryRouter><TerranScreen /></MemoryRouter>)
+    const dock = screen.getByRole('complementary', { name: 'Missões e inventário fixos' })
+    expect(within(dock).getByText('1/2 · 14 itens')).toBeInTheDocument()
+    expect(container.querySelectorAll('.inventory-slot')).toHaveLength(12)
+    fireEvent.click(within(dock).getByRole('button', { name: 'Próxima página da mochila' }))
+    expect(within(dock).getByText('2/2 · 14 itens')).toBeInTheDocument()
+    expect(container.querySelectorAll('.inventory-slot')).toHaveLength(12)
+    expect(within(dock).getByRole('button', { name: 'Próxima página da mochila' })).toBeDisabled()
   })
 
   it('mantém a biblioteca visual exclusivamente nos Registros de Eldamar', () => {
@@ -310,7 +300,7 @@ describe('interfaces de Terran', () => {
     expect(screen.getByText('Estante dos Registros')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Missões que pode receber' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Consultar diário de missões' }))
-    expect(screen.getByRole('complementary', { name: 'Painel lateral: Diário de Missões' })).toBeInTheDocument()
+    expect(screen.getByRole('complementary', { name: 'Missões e inventário fixos' })).toBeInTheDocument()
     expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
   })
 
