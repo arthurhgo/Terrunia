@@ -131,16 +131,3 @@
   .quest-board--remake * { scroll-behavior: auto; }
 }
 
-/* Inventory now explains whether an item serves a quest, bond, or material economy. */
-.inventory-item-purpose {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
-  padding: 10px;
-  border: 1px solid #47636b;
-  background: #101e28;
-  color: #bacdcf;
-  font-size: .69rem;
-}
-.inventory-item-purpose strong { color: #edd3a0; overflow-wrap: anywhere; }
-.inventory-item-purpose p { margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
