@@ -236,6 +236,8 @@ export type QuestDefinition = {
   id: string
   title: string
   summary: string
+  /** Optional player-facing guidance, rendered only in mission UI (not item cards). */
+  contextNote?: string
   giverNpcId: string
   turnInNpcId: string
   category: QuestCategory
