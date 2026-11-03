@@ -164,7 +164,12 @@
   }
   .terran-game__frame { display: flex; flex-direction: column; width: 100%; aspect-ratio: auto; }
   .terran-game__stage { order: 1; flex: none; width: 100%; height: auto; aspect-ratio: 384 / 256; }
-  .terran-game__frame > .terran-character-hud { display: none; }
+  .terran-game__frame > .terran-character-hud {
+    position: relative; order: 3; top: auto; left: auto;
+    display: flex; width: 100%; max-width: 100%;
+    height: min(240px,36dvh); max-height: min(240px,36dvh);
+    overflow-y: auto;
+  }
   .terran-game__drawer { order: 3; }
 }
 @media (max-height: 670px) and (min-width: 961px) {
