@@ -2,6 +2,10 @@
 
 Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, primeira Ruína, Vínculos, Infusão, Lapidação de Joias, Skill Tree e save local-first.
 
+## Remake do fluxo de missões v0.14
+
+O caminho inicial de Rosetta agora mantém a **túnica escolhida até o reforço**: equipar → comprar Tônico → aprimorar em Durnan. O couro é uma missão secundária opcional, e proteções simples reservas podem ser vendidas ou convertidas em Essência no Mercado, sem afetar Vínculos. O Diário e Rosetta compartilham o **Próximo passo**, incluindo hierarquia mais clara na aba lateral. Saves schema 15 são reconciliados sem reset de progresso. Detalhes: [remake v0.14](docs/QUEST_FLOW_REMAKE_v0.14.md).
+
 ## Tutorial de Rosetta v0.13
 
 Rosetta ensina **equipar, comprar e aprimorar** em quatro missões: entrega duas túnicas na Mochila, orienta a compra de um Tônico e uma armadura simples com Neris e apresenta o reforço +1 de Durnan. Proteções simples têm bônus reais e usam o eixo Armadura antes do Vínculo permanente. Passar o cursor ou focar Rosetta mostra caminhos dourados para as principais e secundárias elegíveis; no celular, a orientação pode ser fixada pelo diálogo. O diário inicia as **Concluídas recolhidas**, com contador e expansão. Save 15, com migração preservando a campanha e aceite manual. Detalhes: [tutorial e orientação](docs/ROSETTA_TUTORIAL_v0.13.md).
