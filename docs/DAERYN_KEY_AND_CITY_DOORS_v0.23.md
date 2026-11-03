@@ -14,7 +14,7 @@ Atualizado: 2026-11-03. Documento de referência: `TERRUNIA_GAME_APP_MASTER_SPEC
 ## Regras e proteção contra atalhos
 
 - O motor `enterPlayerBase` exige a flag permanente da porta aberta, exceto quando o jogador já está na Base. A presença da chave por si só não abre a casa: requer a ação explícita na porta.
-- `useDaerynKeyOnDoor` valida missão concluída, chave na mochila, ausência de bloqueio de cena/batalha e localização válida em Terran. Nunca consome o item em operação inválida.
+- `unlockPlayerBaseWithDaerynKey` valida missão concluída, chave na mochila, ausência de bloqueio de cena/batalha e localização válida em Terran. Nunca consome o item em operação inválida.
 - O recebimento está em `QuestDefinition.itemRewards`, configurável/data-driven e concedido apenas em `turnInQuest`; não é bônus silencioso de kill ou level.
 - `PLAYER_HOME_FLAG` continua representando o progresso de Daeryn, enquanto `player_home_door_opened` representa o uso físico da chave. Não são a mesma ação.
 - Se houver derrota **antes** de destrancar a Base, o personagem reaparece na **Praça do Portal** com 1 PV e 0 MP, em vez de atravessar a porta trancada. Depois do desbloqueio, reaparece na Base. Não há perda de Ouro, itens, progresso ou equipamento.
