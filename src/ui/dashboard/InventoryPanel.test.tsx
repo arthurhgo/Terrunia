@@ -53,6 +53,17 @@ describe('Inventário v0.15', () => {
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
   })
 
+  it('não mostra dicas de Lorian/Feril dentro dos detalhes do equipamento', () => {
+    const save = makeSave()
+    const { container } = render(<InventoryPanel save={save} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Túnica de Linho Gasta' }))
+    const details = screen.getByRole('region', { name: 'Equipamento: Túnica de Linho Gasta' })
+    expect(details).toHaveTextContent('Defesa')
+    expect(screen.getByRole('button', { name: 'Equipar Túnica de Linho Gasta' })).toBeInTheDocument()
+    expect(details).not.toHaveTextContent(/Peça reserva|Lorian|Feril|Mercado/)
+    expect(container.querySelector('.inventory-item-purpose')).toBeNull()
+  })
+
   it('mantém seleção única também no modo de venda', () => {
     const save = makeSave()
     render(<InventoryPanel save={save} tradeMode="sell" />)
