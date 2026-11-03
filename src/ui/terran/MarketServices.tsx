@@ -19,7 +19,8 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
     <h3><ShoppingBasket size={18} /> Itens à venda</h3>
     <p className="terran-shop__wallet"><Coins size={16} /> {save.wallet.gold} Ouro</p>
     <div className="terran-shop__stock">
-      {stock.map(({ itemId, price }) => {
+      {stock.map((offer) => {
+        const { itemId, price } = offer
         const item = content.items[itemId]
         if (!item) return null
         const gate = 'requiresQuestId' in offer ? content.quests[offer.requiresQuestId] : null
