@@ -14,6 +14,10 @@ A proteção simples equipada agora é transferida da mochila para um **slot per
 
 A proteção simples equipada deixa de ocupar espaço visual na grade da mochila (sem apagar a instância salva). Missões rastreadas e caminhos de Rosetta continuam dentro das casas, até NPCs ou saídas, com linhas douradas e azuis de sidequests. NPCs exibem título/função em linha itálica menor sob o nome. [Documento v0.18](docs/INTERIOR_QUEST_PATHS_EQUIPPED_NPC_LABELS_v0.18.md).
 
+## Base com chave obrigatória e lateral fixa v0.24
+
+O acesso à Base foi corrigido para exigir **uso comprovado da Chave de Daeryn na porta**, revogando desbloqueios automáticos de saves legados. A lateral de Terran agora mostra **Missões fixas acima da Mochila**, paginadas e sem rolagem, sem as abas redundantes Menu/Local. [Contrato v0.24](docs/BASE_KEY_STRICT_FIXED_SIDEBAR_v0.24.md).
+
 ## Chave de Daeryn e portas clicáveis v0.23
 
 A Base fica trancada até receber a Chave de Daeryn ao entregar **Um Lugar em Terran**. A chave permanece na mochila e é consumida em **Usar chave na porta**, deixando a casa permanentemente acessível. Todas as sete casas têm controles clicáveis em suas portas; saves antigos e respawn respeitam o bloqueio. [Detalhes técnicos](docs/DAERYN_KEY_AND_CITY_DOORS_v0.23.md).
