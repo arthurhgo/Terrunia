@@ -3,7 +3,7 @@ import type { GameSave } from '../game/types'
 
 /** Reconcile real purchases/equipment, including actions done before a lesson was accepted. No rewards here. */
 export function refreshTutorialQuestProgress(save: GameSave, catalog: ContentCatalog, now: string): GameSave {
-  const armor = save.inventory.find((item) => item.instanceId === save.character.basicArmorInstanceId)
+  const armor = save.equippedBasicArmor?.instanceId === save.character.basicArmorInstanceId ? save.equippedBasicArmor : null
   let next: GameSave | undefined
   for (const definition of Object.values(catalog.quests)) {
     if (!definition.id.startsWith('rosetta_tutorial_') || save.quests[definition.id]?.status !== 'active') continue
@@ -14,7 +14,7 @@ export function refreshTutorialQuestProgress(save: GameSave, catalog: ContentCat
         : objective.type === 'purchase' ? save.eventLog.some((event) => event.startsWith('MarketPurchase:') && event.split(':')[2] === objective.targetId)
         : objective.type === 'equip' ? Boolean(save.character.bondedEquipment.armor || (armor && catalog.items[armor.definitionId]?.basicArmor &&
           (objective.targetId === 'basic_armor' || armor.definitionId === objective.targetId)))
-        : objective.type === 'refine' ? save.inventory.some((item) => catalog.items[item.definitionId]?.basicArmor && (item.refinementLevel ?? 0) >= 1)
+        : objective.type === 'refine' ? [...save.inventory, ...(save.equippedBasicArmor ? [save.equippedBasicArmor] : [])].some((item) => catalog.items[item.definitionId]?.basicArmor && (item.refinementLevel ?? 0) >= 1)
           || save.eventLog.some((event) => event.startsWith('BasicArmorRefined:')) : false
       if (!met || (save.quests[definition.id].objectives[objective.id] ?? 0) >= objective.required) continue
       next ??= structuredClone(save)
