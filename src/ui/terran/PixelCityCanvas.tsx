@@ -98,6 +98,7 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
   const mapViewRef = useRef<SVGRectElement>(null)
   const districtRef = useRef<HTMLSpanElement>(null)
   const siteButtonsRef = useRef(new Map<string, HTMLButtonElement>())
+  const doorButtonsRef = useRef(new Map<string, HTMLButtonElement>())
   const landmarkButtonsRef = useRef(new Map<string, HTMLButtonElement>())
   const inspectRef = useRef(onInspectLandmark)
   inspectRef.current = onInspectLandmark
@@ -272,9 +273,13 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
       for (const id of TERRAN_LOCATION_IDS) {
         const button = siteButtonsRef.current.get(id)
         if (button) button.hidden = !inView(getCityPoint(id))
+        const doorButton = doorButtonsRef.current.get(id)
+        if (doorButton) doorButton.hidden = !inView(getCityDoor(id))
       }
       const homeButton = siteButtonsRef.current.get('home')
       if (homeButton) homeButton.hidden = !inView(PLAYER_HOME_CENTER)
+      const homeDoorButton = doorButtonsRef.current.get('home')
+      if (homeDoorButton) homeDoorButton.hidden = !inView(PLAYER_HOME_DOOR)
       for (const landmark of terranLandmarks) {
         const button = landmarkButtonsRef.current.get(landmark.id)
         if (button) button.hidden = !inView(landmark.point)
@@ -350,6 +355,24 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
             {objectiveId === id ? <b aria-label="Objetivo">!</b> : null}
           </button>
         })}
+        {/* Door hitboxes are aligned to the painted building entrances. A click
+            walks to that doorway; the action occurs only on arrival. */}
+        {TERRAN_LOCATION_IDS.filter((id) => id !== 'location_terran_portal_plaza').map((id) => {
+          const door = getCityDoor(id)
+          return <button key={`door-${id}`} type="button" className="pixel-city__door"
+            data-city-door={id} ref={(button) => { if (button) doorButtonsRef.current.set(id, button); else doorButtonsRef.current.delete(id) }}
+            style={{ left: `${door.x / CITY_WIDTH * 100}%`, top: `${(door.y - 21) / CITY_HEIGHT * 100}%` }}
+            aria-label={`Abrir porta de ${content.terranLocations[id].name}`}
+            title={`Entrar em ${content.terranLocations[id].name}`}
+            disabled={!enabled} onClick={() => walkToSite(id)}>↥</button>
+        })}
+        <button type="button" className={`pixel-city__door pixel-city__door--home ${homeUnlocked ? 'is-open' : 'is-locked'}`}
+          data-city-door="home"
+          ref={(button) => { if (button) doorButtonsRef.current.set('home', button); else doorButtonsRef.current.delete('home') }}
+          style={{ left: `${PLAYER_HOME_DOOR.x / CITY_WIDTH * 100}%`, top: `${(PLAYER_HOME_DOOR.y - 21) / CITY_HEIGHT * 100}%` }}
+          aria-label="Interagir com porta da Base do Terrírian"
+          title={homeUnlocked ? 'Base do Terrírian · Entrar' : 'Base do Terrírian · Porta trancada'}
+          disabled={!enabled} onClick={walkToHome}>{homeUnlocked ? '↥' : '⌑'}</button>
         <button type="button" className={`pixel-city__site pixel-city__home ${!homeUnlocked ? 'is-locked' : ''}`}
           ref={(button) => { if (button) siteButtonsRef.current.set('home', button); else siteButtonsRef.current.delete('home') }}
           style={{ left: `${PLAYER_HOME_CENTER.x / CITY_WIDTH * 100}%`, top: `${(PLAYER_HOME_CENTER.y - 45) / CITY_HEIGHT * 100}%` }}
