@@ -3,19 +3,18 @@
 .pixel-interior__npc .npc-nameplate {
   position: absolute;
   z-index: 1;
-  top: -27px;
+  top: -42px;
   left: 50%;
   right: auto;
   display: block;
   width: max-content;
   min-width: 0;
-  max-width: 124px;
+  max-width: 194px;
   height: auto;
-  padding: 3px 5px 2px;
+  padding: 3px 6px 4px;
   transform: translateX(-50%);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  white-space: normal;
   border: 1px solid #977646;
   border-radius: 2px;
   background: #0c202be8;
@@ -41,11 +40,34 @@
 .pixel-city__npc .npc-nameplate + .npc-quest-marker,
 .pixel-interior__npc .npc-nameplate + .npc-quest-marker {
   z-index: 3;
-  top: -55px;
+  top: -70px;
 }
 
 .pixel-city__npc .npc-nameplate + .npc-question-bubble,
 .pixel-interior__npc .npc-nameplate + .npc-question-bubble {
   z-index: 3;
-  top: -50px;
+  top: -67px;
+}
+
+/* Title and function come from the NPC's real catalog/presence metadata. */
+.npc-nameplate__name {
+  display: block;
+  font: inherit;
+  white-space: nowrap;
+  text-align: center;
+}
+.npc-nameplate__subtitle {
+  display: block;
+  margin-top: 3px;
+  max-width: 182px;
+  color: #aebdc0;
+  font: italic 400 8px/1.25 Georgia, serif;
+  letter-spacing: 0;
+  text-shadow: 1px 1px #02060b;
+  text-align: center;
+  overflow-wrap: break-word;
+}
+.pixel-city__npc:hover .npc-nameplate__subtitle,
+.pixel-interior__npc:hover .npc-nameplate__subtitle {
+  color: #d8e1dd;
 }
