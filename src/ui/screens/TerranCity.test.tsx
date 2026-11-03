@@ -67,6 +67,7 @@ describe('interfaces de Terran', () => {
     save.quests.vs_astravel_first_contact.status = 'active'
     save.quests.vs_astravel_first_contact.tracked = true
     save.quests.side_street_arlen.status = 'active'
+    save.eventLog.push('CutsceneViewed:astravel_call')
     useGameStore.setState({ save })
     const { container } = render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     expect(screen.queryByRole('img', { name: 'Caminho pontilhado da missão rastreada' })).not.toBeInTheDocument()
