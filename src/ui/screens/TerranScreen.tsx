@@ -37,10 +37,11 @@ import { getCityCast } from '../terran/cityCast'
 import { BaseChest, DaerynServices, HomeDrawer, QuestNpcPanel, VorrenBestiary } from '../terran/TerranServices'
 import { MarketNpcPanel } from '../terran/MarketServices'
 import { isMarketNpc } from '../../domain/terran/market'
-import { BASE_LOCATION_ID } from '../../domain/terran/base'
+import { BASE_LOCATION_ID, hasPlayerHomeKey, isPlayerHomeDoorOpen } from '../../domain/terran/base'
 import { getNpcActionableQuests } from '../../domain/quests/questSelectors'
 import { type TerranLandmark } from '../../content/terranExploration'
 import { CityLandmarkDialog } from '../terran/CityLandmarkDialog'
+import { Modal } from '../components/Modal'
 import { getRosettaQuestRoutes, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 
 type Drawer = 'local' | 'location' | 'inventory' | 'quests' | 'market' | 'home' | 'chest' | 'records' | 'forge' | null
@@ -110,6 +111,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
   const restAtHome = useGameStore((state) => state.restAtHome)
   const enterBase = useGameStore((state) => state.enterBase)
+  const useBaseKeyOnDoor = useGameStore((state) => state.useBaseKeyOnDoor)
   const leaveBase = useGameStore((state) => state.leaveBase)
   const [drawer, setDrawer] = useState<Drawer>(null)
   const drawerRef = useRef<HTMLElement>(null)
@@ -128,6 +130,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [localQuestId, setLocalQuestId] = useState<string | null>(null)
   const [marketNpc, setMarketNpc] = useState<Presence | null>(null)
   const [cityLandmark, setCityLandmark] = useState<TerranLandmark | null>(null)
+  const [baseDoorPrompt, setBaseDoorPrompt] = useState(false)
 
   useEffect(() => {
     if (drawer) drawerRef.current?.scrollTo?.({ top: 0, behavior: 'auto' })
@@ -152,7 +155,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const trackedRoute = getTrackedQuestRoute(save, content)
   const discovered = getDiscoveredTerranLocationIds(save).length
   const location = content.terranLocations[locationId]
-  const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !socialQuestId && !dialogue && !inspected && !cityLandmark && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
+  const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !socialQuestId && !dialogue && !inspected && !cityLandmark && !baseDoorPrompt && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
 
   const openLocation = (id: TerranLocationId) => {
     setStreetSpawn(null)
@@ -172,13 +175,21 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
       setDrawer('location')
     }
   }
-  const enterHome = () => {
-    enterBase()
+  const showHomeInterior = () => {
     setStreetSpawn({ ...PLAYER_HOME_DOOR })
     setInteriorId(PLAYER_HOME_INTERIOR_ID)
     setLocationId('location_terran_portal_plaza')
     setDrawer((current) => current === 'quests' ? 'quests' : null)
     setInspected(null)
+  }
+  const enterHome = () => {
+    if (!isPlayerHomeDoorOpen(save)) { setBaseDoorPrompt(true); return }
+    if (enterBase()) showHomeInterior()
+  }
+  const confirmHomeKey = () => {
+    if (!useBaseKeyOnDoor()) return
+    setBaseDoorPrompt(false)
+    showHomeInterior()
   }
   const openRoomServices = (id: TerranInteriorId) => {
     setDrawer(id === PLAYER_HOME_INTERIOR_ID ? 'home' : id === 'location_terran_forge' ? 'forge' : 'location')
@@ -283,7 +294,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 onExit={exitInterior} />
               : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} reducedMotion={save.settings.reducedMotion}
                   currentLocationId={save.world.currentLocationId} spawnPoint={streetSpawn}
-                  homeUnlocked={true} onEnterHome={enterHome}
+                  homeUnlocked={isPlayerHomeDoorOpen(save)} onEnterHome={enterHome}
                   enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
                   actors={cityCast} onEnter={openLocation} onTalk={(id, presence) => talk(presence, id)}
                   questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
@@ -294,6 +305,18 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                     setCityLandmark(landmark)
                   }} />}
             {cityLandmark && <CityLandmarkDialog landmark={cityLandmark} save={save} onClose={() => setCityLandmark(null)} />}
+            <Modal open={baseDoorPrompt} title="Porta da Base do Terrírian" eyebrow="TERRAN · ACESSO À CASA"
+              className="terran-base-key-modal" onClose={() => setBaseDoorPrompt(false)}
+              footer={hasPlayerHomeKey(save)
+                ? <div className="terran-base-key-modal__actions">
+                    <button type="button" onClick={() => setBaseDoorPrompt(false)}>Agora não</button>
+                    <button type="button" onClick={confirmHomeKey}>Usar chave na porta</button>
+                  </div>
+                : <button type="button" className="terran-service-action" onClick={() => setBaseDoorPrompt(false)}>Voltar à cidade</button>}>
+              {hasPlayerHomeKey(save)
+                ? <p>Você possui a <strong>Chave de Daeryn</strong> na mochila. Usá-la destranca esta porta permanentemente e consome a chave.</p>
+                : <p>A porta está trancada. Conclua a missão <strong>Preparar o Alojamento</strong> com Daeryn para receber a chave e usá-la aqui.</p>}
+            </Modal>
             {waking && interiorId === PLAYER_HOME_INTERIOR_ID && <div className="terran-base__waking" role="status">Você acorda na Base. Descanse para recuperar Vida e Mana.</div>}
             {inspected && <div className="pixel-interior__inspection" role="dialog" aria-label={`Inspecionar ${inspected.name}`}>
               <strong>{inspected.name}</strong><p>{inspected.description}</p>
