@@ -29,13 +29,19 @@ const locationForNpc = (npcId: string, catalog: ContentCatalog) => {
   return street ? `Ruas de Terran · ${catalog.terranLocations[id]?.shortName ?? 'Centro'}` : catalog.terranLocations[id]?.name ?? 'Ruas de Terran'
 }
 
-export type RosettaQuestRoute = { id: string; npcId: string | null; locationId: string; player: boolean; questIds: string[]; titles: string[] }
+export type RosettaQuestRoute = {
+  id: string; npcId: string | null; locationId: string; player: boolean
+  questIds: string[]; titles: string[]
+  /** Presentation metadata: an exclusively secondary destination stays blue in previews. */
+  tone?: 'gold' | 'blue'
+  opacity?: number
+}
 
 /** Every eligible main/secondary quest participates, even when it is not tracked. Shared destinations are coalesced. */
 export function getRosettaQuestRoutes(save: GameSave, catalog: ContentCatalog): RosettaQuestRoute[] {
   const routes = new Map<string, RosettaQuestRoute>()
   for (const quest of Object.values(catalog.quests)) {
-    if (!['main', 'secondary'].includes(quest.category)) continue
+    if (!['main', 'secondary', 'bounty'].includes(quest.category)) continue
     const progress = save.quests[quest.id]
     if (!progress || !['available', 'offered', 'active', 'ready_to_turn_in'].includes(progress.status)) continue
     let npcId: string | null = progress.status === 'ready_to_turn_in' ? quest.turnInNpcId : quest.giverNpcId
@@ -52,7 +58,13 @@ export function getRosettaQuestRoutes(save: GameSave, catalog: ContentCatalog): 
     }
     if (npcId === 'npc_rosetta') continue // Rosetta is already the origin of the guidance.
     const id = player ? 'player:inventory' : npcId ? `npc:${npcId}` : `location:${locationId}`
-    const route = routes.get(id) ?? { id, npcId, locationId, player, questIds: [], titles: [] }
+    const sideQuest = quest.category === 'secondary' || quest.category === 'bounty'
+    const route = routes.get(id) ?? {
+      id, npcId, locationId, player, questIds: [], titles: [],
+      tone: sideQuest ? 'blue' as const : 'gold' as const, opacity: sideQuest ? 0.2 : 1,
+    }
+    // Shared main/side destinations are displayed as gold so main story is never suppressed.
+    if (!sideQuest) { route.tone = 'gold'; route.opacity = 1 }
     route.questIds.push(quest.id); route.titles.push(quest.title)
     routes.set(id, route)
   }
