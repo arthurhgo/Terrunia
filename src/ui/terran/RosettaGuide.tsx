@@ -7,6 +7,7 @@ import { DialogueWindow } from './DialogueWindow'
 import { ROSETTA_CORE_LESSON_IDS, rosettaTutorialQuests } from '../../content/rosettaTutorial'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
+import './starterReward.css'
 
 /** Rosetta teaches her own lessons; the player explicitly accepts and returns to claim rewards. */
 export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onShowPaths }: {
