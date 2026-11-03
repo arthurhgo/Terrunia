@@ -2207,6 +2207,17 @@
         "width": 16,
         "height": 16
       }
+    },
+    {
+      "assetId": "item.daeryn-home-key",
+      "path": "/assets/items/item_daeryn_home_key.png",
+      "family": "item",
+      "width": 16,
+      "height": 16,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
     }
   ]
 }
