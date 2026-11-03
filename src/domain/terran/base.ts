@@ -7,8 +7,14 @@ export const BASE_LOCATION_ID = 'location_terran_base'
 export const BASE_RETURN_LOCATION_ID = 'location_terran_portal_plaza'
 export const PLAYER_HOME_KEY_ITEM_ID = 'quest_daeryn_home_key'
 export const PLAYER_HOME_DOOR_OPENED_FLAG = 'player_home_door_opened'
+export const PLAYER_HOME_KEY_USED_FLAG = 'player_home_key_used'
 
-export const isPlayerHomeDoorOpen = (save: GameSave) => save.world.worldFlags.includes(PLAYER_HOME_DOOR_OPENED_FLAG)
+/** Neither completed quests nor old "door opened" flags authorize entry.
+ * The key-use marker is written only by the explicit door interaction. */
+export const isPlayerHomeDoorOpen = (save: GameSave) =>
+  save.quests.main_terran_first_home?.status === 'completed' &&
+  save.world.worldFlags.includes(PLAYER_HOME_DOOR_OPENED_FLAG) &&
+  save.world.worldFlags.includes(PLAYER_HOME_KEY_USED_FLAG)
 export const hasPlayerHomeKey = (save: GameSave) => save.inventory.some((item) =>
   item.definitionId === PLAYER_HOME_KEY_ITEM_ID && item.quantity > 0)
 
@@ -22,8 +28,8 @@ export function enterPlayerBase(save: GameSave, now: string): Result<GameSave> {
     'location_terran_zareth_barracks', 'location_terran_clan_hall',
     'location_terran_daeryn_house', 'location_terran_forge',
   ]].includes(save.world.currentLocationId)) return fail('BASE_OUTSIDE_TERRAN', 'Retorne a Terran antes de entrar na Base.')
-  if (save.world.currentLocationId === BASE_LOCATION_ID) return ok(save)
   if (!isPlayerHomeDoorOpen(save)) return fail('BASE_DOOR_LOCKED', 'A porta está trancada. Conclua a missão de Daeryn e use a chave na porta.')
+  if (save.world.currentLocationId === BASE_LOCATION_ID) return ok(save)
   const next = structuredClone(save)
   next.world.currentLocationId = BASE_LOCATION_ID
   if (!next.world.unlockedLocationIds.includes(BASE_LOCATION_ID)) next.world.unlockedLocationIds.push(BASE_LOCATION_ID)
@@ -46,7 +52,7 @@ export function unlockPlayerBaseWithDaerynKey(save: GameSave, now: string): Resu
   if (index < 0) return fail('BASE_KEY_REQUIRED', 'Você ainda não possui a Chave de Daeryn na mochila.')
   // Reuse the same location/battle safety checks as ordinary entrance.
   const prepared = structuredClone(save)
-  prepared.world.worldFlags.push(PLAYER_HOME_DOOR_OPENED_FLAG)
+  prepared.world.worldFlags.push(PLAYER_HOME_DOOR_OPENED_FLAG, PLAYER_HOME_KEY_USED_FLAG)
   const allowed = enterPlayerBase(prepared, now)
   if (!allowed.ok) return allowed
   const next = allowed.value
@@ -93,26 +99,36 @@ export function respawnDefeatedPlayer(save: GameSave, now: string): Result<GameS
  */
 export function reconcileLegacyHomeKey(save: GameSave): GameSave {
   const questDone = save.quests.main_terran_first_home?.status === 'completed'
+  const usedInDoor = questDone && save.eventLog.includes('DaerynKeyUsedOnHomeDoor')
   const inside = save.world.currentLocationId === BASE_LOCATION_ID
-  const keyInChest = save.baseStorage.some((item) => item.definitionId === PLAYER_HOME_KEY_ITEM_ID && item.quantity > 0)
-  const needsUnlock = inside && !isPlayerHomeDoorOpen(save) && questDone
-  const needsRelocation = inside && !isPlayerHomeDoorOpen(save) && !questDone
-  const needsKey = questDone && !isPlayerHomeDoorOpen(save) && !inside && !hasPlayerHomeKey(save) && !keyInChest
-  const needsRetrieveKey = questDone && !isPlayerHomeDoorOpen(save) && !inside && keyInChest
-  if (!needsUnlock && !needsRelocation && !needsKey && !needsRetrieveKey) return save
+  const keyInChest = save.baseStorage.some((item) =>
+    item.definitionId === PLAYER_HOME_KEY_ITEM_ID && item.quantity > 0)
+  const needsFlags = usedInDoor && !isPlayerHomeDoorOpen(save)
+  const staleFlags = !usedInDoor && (save.world.worldFlags.includes(PLAYER_HOME_DOOR_OPENED_FLAG) ||
+    save.world.worldFlags.includes(PLAYER_HOME_KEY_USED_FLAG))
+  const needsRelocation = inside && !usedInDoor
+  const needsKey = questDone && !usedInDoor && !hasPlayerHomeKey(save) && !keyInChest
+  const needsRetrieveKey = questDone && !usedInDoor && keyInChest
+  if (!needsFlags && !staleFlags && !needsRelocation && !needsKey && !needsRetrieveKey) return save
+
   const next = structuredClone(save)
-  if (needsUnlock) {
-    next.world.worldFlags.push(PLAYER_HOME_DOOR_OPENED_FLAG)
-    // The old campaign is already physically inside. If it has the new key,
-    // treat that first entry as its use so the item is not left orphaned.
-    const keyIndex = next.inventory.findIndex((item) => item.definitionId === PLAYER_HOME_KEY_ITEM_ID)
-    if (keyIndex >= 0) next.inventory.splice(keyIndex, 1)
-    next.eventLog.push('LegacyHomeDoorRecognized')
+  if (staleFlags) {
+    next.world.worldFlags = next.world.worldFlags.filter((flag) =>
+      flag !== PLAYER_HOME_DOOR_OPENED_FLAG && flag !== PLAYER_HOME_KEY_USED_FLAG)
+    next.eventLog.push('HomeDoorLegacyBypassRevoked')
+  }
+  if (needsFlags) {
+    for (const flag of [PLAYER_HOME_DOOR_OPENED_FLAG, PLAYER_HOME_KEY_USED_FLAG]) {
+      if (!next.world.worldFlags.includes(flag)) next.world.worldFlags.push(flag)
+    }
+    next.eventLog.push('HomeDoorKeyUsageReconciled')
   }
   if (needsRelocation) {
     next.world.currentLocationId = BASE_RETURN_LOCATION_ID
-    if (!next.world.unlockedLocationIds.includes(BASE_RETURN_LOCATION_ID)) next.world.unlockedLocationIds.push(BASE_RETURN_LOCATION_ID)
-    next.eventLog.push('LegacyHomeLocked:ReturnedToPlaza')
+    if (!next.world.unlockedLocationIds.includes(BASE_RETURN_LOCATION_ID)) {
+      next.world.unlockedLocationIds.push(BASE_RETURN_LOCATION_ID)
+    }
+    next.eventLog.push('HomeDoorLocked:ReturnedToPlaza')
   }
   if (needsRetrieveKey) {
     const index = next.baseStorage.findIndex((item) => item.definitionId === PLAYER_HOME_KEY_ITEM_ID && item.quantity > 0)
