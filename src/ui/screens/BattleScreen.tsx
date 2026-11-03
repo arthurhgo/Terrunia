@@ -2,14 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Backpack, Bomb, Crosshair, Footprints, Gem, ScrollText, Shield, Swords, Zap } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
-import { boundSlotPreviewAssetIds } from '../../assets/assetRegistry'
-import { BOUND_SLOTS } from '../../domain/shared/types'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { useGameStore } from '../../state/gameStore'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { AssetImage } from '../components/AssetImage'
 import { GameShell } from '../components/GameShell'
 import { BattleArenaBackdrop } from '../battle/BattleArenaBackdrop'
+import { BattleEquipmentHud } from '../battle/BattleEquipmentHud'
 import { BattleDicePlatform, type BattleDiceEvent } from '../battle/BattleDicePlatform'
 import { groupBattleLoot } from '../../domain/inventory/battleLoot'
 import './battlePixel.css'
@@ -124,7 +123,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const isPlayerTurn = battle.phase === 'AwaitingAction' && !turnCue
   const drops = battle.rewards.lootDefinitionIds
   const lootGroups = groupBattleLoot(drops)
-  const activeWeapon = save.boundItems[save.character.bondedEquipment.weapon ?? '']
 
   const send = (command: Parameters<typeof submit>[0]) => {
     if (!isPlayerTurn) return
@@ -230,17 +228,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             <div className="pixel-battle__meter mp"><i style={{ width: clampPercent(player.mp, player.maxMp) + '%' }} /></div>
           </div>
         </div>
-        <div className="pixel-battle__equipment" aria-label="Cinco equipamentos vinculados">
-          {BOUND_SLOTS.map((slot) => {
-            const bondId = save.character.bondedEquipment[slot]
-            const instance = bondId ? save.boundItems[bondId] : undefined
-            const base = instance ? content.boundItemBases[instance.baseItemId] : undefined
-            return <span key={slot} title={slot + (instance ? ' · grau ' + instance.grade : ' · vazio')}>
-              <AssetImage assetId={base?.assetIdByGrade[instance?.grade ?? 1] ?? boundSlotPreviewAssetIds[slot]} alt={slot} />
-            </span>
-          })}
-        </div>
-        <small>Arma vinculada G{activeWeapon?.grade ?? 1} · {activeWeapon?.resonance ?? 0} R</small>
+        <BattleEquipmentHud save={save} />
       </section>
       <section className="pixel-battle__panel pixel-battle__actions" aria-label="Ações de combate">
         <h2>{battle.phase === 'AwaitingAction' ? 'ESCOLHA SUA AÇÃO' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'COMBATE'}</h2>
