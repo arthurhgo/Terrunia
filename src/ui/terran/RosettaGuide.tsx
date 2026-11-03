@@ -7,6 +7,7 @@ import { DialogueWindow } from './DialogueWindow'
 import { ROSETTA_CORE_LESSON_IDS, rosettaTutorialQuests } from '../../content/rosettaTutorial'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
+import { QuestContextNote } from '../quests/QuestContextNote'
 import './starterReward.css'
 
 /** Rosetta teaches her own lessons; the player explicitly accepts and returns to claim rewards. */
@@ -34,6 +35,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
         <span className="eyebrow">TUTORIAL · LIÇÃO {ROSETTA_CORE_LESSON_IDS.findIndex((id) => id === lesson.id) + 1} DE {ROSETTA_CORE_LESSON_IDS.length}</span>
         <h3>{lesson.title}</h3>
         {lesson.objectives.map((objective) => <p key={objective.id} className="rosetta-tutorial__objective"><CheckCircle2 size={14} /><span>{objective.label}</span><strong>{progress.objectives[objective.id] ?? 0}/{objective.required}</strong></p>)}
+        <QuestContextNote note={lesson.contextNote} />
         {offered && lesson.acceptanceItems && <div className="rosetta-tutorial__gifts"><small>Você recebe ao aceitar</small>{lesson.acceptanceItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />{input.quantity}× {content.items[input.itemId].name}</span>)}</div>}
         <small>Ao entregar: {lesson.rewards.map((reward) => `${reward.value} ${reward.type === 'gold' ? 'Ouro' : 'XP'}`).join(' · ')}
           {lesson.choiceRewardItemIds?.length ? ' · Escolha 1 proteção Tier I' : ''}</small>
