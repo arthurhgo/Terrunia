@@ -41,7 +41,10 @@ function QuestDetails({ entry, onTrack, save }: { entry: QuestJournalEntry; onTr
     </div>}
     <h4><Gem size={15} /> Recompensas</h4>
     <div className="quest-board__rewards">{definition.rewards.map((reward, index) =>
-      <span key={index}>{reward.type === 'gold' ? <Coins size={15} /> : reward.type === 'characterXp' ? <Swords size={15} /> : <Gem size={15} />}{rewardLabel(reward)}</span>)}</div>
+      <span key={index}>{reward.type === 'gold' ? <Coins size={15} /> : reward.type === 'characterXp' ? <Swords size={15} /> : <Gem size={15} />}{rewardLabel(reward)}</span>)}
+      {definition.itemRewards?.map((reward) => <span key={reward.itemId}>
+        <Gem size={15} /> {content.items[reward.itemId]?.name ?? reward.itemId} ×{reward.quantity}
+      </span>)}</div>
     <p className="quest-board__npc"><MapPin size={15} /> Entrega: {content.npcs[definition.turnInNpcId]?.name ?? definition.turnInNpcId}</p>
     {progress.status !== 'completed' && <button type="button" className="quest-board__track" onClick={onTrack}>
       {progress.tracked ? <RadioTower size={16} /> : <Radio size={16} />}
