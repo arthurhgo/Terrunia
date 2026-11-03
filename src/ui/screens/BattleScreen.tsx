@@ -192,7 +192,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       {lastDice && !defeated && <BattleDicePlatform roll={lastDice} reducedMotion={reducedMotion} />}
       {(turnCue || turnAnnouncement) && !defeated && <div className="pixel-battle__turn-cue" role="status">
         {turnCue ? 'TURNO DOS INIMIGOS' : turnAnnouncement}
-      </div>
+      </div>}
       {defeated && <div className="pixel-battle__death" role="status" aria-label="Terrírian derrotado">
         <div className="pixel-battle__death-aura" aria-hidden="true" />
         <div className="pixel-battle__death-character">
