@@ -88,7 +88,8 @@ describe('Rosetta v0.15: escolha de proteção e tiers', () => {
     expect(save.wallet.gold).toBe(11)
     expect(save.quests.rosetta_tutorial_armor.status).toBe('available')
     expect(save.character.basicArmorInstanceId).toBe(tunic.instanceId)
-    expect(save.inventory.filter((item) => content.items[item.definitionId]?.basicArmor)).toHaveLength(1)
+    expect(save.inventory.filter((item) => content.items[item.definitionId]?.basicArmor)).toHaveLength(0)
+    expect(save.equippedBasicArmor).toMatchObject({ instanceId: tunic.instanceId, refinementLevel: 1 })
     expect(save.character.bondedEquipment).toEqual(fresh().character.bondedEquipment)
   })
 
@@ -123,11 +124,11 @@ describe('Rosetta v0.15: escolha de proteção e tiers', () => {
     save.world.currentLocationId = 'location_terran_forge'
     expect(refineBasicArmor(save, item.instanceId, content, now)).toMatchObject({ ok: false, code: 'REFINE_MATERIAL' })
     save.inventory.push({ instanceId: 'thread', definitionId: 'material_linen_thread', quantity: 1, rarity: 'common', locked: false, favorite: false, acquiredAt: now })
-    save.inventory[0].favorite = true
+    save.equippedBasicArmor!.favorite = true
     const protectedSnapshot = structuredClone(save)
     expect(refineBasicArmor(save, item.instanceId, content, now)).toMatchObject({ ok: false, code: 'REFINE_PROTECTED' })
     expect(save).toEqual(protectedSnapshot)
-    save.inventory[0].favorite = false; save.wallet.gold = 0
+    save.equippedBasicArmor!.favorite = false; save.wallet.gold = 0
     expect(refineBasicArmor(save, item.instanceId, content, now)).toMatchObject({ ok: false, code: 'REFINE_GOLD' })
   })
 
@@ -157,7 +158,7 @@ describe('Rosetta v0.15: escolha de proteção e tiers', () => {
     })))
     const snapshot = structuredClone(save)
     const restored = migrateAndValidateSave(save)
-    expect(restored.schemaVersion).toBe(16)
+    expect(restored.schemaVersion).toBe(17)
     expect(restored.quests.rosetta_tutorial_equip.status).toBe('ready_to_turn_in')
     expect(restored.quests.rosetta_tutorial_equip.objectives.visit_market).toBe(1)
     expect(restored.inventory).toEqual(snapshot.inventory)
@@ -172,4 +173,49 @@ describe('Rosetta v0.15: escolha de proteção e tiers', () => {
     expect(declined.inventory).toHaveLength(0)
     expect(declined.wallet.gold).toBe(0)
   })
+  it('transfere a peça para Itens sem deixá-la na mochila; trocas e desequipamento são reversíveis', () => {
+    const save = firstChoice('equipment_worn_linen_tunic')
+    const original = structuredClone(save.inventory[0])
+    const other = {
+      ...original, instanceId: 'another-armor', definitionId: 'equipment_apprentice_tunic',
+      refinementLevel: 1,
+    }
+    save.inventory.push(other)
+    const worn = take(equipBasicArmor(save, original.instanceId, content, now))
+    expect(worn.inventory.some((item) => item.instanceId === original.instanceId)).toBe(false)
+    expect(worn.equippedBasicArmor).toEqual(original)
+    expect(worn.character.basicArmorInstanceId).toBe(original.instanceId)
+    expect(worn.inventory.filter((item) => content.items[item.definitionId]?.basicArmor)).toHaveLength(1)
+    const swapped = take(equipBasicArmor(worn, other.instanceId, content, now))
+    expect(swapped.equippedBasicArmor).toEqual(other)
+    expect(swapped.inventory.find((item) => item.instanceId === original.instanceId)).toEqual(original)
+    expect(swapped.inventory.find((item) => item.instanceId === other.instanceId)).toBeUndefined()
+    const removed = take(equipBasicArmor(swapped, null, content, now))
+    expect(removed.equippedBasicArmor).toBeNull()
+    expect(removed.character.basicArmorInstanceId).toBeNull()
+    expect(removed.inventory.filter((item) => content.items[item.definitionId]?.basicArmor)).toHaveLength(2)
+    expect(new Set(removed.inventory.map((item) => item.instanceId)).size).toBe(removed.inventory.length)
+    expect(save.inventory).toHaveLength(2)
+    expect(migrateAndValidateSave(removed)).toEqual(removed)
+  })
+
+  it('migra armadura vestida do save v16 sem duplicar nem perder stats, tiers ou memória', () => {
+    const legacy = firstChoice()
+    const original = legacy.inventory[0]
+    original.refinementLevel = 1
+    legacy.character.basicArmorInstanceId = original.instanceId
+    legacy.schemaVersion = 16
+    legacy.gameVersion = '0.15.0'
+    legacy.equippedBasicArmor = null
+    const restored = migrateAndValidateSave(legacy)
+    expect(restored.schemaVersion).toBe(17)
+    expect(restored.equippedBasicArmor).toEqual(original)
+    expect(restored.inventory.find((item) => item.instanceId === original.instanceId)).toBeUndefined()
+    expect(restored.character.basicArmorInstanceId).toBe(original.instanceId)
+    expect(restored.quests).toEqual(legacy.quests)
+    expect(restored.wallet).toEqual(legacy.wallet)
+    expect(restored.boundItems).toEqual(legacy.boundItems)
+    expect(migrateAndValidateSave(restored)).toEqual(restored)
+  })
+
 })

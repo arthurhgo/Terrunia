@@ -1,4 +1,4 @@
-import { Coins, Filter, FlaskConical, Gem, Heart, PackageOpen, Shield, Star } from 'lucide-react'
+import { Coins, Filter, FlaskConical, Gem, Heart, PackageOpen, Star } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './inventoryHover.css'
@@ -9,7 +9,6 @@ import { ArcanePanel } from '../components/ArcanePanel'
 import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
 import { Modal } from '../components/Modal'
-import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
 
 type Action = 'convert' | 'sell' | null
@@ -23,7 +22,6 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
   const [hovered, setHovered] = useState<{ instanceId: string; x: number; y: number } | null>(null)
   const [action, setAction] = useState<Action>(null)
   const [filter, setFilter] = useState<'all' | 'equipment' | 'convertible' | 'sellable'>('all')
-  const equippedArmor = getEquippedBasicArmor(save, content)
   const selectedArmorInstance = selected ? save.inventory.find((item) => selected === item.instanceId) : null
   const selectedArmorDefinition = selectedArmorInstance && content.items[selectedArmorInstance.definitionId]
   const selectedArmor = selectedArmorInstance && selectedArmorDefinition?.basicArmor
@@ -107,14 +105,6 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
           </label>
         }
       >
-        {equippedArmor && <div className="inventory-worn" aria-label="Proteção simples equipada">
-          <Shield size={14} aria-hidden="true" />
-          <span>{equippedArmor.definition.name}{equippedArmor.instance.refinementLevel ? ' +1' : ''}</span>
-          <small>Equipada</small>
-          {tradeMode === 'browse' && <button type="button" disabled={Boolean(save.battle)}
-            onClick={() => { setSelected(null); setHovered(null); equipArmor(null) }}
-            aria-label={`Retirar ${equippedArmor.definition.name}`}>Retirar</button>}
-        </div>}
         <div className="inventory-grid">
           {visibleItems.map((instance) => {
             const definition = content.items[instance.definitionId]

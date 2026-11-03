@@ -44,3 +44,22 @@
 .inventory-worn button:disabled { opacity: .45; cursor: not-allowed; }
 .inventory-worn button:hover:enabled,
 .inventory-worn button:focus-visible { border-color: #ffdda6; background: #34402e; }
+
+/* A worn simple protection is shown only in "Itens" and can return to the backpack. */
+.bound-card--starter .bound-card__unequip {
+  display: block;
+  width: 100%;
+  min-height: 31px;
+  margin: 8px 0 4px;
+  border: 1px solid #b58e4a;
+  padding: 6px 7px;
+  color: #f4dbab;
+  background: #172730;
+  font: 700 .66rem var(--display);
+  cursor: pointer;
+}
+.bound-card--starter .bound-card__unequip:is(:hover,:focus-visible) {
+  outline: 1px solid #efd08f;
+  background: #29372e;
+}
+.bound-card--starter .bound-card__unequip:disabled { opacity: .48; cursor: not-allowed; }

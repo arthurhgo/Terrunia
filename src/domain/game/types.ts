@@ -175,6 +175,8 @@ export type GameSave = {
     }
   >
   inventory: InventoryItemInstance[]
+  /** Distinct worn slot: an equipped temporary armor is NOT backpack inventory. */
+  equippedBasicArmor: InventoryItemInstance | null
   baseStorage: InventoryItemInstance[]
   wallet: { gold: number }
   // Vida/Mana atuais persistem; máximos continuam derivados do personagem.

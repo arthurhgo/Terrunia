@@ -40,8 +40,8 @@ export const createNewSave = (
   )
 
   const save: GameSave = {
-    schemaVersion: 16,
-    gameVersion: '0.15.0',
+    schemaVersion: 17,
+    gameVersion: '0.17.1',
     saveId: ids.saveId,
     campaignId: campaign.campaignId,
     campaignGeneration: campaign.campaignGeneration,
@@ -95,6 +95,7 @@ export const createNewSave = (
       tree_class: { unlockedNodeIds: [], discoveredNodeIds: [], spentEssencePoints: 0 },
     },
     inventory: [],
+    equippedBasicArmor: null,
     baseStorage: [],
     wallet: { gold: BALANCE.initialGold },
     vitals: { hp: 0, mp: 0 },

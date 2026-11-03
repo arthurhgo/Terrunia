@@ -7,7 +7,7 @@ import type { GameSave } from '../domain/game/types'
 import { deriveCharacterStats } from '../domain/character/derivedStats'
 import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 
-export const CURRENT_SAVE_SCHEMA = 16
+export const CURRENT_SAVE_SCHEMA = 17
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -266,6 +266,7 @@ export const gameSaveSchema = z.object({
   boundItems: z.record(z.string(), boundItemSchema),
   skillTrees: z.record(z.string(), treeProgressSchema.omit({ treeId: true })),
   inventory: z.array(inventoryItemSchema),
+  equippedBasicArmor: inventoryItemSchema.nullable(),
   baseStorage: z.array(inventoryItemSchema),
   wallet: z.object({ gold: nonnegativeNumber }),
   vitals: z.object({ hp: nonnegativeNumber, mp: nonnegativeNumber }),
@@ -293,10 +294,16 @@ export const gameSaveSchema = z.object({
   }
 
   const inventoryIds = new Set<string>()
-  const equippedArmor = save.inventory.find((item) => item.instanceId === save.character.basicArmorInstanceId)
-  if (save.character.basicArmorInstanceId && (!equippedArmor || !content.items[equippedArmor.definitionId]?.basicArmor || save.character.bondedEquipment.armor)) {
-    context.addIssue({ code: 'custom', path: ['character', 'basicArmorInstanceId'], message: 'A proteção simples equipada precisa estar na mochila e não pode substituir uma Armadura vinculada.' })
+  const equippedArmor = save.equippedBasicArmor
+  const equippedId = save.character.basicArmorInstanceId
+  if ((equippedId !== null || equippedArmor !== null) &&
+    (!equippedId || !equippedArmor || equippedArmor.instanceId !== equippedId ||
+      equippedArmor.quantity !== 1 || !content.items[equippedArmor.definitionId]?.basicArmor ||
+      save.character.bondedEquipment.armor)) {
+    context.addIssue({ code: 'custom', path: ['equippedBasicArmor'],
+      message: 'Proteção vestida deve existir somente no slot, com ID correspondente e sem Armadura vinculada.' })
   }
+  if (equippedArmor) inventoryIds.add(equippedArmor.instanceId)
   for (const [index, item] of save.inventory.entries()) {
     if (inventoryIds.has(item.instanceId)) {
       context.addIssue({
@@ -820,6 +827,25 @@ const migrateV15ToV16 = (legacy: Record<string, unknown>): unknown => {
   return refreshTutorialQuestProgress(refreshQuestAvailability(next, content, next.updatedAt), content, next.updatedAt)
 }
 
+/** Schema 17: move a worn temporary item out of the backpack, preserving its exact
+ * instance/refinement and every other item. Legacy saves without worn gear remain unchanged.
+ */
+const migrateV16ToV17 = (legacy: Record<string, unknown>): unknown => {
+  const next = structuredClone(legacy) as unknown as GameSave
+  const equippedId = next.character.basicArmorInstanceId
+  next.equippedBasicArmor = null
+  if (equippedId) {
+    const index = next.inventory.findIndex((item) => item.instanceId === equippedId)
+    if (index < 0) throw new Error('A proteção vestida do save antigo não foi encontrada na mochila.')
+    next.equippedBasicArmor = next.inventory.splice(index, 1)[0]
+  }
+  next.schemaVersion = 17
+  next.gameVersion = '0.17.1'
+  next.revision += 1
+  next.eventLog.push('SaveMigrated:16->17')
+  return next
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -879,6 +905,7 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 13) { candidate = migrateV13ToV14(candidate as Record<string, unknown>); version = 14 }
   if (version === 14) { candidate = migrateV14ToV15(candidate as Record<string, unknown>); version = 15 }
   if (version === 15) { candidate = migrateV15ToV16(candidate as Record<string, unknown>); version = 16 }
+  if (version === 16) { candidate = migrateV16ToV17(candidate as Record<string, unknown>); version = 17 }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)
   }

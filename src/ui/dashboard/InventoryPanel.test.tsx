@@ -4,6 +4,7 @@ import { content } from '../../content/catalog'
 import { createNewSave } from '../../domain/game/createSave'
 import { useGameStore } from '../../state/gameStore'
 import { InventoryPanel } from './InventoryPanel'
+import { BoundItemsPanel } from './BoundItemsPanel'
 
 const makeSave = () => {
   const save = createNewSave('one-item-owner', 'Lysa', 'character.terririan.default', content, '2026-11-03T15:00:00Z')
@@ -68,21 +69,23 @@ describe('Inventário v0.15', () => {
   it('ao equipar, a peça sai da grade, permanece salva no slot e retorna ao desequipar', () => {
     const save = makeSave()
     useGameStore.setState({ save, status: 'ready', ownerId: save.ownerId, syncMode: 'local', syncStatus: 'saved' })
-    const { rerender, container } = render(<InventoryPanel save={save} />)
+    const { rerender, container } = render(<><InventoryPanel save={save} /><BoundItemsPanel save={save} /></>)
     fireEvent.click(screen.getByRole('button', { name: 'Túnica de Linho Gasta' }))
     fireEvent.click(screen.getByRole('button', { name: 'Equipar Túnica de Linho Gasta' }))
     const equippedSave = useGameStore.getState().save!
     expect(equippedSave.character.basicArmorInstanceId).toBe('first')
-    expect(equippedSave.inventory.find((item) => item.instanceId === 'first')).toBeDefined()
-    rerender(<InventoryPanel save={equippedSave} />)
+    expect(equippedSave.inventory.find((item) => item.instanceId === 'first')).toBeUndefined()
+    expect(equippedSave.equippedBasicArmor?.instanceId).toBe('first')
+    rerender(<><InventoryPanel save={equippedSave} /><BoundItemsPanel save={equippedSave} /></>)
     expect(container.querySelector('.inventory-grid')).not.toHaveTextContent('Túnica de Linho Gasta')
-    expect(screen.getByLabelText('Proteção simples equipada')).toHaveTextContent('Túnica de Linho Gasta')
+    expect(container.querySelector('.bound-card--starter')).toHaveTextContent('Túnica de Linho Gasta')
     expect(screen.getByRole('button', { name: 'Retirar Túnica de Linho Gasta' })).toBeEnabled()
     fireEvent.click(screen.getByRole('button', { name: 'Retirar Túnica de Linho Gasta' }))
     const restored = useGameStore.getState().save!
     expect(restored.character.basicArmorInstanceId).toBeNull()
+    expect(restored.equippedBasicArmor).toBeNull()
     expect(restored.inventory.find((item) => item.instanceId === 'first')?.quantity).toBe(1)
-    rerender(<InventoryPanel save={restored} />)
+    rerender(<><InventoryPanel save={restored} /><BoundItemsPanel save={restored} /></>)
     expect(container.querySelector('.inventory-grid')).toHaveTextContent('Túnica de Linho Gasta')
     useGameStore.getState().resetSession()
   })

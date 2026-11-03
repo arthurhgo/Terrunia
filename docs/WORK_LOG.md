@@ -1,3 +1,10 @@
+## Equipamento simples no slot persistente — schema 17 (2026-11-03)
+
+- ao Equipar, o item sai de `save.inventory` e entra em `save.equippedBasicArmor`, mantendo ID e atributos;
+- Itens mostra a peça equipada, com ação Retirar que devolve a instância à mochila; nenhum Vínculo permanente é criado;
+- forja, tutorial, baú e validação de save passam a reconhecer o slot físico;
+- saves versão 16 são migrados sem duplicar/descartar itens. Ver `EQUIPPED_GEAR_SEPARATE_SLOT_v0.17.md`.
+
 ## Ajuste visual — plaquetas de NPCs em duas linhas (2026-11-03)
 
 - títulos canônicos têm prioridade sobre a descrição funcional na plaqueta de cenário: `Rosetta` / `Guardiã do Portal`;
