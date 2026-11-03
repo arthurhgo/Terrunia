@@ -14,6 +14,10 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
+  {
+    id: 'item.daeryn-home-key', path: '/assets/items/item_daeryn_home_key.png',
+    fallback: '/assets/placeholders/item.svg', alt: 'Chave de Daeryn', pixelArt: true,
+  },
   ...[
     { name: 'worn-linen-tunic', label: 'Túnica de Linho Gasta' }, { name: 'apprentice-tunic', label: 'Túnica de Aprendiz' },
     { name: 'simple-leather-armor', label: 'Armadura de Couro Simples' }, { name: 'linen-thread', label: 'Linha de Linho' },
