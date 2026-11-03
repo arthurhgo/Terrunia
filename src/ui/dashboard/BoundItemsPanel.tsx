@@ -10,6 +10,7 @@ import { AssetImage } from '../components/AssetImage'
 import { ProgressBar } from '../components/ProgressBar'
 import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
 import { useGameStore } from '../../state/gameStore'
+import './inventoryHover.css'
 
 const slotIcons = {
   weapon: Sword,
