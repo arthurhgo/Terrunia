@@ -3962,3 +3962,16 @@ code {
   .terran-base-key-modal__actions { grid-template-columns: 1fr; }
   .pixel-city__door { min-width: 21px; width: 21px; height: 21px; }
 }
+
+.terran-quest-dialog__item-reward {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  border-left: 2px solid #d7ad62;
+  padding: 8px 10px;
+  background: #1b2e2c;
+  color: #eacb90;
+}
+.terran-quest-dialog__item-reward .asset-image { width: 26px; height: 26px; image-rendering: pixelated; }
+.terran-quest-dialog__item-reward small { color: #a7bdbb; font-size: .66rem; font-style: italic; }
