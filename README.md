@@ -14,6 +14,10 @@ A proteção simples equipada agora é transferida da mochila para um **slot per
 
 A proteção simples equipada deixa de ocupar espaço visual na grade da mochila (sem apagar a instância salva). Missões rastreadas e caminhos de Rosetta continuam dentro das casas, até NPCs ou saídas, com linhas douradas e azuis de sidequests. NPCs exibem título/função em linha itálica menor sob o nome. [Documento v0.18](docs/INTERIOR_QUEST_PATHS_EQUIPPED_NPC_LABELS_v0.18.md).
 
+## HUD de equipamentos em combate v0.21
+
+A batalha agora lê os **cinco itens realmente equipados**, cinza os slots vazios e abre atributos por hover, foco ou toque; distingue proteção simples (Tier/refinamento) dos Vínculos (Grau/Ressonância) e resume apenas bônus diretamente atribuíveis ao equipamento. [Especificação e critérios](docs/BATTLE_EQUIPMENT_HUD_v0.21.md).
+
 ## Combate e espólios v0.17
 
 A janela de combate agora se adapta à altura disponível. Ataque, Magias e Habilidades dividem um menu único; comandos sem recurso ficam cinza; ordem de iniciativa e começo de turno aparecem explicitamente. Os espólios podem ser recolhidos com uma ação, empilhando recursos repetidos sem fundir equipamentos únicos. [Regras e limites](docs/BATTLE_TURNS_LOOT_UI_v0.17.md).
