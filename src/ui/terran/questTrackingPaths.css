@@ -35,3 +35,14 @@
     animation: none;
   }
 }
+
+/* Rosetta's preview now carries source category: side quests stay translucent blue. */
+.rosetta-quest-lines path[data-route-tone="blue"] {
+  stroke: #a8e6ff;
+  opacity: .2;
+  filter: none;
+}
+.rosetta-minimap-lines path[data-route-tone="blue"] {
+  stroke: #a8e6ff;
+  opacity: .2;
+}
