@@ -11,6 +11,9 @@ import { drawTerranInterior } from './interiorArt'
 import type { WorldPoint } from './pixelCityArt'
 import type { ActorFacing } from './pixelActorArt'
 import type { GameSave } from '../../domain/game/types'
+import type { RosettaQuestRoute, TrackedQuestRoute } from '../../domain/terran/rosettaGuide'
+import { getInteriorQuestPaths } from './interiorQuestPaths'
+import './interiorQuestPaths.css'
 
 type Interaction = 'exit' | 'services' | string | null
 type Destination = { path: WorldPoint[]; interaction: Interaction; target: WorldPoint }
@@ -29,6 +32,7 @@ const distance = (a: WorldPoint, b: WorldPoint) => Math.hypot(a.x - b.x, a.y - b
  */
 export function PixelInteriorCanvas({
   save, locationId, enabled, onTalk, onServices, onExit, onFurniture,
+  questRoutes = [], showQuestRoutes = false, showTrackedQuestRoute = false, trackedQuestRoute = null,
 }: {
   save: GameSave
   locationId: TerranInteriorId
@@ -37,10 +41,19 @@ export function PixelInteriorCanvas({
   onServices: () => void
   onExit: () => void
   onFurniture: (furniture: RoomFurniture) => void
+  questRoutes?: readonly RosettaQuestRoute[]
+  showQuestRoutes?: boolean
+  showTrackedQuestRoute?: boolean
+  trackedQuestRoute?: TrackedQuestRoute | null
 }) {
   const residents = getInteriorResidents(save, locationId)
   const furniture = roomFurniture[locationId]
   const plan = getRoomPlan(locationId)
+  const activeRoutes: readonly RosettaQuestRoute[] = showTrackedQuestRoute
+    ? trackedQuestRoute ? [trackedQuestRoute] : [] : showQuestRoutes ? questRoutes : []
+  const routesRef = useRef(activeRoutes)
+  const routeElementsRef = useRef(new Map<string, SVGPathElement>())
+  routesRef.current = activeRoutes
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const playerRef = useRef<WorldPoint>({ ...plan.spawn })
   const faceRef = useRef<Direction>('up')
@@ -170,6 +183,11 @@ export function PixelInteriorCanvas({
           else if (destinationRef.current) destinationRef.current = null
         }
       }
+      if (frame % 9 === 0 && routesRef.current.length) {
+        for (const route of getInteriorQuestPaths(locationId, playerRef.current, residentsRef.current, routesRef.current)) {
+          routeElementsRef.current.get(route.id)?.setAttribute('d', route.d)
+        }
+      }
       drawTerranInterior(ctx, locationId, playerRef.current, sprite,
         reducedRef.current ? 0 : frame, faceRef.current, walking && !reducedRef.current,
         save.character.portraitAssetId, residentsRef.current)
@@ -210,6 +228,15 @@ export function PixelInteriorCanvas({
     <canvas ref={canvasRef} width={384} height={256} role="img" tabIndex={0}
       className="pixel-interior__canvas" onPointerDown={pointerWalk}
       aria-label={`Interior pixelado de ${getRoomName(locationId)}; caminhe, aproxime-se dos NPCs e pressione E`} />
+    {activeRoutes.length > 0 && <svg className="pixel-interior__quest-paths" viewBox="0 0 384 256"
+      preserveAspectRatio="none" role="img" aria-label={showTrackedQuestRoute ? 'Caminho pontilhado da missão no interior' : 'Caminhos de Rosetta dentro da casa'}
+      data-route-mode={showTrackedQuestRoute ? 'tracked' : 'rosetta'} data-reduced-motion={save.settings.reducedMotion}>
+      {getInteriorQuestPaths(locationId, playerRef.current, residents, activeRoutes).map((route) =>
+        <path key={route.id} ref={(element) => { if (element) routeElementsRef.current.set(route.id, element); else routeElementsRef.current.delete(route.id) }}
+          d={route.d} data-quest-ids={route.questIds.join(' ')} data-route-tone={route.tone}
+          data-target-kind={route.targetKind} data-route-opacity={route.opacity}
+          aria-label={route.questIds.join(', ')} />)}
+    </svg>}
     <div className="pixel-interior__locations">
       <strong className="pixel-interior__name">INTERIOR · {getRoomName(locationId).toUpperCase()}</strong>
       {residents.map((resident) =>
