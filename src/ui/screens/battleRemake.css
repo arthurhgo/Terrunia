@@ -1,0 +1,138 @@
+/* Battle v0.17 — true viewport height, scroll-safe commands and honest action availability. */
+.world-scene--combat,
+.world-scene--combat .world-scene__content { min-height: 0; height: 100%; overflow: hidden; }
+.pixel-battle {
+  box-sizing: border-box;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.pixel-battle__header { flex: 0 0 auto; min-height: 49px; }
+.pixel-battle__arena { flex: 1 1 0; min-height: 150px; }
+.pixel-battle__foot {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  height: clamp(215px, 36dvh, 306px);
+  min-height: 0;
+  max-height: 48%;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+}
+.pixel-battle__panel { min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; }
+.pixel-battle__actions { overflow: visible; }
+.pixel-battle__commands {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: minmax(42px, auto);
+  align-content: start;
+  flex: 0 0 auto;
+}
+.pixel-battle__command.is-primary {
+  grid-column: 1 / -1;
+  min-height: 47px;
+  border-color: #e2af5a;
+  background: linear-gradient(#24394c, #0c1d32);
+}
+.pixel-battle__command:disabled,
+.pixel-battle__result button:disabled,
+.pixel-battle__submenu button:disabled {
+  opacity: 1;
+  color: #828a96;
+  border-color: #45505c;
+  background: #1a242f;
+  box-shadow: inset 0 0 0 1px #38414c;
+  filter: grayscale(.9);
+  cursor: not-allowed;
+  text-shadow: none;
+}
+.pixel-battle__command:disabled svg { color: #7b8690; }
+.pixel-battle__submenu { inset: 47px 8px 8px; align-content: flex-start; }
+.pixel-battle__submenu-heading {
+  width: 100%;
+  padding: 7px 24px 7px 0;
+  font-size: .75rem;
+  color: #f6d38b;
+  letter-spacing: .04em;
+}
+.pixel-battle__turn-order span {
+  min-width: 35px;
+  height: 29px;
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  align-items: center;
+  font-size: .85rem;
+}
+.pixel-battle__turn-order b {
+  font-size: .65rem;
+  line-height: 1;
+  color: #d4c8a9;
+}
+.pixel-battle__turn-order .is-current b { color: #57e5fa; }
+.pixel-battle__turn-cue {
+  left: 24%;
+  right: 24%;
+  top: 14%;
+  padding: 11px;
+  font-size: clamp(12px,1.5vw,20px);
+  line-height: 1.4;
+  pointer-events: none;
+  max-width: 580px;
+  margin-inline: auto;
+}
+.pixel-battle__drops {
+  max-width: min(550px, 62%);
+  max-height: 52%;
+  overflow-y: auto;
+  align-items: center;
+  bottom: 8%;
+}
+.pixel-battle__loot-stack {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 74px;
+  max-width: 154px;
+  padding: 4px 6px;
+  border: 1px solid #9e814c;
+  background: #101d2b;
+  font: 700 .66rem/1.25 var(--display);
+}
+.pixel-battle__loot-stack img { width: 31px; height: 31px; flex: none; image-rendering: pixelated; }
+.pixel-battle__loot-stack span { overflow-wrap: anywhere; }
+.pixel-battle__drops > small { color: #c7d5d9; font-size: .7rem; }
+.pixel-battle__result button { min-height: 41px; }
+@media (max-width: 960px) {
+  .pixel-battle__foot { height: clamp(225px, 41dvh, 320px); }
+  .pixel-battle__panel { padding: 9px; }
+  .pixel-battle__commands { gap: 4px; }
+  .pixel-battle__command { font-size: .7rem; min-height: 38px; }
+  .pixel-battle__command.is-primary { min-height: 43px; }
+  .pixel-battle__arena { min-height: 130px; }
+  .pixel-battle__stat-body { grid-template-columns: 60px 1fr; gap: 5px; }
+  .pixel-battle__target-info { grid-template-columns: 62px 1fr; }
+}
+@media (max-width: 600px) {
+  .world-scene--combat { overflow-y: auto; }
+  .world-scene--combat .world-scene__content { min-height: 100%; height: auto; overflow: visible; }
+  .pixel-battle {
+    height: auto;
+    min-height: max(100%, 720px);
+    max-height: none;
+    overflow: visible;
+  }
+  .pixel-battle__arena { flex: none; height: 245px; min-height: 245px; }
+  .pixel-battle__foot { display: flex; flex-direction: column; flex: none; height: auto; max-height: none; overflow: visible; }
+  .pixel-battle__panel { overflow: visible; }
+  .pixel-battle__actions { order: 0; }
+  .pixel-battle__stats { order: 1; }
+  .pixel-battle__target { order: 2; }
+  .pixel-battle__turn-cue { left: 8%; right: 8%; top: 12%; font-size: 12px; }
+  .pixel-battle__drops { max-width: 85%; max-height: 80%; }
+  .pixel-battle__commands { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pixel-battle__submenu { position: relative; inset: auto; min-height: 130px; margin-top: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pixel-battle__turn-cue { animation: none; }
+}

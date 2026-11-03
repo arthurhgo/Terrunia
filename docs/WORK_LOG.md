@@ -1,5 +1,13 @@
 # Registro de implementação
 
+## Combate v0.17 — layout, iniciativa e espólios (2026-11-03)
+
+- corrigida altura mínima fixa que cortava o painel inferior, com layouts responsivos e rolagem interna apenas quando necessária;
+- Ataque/Magias/Habilidades em menu único; ações sem recursos cinzas e fuga não implementada explicitamente inativa;
+- valor da iniciativa por combatente e anúncio de turno no combate/log, sem mover lógica para React;
+- vitória com botão único para coletar tudo; repetidos fungíveis empilhados e únicos preservados;
+- cobertura em testes de domínio, UI e integração; detalhes em `BATTLE_TURNS_LOOT_UI_v0.17.md`.
+
 ## Terran v0.16 — caminho pontilhado por missão rastreada (2026-11-03)
 
 - ao abrir Missões, traça somente a missão atual da posição do Terrírian até objetivo/NPC, sem tomar o foco de outras ações;

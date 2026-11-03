@@ -2,6 +2,10 @@
 
 Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, primeira Ruína, Vínculos, Infusão, Lapidação de Joias, Skill Tree e save local-first.
 
+## Combate e espólios v0.17
+
+A janela de combate agora se adapta à altura disponível. Ataque, Magias e Habilidades dividem um menu único; comandos sem recurso ficam cinza; ordem de iniciativa e começo de turno aparecem explicitamente. Os espólios podem ser recolhidos com uma ação, empilhando recursos repetidos sem fundir equipamentos únicos. [Regras e limites](docs/BATTLE_TURNS_LOOT_UI_v0.17.md).
+
 ## Rastreamento visual de missões v0.16
 
 A aba **Missões** em Terran revela automaticamente a rota pontilhada da **única missão rastreada**: dourado para principal e azul claro a 20% para secundárias e caçadas. O jogador alterna o foco com Rastrear/Remover rastreamento. Rotas de Rosetta seguem separadas; saves antigos com múltiplas marcas são reconciliados. [Especificação v0.16](docs/QUEST_TRACKING_PATHS_v0.16.md).

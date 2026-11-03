@@ -23,8 +23,9 @@ import {
 import { discoverDungeonRoom, dungeonRoomFlag, enterDungeon, exitDungeon, FUNGAL_DUNGEON_ID } from '../domain/exploration/dungeonEngine'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { requestCampaignReset } from '../domain/game/campaignReset'
-import type { AttributeId, GameSave, InventoryItemInstance } from '../domain/game/types'
+import type { AttributeId, GameSave } from '../domain/game/types'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
+import { addBattleLootToInventory } from '../domain/inventory/battleLoot'
 import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 import {
   acceptQuest as acceptQuestDomain,
@@ -766,18 +767,10 @@ export const useGameStore = create<GameState>((set, get) => {
       if (xpGain.levelsGained > 0) next.eventLog.push(`CharacterLevelGained:${xpGain.levelsGained}`)
       next.wallet.gold += battle.rewards.gold
       const acquiredAt = nowIso()
-      const loot: InventoryItemInstance[] = battle.rewards.lootDefinitionIds.map(
-        (definitionId, index) => ({
-          instanceId: `${battle.id}_${battle.encounterId}_loot_${index + 1}`,
-          definitionId,
-          quantity: 1,
-          rarity: content.items[definitionId]?.rarity ?? 'common',
-          locked: false,
-          favorite: false,
-          acquiredAt,
-        }),
-      )
-      next.inventory.push(...loot)
+      // One claim collects all drops; fungible duplicates share a safe inventory slot.
+      next.inventory = addBattleLootToInventory(next.inventory, battle.rewards.lootDefinitionIds,
+        content, battle.id, battle.encounterId, acquiredAt)
+      const loot = battle.rewards.lootDefinitionIds.map((definitionId) => ({ definitionId, quantity: 1 }))
       const recovery = battle.rewards.fieldRecovery
       if (recovery) {
         const stats = deriveCharacterStats(next, content)
