@@ -111,6 +111,20 @@ describe('vertical slice integrada', () => {
     store().createGame('Lysa', 'character.terririan.default')
     store().adjustAttribute('strength', 1); store().adjustAttribute('strength', 1); store().adjustAttribute('vigor', 1)
     store().bindPrologueWeapon()
+    // The endurance test exercises repeated rest; its fixture begins after
+    // Daeryn's home quest instead of bypassing the door with enterBase().
+    const equipped = structuredClone(store().save!)
+    equipped.quests.main_terran_first_home.status = 'completed'
+    equipped.world.worldFlags.push('player_home_unlocked')
+    equipped.inventory.push({
+      instanceId: 'key-fixture', definitionId: 'quest_daeryn_home_key', quantity: 1,
+      rarity: 'unique', locked: true, favorite: false, acquiredAt: equipped.updatedAt,
+    })
+    useGameStore.setState({ save: equipped })
+    expect(store().enterBase()).toBe(false)
+    expect(store().unlockBaseWithKey()).toBe(true)
+    expect(store().save?.inventory.some((item) => item.definitionId === 'quest_daeryn_home_key')).toBe(false)
+    store().leaveBase()
     const weaponId = store().save!.character.bondedEquipment.weapon!
     const visit = (id: string) => store().travelInTerran(id)
     const accept = (id: string) => { store().offerQuest(id); store().acceptQuest(id) }
