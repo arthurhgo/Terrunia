@@ -1,6 +1,7 @@
 import { DialogueWindow } from './DialogueWindow'
 import { BedDouble, Check, Coins, HeartPulse, ShoppingBasket, Archive, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react'
 import { content } from '../../content/catalog'
+import { QuestContextNote } from '../quests/QuestContextNote'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import type { GameSave } from '../../domain/game/types'
 import { PLAYER_HOME_FLAG, SYLWEN_STOCK } from '../../domain/terran/services'
@@ -160,6 +161,7 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest }: { save:
     </nav>}
     {(!onSelectQuest || conversations.length < 2) && <h3>{definition.category === 'secondary' || definition.category === 'bounty' ? '◇ ' : ''}{definition.title}</h3>}
     {definition.objectives.map((objective) => <p key={objective.id}>{objective.label} · {progress.objectives[objective.id] ?? 0}/{objective.required}</p>)}
+    <QuestContextNote note={definition.contextNote} />
     <p>{definition.rewards.map((reward) => `${reward.type === 'gold' ? 'Ouro' : reward.type === 'characterXp' ? 'XP' : 'Essência'} +${reward.value}`).join(' · ')}</p>
     {definition.turnInItems && <div className="quest-delivery-items">
       {definition.turnInItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />
