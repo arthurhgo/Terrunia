@@ -1,5 +1,4 @@
-import { Activity, BookOpen, Gauge, ShieldCheck, Swords, WandSparkles } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Activity, Gauge, ShieldCheck, Swords, WandSparkles } from 'lucide-react'
 import { content } from '../../content/catalog'
 import { deriveCharacterStats, type DerivedStat } from '../../domain/character/derivedStats'
 import { ATTRIBUTE_IDS, type GameSave } from '../../domain/game/types'
@@ -7,7 +6,6 @@ import { AttributeAllocator } from '../character/AttributeAllocator'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { AssetImage } from '../components/AssetImage'
 import { ProgressBar } from '../components/ProgressBar'
-import { BoundItemsPanel } from './BoundItemsPanel'
 
 const attributeLabels = { cunning: 'Astúcia', agility: 'Agilidade', strength: 'Força', vigor: 'Vigor', spirit: 'Espírito' }
 
@@ -45,9 +43,7 @@ export function NexusOverview({ save }: { save: GameSave }) {
           <DerivedStatCard label="Ataque mágico" stat={stats.magicalAttack} icon={WandSparkles} />
         </div>
         <div className="nexus-essence"><ProgressBar value={essence.current} max={essence.required} label="Essência atual" tone="essence" /><strong>{essence.essencePoints} Ponto(s) de Essência</strong></div>
-        <Link className="panel-link" to="/character">Abrir ficha detalhada <BookOpen size={16} /></Link>
       </ArcanePanel>
-      <BoundItemsPanel save={save} />
     </div>
   )
 }

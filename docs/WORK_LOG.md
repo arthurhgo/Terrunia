@@ -1,3 +1,11 @@
+## Personagem unificado e identificação de NPCs v0.20 (2026-11-03)
+
+- navegação principal troca 3 páginas sobrepostas por 1 entrada Personagem (`/nexus`); os caminhos antigos redirecionam;
+- status, atributos, Itens equipados e Mochila numa página sem repetir identidade ou slots; memória/crônica só quando o usuário expande;
+- o inventário de Terran mostra só a mochila, sem “No que estou me tornando” ou segundo painel de Vínculos;
+- rótulos de NPCs de rua e interiores exibem título/função do catálogo em itálico abaixo do nome, incluindo Rosetta / Guardiã do Portal;
+- sem alterar o schema 17 e as mecânicas canônicas. Ver `CHARACTER_HUB_NPC_NAMEPLATES_v0.20.md`.
+
 ## Equipamento simples no slot persistente — schema 17 (2026-11-03)
 
 - ao Equipar, o item sai de `save.inventory` e entra em `save.equippedBasicArmor`, mantendo ID e atributos;

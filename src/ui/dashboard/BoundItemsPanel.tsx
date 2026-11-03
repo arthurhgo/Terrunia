@@ -1,4 +1,4 @@
-import { Braces, Gem, Link2, Shield, ShieldHalf, Sparkles, Sword, Watch } from 'lucide-react'
+import { Gem, Link2, Shield, ShieldHalf, Sword, Watch } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { boundSlotPreviewAssetIds } from '../../assets/assetRegistry'
@@ -77,23 +77,13 @@ export function BoundItemsPanel({ save }: { save: GameSave }) {
   const activeItems = BOUND_SLOTS.filter((slot) => save.character.bondedEquipment[slot]).length
   return (
     <ArcanePanel
-      title="Itens Vinculados"
-      eyebrow="NO QUE ESTOU ME TORNANDO"
-      subtitle="Equipamentos são permanentes. O loot alimenta sua evolução."
+      title="Itens equipados"
+      eyebrow="VÍNCULOS E PROTEÇÃO"
       className="bound-items-panel"
       action={<span className="panel-metric"><Link2 size={15} /> {activeItems}/5 vínculos</span>}
     >
       <div className="bound-items-grid">
         {BOUND_SLOTS.map((slot) => <BoundItemCard key={slot} slot={slot} save={save} />)}
-      </div>
-      <div className="resonance-summary">
-        <span className="resonance-summary__icon"><Braces size={24} /></span>
-        <div>
-          <p className="eyebrow">RESSONÂNCIA</p>
-          <strong>Uso gera história. História transforma o vínculo.</strong>
-          <small>Cada peça progride de forma independente através de sete Graus.</small>
-        </div>
-        <Sparkles size={18} />
       </div>
     </ArcanePanel>
   )

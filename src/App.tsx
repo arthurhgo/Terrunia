@@ -13,8 +13,6 @@ const CharacterCreationScreen = lazy(() => import('./ui/screens/CharacterCreatio
 const NpcsScreen = lazy(() => import('./ui/screens/NpcsScreen').then((module) => ({ default: module.NpcsScreen })))
 const NexusScreen = lazy(() => import('./ui/screens/NexusScreen').then((module) => ({ default: module.NexusScreen })))
 const LocalScreen = lazy(() => import('./ui/screens/LocalScreen').then((module) => ({ default: module.LocalScreen })))
-const InventoryScreen = lazy(() => import('./ui/screens/InventoryScreen').then((module) => ({ default: module.InventoryScreen })))
-const CharacterScreen = lazy(() => import('./ui/screens/CharacterScreen').then((module) => ({ default: module.CharacterScreen })))
 const PrologueScreen = lazy(() => import('./ui/screens/PrologueScreen').then((module) => ({ default: module.PrologueScreen })))
 const QuestsScreen = lazy(() => import('./ui/screens/QuestsScreen').then((module) => ({ default: module.QuestsScreen })))
 const SettingsScreen = lazy(() => import('./ui/screens/SettingsScreen').then((module) => ({ default: module.SettingsScreen })))
@@ -78,10 +76,10 @@ export default function App() {
           <Route path="/terran" element={<GameBoot><Navigate to="/play" replace /></GameBoot>} />
           <Route path="/terran/:locationId" element={<GameBoot><TerranLocationScreen /></GameBoot>} />
           <Route path="/nexus" element={<GameBoot><NexusScreen /></GameBoot>} />
-          <Route path="/inventory" element={<GameBoot><InventoryScreen /></GameBoot>} />
+          <Route path="/inventory" element={<GameBoot><Navigate to="/nexus" replace /></GameBoot>} />
           <Route path="/local" element={<GameBoot><LocalScreen /></GameBoot>} />
           <Route path="/arsenal" element={<GameBoot><ArsenalScreen /></GameBoot>} />
-          <Route path="/character" element={<GameBoot><CharacterScreen /></GameBoot>} />
+          <Route path="/character" element={<GameBoot><Navigate to="/nexus" replace /></GameBoot>} />
           <Route path="/menu" element={<GameBoot><SkillTreeScreen /></GameBoot>} />
           <Route path="/skill-tree" element={<GameBoot><Navigate to="/menu" replace /></GameBoot>} />
           <Route path="/battle" element={<GameBoot><Navigate to="/play" replace /></GameBoot>} />

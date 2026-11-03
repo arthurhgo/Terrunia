@@ -2,6 +2,10 @@
 
 Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, primeira Ruína, Vínculos, Infusão, Lapidação de Joias, Skill Tree e save local-first.
 
+## Personagem e plaquetas de NPCs v0.20
+
+O menu reúne **Nexo, Personagem e Inventário** em uma tela **Personagem** com Status, Itens equipados, Mochila e Histórico recolhível. A mochila lateral não duplica os Vínculos nem mostra “No que estou me tornando”. NPCs em ruas e casas exibem nome e título/função em duas linhas. [Contrato UI v0.20](docs/CHARACTER_HUB_NPC_NAMEPLATES_v0.20.md).
+
 ## Equipamento vestido fora da mochila — save v17
 
 A proteção simples equipada agora é transferida da mochila para um **slot persistente de equipamento**. Ela aparece na seção **Itens**, com **Retirar proteção** para voltar à mochila; saves antigos são migrados sem perda de instância ou refinamento. [Contrato técnico](docs/EQUIPPED_GEAR_SEPARATE_SLOT_v0.17.md).

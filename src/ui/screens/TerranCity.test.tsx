@@ -142,11 +142,15 @@ describe('interfaces de Terran', () => {
 
     const rosetta = screen.getByRole('button', { name: 'Conversar com Rosetta' })
     expect(rosetta.querySelector('.npc-nameplate')).toHaveTextContent('Rosetta')
+    expect(rosetta.querySelector('.npc-nameplate__name')).toHaveTextContent('Rosetta')
+    expect(rosetta.querySelector('.npc-nameplate__subtitle')).toHaveTextContent('Guardiã do Portal')
     expect(rosetta.querySelector('.npc-question-bubble')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Eldamar' }))
     const eldamar = screen.getByRole('button', { name: 'Falar com Eldamar dentro do local' })
     expect(eldamar.querySelector('.npc-nameplate')).toHaveTextContent('Eldamar')
+    expect(eldamar.querySelector('.npc-nameplate__name')).toHaveTextContent('Eldamar')
+    expect(eldamar.querySelector('.npc-nameplate__subtitle')).toHaveTextContent('Mestre dos Registros')
     expect(eldamar).toHaveAttribute('title', 'Eldamar')
   })
 
@@ -203,6 +207,9 @@ describe('interfaces de Terran', () => {
     expect(inventoryDrawer).toBeInTheDocument()
     expect(inventoryDrawer).not.toHaveTextContent('Status do personagem')
     expect(inventoryDrawer.querySelector('.arcane-panel')).toHaveTextContent('Mochila')
+    expect(inventoryDrawer.querySelectorAll('.arcane-panel')).toHaveLength(1)
+    expect(inventoryDrawer).not.toHaveTextContent('NO QUE ESTOU ME TORNANDO')
+    expect(inventoryDrawer.querySelector('.bound-items-panel')).toBeNull()
     expect(screen.queryByRole('group', { name: 'Seções de Inventário' })).not.toBeInTheDocument()
     expect(status).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))

@@ -12,7 +12,6 @@ import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { ClanHallPanel } from '../dashboard/ClanHallPanel'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
-import { BoundItemsPanel } from '../dashboard/BoundItemsPanel'
 import { QuestGrid } from '../quests/QuestGrid'
 import { TerranContinentMap } from '../world/TerranContinentMap'
 import { NpcDialog } from '../dashboard/NpcDialog'
@@ -26,6 +25,7 @@ import { GameShell } from '../components/GameShell'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { PixelCityCanvas } from '../terran/PixelCityCanvas'
 import { PixelInteriorCanvas } from '../terran/PixelInteriorCanvas'
+import { getNpcSubtitle } from '../terran/NpcNameplate'
 import { EldamarRecords } from '../terran/EldamarRecords'
 import { RosettaGuide } from '../terran/RosettaGuide'
 import { TerranCharacterHud } from '../terran/TerranCharacterHud'
@@ -91,7 +91,7 @@ function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
         {getVisibleNpcsInLocation(save, location.id as TerranLocationId).map(({ presence }) => (
           <button type="button" key={presence.id} aria-label={`Falar com ${presence.label}`} onClick={() => onTalk(presence)}>
             <AssetImage assetId={getPresencePortrait(presence)} className="terran-npc-avatar" />
-            <span><strong>{presence.label}</strong><small>{presence.roleLabel}</small></span>
+            <span><strong>{presence.label}</strong><small>{getNpcSubtitle(presence)}</small></span>
             <i>Falar</i>
           </button>
         ))}
@@ -314,9 +314,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               {drawer === 'forge' && <ForgePanel save={save} onClose={() => setDrawer(null)}
                 onQuest={forgeQuest ? () => { setLocalQuestId(forgeQuest.id); setDrawer('location') } : undefined} />}
               {drawer === 'local' && <LocalMapDrawer save={save} />}
-              {drawer === 'inventory' && <div className="terran-inventory-drawer" aria-label="Mochila e Vínculos">
+              {drawer === 'inventory' && <div className="terran-inventory-drawer" aria-label="Itens coletados na mochila">
                 <InventoryPanel save={save} />
-                <BoundItemsPanel save={save} />
               </div>}
               {drawer === 'location' && (localQuestId
                 ? <QuestNpcPanel save={save} questId={localQuestId} onSelectQuest={setLocalQuestId} onClose={() => {
