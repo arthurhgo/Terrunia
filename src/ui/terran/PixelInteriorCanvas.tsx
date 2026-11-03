@@ -1,5 +1,6 @@
 import { useEffect, useRef, type PointerEvent } from 'react'
 import { NpcMarker } from './NpcMarker'
+import { NpcNameplate } from './NpcNameplate'
 import { CITY_NPC_SIZE } from './cityWorld'
 import { resolveAsset } from '../../assets/assetRegistry'
 import { getRoomName, roomFurniture, type RoomFurniture, type TerranInteriorId, PLAYER_HOME_INTERIOR_ID } from './roomContent'
@@ -218,6 +219,7 @@ export function PixelInteriorCanvas({
           aria-label={`Falar com ${resident.presence.label} dentro do local`}
           style={{ left: resident.position.x / 384 * 100 + '%', top: (resident.position.y - CITY_NPC_SIZE / 2) / 256 * 100 + '%', width: `${CITY_NPC_SIZE / 384 * 100}%`, height: `${CITY_NPC_SIZE / 256 * 100}%` }}
           onClick={() => walkTo({ x: resident.position.x, y: resident.position.y + 10 }, resident.presence.id)}>
+          <NpcNameplate name={resident.presence.label} />
           <NpcMarker state={resident.marker} phase={resident.markerPhase} />
         </button>)}
       {furniture.map((item) => <button type="button" key={item.id}
