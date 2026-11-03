@@ -66,10 +66,12 @@ export function transferBaseChestItem(
   if (save.world.currentLocationId !== BASE_LOCATION_ID || save.battle) {
     return fail('CHEST_LOCATION', 'O baú pessoal só pode ser usado dentro da Base, fora de combate.')
   }
+  if (direction === 'deposit' && save.character.basicArmorInstanceId === instanceId) {
+    return fail('CHEST_EQUIPPED', 'Retire a proteção antes de guardá-la no baú.')
+  }
   const source = direction === 'deposit' ? save.inventory : save.baseStorage
   const sourceItem = source.find((item) => item.instanceId === instanceId)
   if (!sourceItem || !catalog.items[sourceItem.definitionId]) return fail('CHEST_ITEM', 'Item inexistente ou indisponível.')
-  if (direction === 'deposit' && sourceItem.instanceId === save.character.basicArmorInstanceId) return fail('CHEST_EQUIPPED', 'Retire a proteção antes de guardá-la no baú.')
   if (direction === 'deposit' && sourceItem.locked) return fail('CHEST_LOCKED', 'Desbloqueie o item antes de guardá-lo.')
   if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > sourceItem.quantity) {
     return fail('CHEST_QUANTITY', 'A quantidade escolhida não está disponível.')
