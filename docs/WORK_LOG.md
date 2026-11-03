@@ -1,5 +1,14 @@
 # Registro de implementação
 
+## Terran v0.15 — tiers de proteção simples e escolha única (2026-11-03)
+
+- substituída a entrega automática de duas túnicas por recompensa de escolha ao concluir a primeira missão;
+- ajustadas três lições de Rosetta para visita ao Mercado → escolha → equipar/comprar → reforçar, com recompensas reduzidas;
+- registrado Tier I–III de proteções temporárias com desbloqueios progressivos; Tiers IV–V pendentes de decisão;
+- mochila em seleção única com janela de hover/foco e botão Equipar; itens equipados continuam protegidos;
+- criado save schema 16 com migração conservadora de objetivos antigos sem apagar equipamento ou recompensas;
+- dados, limites e decisões em `STARTER_GEAR_TIERS_REWARD_CHOICE_v0.15.md`.
+
 ## Terran v0.14 — progressão fluida de missões e painel esquerdo (2026-11-03)
 
 - rota essencial de Rosetta simplificada para equipar → comprar Tônico → reforçar túnica; couro reclassificado como opcional, preservando IDs e saves;
