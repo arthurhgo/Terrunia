@@ -6,6 +6,7 @@ import type { GameSave } from '../../domain/game/types'
 import { getQuestJournalEntries, getQuestJournalGroups, getQuestStatusLabel, getSuggestedQuest, type QuestJournalEntry } from '../../domain/quests/questSelectors'
 import { useGameStore } from '../../state/gameStore'
 import { getRosettaGuidance } from '../../domain/terran/rosettaGuide'
+import { QuestContextNote } from './QuestContextNote'
 import './questRemake.css'
 
 type Category = 'all' | QuestCategory | 'completed'
@@ -29,6 +30,7 @@ function QuestDetails({ entry, onTrack, save }: { entry: QuestJournalEntry; onTr
         <span>{objective.label}</span><strong>{current}/{objective.required}</strong>
       </div>
     })}</div>
+    <QuestContextNote note={definition.contextNote} />
     {definition.turnInItems && definition.turnInItems.length > 0 && <div className="quest-board__material-needs" aria-label="Materiais da entrega">
       <h4><Gem size={15} /> Materiais para entregar</h4>
       {definition.turnInItems.map(({ itemId, quantity }) => {
