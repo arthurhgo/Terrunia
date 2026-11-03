@@ -46,6 +46,62 @@ describe('combate visual v0.17', () => {
     expect(screen.queryByRole('button', { name: 'MAGIAS' })).not.toBeInTheDocument()
   })
 
+  it('mostra cinco slots reais; vazios cinza; hover/foco e toque revelam atributos do equipamento', () => {
+    createBattleSave()
+    const { container } = render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    const slots = screen.getByLabelText('Cinco slots de equipamentos')
+    expect(slots.querySelectorAll('[data-gear-slot]')).toHaveLength(5)
+    const weapon = screen.getByRole('button', { name: /Arma: Arma Básica Vinculada/ })
+    const shield = screen.getByRole('button', { name: 'Escudo / Protetor: Não equipado' })
+    expect(weapon).toHaveAttribute('data-gear-state', 'bound')
+    expect(shield).toHaveAttribute('data-gear-state', 'empty')
+    expect(shield).toHaveAttribute('aria-disabled', 'true')
+    expect(container.querySelector('.battle-gear__summary')).toHaveTextContent('Poder')
+    fireEvent.mouseEnter(weapon)
+    const tip = screen.getByRole('tooltip', { name: 'Detalhes de Arma' })
+    expect(tip).toHaveTextContent('Vínculo · Grau 1')
+    expect(tip).toHaveTextContent('Poder base da arma')
+    expect(tip).toHaveTextContent('Ressonância')
+    fireEvent.mouseLeave(weapon)
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    fireEvent.focus(shield)
+    expect(screen.getByRole('tooltip', { name: 'Detalhes de Escudo / Protetor' })).toHaveTextContent('Slot vazio')
+    fireEvent.blur(shield)
+    fireEvent.click(shield)
+    expect(screen.getByRole('dialog', { name: 'Detalhes de Escudo / Protetor' })).toBeInTheDocument()
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    fireEvent.click(weapon)
+    expect(screen.getByRole('dialog', { name: 'Detalhes de Arma' })).toHaveTextContent('Poder base da arma')
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar detalhes do equipamento' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('mostra armadura temporária refinada no slot correto e resumo sem bônus fictícios', () => {
+    const save = createBattleSave()
+    save.equippedBasicArmor = {
+      instanceId: 'starter-tunic-ui', definitionId: 'equipment_worn_linen_tunic',
+      quantity: 1, rarity: 'common', locked: false, favorite: false,
+      acquiredAt: save.updatedAt, refinementLevel: 1,
+    }
+    save.character.basicArmorInstanceId = 'starter-tunic-ui'
+    save.battle = createBattle(save, content.encounters.encounter_fungorro_01, content, 'battle_ui_armor')
+    useGameStore.setState({ save })
+    render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    const slot = screen.getByRole('button', { name: 'Armadura: Túnica de Linho Gasta +1' })
+    expect(slot).toHaveAttribute('data-gear-state', 'simple')
+    expect(slot).toHaveTextContent('Armadura')
+    expect(screen.getByLabelText('Bônus diretos dos equipamentos')).toHaveTextContent('Def +2')
+    fireEvent.mouseEnter(slot)
+    const tooltip = screen.getByRole('tooltip', { name: 'Detalhes de Armadura' })
+    expect(tooltip).toHaveTextContent('Proteção simples · Tier 1 · Refinamento +1')
+    expect(tooltip).toHaveTextContent('Defesa')
+    expect(tooltip).toHaveTextContent('+2')
+    expect(tooltip).not.toHaveTextContent('Ressonância')
+    expect(screen.getByRole('button', { name: 'Colar: Não equipado' })).toHaveAttribute('data-gear-state', 'empty')
+    expect(screen.getByRole('button', { name: 'Pulseira: Não equipado' })).toHaveAttribute('data-gear-state', 'empty')
+  })
+
   it('mostra drops repetidos agrupados e recolhe tudo com uma ação sem seleção individual', () => {
     const save = createBattleSave()
     save.battle!.phase = 'Victory'
