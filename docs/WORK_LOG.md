@@ -1,5 +1,13 @@
 # Registro de implementação
 
+## Terran v0.18 — interiores com missões, equipamento e identidade de NPCs (2026-11-03)
+
+- equipamento simples equipado sai da grade, mas continua salvo e é mostrado no slot "Proteção simples equipada" com Retirar;
+- painel de missões preservado entre ruas e casas; caminho pontilhado segue malha navegável até NPC, balcão ou saída;
+- prévia de Rosetta continua dentro de edifícios e secundárias ficam azul claro com 20% de opacidade;
+- marcadores e NPCs de entrega funcionam no interior; nomes recebem títulos/funções pequenos em itálico;
+- testes e limites em `INTERIOR_QUEST_PATHS_EQUIPPED_NPC_LABELS_v0.18.md`.
+
 ## Combate v0.17 — layout, iniciativa e espólios (2026-11-03)
 
 - corrigida altura mínima fixa que cortava o painel inferior, com layouts responsivos e rolagem interna apenas quando necessária;

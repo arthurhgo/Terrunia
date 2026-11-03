@@ -504,7 +504,7 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!result.ok) return failAction(result.message)
       if (result.value === save) return
       commit(result.value)
-      show(instanceId ? 'Proteção equipada' : 'Proteção retirada', instanceId ? 'Sua defesa foi atualizada. A peça continua na mochila.' : 'Você pode escolher outra proteção na mochila.', 'success')
+      show(instanceId ? 'Proteção equipada' : 'Proteção retirada', instanceId ? 'Sua defesa foi atualizada. A peça aparece no slot equipado, fora da grade da mochila.' : 'Você pode escolher outra proteção na mochila.', 'success')
     },
 
     refineArmor: (instanceId) => {

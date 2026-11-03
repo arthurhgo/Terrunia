@@ -30,3 +30,17 @@
   .inventory-hover-card { width: min(250px, calc(100vw - 16px)); max-height: 45dvh; }
 }
 @media (prefers-reduced-motion: reduce) { .inventory-hover-card { transition: none; } }
+
+.inventory-worn button {
+  margin-left: auto;
+  min-height: 25px;
+  padding: 3px 8px;
+  border: 1px solid #c49b61;
+  background: #162631;
+  color: #ebcf9d;
+  font: 700 .65rem var(--display);
+  cursor: pointer;
+}
+.inventory-worn button:disabled { opacity: .45; cursor: not-allowed; }
+.inventory-worn button:hover:enabled,
+.inventory-worn button:focus-visible { border-color: #ffdda6; background: #34402e; }

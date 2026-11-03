@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../../domain/game/createSave'
+import { useGameStore } from '../../state/gameStore'
 import { InventoryPanel } from './InventoryPanel'
 
 const makeSave = () => {
@@ -62,6 +63,28 @@ describe('Inventário v0.15', () => {
     expect(screen.getByRole('button', { name: 'Equipar Túnica de Linho Gasta' })).toBeInTheDocument()
     expect(details).not.toHaveTextContent(/Peça reserva|Lorian|Feril|Mercado/)
     expect(container.querySelector('.inventory-item-purpose')).toBeNull()
+  })
+
+  it('ao equipar, a peça sai da grade, permanece salva no slot e retorna ao desequipar', () => {
+    const save = makeSave()
+    useGameStore.setState({ save, status: 'ready', ownerId: save.ownerId, syncMode: 'local', syncStatus: 'saved' })
+    const { rerender, container } = render(<InventoryPanel save={save} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Túnica de Linho Gasta' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Equipar Túnica de Linho Gasta' }))
+    const equippedSave = useGameStore.getState().save!
+    expect(equippedSave.character.basicArmorInstanceId).toBe('first')
+    expect(equippedSave.inventory.find((item) => item.instanceId === 'first')).toBeDefined()
+    rerender(<InventoryPanel save={equippedSave} />)
+    expect(container.querySelector('.inventory-grid')).not.toHaveTextContent('Túnica de Linho Gasta')
+    expect(screen.getByLabelText('Proteção simples equipada')).toHaveTextContent('Túnica de Linho Gasta')
+    expect(screen.getByRole('button', { name: 'Retirar Túnica de Linho Gasta' })).toBeEnabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Retirar Túnica de Linho Gasta' }))
+    const restored = useGameStore.getState().save!
+    expect(restored.character.basicArmorInstanceId).toBeNull()
+    expect(restored.inventory.find((item) => item.instanceId === 'first')?.quantity).toBe(1)
+    rerender(<InventoryPanel save={restored} />)
+    expect(container.querySelector('.inventory-grid')).toHaveTextContent('Túnica de Linho Gasta')
+    useGameStore.getState().resetSession()
   })
 
   it('mantém seleção única também no modo de venda', () => {

@@ -97,6 +97,45 @@ describe('interfaces de Terran', () => {
   })
 
 
+  it('mantém a rota de missão e o marcador ! ao entrar na casa e exibe o título dos NPCs', () => {
+    loadSave('location_terran_eldamar_house')
+    const save = useGameStore.getState().save!
+    save.quests.vs_astravel_first_contact.status = 'active'
+    save.quests.vs_astravel_first_contact.tracked = true
+    save.eventLog.push('CutsceneViewed:astravel_call')
+    useGameStore.setState({ save })
+    const { container } = render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    const rosetta = screen.getByRole('button', { name: 'Conversar com Rosetta' })
+    expect(rosetta.querySelector('.npc-nameplate__subtitle')).toHaveTextContent('Guardiã do Portal')
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Missões' }))
+    expect(screen.getByRole('img', { name: 'Caminho pontilhado da missão rastreada' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Eldamar' }))
+    expect(screen.getByRole('complementary', { name: 'Painel lateral: Diário de Missões' })).toBeInTheDocument()
+    const route = screen.getByRole('img', { name: 'Caminho pontilhado da missão no interior' })
+    expect(route.querySelectorAll('path[data-route-tone="gold"]')).toHaveLength(1)
+    expect(route.querySelector('path')).toHaveAttribute('data-target-kind', 'npc')
+    const eldamar = screen.getByRole('button', { name: 'Falar com Eldamar dentro do local' })
+    expect(eldamar.querySelector('.npc-nameplate__subtitle')).toHaveTextContent('Mestre dos Registros')
+    expect(eldamar.querySelector('.npc-quest-marker')).toHaveTextContent('!')
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
+    expect(container.querySelector('.pixel-interior__quest-paths')).toBeNull()
+  })
+
+  it('mostra rota azul de sidequest dentro das casas até o NPC da missão', () => {
+    loadSave('location_terran_daeryn_house')
+    const save = useGameStore.getState().save!
+    save.quests.side_npc_daeryn.status = 'ready_to_turn_in'
+    save.quests.side_npc_daeryn.tracked = true
+    useGameStore.setState({ save })
+    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Missões' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Daeryn' }))
+    const route = screen.getByRole('img', { name: 'Caminho pontilhado da missão no interior' })
+    expect(route.querySelector('path')).toHaveAttribute('data-route-tone', 'blue')
+    expect(route.querySelector('path')).toHaveAttribute('data-route-opacity', '0.2')
+    expect(route.querySelector('path')).toHaveAttribute('data-target-kind', 'npc')
+  })
+
   it('mostra os nomes dos NPCs nas ruas e interiores sem ocultar os marcadores', () => {
     loadSave('location_terran_eldamar_house')
     render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)

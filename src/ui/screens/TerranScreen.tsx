@@ -165,7 +165,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     // The seven institutions have walkable interiors; the Portal remains outdoors.
     if (hasTerranInterior(id)) {
       setInteriorId(id)
-      setDrawer(null)
+      // Keep the tracking drawer open across the outdoor -> interior transition.
+      setDrawer((current) => current === 'quests' ? 'quests' : null)
     } else {
       setInteriorId(null)
       setDrawer('location')
@@ -176,7 +177,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setStreetSpawn({ ...PLAYER_HOME_DOOR })
     setInteriorId(PLAYER_HOME_INTERIOR_ID)
     setLocationId('location_terran_portal_plaza')
-    setDrawer(null)
+    setDrawer((current) => current === 'quests' ? 'quests' : null)
     setInspected(null)
   }
   const openRoomServices = (id: TerranInteriorId) => {
@@ -200,7 +201,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const exitInterior = () => {
     if (interiorId === PLAYER_HOME_INTERIOR_ID) leaveBase()
     setInteriorId(null)
-    setDrawer(null)
+    setDrawer((current) => current === 'quests' ? 'quests' : null)
     setDialogue(null)
     setLocalQuestId(null)
     setMarketNpc(null)
@@ -274,6 +275,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
           </nav>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
             {interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
+                questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
+                showTrackedQuestRoute={drawer === 'quests'} trackedQuestRoute={trackedRoute}
                 onTalk={(presence) => { if (interiorId !== PLAYER_HOME_INTERIOR_ID) talk(presence, interiorId) }}
                 onServices={() => openRoomServices(interiorId)}
                 onFurniture={inspectFurniture}
