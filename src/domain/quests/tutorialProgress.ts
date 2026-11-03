@@ -24,7 +24,7 @@ export function refreshTutorialQuestProgress(save: GameSave, catalog: ContentCat
     if (definition.objectives.every((objective) => (progress.objectives[objective.id] ?? 0) >= objective.required)) {
       next ??= structuredClone(save)
       next.quests[definition.id].status = 'ready_to_turn_in'
-      next.quests[definition.id].tracked = true
+      if (!Object.values(next.quests).some((quest) => quest.tracked)) next.quests[definition.id].tracked = true
       next.eventLog.push(`QuestReadyToTurnIn:${definition.id}`)
     }
   }
