@@ -59,6 +59,58 @@ export function getRosettaQuestRoutes(save: GameSave, catalog: ContentCatalog): 
   return [...routes.values()]
 }
 
+/** Exclusive tracked route: unlike Rosetta's discovery preview, this starts at the player
+ * and resolves one accepted mission, including side quests, bounties and NPC delivery.
+ * Equipment-only actions have no physical path.
+ */
+export type TrackedQuestRoute = RosettaQuestRoute & {
+  questId: string
+  tone: 'gold' | 'blue'
+  opacity: number
+}
+
+export function getTrackedQuestRoute(save: GameSave, catalog: ContentCatalog): TrackedQuestRoute | null {
+  const progress = Object.values(save.quests).find((entry) =>
+    entry.tracked && ['active', 'ready_to_turn_in'].includes(entry.status))
+  if (!progress) return null
+  const quest = catalog.quests[progress.questId]
+  if (!quest) return null
+
+  let npcId: string | null = progress.status === 'ready_to_turn_in' ? quest.turnInNpcId : null
+  let locationId = npcId ? getRosettaNpcLocation(npcId, catalog) : quest.terranFlow?.active
+  if (progress.status === 'active') {
+    const objective = quest.objectives.find((item) => (progress.objectives[item.id] ?? 0) < item.required)
+    if (objective?.type === 'equip') return null
+    if (objective?.type === 'talk' && catalog.npcs[objective.targetId]) {
+      npcId = objective.targetId
+      locationId = getRosettaNpcLocation(npcId, catalog)
+    } else if (objective?.type === 'purchase') {
+      npcId = 'npc_neris'
+      locationId = 'location_terran_bond_workshop'
+    } else if (objective?.type === 'refine') {
+      npcId = 'npc_durnan'
+      locationId = 'location_terran_forge'
+    } else if (objective?.type === 'visit' && catalog.terranLocations[objective.targetId]) {
+      locationId = objective.targetId
+    } else {
+      locationId ??= getRosettaNpcLocation(quest.giverNpcId, catalog)
+    }
+  }
+  if (!locationId || !catalog.terranLocations[locationId]) return null
+  const blue = quest.category === 'secondary' || quest.category === 'bounty'
+  return {
+    id: `tracked:${quest.id}`,
+    questId: quest.id,
+    npcId,
+    locationId,
+    player: false,
+    questIds: [quest.id],
+    titles: [quest.title],
+    tone: blue ? 'blue' : 'gold',
+    opacity: blue ? 0.2 : 1,
+  }
+}
+
 const hint = (quest: QuestDefinition, npcId: string, catalog: ContentCatalog, instruction: string): RosettaQuestHint => ({
   id: quest.id,
   title: quest.title,
