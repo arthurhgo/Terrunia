@@ -12,7 +12,6 @@ import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { ClanHallPanel } from '../dashboard/ClanHallPanel'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
-import { BoundItemsPanel } from '../dashboard/BoundItemsPanel'
 import { QuestGrid } from '../quests/QuestGrid'
 import { TerranContinentMap } from '../world/TerranContinentMap'
 import { NpcDialog } from '../dashboard/NpcDialog'
@@ -314,9 +313,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               {drawer === 'forge' && <ForgePanel save={save} onClose={() => setDrawer(null)}
                 onQuest={forgeQuest ? () => { setLocalQuestId(forgeQuest.id); setDrawer('location') } : undefined} />}
               {drawer === 'local' && <LocalMapDrawer save={save} />}
-              {drawer === 'inventory' && <div className="terran-inventory-drawer" aria-label="Mochila e Vínculos">
+              {drawer === 'inventory' && <div className="terran-inventory-drawer" aria-label="Itens coletados na mochila">
                 <InventoryPanel save={save} />
-                <BoundItemsPanel save={save} />
               </div>}
               {drawer === 'location' && (localQuestId
                 ? <QuestNpcPanel save={save} questId={localQuestId} onSelectQuest={setLocalQuestId} onClose={() => {
