@@ -35,7 +35,7 @@ const lessons: Omit<QuestDefinition, 'giverNpcId' | 'turnInNpcId' | 'category' |
     rewards: [{ type: 'characterXp', value: 5 }, { type: 'gold', value: 32 }],
     initialStatus: 'available', terranFlow: { active: 'location_terran_bond_workshop' } },
   { id: 'rosetta_tutorial_supply', title: 'Comprar para se Preparar',
-    summary: 'Equipe a proteção Tier I escolhida, depois compre um Tônico de Campo com Neris no Mercado.'
+    summary: 'Equipe a proteção Tier I escolhida, depois compre um Tônico de Campo com Neris no Mercado.',
     objectives: [
       { id: 'wear_armor', type: 'equip', targetId: 'basic_armor', required: 1, label: 'Equipe sua proteção escolhida na Mochila' },
       { id: 'buy_tonic', type: 'purchase', targetId: 'consumable_minor_tonic', required: 1, label: 'Compre um Tônico de Campo com Neris por 18 Ouro' },
