@@ -36,7 +36,7 @@ export function enterPlayerBase(save: GameSave, now: string): Result<GameSave> {
 /** One deliberate interaction on the actual home door. Consumes the unique key,
  * opens the door permanently and enters the home as a single save transaction.
  */
-export function useDaerynKeyOnDoor(save: GameSave, now: string): Result<GameSave> {
+export function unlockPlayerBaseWithDaerynKey(save: GameSave, now: string): Result<GameSave> {
   if (isPlayerHomeDoorOpen(save)) return fail('BASE_ALREADY_OPEN', 'A porta da Base já está destrancada.')
   if (save.quests.main_terran_first_home?.status !== 'completed') {
     return fail('BASE_QUEST_REQUIRED', 'Conclua a missão do alojamento com Daeryn antes de abrir a Base.')
