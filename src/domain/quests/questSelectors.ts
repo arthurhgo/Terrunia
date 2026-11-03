@@ -37,6 +37,31 @@ export const getTrackedQuestEntries = (save: GameSave, catalog: ContentCatalog) 
   getQuestJournalEntries(save, catalog).filter(({ progress }) =>
     progress.tracked && ['active', 'ready_to_turn_in'].includes(progress.status))
 
+/** One shared priority for the journal, Rosetta and city guidance.
+ * Ready delivery > accepted progress > new offer; story before optional content.
+ * No state is mutated and completed/locked quests never compete for attention.
+ */
+export const getPrioritizedQuestEntries = (save: GameSave, catalog: ContentCatalog): QuestJournalEntry[] => {
+  const statusWeight: Partial<Record<QuestStatus, number>> = {
+    ready_to_turn_in: 0, active: 1, offered: 2, available: 3,
+  }
+  const categoryWeight: Record<QuestCategory, number> = {
+    main: 0, clan: 1, class: 2, secondary: 3, bounty: 4,
+  }
+  return Object.values(catalog.quests).flatMap((definition) => {
+    const progress = save.quests[definition.id]
+    return progress && statusWeight[progress.status] !== undefined
+      ? [{ definition: resolveQuestDefinition(save, definition), progress }]
+      : []
+  }).sort((a, b) =>
+    (statusWeight[a.progress.status] ?? 9) - (statusWeight[b.progress.status] ?? 9)
+    || categoryWeight[a.definition.category] - categoryWeight[b.definition.category]
+    || Number(!a.progress.tracked) - Number(!b.progress.tracked))
+}
+
+export const getSuggestedQuest = (save: GameSave, catalog: ContentCatalog): QuestJournalEntry | null =>
+  getPrioritizedQuestEntries(save, catalog)[0] ?? null
+
 export const getQuestJournalGroups = (entries: QuestJournalEntry[]) => [
   { id: 'main', label: 'Missão principal' },
   { id: 'secondary', label: 'Secundárias' },
