@@ -47,7 +47,7 @@ export function HomeDrawer({ save, canRest = false }: { save: GameSave; canRest?
     <HomeRoomPixels />
     <p><BedDouble size={17} /> <strong>Base do Terrírian</strong></p>
     <p>Seu refúgio particular em Terran. É possível entrar desde o início, guardar materiais no baú e recuperar Vida e Mana na cama.</p>
-    <small>{prepared ? 'Alojamento preparado com Daeryn.' : 'A missão de Daeryn permite preparar e reconhecer seu alojamento, sem bloquear a entrada.'}</small>
+    <small>{prepared ? 'Daeryn entregou a chave na conclusão da missão. Ela destranca a porta da Base no primeiro uso.' : 'A Base permanece trancada até concluir a missão de Daeryn e usar a chave na porta.'}</small>
     <ProgressBar value={save.vitals.hp} max={stats.life.value} label="Vida atual" tone="health" />
     <ProgressBar value={save.vitals.mp} max={stats.mana.value} label="Mana atual" />
     <button type="button" className="terran-service-action" disabled={Boolean(save.battle) || !canRest} onClick={rest}>
@@ -162,6 +162,11 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest }: { save:
     {definition.objectives.map((objective) => <p key={objective.id}>{objective.label} · {progress.objectives[objective.id] ?? 0}/{objective.required}</p>)}
     <QuestContextNote note={definition.contextNote} />
     <p>{definition.rewards.map((reward) => `${reward.type === 'gold' ? 'Ouro' : reward.type === 'characterXp' ? 'XP' : 'Essência'} +${reward.value}`).join(' · ')}</p>
+    {definition.itemRewards?.map((reward) => <p key={reward.itemId} className="terran-quest-dialog__item-reward">
+      <AssetImage assetId={content.items[reward.itemId].iconAssetId} alt="" />
+      <strong>Recompensa: {content.items[reward.itemId].name} ×{reward.quantity}</strong>
+      <small>Receba ao entregar a missão.</small>
+    </p>)
     {definition.turnInItems && <div className="quest-delivery-items">
       {definition.turnInItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />
         {content.items[input.itemId].name}<strong>{getDeliverableCount(save, input.itemId, content)}/{input.quantity}</strong></span>)}
