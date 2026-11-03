@@ -227,6 +227,16 @@ for (const quest of Object.values(content.quests)) {
     assertReference(content.items[input.itemId], `${quest.id} → suprimento ${input.itemId}`)
     if (!Number.isSafeInteger(input.quantity) || input.quantity < 1 || (content.items[input.itemId].basicArmor && input.quantity !== 1)) throw new Error(`Suprimento inválido: ${quest.id}`)
   }
+  if (quest.choiceRewardItemIds?.length) {
+    if (new Set(quest.choiceRewardItemIds).size !== quest.choiceRewardItemIds.length || quest.acceptanceItems?.length) {
+      throw new Error(`Recompensa por escolha inválida: ${quest.id}`)
+    }
+    for (const itemId of quest.choiceRewardItemIds) {
+      const item = content.items[itemId]
+      assertReference(item?.basicArmor?.tier === 1 && item.category === 'equipment',
+        `${quest.id} → escolha de proteção Tier I ${itemId}`)
+    }
+  }
   const deliveryIds = new Set<string>()
   for (const input of quest.turnInItems ?? []) {
     const item = content.items[input.itemId]
