@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
 import { migrateAndValidateSave } from '../../persistence/saveSchema'
-import { BASE_LOCATION_ID, enterPlayerBase, leavePlayerBase, respawnDefeatedPlayer, transferBaseChestItem } from './base'
+import { turnInQuest } from '../quests/questEngine'
+import { BASE_LOCATION_ID, PLAYER_HOME_DOOR_OPENED_FLAG, PLAYER_HOME_KEY_ITEM_ID,
+  enterPlayerBase, hasPlayerHomeKey, isPlayerHomeDoorOpen, useDaerynKeyOnDoor,
+  leavePlayerBase, respawnDefeatedPlayer, transferBaseChestItem } from './base'
 
 const now = '2026-10-29T19:34:00.000Z'
 const fresh = (owner = 'player-a') => createNewSave(owner, 'Viajante', 'character.terririan.default', content, now,
@@ -21,18 +24,45 @@ describe('Base individual e mundo isolado por campanha', () => {
     expect(a.ownerId).not.toBe(b.ownerId)
     expect(a.saveId).not.toBe(b.saveId)
   })
-  it('entra e sai da Base desde o início sem ganhar conclusão de missão', () => {
+  it('mantém a Base trancada e concede a chave apenas ao entregar a missão de Daeryn', () => {
     const save = fresh()
-    const entered = enterPlayerBase(save, now)
-    if (!entered.ok) throw new Error(entered.message)
-    expect(entered.value.world.currentLocationId).toBe(BASE_LOCATION_ID)
+    expect(enterPlayerBase(save, now).ok).toBe(false)
+    expect(useDaerynKeyOnDoor(save, now).ok).toBe(false)
+    expect(hasPlayerHomeKey(save)).toBe(false)
+    save.quests.main_terran_first_home.status = 'ready_to_turn_in'
+    save.quests.main_terran_first_home.objectives.prepare_room = 1
+    const delivered = turnInQuest(save, 'main_terran_first_home', 'npc_daeryn', content, now)
+    if (!delivered.ok) throw new Error(delivered.message)
+    const rewarded = delivered.value
+    expect(rewarded.quests.main_terran_first_home.status).toBe('completed')
+    expect(rewarded.inventory.filter((item) => item.definitionId === PLAYER_HOME_KEY_ITEM_ID)).toHaveLength(1)
+    expect(rewarded.inventory.find((item) => item.definitionId === PLAYER_HOME_KEY_ITEM_ID))
+      .toMatchObject({ quantity: 1, locked: true })
+    expect(isPlayerHomeDoorOpen(rewarded)).toBe(false)
+    expect(enterPlayerBase(rewarded, now).ok).toBe(false)
+    const duplicate = turnInQuest(rewarded, 'main_terran_first_home', 'npc_daeryn', content, now)
+    expect(duplicate.ok).toBe(false)
+    expect(rewarded.inventory).toHaveLength(1)
+
+    const used = useDaerynKeyOnDoor(rewarded, now)
+    if (!used.ok) throw new Error(used.message)
+    expect(used.value.world.currentLocationId).toBe(BASE_LOCATION_ID)
+    expect(isPlayerHomeDoorOpen(used.value)).toBe(true)
+    expect(hasPlayerHomeKey(used.value)).toBe(false)
+    expect(used.value.eventLog).toContain('DaerynKeyUsedOnHomeDoor')
+    expect(useDaerynKeyOnDoor(used.value, now).ok).toBe(false)
     expect(save.world.currentLocationId).toBe('terran')
-    expect(entered.value.quests).toEqual(save.quests)
-    const exited = leavePlayerBase(entered.value, now)
+    expect(rewarded.inventory).toHaveLength(1)
+    const exited = leavePlayerBase(used.value, now)
     if (!exited.ok) throw new Error(exited.message)
     expect(exited.value.world.currentLocationId).toBe('location_terran_portal_plaza')
+    const reentered = enterPlayerBase(exited.value, now)
+    if (!reentered.ok) throw new Error(reentered.message)
+    expect(reentered.value.world.currentLocationId).toBe(BASE_LOCATION_ID)
+    expect(reentered.value.inventory).toHaveLength(0)
+    expect(migrateAndValidateSave(reentered.value)).toEqual(reentered.value)
   })
-  it('acorda na Base depois da derrota sem apagar história, Ouro ou mochila', () => {
+  it('reaparece na Praça antes da chave sem apagar história, Ouro ou mochila', () => {
     const save = fresh()
     save.battle = { phase: 'Defeat', combatants: { combatant_player: { hp: 0 } } } as never
     save.vitals.hp = 0
@@ -44,8 +74,15 @@ describe('Base individual e mundo isolado por campanha', () => {
     expect(respawn.value.vitals).toEqual({ hp: 1, mp: 0 })
     expect(respawn.value.wallet.gold).toBe(99)
     expect(respawn.value.world.trailNodeStates.astravel_entry).toBe('completed')
-    expect(respawn.value.world.currentLocationId).toBe(BASE_LOCATION_ID)
+    expect(respawn.value.world.currentLocationId).toBe('location_terran_portal_plaza')
+    expect(respawn.value.eventLog).toContain('PlayerRespawnedAtPlaza')
     expect(migrateAndValidateSave(respawn.value).vitals.hp).toBe(1)
+    const later = fresh()
+    later.world.worldFlags.push(PLAYER_HOME_DOOR_OPENED_FLAG)
+    later.battle = { phase: 'Defeat', combatants: { combatant_player: { hp: 0 } } } as never
+    const afterUnlock = respawnDefeatedPlayer(later, now)
+    if (!afterUnlock.ok) throw new Error(afterUnlock.message)
+    expect(afterUnlock.value.world.currentLocationId).toBe(BASE_LOCATION_ID)
   })
   it('guarda e recupera pilhas parcialmente sem duplicar itens nem tocar nos Vínculos', () => {
     const save = fresh()
@@ -96,4 +133,38 @@ describe('Base individual e mundo isolado por campanha', () => {
     save.inventory.push({ instanceId: 'locked', definitionId: 'drop_spore_cluster', quantity: 1, rarity: 'common', locked: true, favorite: false, acquiredAt: now })
     expect(transferBaseChestItem(save, 'deposit', 'locked', 1, content, now).ok).toBe(false)
   })
+  it('restaura chave para campanhas antigas concluídas sem item e respeita uso único', () => {
+    const legacy = fresh('legacy-door')
+    legacy.quests.main_terran_first_home.status = 'completed'
+    legacy.world.worldFlags.push('player_home_unlocked')
+    const restored = migrateAndValidateSave(legacy)
+    expect(hasPlayerHomeKey(restored)).toBe(true)
+    expect(restored.inventory.find((item) => item.definitionId === PLAYER_HOME_KEY_ITEM_ID)?.locked).toBe(true)
+    expect(migrateAndValidateSave(restored)).toEqual(restored)
+    const inside = structuredClone(legacy)
+    inside.world.currentLocationId = BASE_LOCATION_ID
+    const grandfathered = migrateAndValidateSave(inside)
+    expect(isPlayerHomeDoorOpen(grandfathered)).toBe(true)
+    expect(hasPlayerHomeKey(grandfathered)).toBe(false)
+    const beforeQuest = fresh('legacy-premature')
+    beforeQuest.world.currentLocationId = BASE_LOCATION_ID
+    const rejected = migrateAndValidateSave(beforeQuest)
+    expect(rejected.world.currentLocationId).toBe('location_terran_portal_plaza')
+    expect(isPlayerHomeDoorOpen(rejected)).toBe(false)
+  })
+
+  it('não permite usar uma chave guardada, ausente ou roubada de outro save', () => {
+    const save = fresh()
+    save.quests.main_terran_first_home.status = 'completed'
+    expect(useDaerynKeyOnDoor(save, now).ok).toBe(false)
+    save.baseStorage.push({ instanceId: 'legacy-in-chest', definitionId: PLAYER_HOME_KEY_ITEM_ID,
+      quantity: 1, rarity: 'unique', locked: true, favorite: false, acquiredAt: now })
+    expect(useDaerynKeyOnDoor(save, now).ok).toBe(false)
+    const migrated = migrateAndValidateSave(save)
+    expect(hasPlayerHomeKey(migrated)).toBe(true)
+    expect(migrated.baseStorage).toHaveLength(0)
+    expect(transferBaseChestItem({ ...migrated, world: { ...migrated.world, currentLocationId: BASE_LOCATION_ID } },
+      'deposit', migrated.inventory[0].instanceId, 1, content, now).ok).toBe(false)
+  })
+
 })
