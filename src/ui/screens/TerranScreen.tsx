@@ -315,7 +315,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 : <button type="button" className="terran-service-action" onClick={() => setBaseDoorPrompt(false)}>Voltar à cidade</button>}>
               {hasPlayerHomeKey(save)
                 ? <p>Você possui a <strong>Chave de Daeryn</strong> na mochila. Usá-la destranca esta porta permanentemente e consome a chave.</p>
-                : <p>A porta está trancada. Conclua a missão <strong>Preparar o Alojamento</strong> com Daeryn para receber a chave e usá-la aqui.</p>}
+                : <p>A porta está trancada. Conclua a missão <strong>Um Lugar em Terran</strong> com Daeryn para receber a chave e usá-la aqui.</p>}
             </Modal>
             {waking && interiorId === PLAYER_HOME_INTERIOR_ID && <div className="terran-base__waking" role="status">Você acorda na Base. Descanse para recuperar Vida e Mana.</div>}
             {inspected && <div className="pixel-interior__inspection" role="dialog" aria-label={`Inspecionar ${inspected.name}`}>
