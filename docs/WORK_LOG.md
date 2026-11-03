@@ -1,3 +1,10 @@
+## Ajuste visual — plaquetas de NPCs em duas linhas (2026-11-03)
+
+- títulos canônicos têm prioridade sobre a descrição funcional na plaqueta de cenário: `Rosetta` / `Guardiã do Portal`;
+- residentes sem título registrado continuam usando `roleLabel`, sem inventar lore;
+- CSS das plaquetas reserva duas linhas com nome, título menor e itálico, mantendo `!`, `◇` e `?` acima sem obstrução;
+- nenhuma mudança de gameplay, missão, save ou sprites.
+
 # Registro de implementação
 
 ## Terran v0.18 — interiores com missões, equipamento e identidade de NPCs (2026-11-03)

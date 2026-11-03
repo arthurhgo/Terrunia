@@ -1,73 +1,104 @@
-/* Persistent NPC names in both the city and institution interiors. */
-.pixel-city__npc .npc-nameplate,
-.pixel-interior__npc .npc-nameplate {
+/* Terrúnia NPC nameplate: two independently sized lines, never the old 12px marker box. */
+.pixel-city__npc > .npc-nameplate,
+.pixel-interior__npc > .npc-nameplate {
   position: absolute;
-  z-index: 1;
-  top: -42px;
+  z-index: 2;
+  top: -43px;
   left: 50%;
   right: auto;
-  display: block;
+  bottom: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
   width: max-content;
-  min-width: 0;
-  max-width: 194px;
+  min-width: 70px;
+  max-width: 176px;
   height: auto;
-  padding: 3px 6px 4px;
+  min-height: 0;
+  padding: 4px 7px;
   transform: translateX(-50%);
   overflow: visible;
-  white-space: normal;
+  white-space: nowrap;
   border: 1px solid #977646;
   border-radius: 2px;
-  background: #0c202be8;
+  background: #0c202bef;
   box-shadow: 0 2px 0 #060e14ac;
   color: #f9e6b9;
-  font: 700 10px/1.1 var(--display);
+  font: 700 10px/1.15 var(--display);
   letter-spacing: .1px;
   text-shadow: 1px 1px 0 #04070b;
   pointer-events: none;
   user-select: none;
 }
 
-.pixel-city__npc:hover .npc-nameplate,
-.pixel-city__npc:focus-visible .npc-nameplate,
-.pixel-interior__npc:hover .npc-nameplate,
-.pixel-interior__npc:focus-visible .npc-nameplate {
+/* Explicit title/role line; the parent NPC's generic <span> marker rules must not apply. */
+.pixel-city__npc .npc-nameplate__name,
+.pixel-interior__npc .npc-nameplate__name {
+  position: static;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  color: #f9e6b9;
+  font: inherit;
+  font-weight: 700;
+  line-height: 12px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pixel-city__npc .npc-nameplate__subtitle,
+.pixel-interior__npc .npc-nameplate__subtitle {
+  position: static;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  min-height: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #d0d9d8;
+  font: italic 400 9px/11px Georgia, serif;
+  letter-spacing: 0;
+  text-shadow: 1px 1px 0 #02060b;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pixel-city__npc:hover > .npc-nameplate,
+.pixel-city__npc:focus-visible > .npc-nameplate,
+.pixel-interior__npc:hover > .npc-nameplate,
+.pixel-interior__npc:focus-visible > .npc-nameplate {
   border-color: #ffe0a4;
   background: #203641f5;
   color: #fff4d8;
 }
+.pixel-city__npc:hover .npc-nameplate__subtitle,
+.pixel-city__npc:focus-visible .npc-nameplate__subtitle,
+.pixel-interior__npc:hover .npc-nameplate__subtitle,
+.pixel-interior__npc:focus-visible .npc-nameplate__subtitle {
+  color: #eef4ed;
+}
 
-/* Quest icons remain above the label instead of covering the NPC's name. */
-.pixel-city__npc .npc-nameplate + .npc-quest-marker,
-.pixel-interior__npc .npc-nameplate + .npc-quest-marker {
+/* Keep ? / ! / side-quest symbols above the full two-line plate. */
+.pixel-city__npc > .npc-nameplate + .npc-quest-marker,
+.pixel-interior__npc > .npc-nameplate + .npc-quest-marker {
+  z-index: 3;
+  top: -73px;
+}
+.pixel-city__npc > .npc-nameplate + .npc-question-bubble,
+.pixel-interior__npc > .npc-nameplate + .npc-question-bubble {
   z-index: 3;
   top: -70px;
-}
-
-.pixel-city__npc .npc-nameplate + .npc-question-bubble,
-.pixel-interior__npc .npc-nameplate + .npc-question-bubble {
-  z-index: 3;
-  top: -67px;
-}
-
-/* Title and function come from the NPC's real catalog/presence metadata. */
-.npc-nameplate__name {
-  display: block;
-  font: inherit;
-  white-space: nowrap;
-  text-align: center;
-}
-.npc-nameplate__subtitle {
-  display: block;
-  margin-top: 3px;
-  max-width: 182px;
-  color: #aebdc0;
-  font: italic 400 8px/1.25 Georgia, serif;
-  letter-spacing: 0;
-  text-shadow: 1px 1px #02060b;
-  text-align: center;
-  overflow-wrap: break-word;
-}
-.pixel-city__npc:hover .npc-nameplate__subtitle,
-.pixel-interior__npc:hover .npc-nameplate__subtitle {
-  color: #d8e1dd;
 }
