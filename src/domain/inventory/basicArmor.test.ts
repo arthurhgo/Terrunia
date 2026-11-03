@@ -8,6 +8,7 @@ import { buyMarketItem } from '../terran/market'
 import { equipBasicArmor, getEquippedBasicArmor, refineBasicArmor } from './basicArmor'
 import { deriveCharacterStats } from '../character/derivedStats'
 import { createBoundItem } from '../bond/boundItems'
+import { migrateAndValidateSave } from '../../persistence/saveSchema'
 import { transferBaseChestItem, BASE_LOCATION_ID } from '../terran/base'
 import type { Result } from '../shared/types'
 
@@ -132,4 +133,46 @@ describe('Rosetta e as proteções de treino', () => {
     save.world.currentLocationId = 'location_terran_bond_workshop'
     expect(turnInQuest(save, 'rosetta_tutorial_supply', 'npc_rosetta', content, now)).toMatchObject({ ok: false, code: 'TUTORIAL_LOCATION' })
   })
+  it('avança da túnica inicial ao reforço sem comprar o couro opcional', () => {
+    let save = start(fresh(), 'rosetta_tutorial_equip')
+    const tunic = save.inventory.find((item) => item.definitionId === 'equipment_worn_linen_tunic')!
+    save = take(equipBasicArmor(save, tunic.instanceId, content, now))
+    save = finish(save, 'rosetta_tutorial_equip')
+    save = start(save, 'rosetta_tutorial_supply')
+    save.world.currentLocationId = 'location_terran_bond_workshop'
+    save = take(buyMarketItem(save, 'presence_neris', 'consumable_minor_tonic', 1, content, now))
+    save = finish(save, 'rosetta_tutorial_supply')
+    expect(save.quests.rosetta_tutorial_refine.status).toBe('available')
+    expect(save.quests.rosetta_tutorial_armor.status).toBe('available')
+    save = start(save, 'rosetta_tutorial_refine')
+    save.world.currentLocationId = 'location_terran_forge'
+    save = take(refineBasicArmor(save, tunic.instanceId, content, now))
+    expect(save.quests.rosetta_tutorial_refine.status).toBe('ready_to_turn_in')
+    save = finish(save, 'rosetta_tutorial_refine')
+    expect(save.quests.rosetta_tutorial_armor.status).toBe('available')
+    expect(save.wallet.gold).toBe(54)
+    expect(save.character.basicArmorInstanceId).toBe(tunic.instanceId)
+    expect(save.inventory.find((item) => item.instanceId === tunic.instanceId)?.refinementLevel).toBe(1)
+  })
+
+  it('reabre reforço em save antigo com couro opcional pendente sem alterar conquistas', () => {
+    let save = start(fresh(), 'rosetta_tutorial_equip')
+    const tunic = save.inventory[0]
+    save = take(equipBasicArmor(save, tunic.instanceId, content, now))
+    save = finish(save, 'rosetta_tutorial_equip')
+    save = start(save, 'rosetta_tutorial_supply')
+    save.world.currentLocationId = 'location_terran_bond_workshop'
+    save = take(buyMarketItem(save, 'presence_neris', 'consumable_minor_tonic', 1, content, now))
+    save = finish(save, 'rosetta_tutorial_supply')
+    const legacy = structuredClone(save)
+    legacy.quests.rosetta_tutorial_refine.status = 'locked'
+    legacy.quests.rosetta_tutorial_armor.status = 'active'
+    const restored = migrateAndValidateSave(legacy)
+    expect(restored.quests.rosetta_tutorial_refine.status).toBe('available')
+    expect(restored.quests.rosetta_tutorial_armor.status).toBe('active')
+    expect(restored.wallet).toEqual(legacy.wallet)
+    expect(restored.inventory).toEqual(legacy.inventory)
+    expect(restored.character.bondedEquipment).toEqual(legacy.character.bondedEquipment)
+  })
+
 })
