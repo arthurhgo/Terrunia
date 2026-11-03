@@ -312,6 +312,7 @@ const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
     if (!actor?.alive) continue
 
     addPhase(state, 'TurnStart')
+    addLog(state, `Turno de ${actor.name} · Iniciativa ${actor.initiative}.`, 'system')
     applyStartStatuses(state, actor, catalog)
     addPhase(state, 'CheckEndConditions')
     if (checkBattleEnd(state)) return
@@ -366,6 +367,7 @@ export const createBattle = (
   addLog(state, `${encounter.name} bloqueia o avanço em Astravél.`, 'system')
   const actor = state.combatants[state.actorId]
   addPhase(state, 'TurnStart')
+  addLog(state, `Turno de ${actor.name} · Iniciativa ${actor.initiative}.`, 'system')
   applyStartStatuses(state, actor, catalog)
   if (actor.side === 'player') {
     addPhase(state, 'AwaitingAction')
