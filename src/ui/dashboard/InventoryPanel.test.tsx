@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../../domain/game/createSave'
 import { InventoryPanel } from './InventoryPanel'
@@ -14,6 +14,8 @@ const makeSave = () => {
   )
   return save
 }
+
+afterEach(cleanup)
 
 describe('Inventário v0.15', () => {
   it('seleciona apenas um item por vez e expõe ação de equipar', () => {
