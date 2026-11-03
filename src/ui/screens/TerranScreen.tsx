@@ -25,6 +25,7 @@ import { GameShell } from '../components/GameShell'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { PixelCityCanvas } from '../terran/PixelCityCanvas'
 import { PixelInteriorCanvas } from '../terran/PixelInteriorCanvas'
+import { getNpcSubtitle } from '../terran/NpcNameplate'
 import { EldamarRecords } from '../terran/EldamarRecords'
 import { RosettaGuide } from '../terran/RosettaGuide'
 import { TerranCharacterHud } from '../terran/TerranCharacterHud'
@@ -90,7 +91,7 @@ function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
         {getVisibleNpcsInLocation(save, location.id as TerranLocationId).map(({ presence }) => (
           <button type="button" key={presence.id} aria-label={`Falar com ${presence.label}`} onClick={() => onTalk(presence)}>
             <AssetImage assetId={getPresencePortrait(presence)} className="terran-npc-avatar" />
-            <span><strong>{presence.label}</strong><small>{presence.roleLabel}</small></span>
+            <span><strong>{presence.label}</strong><small>{getNpcSubtitle(presence)}</small></span>
             <i>Falar</i>
           </button>
         ))}
