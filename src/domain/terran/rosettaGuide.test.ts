@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
-import { getRosettaGuidance, getRosettaQuestRoutes } from './rosettaGuide'
+import { getRosettaGuidance, getRosettaQuestRoutes, getTrackedQuestRoute } from './rosettaGuide'
 
 const fresh = () => createNewSave('guide-test', 'Terrírian', 'character.terririan.default', content, '2026-10-30T00:00:00Z')
 
@@ -84,4 +84,46 @@ describe('Rosetta orienta usando apenas dados do save', () => {
     expect(routes.find((route) => route.questIds.includes('vs_astravel_first_contact'))?.locationId).toBe('location_terran_portal_plaza')
     expect(routes.find((route) => route.questIds.includes('side_street_arlen'))?.npcId).toBe('npc_street_arlen')
   })
+  it('resolve rota principal dourada do jogador para o objetivo e NPC de entrega', () => {
+    const save = fresh()
+    save.quests.vs_astravel_first_contact.status = 'active'
+    save.quests.vs_astravel_first_contact.tracked = true
+    expect(getTrackedQuestRoute(save, content)).toMatchObject({
+      questId: 'vs_astravel_first_contact', tone: 'gold', opacity: 1,
+      npcId: 'npc_eldamar', locationId: 'location_terran_eldamar_house',
+      questIds: ['vs_astravel_first_contact'],
+    })
+    save.quests.vs_astravel_first_contact.status = 'ready_to_turn_in'
+    expect(getTrackedQuestRoute(save, content)?.npcId).toBe('npc_eldamar')
+    save.quests.vs_astravel_first_contact.status = 'completed'
+    expect(getTrackedQuestRoute(save, content)).toBeNull()
+  })
+
+  it('usa azul claro com 20% de opacidade para secundária e direciona combate ao Portal', () => {
+    const save = fresh()
+    save.quests.side_street_arlen.status = 'active'
+    save.quests.side_street_arlen.tracked = true
+    expect(getTrackedQuestRoute(save, content)).toMatchObject({
+      questId: 'side_street_arlen', tone: 'blue', opacity: 0.2,
+      locationId: 'location_terran_portal_plaza',
+    })
+    save.quests.side_street_arlen.status = 'ready_to_turn_in'
+    expect(getTrackedQuestRoute(save, content)).toMatchObject({
+      npcId: 'npc_street_arlen', locationId: 'location_terran_eldamar_house',
+    })
+    save.quests.side_street_arlen.tracked = false
+    expect(getTrackedQuestRoute(save, content)).toBeNull()
+  })
+
+  it('não inventa caminho físico quando a missão pede apenas equipar na mochila', () => {
+    const save = fresh()
+    save.quests.rosetta_tutorial_supply.status = 'active'
+    save.quests.rosetta_tutorial_supply.tracked = true
+    expect(getTrackedQuestRoute(save, content)).toBeNull()
+    save.quests.rosetta_tutorial_supply.objectives.wear_armor = 1
+    expect(getTrackedQuestRoute(save, content)).toMatchObject({
+      locationId: 'location_terran_bond_workshop', tone: 'gold',
+    })
+  })
+
 })
