@@ -92,6 +92,9 @@ export function getTrackedQuestRoute(save: GameSave, catalog: ContentCatalog): T
       locationId = 'location_terran_forge'
     } else if (objective?.type === 'visit' && catalog.terranLocations[objective.targetId]) {
       locationId = objective.targetId
+    } else if (objective?.type === 'kill' || objective?.type === 'collect') {
+      // Portal is the verified access point for Astravél encounters/instanced loot.
+      locationId = 'location_terran_portal_plaza'
     } else {
       locationId ??= getRosettaNpcLocation(quest.giverNpcId, catalog)
     }
