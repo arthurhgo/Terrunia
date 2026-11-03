@@ -9,7 +9,6 @@ import { ArcanePanel } from '../components/ArcanePanel'
 import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
 import { Modal } from '../components/Modal'
-import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
 
 type Action = 'convert' | 'sell' | null
@@ -23,7 +22,6 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
   const [hovered, setHovered] = useState<{ instanceId: string; x: number; y: number } | null>(null)
   const [action, setAction] = useState<Action>(null)
   const [filter, setFilter] = useState<'all' | 'equipment' | 'convertible' | 'sellable'>('all')
-  const equippedArmor = getEquippedBasicArmor(save, content)
   const selectedArmorInstance = selected ? save.inventory.find((item) => selected === item.instanceId) : null
   const selectedArmorDefinition = selectedArmorInstance && content.items[selectedArmorInstance.definitionId]
   const selectedArmor = selectedArmorInstance && selectedArmorDefinition?.basicArmor
