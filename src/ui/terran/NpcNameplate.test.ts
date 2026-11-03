@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
+import { createElement } from 'react'
 import { afterEach } from 'vitest'
 import { content } from '../../content/catalog'
 import { getNpcSubtitle, NpcNameplate } from './NpcNameplate'
@@ -20,7 +21,7 @@ describe('Identidade dos NPCs no cenário', () => {
     const presence = content.terranLocations.location_terran_portal_plaza.npcPresences
       .find((entry) => entry.id === 'presence_rosetta')!
     expect(getNpcSubtitle(presence)).toBe('Guardiã do Portal')
-    const { container } = render(<NpcNameplate presence={presence} />)
+    const { container } = render(createElement(NpcNameplate, { presence }))
     const label = container.querySelector('.npc-nameplate')!
     expect(label.querySelector('.npc-nameplate__name')).toHaveTextContent('Rosetta')
     expect(label.querySelector('.npc-nameplate__subtitle')).toHaveTextContent('Guardiã do Portal')
