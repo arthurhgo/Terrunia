@@ -78,7 +78,7 @@ describe('interfaces de Terran', () => {
     expect(container.querySelector('.rosetta-minimap-lines')).toHaveAttribute('data-route-tone', 'gold')
     expect(screen.getByText(/MISSÃO ATUAL/)).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Detalhes da missão Patrulha de Arlen' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Detalhes da missão Caminhos de Entrega' }))
     fireEvent.click(screen.getByRole('button', { name: 'Rastrear missão' }))
     expect(useGameStore.getState().save?.quests.side_street_arlen.tracked).toBe(true)
     expect(useGameStore.getState().save?.quests.vs_astravel_first_contact.tracked).toBe(false)
