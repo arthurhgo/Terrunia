@@ -1,3 +1,11 @@
+## Terran v0.22 — confirmação direta de missões nos NPCs (2026-11-03)
+
+- remove passo redundante Ouvir a oferta no `QuestNpcPanel`;
+- dois botões na mesma missão: **Agora não** e **Aceitar missão**, com destaque e responsividade;
+- disponível → oferta validada → ativa numa só transação de save; offered permanece compatível;
+- aceite rastreia somente a missão selecionada, sem recompensas antecipadas; tarefas/entregas seguem inalteradas;
+- regressão em `DialogueWindow.test.tsx`, detalhes em `QUEST_DIRECT_CONFIRMATION_v0.22.md`.
+
 ## Batalha v0.21 — slots reais e status dos equipamentos (2026-11-03)
 
 - removidos ícones sempre ativos/placeholder da antiga linha de equips;

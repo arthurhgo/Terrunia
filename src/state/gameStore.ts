@@ -333,7 +333,13 @@ export const useGameStore = create<GameState>((set, get) => {
     acceptQuest: (questId) => {
       const save = get().save
       if (!save) return
-      const accepted = acceptQuestDomain(save, questId, content, nowIso())
+      // Single-click acceptance from the quest panel: validate and offer in memory,
+      // then accept once. Persist a single atomic save instead of an intermediate offer.
+      const candidate = save.quests[questId]?.status === 'available'
+        ? offerQuestDomain(save, questId, content, nowIso())
+        : { ok: true as const, value: save }
+      if (!candidate.ok) return failAction(candidate.message)
+      const accepted = acceptQuestDomain(candidate.value, questId, content, nowIso())
       if (!accepted.ok) return failAction(accepted.message)
       let next = accepted.value
       if (questId === 'vs_astravel_first_contact') {

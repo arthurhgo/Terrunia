@@ -135,7 +135,6 @@ export function VorrenBestiary({ save }: { save: GameSave }) {
 }
 
 export function QuestNpcPanel({ save, questId, onClose, onSelectQuest }: { save: GameSave; questId: string; onClose: () => void; onSelectQuest?: (id: string) => void }) {
-  const offer = useGameStore((state) => state.offerQuest)
   const accept = useGameStore((state) => state.acceptQuest)
   const decline = useGameStore((state) => state.declineQuest)
   const complete = useGameStore((state) => state.turnInQuest)
@@ -167,10 +166,12 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest }: { save:
       {definition.turnInItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />
         {content.items[input.itemId].name}<strong>{getDeliverableCount(save, input.itemId, content)}/{input.quantity}</strong></span>)}
     </div>}
-    {progress.status === 'available' && <button type="button" className="terran-service-action" onClick={() => offer(questId)}>Ouvir a oferta</button>}
-    {progress.status === 'offered' && <div className="terran-quest-dialog__actions">
-      <button type="button" onClick={() => { decline(questId); onClose() }}>Agora não</button>
-      <button type="button" onClick={() => { accept(questId); onClose() }}>Aceitar missão</button>
+    {['available', 'offered'].includes(progress.status) && <div className="terran-quest-dialog__actions"
+      role="group" aria-label={`Confirmar missão: ${definition.title}`}>
+      <button type="button" className="terran-quest-dialog__later"
+        onClick={() => { if (progress.status === 'offered') decline(questId); onClose() }}>Agora não</button>
+      <button type="button" className="terran-quest-dialog__accept"
+        onClick={() => { accept(questId); onClose() }}><Check size={16} /> Aceitar missão</button>
     </div>}
     {progress.status === 'ready_to_turn_in' && <button type="button" className="terran-service-action" onClick={() => { complete(questId, definition.turnInNpcId); onClose() }}><Check size={17} /> Entregar missão</button>}
     {progress.status === 'active' && definition.category === 'main' && definition.objectives.some((objective) => objective.type === 'interact') &&

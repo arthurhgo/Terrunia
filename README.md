@@ -14,6 +14,10 @@ A proteção simples equipada agora é transferida da mochila para um **slot per
 
 A proteção simples equipada deixa de ocupar espaço visual na grade da mochila (sem apagar a instância salva). Missões rastreadas e caminhos de Rosetta continuam dentro das casas, até NPCs ou saídas, com linhas douradas e azuis de sidequests. NPCs exibem título/função em linha itálica menor sob o nome. [Documento v0.18](docs/INTERIOR_QUEST_PATHS_EQUIPPED_NPC_LABELS_v0.18.md).
 
+## Confirmação direta de missões v0.22
+
+Nos diálogos das missões dos NPCs, o botão intermediário **Ouvir a oferta** foi substituído por **Agora não** e **Aceitar missão** na própria missão selecionada. O aceite valida os requisitos e persiste em uma ação, sem recompensar antecipadamente. [Contrato v0.22](docs/QUEST_DIRECT_CONFIRMATION_v0.22.md).
+
 ## HUD de equipamentos em combate v0.21
 
 A batalha agora lê os **cinco itens realmente equipados**, cinza os slots vazios e abre atributos por hover, foco ou toque; distingue proteção simples (Tier/refinamento) dos Vínculos (Grau/Ressonância) e resume apenas bônus diretamente atribuíveis ao equipamento. [Especificação e critérios](docs/BATTLE_EQUIPMENT_HUD_v0.21.md).
