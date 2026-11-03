@@ -77,8 +77,11 @@ export const getQuestJournalGroups = (entries: QuestJournalEntry[]) => [
 export type NpcQuestMarker = 'available' | 'turnIn' | null
 
 export const getNpcActionableQuests = (save: GameSave, npcId: string, catalog: ContentCatalog) =>
-  Object.values(catalog.quests).filter((quest) => quest.giverNpcId === npcId &&
-    ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status ?? 'locked'))
+  Object.values(catalog.quests).filter((quest) => {
+    const status = save.quests[quest.id]?.status ?? 'locked'
+    return (quest.giverNpcId === npcId && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(status))
+      || (quest.turnInNpcId === npcId && status === 'ready_to_turn_in')
+  })
     .sort((a, b) => {
       const priority = { ready_to_turn_in: 0, active: 1, offered: 2, available: 3, locked: 4, completed: 5 }
       return priority[save.quests[a.id].status] - priority[save.quests[b.id].status]
