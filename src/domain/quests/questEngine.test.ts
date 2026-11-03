@@ -9,6 +9,8 @@ import {
   declineQuest,
   getActiveQuestCount,
   offerQuest,
+  normalizeTrackedQuests,
+  setQuestTracked,
   turnInQuest,
 } from './questEngine'
 
@@ -102,4 +104,63 @@ describe('quest engine', () => {
     const completed = turnInQuest(save, 'vs_astravel_first_contact', 'npc_eldamar', content, '2026-08-12T15:02:00.000Z')
     expect(completed.ok && getActiveQuestCount(completed.value)).toBe(0)
   })
+  it('mantém só uma missão atual e permite limpar o caminho sem perder objetivos', () => {
+    const now = '2026-11-03T12:00:00Z'
+    const save = createNewSave('tracker', 'Lysa', 'character.terririan.default', content, now)
+    save.quests.vs_astravel_first_contact.status = 'active'
+    save.quests.side_street_arlen.status = 'active'
+    const main = setQuestTracked(save, 'vs_astravel_first_contact', true, now)
+    expect(main.ok).toBe(true)
+    if (!main.ok) return
+    const side = setQuestTracked(main.value, 'side_street_arlen', true, now)
+    expect(side.ok).toBe(true)
+    if (!side.ok) return
+    expect(Object.values(side.value.quests).filter((quest) => quest.tracked).map((quest) => quest.questId))
+      .toEqual(['side_street_arlen'])
+    expect(side.value.quests.vs_astravel_first_contact.status).toBe('active')
+    const cleared = setQuestTracked(side.value, 'side_street_arlen', false, now)
+    expect(cleared.ok).toBe(true)
+    if (!cleared.ok) return
+    expect(Object.values(cleared.value.quests).filter((quest) => quest.tracked)).toHaveLength(0)
+    expect(cleared.value.quests.side_street_arlen.status).toBe('active')
+    expect(save.quests.side_street_arlen.tracked).toBe(false)
+    expect(setQuestTracked(save, 'rosetta_tutorial_armor', true, now))
+      .toMatchObject({ ok: false, code: 'QUEST_NOT_JOURNALED' })
+  })
+
+  it('aceitar outra missão muda o foco, mas a conclusão paralela não rouba o rastreamento', () => {
+    const now = '2026-11-03T12:00:00Z'
+    const save = createNewSave('tracker', 'Lysa', 'character.terririan.default', content, now)
+    save.quests.vs_astravel_first_contact.status = 'active'
+    save.quests.vs_astravel_first_contact.tracked = true
+    save.quests.side_street_arlen.status = 'offered'
+    const accepted = acceptQuest(save, 'side_street_arlen', content, now)
+    expect(accepted.ok).toBe(true)
+    if (!accepted.ok) return
+    expect(accepted.value.quests.side_street_arlen.tracked).toBe(true)
+    expect(accepted.value.quests.vs_astravel_first_contact.tracked).toBe(false)
+    const event = applyQuestEvent(accepted.value, { type: 'talk', targetId: 'npc_eldamar' }, content, now)
+    // The next action is still side-street even when the Eldamar objective advances.
+    expect(event.quests.side_street_arlen.tracked).toBe(true)
+    expect(event.quests.vs_astravel_first_contact.tracked).toBe(false)
+  })
+
+  it('normaliza flags simultâneas de save legado de maneira estável', () => {
+    const save = createNewSave('tracker', 'Lysa', 'character.terririan.default', content)
+    save.quests.vs_astravel_first_contact.status = 'active'
+    save.quests.side_street_arlen.status = 'ready_to_turn_in'
+    save.quests.vs_astravel_first_contact.tracked = true
+    save.quests.side_street_arlen.tracked = true
+    save.eventLog.push('QuestTrackingChanged:side_street_arlen:true')
+    const snapshot = structuredClone(save)
+    const normalized = migrateAndValidateSave(save)
+    expect(normalized.quests.side_street_arlen.tracked).toBe(true)
+    expect(normalized.quests.vs_astravel_first_contact.tracked).toBe(false)
+    expect(normalized.inventory).toEqual(snapshot.inventory)
+    expect(normalized.character).toEqual(snapshot.character)
+    expect(normalized.quests.vs_astravel_first_contact.objectives).toEqual(snapshot.quests.vs_astravel_first_contact.objectives)
+    expect(migrateAndValidateSave(normalized)).toEqual(normalized)
+    expect(normalizeTrackedQuests(normalized)).toBe(normalized)
+  })
+
 })

@@ -13,7 +13,8 @@ import type { ActorFacing } from './pixelActorArt'
 import { PLAYER_HOME_DOOR, PLAYER_HOME_CENTER } from './roomContent'
 import { CITY_NPC_SIZE, CITY_VIEW_WIDTH, CITY_VIEW_HEIGHT, getCityCamera, getCityDistrict, cityScreenToWorld, getLandmarkApproach } from './cityWorld'
 import { terranLandmarks, cityLandmarkFlag, type TerranLandmark } from '../../content/terranExploration'
-import type { RosettaQuestRoute } from '../../domain/terran/rosettaGuide'
+import type { RosettaQuestRoute, TrackedQuestRoute } from '../../domain/terran/rosettaGuide'
+import './questTrackingPaths.css'
 
 type Direction = ActorFacing
 type Destination = {
@@ -41,6 +42,9 @@ type Props = {
   landmarkFlags: readonly string[]
   questRoutes?: readonly RosettaQuestRoute[]
   showQuestRoutes?: boolean
+  /** Journal mode shows only the selected quest, starting at the player. */
+  showTrackedQuestRoute?: boolean
+  trackedQuestRoute?: TrackedQuestRoute | null
   onHideQuestRoutes?: () => void
 }
 
@@ -70,12 +74,17 @@ const nearestNpc = (point: WorldPoint, actors: readonly CityActor[], radius: num
   return nearest
 }
 
-export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocationId, enabled, objectiveId, actors, homeUnlocked, spawnPoint, onEnterHome, onEnter, onTalk, onInspectLandmark, landmarkFlags, questRoutes = [], showQuestRoutes = false, onHideQuestRoutes }: Props) {
+export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocationId, enabled, objectiveId, actors, homeUnlocked, spawnPoint, onEnterHome, onEnter, onTalk, onInspectLandmark, landmarkFlags, questRoutes = [], showQuestRoutes = false, showTrackedQuestRoute = false, trackedQuestRoute = null, onHideQuestRoutes }: Props) {
   const [rosettaHovered, setRosettaHovered] = useState(false)
   const [rosettaFocused, setRosettaFocused] = useState(false)
-  const routesVisible = enabled && (rosettaHovered || rosettaFocused || showQuestRoutes)
+  // In the open journal, the tracked route replaces Rosetta's multi-quest preview.
+  const visibleRoutes: readonly RosettaQuestRoute[] = showTrackedQuestRoute
+    ? trackedQuestRoute ? [trackedQuestRoute] : [] : questRoutes
+  const routesVisible = enabled && (showTrackedQuestRoute
+    ? Boolean(trackedQuestRoute) : rosettaHovered || rosettaFocused || showQuestRoutes)
   const routesVisibleRef = useRef(routesVisible); routesVisibleRef.current = routesVisible
-  const routesRef = useRef(questRoutes); routesRef.current = questRoutes
+  const trackingModeRef = useRef(showTrackedQuestRoute); trackingModeRef.current = showTrackedQuestRoute
+  const routesRef = useRef(visibleRoutes); routesRef.current = visibleRoutes
   const routePathsRef = useRef(new Map<string, SVGPathElement>())
   const routeCacheRef = useRef(new Map<string, { key: string; d: string }>())
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -188,7 +197,8 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
       })
       liveActorsRef.current = liveCast
       if (routesVisibleRef.current) {
-        const source = liveCast.find((actor) => actor.presence.npcId === 'npc_rosetta')?.point
+        const source = trackingModeRef.current ? playerRef.current
+          : liveCast.find((actor) => actor.presence.npcId === 'npc_rosetta')?.point
         if (source) for (const route of routesRef.current) {
           const target = route.player ? playerRef.current : liveCast.find((actor) => route.npcId && actor.presence.npcId === route.npcId)?.point
             ?? getCityDoor(TERRAN_LOCATION_IDS.find((id) => id === route.locationId) ?? 'location_terran_portal_plaza')
@@ -321,8 +331,11 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
         className="pixel-city__canvas" role="img" tabIndex={0}
         aria-label="Terran vista superior 3/4; caminhe por WASD, setas ou toque" />
       <div ref={worldRef} className="pixel-city__sites pixel-city__world" style={{ width: `${CITY_WIDTH / CITY_VIEW_WIDTH * 100}%`, height: `${CITY_HEIGHT / CITY_VIEW_HEIGHT * 100}%`, transform: `translate(${-cameraRef.current.x / CITY_WIDTH * 100}%, ${-cameraRef.current.y / CITY_HEIGHT * 100}%)` }}>
-        {routesVisible && <svg className="rosetta-quest-lines" viewBox={`0 0 ${CITY_WIDTH} ${CITY_HEIGHT}`} role="img" aria-label="Caminhos dourados de Rosetta" data-reduced-motion={reducedMotion}>
-          {questRoutes.map((route) => <path key={route.id} data-quest-ids={route.questIds.join(' ')}
+        {routesVisible && <svg className="rosetta-quest-lines" viewBox={`0 0 ${CITY_WIDTH} ${CITY_HEIGHT}`} role="img"
+          aria-label={showTrackedQuestRoute ? 'Caminho pontilhado da missão rastreada' : 'Caminhos dourados de Rosetta'}
+          data-route-mode={showTrackedQuestRoute ? 'tracked' : 'rosetta'}
+          data-route-tone={showTrackedQuestRoute ? trackedQuestRoute?.tone : 'gold'} data-reduced-motion={reducedMotion}>
+          {visibleRoutes.map((route) => <path key={route.id} data-quest-ids={route.questIds.join(' ')}
             ref={(path) => { if (path) routePathsRef.current.set('world:' + route.id, path); else routePathsRef.current.delete('world:' + route.id) }}><title>{route.titles.join(' · ')}</title></path>)}
         </svg>}
         {TERRAN_LOCATION_IDS.map((id) => {
@@ -381,7 +394,9 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
           })}
           {terranLandmarks.map((landmark) => <circle key={landmark.id} cx={landmark.point.x} cy={landmark.point.y} r="9" fill={landmarkFlags.includes(cityLandmarkFlag(landmark.id)) ? '#8caf8a' : '#d0ac69'} />)}
           {actors.filter((actor) => actor.marker).map((actor) => <circle key={actor.id} cx={actor.point.x} cy={actor.point.y} r="8" fill={actor.markerPhase === 'active' ? '#9da2a5' : actor.marker === '?' ? '#d56b72' : actor.marker === '!' ? '#f4ce65' : '#70c5df'} />)}
-          {routesVisible && <g className="rosetta-minimap-lines" aria-hidden="true">{questRoutes.map((route) => <path key={route.id}
+          {routesVisible && <g className="rosetta-minimap-lines" aria-hidden="true"
+            data-route-mode={showTrackedQuestRoute ? 'tracked' : 'rosetta'}
+            data-route-tone={showTrackedQuestRoute ? trackedQuestRoute?.tone : 'gold'}>{visibleRoutes.map((route) => <path key={route.id}
             ref={(path) => { if (path) routePathsRef.current.set('map:' + route.id, path); else routePathsRef.current.delete('map:' + route.id) }} />)}</g>}
           <rect ref={mapViewRef} x={cameraRef.current.x} y={cameraRef.current.y} width={CITY_VIEW_WIDTH} height={CITY_VIEW_HEIGHT} fill="none" stroke="#e5d6ad" strokeWidth="5" pointerEvents="none" />
           <circle ref={mapPlayerRef} cx={playerRef.current.x} cy={playerRef.current.y} r="11" fill="#ffe6a1" stroke="#17272d" strokeWidth="4" pointerEvents="none" />
@@ -389,8 +404,10 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
         <small>! Missão · ◇ Sidequest · cinza: aceita</small>
         <small>{terranLandmarks.filter((landmark) => landmarkFlags.includes(cityLandmarkFlag(landmark.id))).length}/{terranLandmarks.length} pontos explorados</small>
       </aside>
-      {routesVisible && <div className="rosetta-routes-caption"><span>{questRoutes.length} {questRoutes.length === 1 ? 'destino' : 'destinos'} de missão</span>
-        {showQuestRoutes && <button type="button" onClick={() => { setRosettaHovered(false); setRosettaFocused(false); onHideQuestRoutes?.() }}>Ocultar caminhos</button>}</div>}
+      {routesVisible && <div className="rosetta-routes-caption">
+        <span>{showTrackedQuestRoute ? `Rastreando: ${trackedQuestRoute?.titles[0] ?? ''}`
+          : `${questRoutes.length} ${questRoutes.length === 1 ? 'destino' : 'destinos'} de missão`}</span>
+        {!showTrackedQuestRoute && showQuestRoutes && <button type="button" onClick={() => { setRosettaHovered(false); setRosettaFocused(false); onHideQuestRoutes?.() }}>Ocultar caminhos</button>}</div>}
       <select className="city-destination" aria-label="Destino em Terran" defaultValue="" disabled={!enabled} onChange={(event) => {
         const value = event.target.value
         if (value === 'home') walkToHome()

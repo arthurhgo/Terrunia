@@ -118,6 +118,8 @@ export const acceptQuest = (
       save.inventory.some((item) => item.instanceId === `lesson_${questId}_${input.itemId}`)) return fail('TUTORIAL_SUPPLIES', 'Os materiais desta lição não estão disponíveis para um novo recebimento.')
   }
   const next = structuredClone(save)
+  // Accepting a new quest makes it the only active visual objective.
+  for (const quest of Object.values(next.quests)) quest.tracked = false
   next.quests[questId].status = 'active'
   next.quests[questId].tracked = true
   next.quests[questId].acceptedAt = now
@@ -140,6 +142,28 @@ export const acceptQuest = (
   return ok(refreshTutorialQuestProgress(refreshDeliveryQuestProgress(reconciled, catalog, now), catalog, now))
 }
 
+/** Upgrade old saves with multiple flags without touching objectives, rewards or equipment. */
+export const normalizeTrackedQuests = (save: GameSave): GameSave => {
+  const active = Object.values(save.quests).filter((quest) =>
+    quest.tracked && ['active', 'ready_to_turn_in'].includes(quest.status))
+  if (active.length <= 1) return save
+  const trackedIds = new Set(active.map((quest) => quest.questId))
+  const mostRecent = [...save.eventLog].reverse().find((event) => {
+    const match = /^(?:QuestTrackingChanged:([^:]+):true|QuestAccepted:([^:]+))$/.exec(event)
+    return match && trackedIds.has(match[1] ?? match[2])
+  })
+  const chosen = mostRecent
+    ? (/^(?:QuestTrackingChanged:([^:]+):true|QuestAccepted:([^:]+))$/.exec(mostRecent)?.slice(1).find(Boolean) ?? active[0].questId)
+    : active[0].questId
+  const next = structuredClone(save)
+  for (const quest of Object.values(next.quests)) {
+    if (quest.questId !== chosen && quest.tracked) quest.tracked = false
+  }
+  next.revision += 1
+  next.eventLog.push(`QuestTrackingNormalized:${chosen}`)
+  return next
+}
+
 export const setQuestTracked = (
   save: GameSave,
   questId: string,
@@ -150,8 +174,12 @@ export const setQuestTracked = (
   if (!progress || !['active', 'ready_to_turn_in'].includes(progress.status)) {
     return fail('QUEST_NOT_JOURNALED', 'Somente missões do Journal podem ser rastreadas.')
   }
-  if (progress.tracked === tracked) return ok(save)
+  // Changing the current quest is exclusive, including when older saves had multiple flags.
+  const alreadyExclusive = !tracked || Object.values(save.quests).every((quest) =>
+    quest.questId === questId || !quest.tracked)
+  if (progress.tracked === tracked && alreadyExclusive) return ok(save)
   const next = structuredClone(save)
+  if (tracked) for (const quest of Object.values(next.quests)) quest.tracked = false
   next.quests[questId].tracked = tracked
   next.updatedAt = now
   next.revision += 1
@@ -261,7 +289,8 @@ export const applyQuestEvent = (
     }
     if (definition.objectives.every((objective) => (progress.objectives[objective.id] ?? 0) >= objective.required)) {
       progress.status = 'ready_to_turn_in'
-      progress.tracked = true
+      // An unrelated delivery becoming ready must not steal the player's chosen route.
+      if (!Object.values(next.quests).some((quest) => quest.tracked)) progress.tracked = true
       next.eventLog.push(`QuestReadyToTurnIn:${definition.id}`)
     }
   }

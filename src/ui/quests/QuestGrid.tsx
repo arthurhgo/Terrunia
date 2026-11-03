@@ -3,9 +3,9 @@ import { useId, useState } from 'react'
 import { content } from '../../content/catalog'
 import type { QuestCategory } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
-import { getQuestJournalEntries, getQuestJournalGroups, getQuestStatusLabel, getSuggestedQuest, type QuestJournalEntry } from '../../domain/quests/questSelectors'
+import { getQuestJournalEntries, getQuestJournalGroups, getQuestStatusLabel, getSuggestedQuest, getTrackedQuestEntries, type QuestJournalEntry } from '../../domain/quests/questSelectors'
 import { useGameStore } from '../../state/gameStore'
-import { getRosettaGuidance } from '../../domain/terran/rosettaGuide'
+import { getRosettaGuidance, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 import { QuestContextNote } from './QuestContextNote'
 import './questRemake.css'
 
@@ -20,6 +20,7 @@ const rewardLabel = (reward: { type: string; value: number }) =>
 
 function QuestDetails({ entry, onTrack, save }: { entry: QuestJournalEntry; onTrack: () => void; save: GameSave }) {
   const { definition, progress } = entry
+  const route = getTrackedQuestRoute(save, content)
   return <div className="quest-board__details" role="region" aria-label={'Detalhes: ' + definition.title}>
     <p>{definition.summary}</p>
     <h4><BookOpen size={15} /> Objetivos</h4>
@@ -46,6 +47,9 @@ function QuestDetails({ entry, onTrack, save }: { entry: QuestJournalEntry; onTr
       {progress.tracked ? <RadioTower size={16} /> : <Radio size={16} />}
       {progress.tracked ? 'Remover rastreamento' : 'Rastrear missão'}
     </button>}
+    {progress.tracked && <small className="quest-board__route-hint">{route?.questId === progress.questId
+      ? 'Caminho pontilhado exibido em Terran enquanto o Diário estiver aberto.'
+      : 'Sem rota visual neste objetivo: consulte os detalhes da missão.'}</small>}
   </div>
 }
 
@@ -61,8 +65,13 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
     category === 'all' || (category === 'completed' ? progress.status === 'completed' :
       progress.status !== 'completed' && definition.category === category))
   const groups = getQuestJournalGroups(filtered)
-  const suggested = getSuggestedQuest(save, content)
-  const recommendation = getRosettaGuidance(save, content).next
+  const current = getTrackedQuestEntries(save, content)[0]
+  const suggested = current ?? getSuggestedQuest(save, content)
+  const guidance = getRosettaGuidance(save, content)
+  const recommendation = current
+    ? [...guidance.ready, ...guidance.inProgress].find((entry) => entry.id === current.progress.questId) ?? guidance.next
+    : guidance.next
+  const currentRoute = getTrackedQuestRoute(save, content)
   const suggestedInJournal = suggested && ['active', 'ready_to_turn_in'].includes(suggested.progress.status)
   const openSuggested = () => {
     if (!suggestedInJournal || !suggested) return
@@ -71,10 +80,13 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
   }
   return <section className={'quest-board quest-board--rows quest-board--remake' + (compact ? ' quest-board--compact' : '')} aria-label="Diário de missões">
     {suggested && recommendation && <aside className="quest-board__focus" aria-label="Próximo objetivo">
-      <span className="quest-board__focus-label">PRÓXIMO PASSO · {getQuestStatusLabel(suggested.progress.status)}</span>
+      <span className="quest-board__focus-label">{current ? 'MISSÃO ATUAL' : 'PRÓXIMO PASSO'} · {getQuestStatusLabel(suggested.progress.status)}</span>
       <strong>{suggested.definition.title}</strong>
       <p>{recommendation.instruction}</p>
       <small>{recommendation.npcName} · {recommendation.locationName}</small>
+      {current && <small className="quest-board__route-hint">{currentRoute
+        ? 'Rota pontilhada ativa no cenário: ' + (currentRoute.tone === 'blue' ? 'azul claro · 20%' : 'dourado')
+        : 'Sem caminho disponível para este objetivo.'}</small>}
       {suggestedInJournal && <button type="button" onClick={openSuggested}>Ver esta missão <ArrowRight size={14} /></button>}
     </aside>}
     <div className="quest-board__filters" role="group" aria-label="Filtrar missões">
@@ -100,7 +112,7 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
           const selected = selectedId === progress.questId
           const total = definition.objectives.reduce((sum, objective) => sum + objective.required, 0)
           const done = definition.objectives.reduce((sum, objective) => sum + Math.min(objective.required, progress.objectives[objective.id] ?? 0), 0)
-          return <div className={'quest-row' + (suggested?.progress.questId === progress.questId ? ' quest-row--priority' : '')} key={progress.questId}>
+          return <div className={'quest-row' + (suggested?.progress.questId === progress.questId ? ' quest-row--priority' : '') + (progress.tracked ? ' quest-row--tracked' : '')} key={progress.questId}>
             <button type="button" className={'quest-tile quest-tile--' + definition.category + (selected ? ' is-selected' : '')}
               data-quest-status={progress.status} aria-label={'Detalhes da missão ' + definition.title} aria-expanded={selected}
               onClick={() => setSelectedId(selected ? null : progress.questId)}>
