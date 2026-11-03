@@ -1,12 +1,13 @@
 import { z } from 'zod'
 import { refreshQuestAvailability, createQuestProgress } from '../domain/quests/questEngine'
+import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
 import { content } from '../content/catalog'
 import { getBoundSlotCapacity } from '../domain/bond/boundItems'
 import type { GameSave } from '../domain/game/types'
 import { deriveCharacterStats } from '../domain/character/derivedStats'
 import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 
-export const CURRENT_SAVE_SCHEMA = 15
+export const CURRENT_SAVE_SCHEMA = 16
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -795,6 +796,30 @@ const migrateV14ToV15 = (legacy: Record<string, unknown>): unknown => {
   return refreshQuestAvailability(next, content, next.updatedAt)
 }
 
+/** Reconcile v0.15 choice rewards while preserving old loaner gear and finished quests. */
+const migrateV15ToV16 = (legacy: Record<string, unknown>): unknown => {
+  const next = structuredClone(legacy) as unknown as GameSave
+  const first = next.quests.rosetta_tutorial_equip
+  if (first && ['active', 'ready_to_turn_in'].includes(first.status)) {
+    const formerEquipmentProof = (first.objectives.wear_armor ?? 0) >= 1
+    const visitedMarket = next.world.unlockedLocationIds.includes('location_terran_bond_workshop')
+    first.objectives.visit_market = formerEquipmentProof || visitedMarket ? 1 : (first.objectives.visit_market ?? 0)
+    if (first.status === 'active' && first.objectives.visit_market >= 1) {
+      first.status = 'ready_to_turn_in'
+      first.tracked = true
+    }
+  }
+  const leather = next.quests.rosetta_tutorial_armor
+  if (leather?.status === 'available' && next.quests.rosetta_tutorial_refine?.status !== 'completed') {
+    leather.status = 'locked'
+  }
+  next.schemaVersion = 16
+  next.gameVersion = '0.15.0'
+  next.revision += 1
+  next.eventLog.push('SaveMigrated:15->16')
+  return refreshTutorialQuestProgress(refreshQuestAvailability(next, content, next.updatedAt), content, next.updatedAt)
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -853,11 +878,12 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 12) { candidate = migrateV12ToV13(candidate as Record<string, unknown>); version = 13 }
   if (version === 13) { candidate = migrateV13ToV14(candidate as Record<string, unknown>); version = 14 }
   if (version === 14) { candidate = migrateV14ToV15(candidate as Record<string, unknown>); version = 15 }
+  if (version === 15) { candidate = migrateV15ToV16(candidate as Record<string, unknown>); version = 16 }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)
   }
 
-  // Reconcile newly loosened quest gates in schema-15 saves without resetting progress or rewards.
+  // Reconcile quest gates without resetting progress or rewards.
   const validated = gameSaveSchema.parse(candidate) as GameSave
   return refreshQuestAvailability(validated, content, validated.updatedAt)
 }
