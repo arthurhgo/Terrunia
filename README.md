@@ -2,6 +2,10 @@
 
 Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, primeira Ruína, Vínculos, Infusão, Lapidação de Joias, Skill Tree e save local-first.
 
+## Equipamento vestido fora da mochila — save v17
+
+A proteção simples equipada agora é transferida da mochila para um **slot persistente de equipamento**. Ela aparece na seção **Itens**, com **Retirar proteção** para voltar à mochila; saves antigos são migrados sem perda de instância ou refinamento. [Contrato técnico](docs/EQUIPPED_GEAR_SEPARATE_SLOT_v0.17.md).
+
 ## Interiores, equipamento vestido e NPCs v0.18
 
 A proteção simples equipada deixa de ocupar espaço visual na grade da mochila (sem apagar a instância salva). Missões rastreadas e caminhos de Rosetta continuam dentro das casas, até NPCs ou saídas, com linhas douradas e azuis de sidequests. NPCs exibem título/função em linha itálica menor sob o nome. [Documento v0.18](docs/INTERIOR_QUEST_PATHS_EQUIPPED_NPC_LABELS_v0.18.md).
