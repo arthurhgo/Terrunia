@@ -5,6 +5,7 @@ import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import { getPrioritizedQuestEntries, getQuestStatusLabel, type QuestJournalEntry } from '../../domain/quests/questSelectors'
 import { useGameStore } from '../../state/gameStore'
+import './terranFixedSidebar.css'
 
 /** A fixed, concise two-card journal. Full quest details remain in Menu > Missões.
  * Pagination (rather than scrolling) keeps the battle/world viewport unobstructed.
