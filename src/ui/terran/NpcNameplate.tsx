@@ -13,7 +13,8 @@ export function getNpcSubtitle(presence: TerranNpcPresence): string {
 /** Display-only label; interaction and identity continue to use the NPC presence ID. */
 export function NpcNameplate({ presence }: { presence: TerranNpcPresence }) {
   const subtitle = getNpcSubtitle(presence)
-  return <span className="npc-nameplate" aria-hidden="true" data-npc-title={subtitle}>
+  return <span className="npc-nameplate" aria-hidden="true" data-npc-title={subtitle}
+    title={subtitle ? `${presence.label} · ${subtitle}` : presence.label}>
     <strong className="npc-nameplate__name">{presence.label}</strong>
     {subtitle && <small className="npc-nameplate__subtitle">{subtitle}</small>}
   </span>
