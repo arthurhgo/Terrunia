@@ -3,17 +3,17 @@ import type { ItemDefinition, QuestDefinition } from './types'
 /** OWNER_DECISION: ordinary starter armor is usable until the armor slot is permanently bound. */
 export const basicArmorItems: ItemDefinition[] = [
   { id: 'equipment_worn_linen_tunic', name: 'Túnica de Linho Gasta', description: 'Pano remendado, pouca proteção. Rosetta entrega esta peça para você aprender a equipar pela mochila.',
-    basicArmor: { tier: 1, mitigation: 1, initiative: 0, maxRefinement: 1 }, iconAssetId: 'item.worn-linen-tunic' },
+    basicArmor: { tier: 1 as const, mitigation: 1, initiative: 0, maxRefinement: 1 }, iconAssetId: 'item.worn-linen-tunic' },
   { id: 'equipment_apprentice_tunic', name: 'Túnica de Aprendiz', description: 'Uma túnica simples e leve: facilita o movimento, mas quase não protege.',
-    basicArmor: { tier: 1, mitigation: 0, initiative: 1, maxRefinement: 1 }, iconAssetId: 'item.apprentice-tunic' },
+    basicArmor: { tier: 1 as const, mitigation: 0, initiative: 1, maxRefinement: 1 }, iconAssetId: 'item.apprentice-tunic' },
   { id: 'equipment_light_leather_vest', name: 'Gibão de Couro Leve',
     description: 'Proteção inicial de couro leve: defesa melhor, mas exige mais tempo para agir. Visual provisório.',
-    basicArmor: { tier: 1, mitigation: 2, initiative: -1, maxRefinement: 1 }, iconAssetId: 'item.simple-leather-armor' },
+    basicArmor: { tier: 1 as const, mitigation: 2, initiative: -1, maxRefinement: 1 }, iconAssetId: 'item.simple-leather-armor' },
   { id: 'equipment_terran_guard_armor', name: 'Cota de Guarda de Terran',
     description: 'Proteção de treino avançada, acessível após a investigação dos Caçadores de Astravél. Visual provisório.',
-    basicArmor: { tier: 3, mitigation: 3, initiative: -1, maxRefinement: 1 }, iconAssetId: 'item.simple-leather-armor' },
+    basicArmor: { tier: 3 as const, mitigation: 3, initiative: -1, maxRefinement: 1 }, iconAssetId: 'item.simple-leather-armor' },
   { id: 'equipment_simple_leather_armor', name: 'Armadura de Couro Simples', description: 'Proteção comum vendida por Neris. Pode ser equipada e reforçada antes do Vínculo permanente da Armadura.',
-    basicArmor: { tier: 2, mitigation: 2, initiative: 0, maxRefinement: 1 }, iconAssetId: 'item.simple-leather-armor' },
+    basicArmor: { tier: 2 as const, mitigation: 2, initiative: 0, maxRefinement: 1 }, iconAssetId: 'item.simple-leather-armor' },
 ].map((item) => ({ ...item, category: 'equipment', rarity: 'common', convertToEssence: true, essenceValue: item.id === 'equipment_terran_guard_armor' ? 24 : item.id === 'equipment_simple_leather_armor' ? 16 : 8,
   sellable: true, sellValue: item.id === 'equipment_terran_guard_armor' ? 16 : item.id === 'equipment_simple_leather_armor' ? 9 : 3, questLocked: false, canInfuseBoundItem: false, combatEffects: [],
   affinityTags: ['starter', 'armor'], status: 'BALANCE_DRAFT' }))
