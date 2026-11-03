@@ -3,7 +3,7 @@ import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import { getRosettaGuidance } from '../../domain/terran/rosettaGuide'
 import { DialogueWindow } from './DialogueWindow'
-import { rosettaTutorialQuests } from '../../content/rosettaTutorial'
+import { ROSETTA_CORE_LESSON_IDS, rosettaTutorialQuests } from '../../content/rosettaTutorial'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
 
@@ -20,15 +20,15 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
   const decline = useGameStore((state) => state.declineQuest)
   const complete = useGameStore((state) => state.turnInQuest)
   const guidance = getRosettaGuidance(save, content)
-  const lesson = rosettaTutorialQuests.find((quest) => ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status))
+  const lesson = rosettaTutorialQuests.find((quest) => (ROSETTA_CORE_LESSON_IDS as readonly string[]).includes(quest.id) && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status))
   const progress = lesson ? save.quests[lesson.id] : null
   const offered = progress && ['available', 'offered'].includes(progress.status)
-  const otherOffers = guidance.available.filter((entry) => !entry.id.startsWith('rosetta_tutorial_'))
+  const otherOffers = guidance.available.filter((entry) => !(ROSETTA_CORE_LESSON_IDS as readonly string[]).includes(entry.id))
   return <DialogueWindow save={save} title="Rosetta" ariaLabel="Orientações de Rosetta" portraitAssetId="npc.rosetta.portrait" eyebrow="GUARDIÃ DO PORTAL"
     lines={content.npcs.npc_rosetta.dialogue} quest={lesson} onClose={onClose}>
     <div className="rosetta-guide__content">
       {lesson && progress ? <section className="rosetta-tutorial" aria-label="Lição de Rosetta">
-        <span className="eyebrow">TUTORIAL · LIÇÃO {rosettaTutorialQuests.findIndex((quest) => quest.id === lesson.id) + 1} DE {rosettaTutorialQuests.length}</span>
+        <span className="eyebrow">TUTORIAL · LIÇÃO {ROSETTA_CORE_LESSON_IDS.findIndex((id) => id === lesson.id) + 1} DE {ROSETTA_CORE_LESSON_IDS.length}</span>
         <h3>{lesson.title}</h3>
         {lesson.objectives.map((objective) => <p key={objective.id} className="rosetta-tutorial__objective"><CheckCircle2 size={14} /><span>{objective.label}</span><strong>{progress.objectives[objective.id] ?? 0}/{objective.required}</strong></p>)}
         {offered && lesson.acceptanceItems && <div className="rosetta-tutorial__gifts"><small>Você recebe ao aceitar</small>{lesson.acceptanceItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />{input.quantity}× {content.items[input.itemId].name}</span>)}</div>}
@@ -39,7 +39,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
           {progress.status === 'active' && onOpenInventory && lesson.objectives.some((objective) => objective.type === 'equip') && <button type="button" onClick={onOpenInventory}>Abrir mochila</button>}
           {progress.status === 'ready_to_turn_in' && <button type="button" className="rosetta-tutorial__accept" onClick={() => complete(lesson.id, 'npc_rosetta')}>Entregar lição</button>}
         </div>
-      </section> : <p className="rosetta-tutorial__done"><CheckCircle2 size={16} /> As quatro lições foram concluídas. Continue explorando Terran e os caminhos do Portal.</p>}
+      </section> : <p className="rosetta-tutorial__done"><CheckCircle2 size={16} /> As três lições principais foram concluídas. A compra do couro é opcional; sua túnica reforçada continua útil.</p>}
       {onShowPaths && <button type="button" className="rosetta-guide__paths" onClick={onShowPaths}><Route size={16} /> Mostrar caminhos dourados no mapa</button>}
       {guidance.next && guidance.next.id !== lesson?.id && <article className="rosetta-guide__next">
         <h3><Compass size={16}/> O que fazer agora</h3>
