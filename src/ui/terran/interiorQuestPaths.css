@@ -1,0 +1,46 @@
+/* Quest routes continue inside explorable houses on the real collision grid. */
+.pixel-interior__quest-paths {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+.pixel-interior__quest-paths path {
+  fill: none;
+  stroke: #edc87c;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 2.5 5;
+  opacity: 1;
+  filter: drop-shadow(0 0 1.5px #e9bd69);
+  vector-effect: non-scaling-stroke;
+  animation: interior-route-flow 1.5s linear infinite;
+}
+.pixel-interior__quest-paths path[data-route-tone="blue"] {
+  stroke: #a8e6ff;
+  opacity: .2;
+  filter: none;
+}
+@keyframes interior-route-flow { to { stroke-dashoffset: -15; } }
+.pixel-interior__quest-paths[data-reduced-motion="true"] path { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .pixel-interior__quest-paths path { animation: none; }
+}
+.inventory-worn button {
+  margin-left: auto;
+  min-height: 25px;
+  padding: 3px 8px;
+  border: 1px solid #c49b61;
+  background: #162631;
+  color: #ebcf9d;
+  font: 700 .65rem var(--display);
+  cursor: pointer;
+}
+.inventory-worn button:disabled { opacity: .45; cursor: not-allowed; }
+.inventory-worn button:hover:enabled,
+.inventory-worn button:focus-visible { border-color: #ffdda6; background: #34402e; }
