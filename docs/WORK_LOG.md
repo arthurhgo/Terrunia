@@ -1,3 +1,12 @@
+## Terran v0.23 — Chave de Daeryn, Base e portas (2026-11-03)
+
+- chave de Daeryn concedida uma única vez ao entregar `main_terran_first_home`, exibida na mochila como item quest;
+- porta da Base inicia trancada, com modal **Usar chave na porta**; o uso consome a chave e libera entradas futuras;
+- sete portas das instituições passam a ter hotspots clicáveis alinhados à arte; movimento até o limiar permanece;
+- validação de acesso no domínio, sem bypass por HUD, minimapa ou tela; respawn antes do desbloqueio vai para Praça;
+- reconciliação não destrutiva de saves antigos com missão concluída ou jogador já na Base, sem duplicar itens;
+- testes e contrato em `DAERYN_KEY_AND_CITY_DOORS_v0.23.md`.
+
 ## Terran v0.22 — confirmação direta de missões nos NPCs (2026-11-03)
 
 - remove passo redundante Ouvir a oferta no `QuestNpcPanel`;
