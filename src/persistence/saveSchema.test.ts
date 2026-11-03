@@ -61,7 +61,7 @@ describe('save versionado', () => {
     const before = structuredClone(legacy)
     const migrated = migrateAndValidateSave(legacy)
     expect(migrated.schemaVersion).toBe(17)
-    expect(migrated.gameVersion).toBe('0.15.0')
+    expect(migrated.gameVersion).toBe('0.17.1')
     expect(ids.map((id) => migrated.quests[id])).toEqual(ids.map((id) => before.quests[id]))
     expect(migrated.quests.vs_astravel_first_contact.status).toBe('completed')
     expect(migrated.quests.side_npc_neris.status).toBe('available')
@@ -136,7 +136,7 @@ describe('save versionado', () => {
     }
     const migrated = migrateAndValidateSave(legacy)
     expect(migrated.schemaVersion).toBe(17)
-    expect(migrated.gameVersion).toBe('0.15.0')
+    expect(migrated.gameVersion).toBe('0.17.1')
     expect(migrated.world.trailNodeStates.astravel_boss_preview).toBe('boss')
     expect(migrated.world.trailNodeStates.astravel_ruin_threshold_05).toBe('completed')
     expect(migrated.eventLog).toContain('SaveMigrated:2->3')
