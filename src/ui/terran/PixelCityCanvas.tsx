@@ -363,7 +363,7 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
           onFocus={() => { if (actor.presence.npcId === 'npc_rosetta') setRosettaFocused(true) }}
           onBlur={() => { if (actor.presence.npcId === 'npc_rosetta') setRosettaFocused(false) }}
           disabled={!enabled} onClick={() => walkToActor(actor)}>
-          <NpcNameplate name={actor.presence.label} />
+          <NpcNameplate presence={actor.presence} />
           <NpcMarker state={actor.marker} phase={actor.markerPhase} />
         </button>)}
         {terranLandmarks.map((landmark) => <button key={landmark.id} type="button" className="pixel-city__landmark"
