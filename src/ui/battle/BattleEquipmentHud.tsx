@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useState, type FocusEvent, type MouseEvent }
 import { createPortal } from 'react-dom'
 import { content } from '../../content/catalog'
 import { boundSlotPreviewAssetIds } from '../../assets/assetRegistry'
-import { getBattleGearSummary, type BattleGearSlot, type BattleGearStatKey } from '../../domain/combat/battleEquipment'
+import { getBattleGearSummary, type BattleGearStatKey } from '../../domain/combat/battleEquipment'
 import type { GameSave } from '../../domain/game/types'
 import type { BoundSlot } from '../../domain/shared/types'
 import { AssetImage } from '../components/AssetImage'
