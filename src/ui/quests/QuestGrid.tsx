@@ -1,10 +1,12 @@
-import { BookOpen, CheckCircle2, ChevronDown, Circle, Coins, Diamond, Gem, MapPin, Radio, RadioTower, ScrollText, Swords, X } from 'lucide-react'
+import { ArrowRight, BookOpen, CheckCircle2, ChevronDown, Circle, Coins, Diamond, Gem, MapPin, Radio, RadioTower, ScrollText, Swords, X } from 'lucide-react'
 import { useId, useState } from 'react'
 import { content } from '../../content/catalog'
 import type { QuestCategory } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
-import { getQuestJournalEntries, getQuestJournalGroups, getQuestStatusLabel, type QuestJournalEntry } from '../../domain/quests/questSelectors'
+import { getQuestJournalEntries, getQuestJournalGroups, getQuestStatusLabel, getSuggestedQuest, type QuestJournalEntry } from '../../domain/quests/questSelectors'
 import { useGameStore } from '../../state/gameStore'
+import { getRosettaGuidance } from '../../domain/terran/rosettaGuide'
+import './questRemake.css'
 
 type Category = 'all' | QuestCategory | 'completed'
 const filters: Array<{ id: Category; label: string }> = [
@@ -15,7 +17,7 @@ const categoryLabel: Record<QuestCategory, string> = { main: 'Principal', second
 const rewardLabel = (reward: { type: string; value: number }) =>
   reward.value + ' ' + (reward.type === 'gold' ? 'Ouro' : reward.type === 'characterXp' ? 'XP' : 'Essência')
 
-function QuestDetails({ entry, onTrack }: { entry: QuestJournalEntry; onTrack: () => void }) {
+function QuestDetails({ entry, onTrack, save }: { entry: QuestJournalEntry; onTrack: () => void; save: GameSave }) {
   const { definition, progress } = entry
   return <div className="quest-board__details" role="region" aria-label={'Detalhes: ' + definition.title}>
     <p>{definition.summary}</p>
@@ -27,6 +29,13 @@ function QuestDetails({ entry, onTrack }: { entry: QuestJournalEntry; onTrack: (
         <span>{objective.label}</span><strong>{current}/{objective.required}</strong>
       </div>
     })}</div>
+    {definition.turnInItems && definition.turnInItems.length > 0 && <div className="quest-board__material-needs" aria-label="Materiais da entrega">
+      <h4><Gem size={15} /> Materiais para entregar</h4>
+      {definition.turnInItems.map(({ itemId, quantity }) => {
+        const owned = save.inventory.filter((item) => item.definitionId === itemId).reduce((sum, item) => sum + item.quantity, 0)
+        return <p key={itemId}><span>{content.items[itemId]?.name ?? itemId}</span><strong>{owned}/{quantity}</strong></p>
+      })}
+    </div>}
     <h4><Gem size={15} /> Recompensas</h4>
     <div className="quest-board__rewards">{definition.rewards.map((reward, index) =>
       <span key={index}>{reward.type === 'gold' ? <Coins size={15} /> : reward.type === 'characterXp' ? <Swords size={15} /> : <Gem size={15} />}{rewardLabel(reward)}</span>)}</div>
@@ -50,7 +59,22 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
     category === 'all' || (category === 'completed' ? progress.status === 'completed' :
       progress.status !== 'completed' && definition.category === category))
   const groups = getQuestJournalGroups(filtered)
-  return <section className={'quest-board quest-board--rows' + (compact ? ' quest-board--compact' : '')} aria-label="Diário de missões">
+  const suggested = getSuggestedQuest(save, content)
+  const recommendation = getRosettaGuidance(save, content).next
+  const suggestedInJournal = suggested && ['active', 'ready_to_turn_in'].includes(suggested.progress.status)
+  const openSuggested = () => {
+    if (!suggestedInJournal || !suggested) return
+    setCategory('all')
+    setSelectedId(suggested.progress.questId)
+  }
+  return <section className={'quest-board quest-board--rows quest-board--remake' + (compact ? ' quest-board--compact' : '')} aria-label="Diário de missões">
+    {suggested && recommendation && <aside className="quest-board__focus" aria-label="Próximo objetivo">
+      <span className="quest-board__focus-label">PRÓXIMO PASSO · {getQuestStatusLabel(suggested.progress.status)}</span>
+      <strong>{suggested.definition.title}</strong>
+      <p>{recommendation.instruction}</p>
+      <small>{recommendation.npcName} · {recommendation.locationName}</small>
+      {suggestedInJournal && <button type="button" onClick={openSuggested}>Ver esta missão <ArrowRight size={14} /></button>}
+    </aside>}
     <div className="quest-board__filters" role="group" aria-label="Filtrar missões">
       {filters.map((filter) => {
         const count = filter.id === 'all' ? entries.length : entries.filter(({ definition, progress }) =>
@@ -74,7 +98,7 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
           const selected = selectedId === progress.questId
           const total = definition.objectives.reduce((sum, objective) => sum + objective.required, 0)
           const done = definition.objectives.reduce((sum, objective) => sum + Math.min(objective.required, progress.objectives[objective.id] ?? 0), 0)
-          return <div className="quest-row" key={progress.questId}>
+          return <div className={'quest-row' + (suggested?.progress.questId === progress.questId ? ' quest-row--priority' : '')} key={progress.questId}>
             <button type="button" className={'quest-tile quest-tile--' + definition.category + (selected ? ' is-selected' : '')}
               data-quest-status={progress.status} aria-label={'Detalhes da missão ' + definition.title} aria-expanded={selected}
               onClick={() => setSelectedId(selected ? null : progress.questId)}>
@@ -85,9 +109,9 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
                 <span className="quest-tile__status">{getQuestStatusLabel(progress.status)}</span>
                 <span className="quest-tile__progress"><span style={{ width: (total ? done / total * 100 : 100) + '%' }} /></span>
               </span>
-              <span className="quest-row__meta"><strong>{done}/{total}</strong><small>{definition.rewards.map(rewardLabel).join(' · ')}</small><ChevronDown size={16} /></span>
+              <span className="quest-row__meta"><strong>{done}/{total}</strong>{!compact && <small>{definition.rewards.map(rewardLabel).join(' · ')}</small>}<ChevronDown size={16} /></span>
             </button>
-            {selected && <QuestDetails entry={entry} onTrack={() => setTracked(progress.questId, !progress.tracked)} />}
+            {selected && <QuestDetails entry={entry} save={save} onTrack={() => setTracked(progress.questId, !progress.tracked)} />}
           </div>
         })}</div>
       </section>)}
