@@ -61,6 +61,20 @@ afterEach(() => {
 })
 
 describe('interfaces de Terran', () => {
+  it('mostra os nomes dos NPCs nas ruas e interiores sem ocultar os marcadores', () => {
+    loadSave('location_terran_eldamar_house')
+    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+
+    const rosetta = screen.getByRole('button', { name: 'Conversar com Rosetta' })
+    expect(rosetta.querySelector('.npc-nameplate')).toHaveTextContent('Rosetta')
+    expect(rosetta.querySelector('.npc-question-bubble')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Eldamar' }))
+    const eldamar = screen.getByRole('button', { name: 'Falar com Eldamar dentro do local' })
+    expect(eldamar.querySelector('.npc-nameplate')).toHaveTextContent('Eldamar')
+    expect(eldamar).toHaveAttribute('title', 'Eldamar')
+  })
+
   it('mostra o alojamento pixelado e o balcão de Sylwen sem sair da cidade', () => {
     loadSave('location_terran_daeryn_house')
     const save = useGameStore.getState().save!
