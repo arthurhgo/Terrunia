@@ -4,7 +4,7 @@ import { rosettaTutorialQuests } from '../content/rosettaTutorial'
 import { createNewSave } from '../domain/game/createSave'
 import { migrateAndValidateSave } from './saveSchema'
 
-describe('save 15: tutorial e proteção simples', () => {
+describe('save 16: tutorial e proteção simples', () => {
   it('migra v14 sem vestir, aceitar, dar Ouro ou entregar as túnicas automaticamente', () => {
     const save = createNewSave('owner', 'Lysa', 'character.terririan.default', content)
     const legacy = structuredClone(save) as unknown as Record<string, unknown>
@@ -12,7 +12,7 @@ describe('save 15: tutorial e proteção simples', () => {
     delete (legacy.character as Record<string, unknown>).basicArmorInstanceId
     for (const quest of rosettaTutorialQuests) delete (legacy.quests as Record<string, unknown>)[quest.id]
     const updated = migrateAndValidateSave(legacy)
-    expect(updated.schemaVersion).toBe(15)
+    expect(updated.schemaVersion).toBe(16)
     expect(updated.character.basicArmorInstanceId).toBeNull()
     expect(updated.inventory).toEqual(save.inventory)
     expect(updated.wallet).toEqual(save.wallet)

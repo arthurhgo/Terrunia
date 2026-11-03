@@ -7,7 +7,9 @@ export const MARKET_LOCATION_ID = 'location_terran_bond_workshop' as const
 
 /** BALANCE_DRAFT: trade offers are separated by the NPC who actually sells them. */
 export const MARKET_STOCK = [
-  { npcId: 'presence_neris', itemId: 'equipment_simple_leather_armor', price: 35 },
+  { npcId: 'presence_neris', itemId: 'equipment_simple_leather_armor', price: 35, requiresQuestId: 'rosetta_tutorial_refine' },
+  { npcId: 'presence_neris', itemId: 'equipment_terran_guard_armor', price: 75, requiresQuestId: 'main_astravel_lost_hunters' },
+  { npcId: 'presence_neris', itemId: 'equipment_light_leather_vest', price: 12 },
   { npcId: 'presence_neris', itemId: 'equipment_worn_linen_tunic', price: 12 },
   { npcId: 'presence_neris', itemId: 'equipment_apprentice_tunic', price: 12 },
   { npcId: 'presence_neris', itemId: 'material_linen_thread', price: 4 },
@@ -49,6 +51,10 @@ export function buyMarketItem(
   }
   const offer = MARKET_STOCK.find((entry) => entry.npcId === npcId && entry.itemId === itemId)
   const item = catalog.items[itemId]
+  if (offer && 'requiresQuestId' in offer &&
+      save.quests[offer.requiresQuestId]?.status !== 'completed') {
+    return fail('MARKET_TIER_LOCKED', 'Este tier fica disponível depois da missão de progressão indicada.')
+  }
   if (!offer || !item || item.questLocked || item.category === 'quest' || item.category === 'lore') {
     return fail('MARKET_OFFER', 'Este NPC não vende o item selecionado.')
   }

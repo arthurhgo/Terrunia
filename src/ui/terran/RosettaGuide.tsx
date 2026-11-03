@@ -1,4 +1,5 @@
-import { BookOpen, CheckCircle2, ClipboardList, Compass, Route } from 'lucide-react'
+import { BookOpen, CheckCircle2, ClipboardList, Compass, Route, Shield } from 'lucide-react'
+import { useState } from 'react'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import { getRosettaGuidance } from '../../domain/terran/rosettaGuide'
@@ -6,6 +7,7 @@ import { DialogueWindow } from './DialogueWindow'
 import { ROSETTA_CORE_LESSON_IDS, rosettaTutorialQuests } from '../../content/rosettaTutorial'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
+import './starterReward.css'
 
 /** Rosetta teaches her own lessons; the player explicitly accepts and returns to claim rewards. */
 export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onShowPaths }: {
@@ -19,6 +21,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
   const accept = useGameStore((state) => state.acceptQuest)
   const decline = useGameStore((state) => state.declineQuest)
   const complete = useGameStore((state) => state.turnInQuest)
+  const [rewardChoice, setRewardChoice] = useState<string | null>(null)
   const guidance = getRosettaGuidance(save, content)
   const lesson = rosettaTutorialQuests.find((quest) => (ROSETTA_CORE_LESSON_IDS as readonly string[]).includes(quest.id) && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status))
   const progress = lesson ? save.quests[lesson.id] : null
@@ -32,14 +35,33 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
         <h3>{lesson.title}</h3>
         {lesson.objectives.map((objective) => <p key={objective.id} className="rosetta-tutorial__objective"><CheckCircle2 size={14} /><span>{objective.label}</span><strong>{progress.objectives[objective.id] ?? 0}/{objective.required}</strong></p>)}
         {offered && lesson.acceptanceItems && <div className="rosetta-tutorial__gifts"><small>Você recebe ao aceitar</small>{lesson.acceptanceItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />{input.quantity}× {content.items[input.itemId].name}</span>)}</div>}
-        <small>Ao entregar: {lesson.rewards.map((reward) => `${reward.value} ${reward.type === 'gold' ? 'Ouro' : 'XP'}`).join(' · ')}</small>
+        <small>Ao entregar: {lesson.rewards.map((reward) => `${reward.value} ${reward.type === 'gold' ? 'Ouro' : 'XP'}`).join(' · ')}
+          {lesson.choiceRewardItemIds?.length ? ' · Escolha 1 proteção Tier I' : ''}</small>
+        {progress.status === 'ready_to_turn_in' && Boolean(lesson.choiceRewardItemIds?.length) && <fieldset className="rosetta-reward-choice" aria-label="Escolha um equipamento inicial">
+          <legend>Escolha somente 1 equipamento Tier I</legend>
+          {lesson.choiceRewardItemIds?.map((itemId) => {
+            const item = content.items[itemId]
+            return <label key={itemId} className={rewardChoice === itemId ? 'is-selected' : ''}>
+              <input type="radio" name="rosetta-starting-armor" checked={rewardChoice === itemId}
+                onChange={() => setRewardChoice(itemId)} />
+              <AssetImage assetId={item.iconAssetId} />
+              <span><strong>{item.name}</strong><small>Tier {item.basicArmor?.tier} · Defesa {item.basicArmor?.mitigation} · Iniciativa {item.basicArmor?.initiative}</small>
+                <small>{item.description}</small></span>
+              <Shield size={17} aria-hidden="true" />
+            </label>
+          })}
+        </fieldset>}
         <div className="rosetta-tutorial__actions">
           {offered && <><button type="button" onClick={() => { if (progress.status === 'offered') decline(lesson.id); onClose() }}>Agora não</button>
             <button type="button" className="rosetta-tutorial__accept" onClick={() => { if (progress.status === 'available') offer(lesson.id); accept(lesson.id) }}>Aceitar missão</button></>}
           {progress.status === 'active' && onOpenInventory && lesson.objectives.some((objective) => objective.type === 'equip') && <button type="button" onClick={onOpenInventory}>Abrir mochila</button>}
-          {progress.status === 'ready_to_turn_in' && <button type="button" className="rosetta-tutorial__accept" onClick={() => complete(lesson.id, 'npc_rosetta')}>Entregar lição</button>}
+          {progress.status === 'ready_to_turn_in' && <button type="button" className="rosetta-tutorial__accept"
+            disabled={Boolean(lesson.choiceRewardItemIds?.length) && !rewardChoice}
+            onClick={() => complete(lesson.id, 'npc_rosetta', lesson.choiceRewardItemIds?.length ? rewardChoice ?? undefined : undefined)}>
+            {lesson.choiceRewardItemIds?.length ? 'Receber equipamento escolhido' : 'Entregar lição'}
+          </button>}
         </div>
-      </section> : <p className="rosetta-tutorial__done"><CheckCircle2 size={16} /> As três lições principais foram concluídas. A compra do couro é opcional; sua túnica reforçada continua útil.</p>}
+      </section> : <p className="rosetta-tutorial__done"><CheckCircle2 size={16} /> As três lições principais foram concluídas. Sua proteção escolhida evolui com você; novas peças são opcionais.</p>}
       {onShowPaths && <button type="button" className="rosetta-guide__paths" onClick={onShowPaths}><Route size={16} /> Mostrar caminhos dourados no mapa</button>}
       {guidance.next && guidance.next.id !== lesson?.id && <article className="rosetta-guide__next">
         <h3><Compass size={16}/> O que fazer agora</h3>

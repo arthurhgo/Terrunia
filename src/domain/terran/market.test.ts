@@ -46,4 +46,26 @@ describe('Mercado de Terran', () => {
     save.world.currentLocationId = 'location_terran_portal_plaza'
     expect(buyMarketItem(save, 'presence_valmira', 'fragment_mycelial_essence', 1, content, now)).toMatchObject({ ok: false, code: 'MARKET_LOCATION' })
   })
+  it('desbloqueia Tier II e Tier III por progresso real sem vender equipamento permanente', () => {
+    const save = base()
+    const unchanged = structuredClone(save)
+    expect(buyMarketItem(save, 'presence_neris', 'equipment_simple_leather_armor', 1, content, now))
+      .toMatchObject({ ok: false, code: 'MARKET_TIER_LOCKED' })
+    expect(buyMarketItem(save, 'presence_neris', 'equipment_terran_guard_armor', 1, content, now))
+      .toMatchObject({ ok: false, code: 'MARKET_TIER_LOCKED' })
+    expect(save).toEqual(unchanged)
+    save.quests.rosetta_tutorial_refine.status = 'completed'
+    const tierTwo = buyMarketItem(save, 'presence_neris', 'equipment_simple_leather_armor', 1, content, now)
+    expect(tierTwo.ok).toBe(true)
+    if (!tierTwo.ok) return
+    expect(content.items[tierTwo.value.inventory.at(-1)!.definitionId].basicArmor?.tier).toBe(2)
+    expect(buyMarketItem(tierTwo.value, 'presence_neris', 'equipment_terran_guard_armor', 1, content, now))
+      .toMatchObject({ ok: false, code: 'MARKET_TIER_LOCKED' })
+    const advanced = structuredClone(tierTwo.value)
+    advanced.quests.main_astravel_lost_hunters.status = 'completed'
+    const tierThree = buyMarketItem(advanced, 'presence_neris', 'equipment_terran_guard_armor', 1, content, now)
+    expect(tierThree.ok).toBe(true)
+    if (tierThree.ok) expect(content.items[tierThree.value.inventory.at(-1)!.definitionId].basicArmor?.tier).toBe(3)
+  })
+
 })

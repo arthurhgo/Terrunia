@@ -27,7 +27,7 @@ export type ItemDefinition = {
   combatKind?: 'throwable' | 'rune' | 'essence'
   combatTarget?: 'self' | 'enemy'
   /** Starter protection worn before the permanent armor bond; never replaces a bound piece. */
-  basicArmor?: { mitigation: number; initiative: number; maxRefinement: number }
+  basicArmor?: { tier: 1 | 2 | 3 | 4 | 5; mitigation: number; initiative: number; maxRefinement: number }
   affinityTags: string[]
   iconAssetId: string
   status: DraftStatus
@@ -244,6 +244,8 @@ export type QuestDefinition = {
   turnInItems?: Array<{ itemId: string; quantity: number }>
   /** One-time supplies for an explicitly accepted tutorial. */
   acceptanceItems?: Array<{ itemId: string; quantity: number }>
+  /** Optional one-of-N item reward; chosen explicitly at turn-in, never on offer/accept. */
+  choiceRewardItemIds?: string[]
   rewards: Array<
     | { type: 'characterXp'; value: number }
     | { type: 'rawEssence'; value: number }

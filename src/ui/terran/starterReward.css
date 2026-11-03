@@ -1,0 +1,38 @@
+/* v0.15 - explicit one-of-three reward selection in Rosetta's dialogue. */
+.rosetta-reward-choice {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 8px 0 10px;
+  border: 1px solid #8c6e44;
+  padding: 10px;
+  background: #0e1b24;
+}
+.rosetta-reward-choice legend { color: #f0c677; padding: 0 5px; font: 700 .72rem var(--display); }
+.rosetta-reward-choice label {
+  display: grid;
+  grid-template-columns: 17px 38px minmax(0, 1fr) 17px;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid #405b66;
+  padding: 7px;
+  background: #111f2a;
+  cursor: pointer;
+}
+.rosetta-reward-choice label:is(:hover, :focus-within), .rosetta-reward-choice label.is-selected {
+  border-color: #e1b36e;
+  background: #2a2c29;
+}
+.rosetta-reward-choice input { accent-color: #deb76b; }
+.rosetta-reward-choice .asset-image { width: 36px; height: 36px; image-rendering: pixelated; }
+.rosetta-reward-choice label span { display: grid; gap: 4px; min-width: 0; }
+.rosetta-reward-choice label strong { color: #f0d49e; font-size: .76rem; overflow-wrap: anywhere; }
+.rosetta-reward-choice label small { color: #bdd1d1; font-size: .63rem; line-height: 1.3; }
+.rosetta-reward-choice label svg { color: #d8b26b; }
+.rosetta-tutorial__actions button:disabled { opacity: .55; cursor: not-allowed; }
+@media (max-width: 480px) {
+  .rosetta-reward-choice label { grid-template-columns: 16px 28px minmax(0, 1fr); gap: 6px; padding: 6px; }
+  .rosetta-reward-choice .asset-image { width: 28px; height: 28px; }
+  .rosetta-reward-choice label > svg { display: none; }
+}

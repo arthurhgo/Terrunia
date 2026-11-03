@@ -197,6 +197,7 @@ export const turnInQuest = (
   npcId: string,
   catalog: ContentCatalog,
   now: string,
+  choiceItemId?: string,
 ): Result<GameSave> => {
   const definition = catalog.quests[questId]
   const progress = save.quests[questId]
@@ -204,11 +205,31 @@ export const turnInQuest = (
   if (progress.status !== 'ready_to_turn_in') return fail('QUEST_NOT_READY', 'Os objetivos desta missão ainda não foram concluídos.')
   if (definition.turnInNpcId !== npcId) return fail('WRONG_TURN_IN_NPC', 'Esta missão deve ser entregue a outro NPC.')
   if (npcId === 'npc_rosetta' && (save.battle || save.world.currentLocationId !== 'location_terran_portal_plaza')) return fail('TUTORIAL_LOCATION', 'Retorne a Rosetta na Praça do Portal para concluir esta lição.')
+  if (definition.choiceRewardItemIds?.length) {
+    if (!choiceItemId || !definition.choiceRewardItemIds.includes(choiceItemId) || !catalog.items[choiceItemId]?.basicArmor) {
+      return fail('QUEST_CHOICE_REQUIRED', 'Escolha uma proteção entre as recompensas válidas antes de concluir.')
+    }
+    if (save.eventLog.some((event) => event.startsWith(`QuestChoiceReward:${questId}:`)) ||
+      save.inventory.some((item) => item.instanceId === `quest_choice_${questId}_${save.saveId}`)) {
+      return fail('QUEST_CHOICE_DUPLICATE', 'Esta recompensa de escolha já foi recebida.')
+    }
+  } else if (choiceItemId) {
+    return fail('QUEST_CHOICE_INVALID', 'Esta missão não possui recompensa por escolha.')
+  }
 
   const delivery = consumeQuestDelivery(save, definition, catalog)
   if (!delivery.ok) return delivery
   const next = delivery.value
   applyQuestRewards(next, definition)
+  if (choiceItemId) {
+    const reward = catalog.items[choiceItemId]
+    next.inventory.push({
+      instanceId: `quest_choice_${questId}_${save.saveId}`,
+      definitionId: choiceItemId, quantity: 1, rarity: reward.rarity,
+      locked: false, favorite: false, acquiredAt: now,
+    })
+    next.eventLog.push(`QuestChoiceReward:${questId}:${choiceItemId}`)
+  }
   next.quests[questId].status = 'completed'
   next.quests[questId].tracked = false
   next.quests[questId].completedAt = now

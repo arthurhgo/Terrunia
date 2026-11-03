@@ -19,14 +19,18 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
     <h3><ShoppingBasket size={18} /> Itens à venda</h3>
     <p className="terran-shop__wallet"><Coins size={16} /> {save.wallet.gold} Ouro</p>
     <div className="terran-shop__stock">
-      {stock.map(({ itemId, price }) => {
+      {stock.map((offer) => {
+        const { itemId, price } = offer
         const item = content.items[itemId]
         if (!item) return null
+        const gate = 'requiresQuestId' in offer ? content.quests[offer.requiresQuestId] : null
+        const locked = Boolean(gate && save.quests[gate.id]?.status !== 'completed')
         return <article key={itemId}>
           <AssetImage assetId={item.iconAssetId} />
-          <div><strong>{item.name}</strong><small>{item.description}</small></div>
-          <button type="button" aria-label={`Comprar ${item.name} por ${price} ouro`}
-            disabled={save.wallet.gold < price} onClick={() => buy(npcId, itemId)}>
+          <div><strong>{item.name}{item.basicArmor ? ` · Tier ${item.basicArmor.tier}` : ''}</strong><small>{item.description}</small>
+            {locked && gate && <small>Bloqueado: conclua “{gate.title}”.</small>}</div>
+          <button type="button" aria-label={locked ? `Bloqueado: ${item.name}` : `Comprar ${item.name} por ${price} ouro`}
+            disabled={locked || save.wallet.gold < price} onClick={() => buy(npcId, itemId)}>
             {price} <Coins size={13} />
           </button>
         </article>
