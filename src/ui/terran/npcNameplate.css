@@ -3,7 +3,7 @@
 .pixel-interior__npc > .npc-nameplate {
   position: absolute;
   z-index: 2;
-  top: -43px;
+  top: -49px;
   left: 50%;
   right: auto;
   bottom: auto;
@@ -14,11 +14,11 @@
   justify-content: center;
   gap: 3px;
   width: max-content;
-  min-width: 70px;
-  max-width: 176px;
+  min-width: 86px;
+  max-width: 230px;
   height: auto;
   min-height: 0;
-  padding: 4px 7px;
+  padding: 5px 8px;
   transform: translateX(-50%);
   overflow: visible;
   white-space: nowrap;
@@ -61,13 +61,13 @@
   min-width: 0;
   max-width: 100%;
   height: auto;
-  min-height: 10px;
+  min-height: 12px;
   margin: 0;
   padding: 0;
   border: 0;
   background: transparent;
   color: #d0d9d8;
-  font: italic 400 9px/11px Georgia, serif;
+  font: italic 400 10px/12px Georgia, serif;
   letter-spacing: 0;
   text-shadow: 1px 1px 0 #02060b;
   text-align: center;
@@ -95,10 +95,23 @@
 .pixel-city__npc > .npc-nameplate + .npc-quest-marker,
 .pixel-interior__npc > .npc-nameplate + .npc-quest-marker {
   z-index: 3;
-  top: -73px;
+  top: -83px;
 }
 .pixel-city__npc > .npc-nameplate + .npc-question-bubble,
 .pixel-interior__npc > .npc-nameplate + .npc-question-bubble {
   z-index: 3;
-  top: -70px;
+  top: -80px;
 }
+
+/* Avoid clipping long in-world jobs while keeping name + title in distinct lines. */
+.pixel-city__npc .npc-nameplate__subtitle,
+.pixel-interior__npc .npc-nameplate__subtitle {
+  white-space: normal;
+  overflow-wrap: normal;
+  text-wrap: balance;
+  overflow: visible;
+  text-overflow: clip;
+  max-width: 214px;
+}
+.pixel-city__npc > .npc-nameplate,
+.pixel-interior__npc > .npc-nameplate { max-width: min(230px, 65vw); }
