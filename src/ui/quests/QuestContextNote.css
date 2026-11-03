@@ -1,0 +1,21 @@
+/* Secondary mission hints must never compete with objectives, rewards or actions. */
+.quest-context-note,
+.quest-board--remake .quest-board__details .quest-context-note {
+  margin: 5px 0 8px;
+  padding: 0;
+  color: #9ea4a7;
+  font-family: inherit;
+  font-style: italic;
+  font-weight: 400;
+  font-size: .69rem;
+  line-height: 1.45;
+  letter-spacing: normal;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.terran-quest-dialog .quest-context-note,
+.rosetta-tutorial .quest-context-note {
+  font-size: .69rem;
+  color: #9ea4a7;
+  font-style: italic;
+}

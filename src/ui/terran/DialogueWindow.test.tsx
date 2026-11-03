@@ -6,6 +6,7 @@ import { npcConversationVoices, npcQuestBriefs } from '../../content/npcConversa
 import { createNewSave } from '../../domain/game/createSave'
 import { DialogueWindow } from './DialogueWindow'
 import { QuestNpcPanel } from './TerranServices'
+import { RosettaGuide } from './RosettaGuide'
 
 afterEach(cleanup)
 
@@ -28,6 +29,30 @@ describe('janela única de conversa', () => {
     expect(save).toEqual(original)
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('renderiza notas contextuais em cinza itálico na missão do NPC, não na fala', () => {
+    const save = createNewSave('npc-note-owner', 'Lysa', 'character.terririan.default', content)
+    const quest = content.quests.rosetta_tutorial_armor
+    save.quests[quest.id].status = 'active'
+    render(<MemoryRouter><QuestNpcPanel save={save} questId={quest.id} onClose={vi.fn()} /></MemoryRouter>)
+    const dialog = screen.getByRole('dialog', { name: 'Rosetta' })
+    const note = within(dialog).getByLabelText('Observação da missão')
+    expect(note).toHaveClass('quest-context-note')
+    expect(note).toHaveTextContent(quest.contextNote!)
+    expect(within(dialog).getByRole('status')).not.toHaveTextContent(quest.contextNote!)
+  })
+
+  it('apresenta observação do tutorial apenas na área da lição', () => {
+    const save = createNewSave('tutorial-note-owner', 'Lysa', 'character.terririan.default', content)
+    save.quests.rosetta_tutorial_equip.status = 'completed'
+    save.quests.rosetta_tutorial_supply.status = 'completed'
+    save.quests.rosetta_tutorial_refine.status = 'active'
+    render(<RosettaGuide save={save} onClose={vi.fn()} onOpenQuests={vi.fn()} />)
+    const dialog = screen.getByRole('dialog', { name: 'Orientações de Rosetta' })
+    const note = within(dialog).getByLabelText('Observação da missão')
+    expect(note).toHaveTextContent(content.quests.rosetta_tutorial_refine.contextNote!)
+    expect(note).toHaveClass('quest-context-note')
   })
 
   it('exibe resumo e identidade uma única vez e separa a fala dos dados da missão', () => {
