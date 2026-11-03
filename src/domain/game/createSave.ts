@@ -95,6 +95,7 @@ export const createNewSave = (
       tree_class: { unlockedNodeIds: [], discoveredNodeIds: [], spentEssencePoints: 0 },
     },
     inventory: [],
+    equippedBasicArmor: null,
     baseStorage: [],
     wallet: { gold: BALANCE.initialGold },
     vitals: { hp: 0, mp: 0 },
