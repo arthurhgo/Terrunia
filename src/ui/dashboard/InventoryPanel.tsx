@@ -1,5 +1,7 @@
 import { Check, Coins, Filter, FlaskConical, Gem, Heart, PackageOpen, Shield, Star } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
+import './inventoryHover.css'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
@@ -17,11 +19,12 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
   const sell = useGameStore((state) => state.sellItems)
   const toggleFavorite = useGameStore((state) => state.toggleFavorite)
   const equipArmor = useGameStore((state) => state.equipArmor)
-  const [selected, setSelected] = useState<string[]>([])
+  const [selected, setSelected] = useState<string | null>(null)
+  const [hovered, setHovered] = useState<{ instanceId: string; x: number; y: number } | null>(null)
   const [action, setAction] = useState<Action>(null)
   const [filter, setFilter] = useState<'all' | 'equipment' | 'convertible' | 'sellable'>('all')
   const equippedArmor = getEquippedBasicArmor(save, content)
-  const selectedArmorInstance = selected.length === 1 ? save.inventory.find((item) => selected[0] === item.instanceId) : null
+  const selectedArmorInstance = selected ? save.inventory.find((item) => selected === item.instanceId) : null
   const selectedArmorDefinition = selectedArmorInstance && content.items[selectedArmorInstance.definitionId]
   const selectedArmor = selectedArmorInstance && selectedArmorDefinition?.basicArmor
     ? { instance: selectedArmorInstance, definition: selectedArmorDefinition, armor: selectedArmorDefinition.basicArmor } : null
@@ -33,7 +36,7 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
     if (filter === 'sellable') return definition?.sellable
     return true
   })
-  const selectedItems = save.inventory.filter((instance) => selected.includes(instance.instanceId))
+  const selectedItems = save.inventory.filter((instance) => selected === instance.instanceId)
   const selectedItem = selectedItems.length === 1 ? selectedItems[0] : null
   const selectedDefinition = selectedItem && content.items[selectedItem.definitionId]
   const neededForQuests = selectedItem ? Object.values(content.quests).filter((quest) =>
@@ -68,17 +71,23 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
   )
 
   const toggleSelection = (instanceId: string) => {
-    setSelected((current) =>
-      current.includes(instanceId)
-        ? current.filter((id) => id !== instanceId)
-        : [...current, instanceId],
-    )
+    setSelected((current) => current === instanceId ? null : instanceId)
+  }
+  const showTooltip = (instanceId: string, element: HTMLElement) => {
+    const rect = element.getBoundingClientRect()
+    const width = 265
+    setHovered({
+      instanceId,
+      x: rect.right + 10 + width < window.innerWidth ? rect.right + 10 : Math.max(8, rect.left - width - 10),
+      y: Math.max(8, Math.min(rect.top, window.innerHeight - 230)),
+    })
   }
 
   const confirm = () => {
-    if (action === 'convert') convert(selected)
-    if (action === 'sell') sell(selected)
-    setSelected([])
+    if (!selected) return
+    if (action === 'convert') convert([selected])
+    if (action === 'sell') sell([selected])
+    setSelected(null)
     setAction(null)
   }
 
@@ -92,7 +101,7 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
         action={
           <label className="compact-select">
             <Filter size={14} />
-            <select aria-label="Filtrar itens da mochila" value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}>
+            <select aria-label="Filtrar itens da mochila" value={filter} onChange={(event) => { setFilter(event.target.value as typeof filter); setSelected(null) }}>
               <option value="all">Todos</option>
               <option value="equipment">Equipamentos simples</option>
               <option value="convertible">Conversíveis</option>
@@ -106,13 +115,17 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
           {visibleItems.map((instance) => {
             const definition = content.items[instance.definitionId]
             if (!definition) return null
-            const isSelected = selected.includes(instance.instanceId)
+            const isSelected = selected === instance.instanceId
             return (
               <button
                 type="button"
                 key={instance.instanceId}
                 className={`inventory-slot rarity-${instance.rarity} ${isSelected ? 'selected' : ''} ${equippedArmor?.instance.instanceId === instance.instanceId ? 'is-equipped' : ''}`}
                 onClick={() => toggleSelection(instance.instanceId)}
+                onMouseEnter={(event) => showTooltip(instance.instanceId, event.currentTarget)}
+                onMouseLeave={() => setHovered(null)}
+                onFocus={(event) => showTooltip(instance.instanceId, event.currentTarget)}
+                onBlur={() => setHovered(null)}
                 aria-pressed={isSelected}
                 title={definition.basicArmor ? `${definition.name}${instance.refinementLevel ? ' +1' : ''} — Defesa +${definition.basicArmor.mitigation + (instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel} · Iniciativa +${definition.basicArmor.initiative}` : definition.canInfuseBoundItem
                   ? `${definition.name} — reservado para Infusão em item vinculado`
@@ -143,7 +156,7 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
 
         {tradeMode === 'browse' && selectedArmor && <section className="inventory-equipment-detail" aria-label={`Equipamento: ${selectedArmor.definition.name}`}>
           <AssetImage assetId={selectedArmor.definition.iconAssetId} />
-          <div><strong>{selectedArmor.definition.name}{selectedArmor.instance.refinementLevel ? ' +1' : ''}</strong><p>{selectedArmor.definition.description}</p>
+          <div><strong>{selectedArmor.definition.name}{selectedArmor.instance.refinementLevel ? ' +1' : ''}</strong><p>Tier {selectedArmor.armor.tier} · {selectedArmor.definition.description}</p>
             <small>Defesa +{selectedArmor.armor.mitigation + (selectedArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel} · Iniciativa +{selectedArmor.armor.initiative}</small></div>
           <small>{equippedArmor?.instance.instanceId === selectedArmor.instance.instanceId
             ? 'Proteção em uso: retire antes de vender ou converter.'
@@ -167,7 +180,7 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
           </p>}
         </section>}
         {tradeMode !== 'browse' && <div className="inventory-actions">
-          <span>{selectedForBoundProgression ? <><Gem size={14} /> Componente reservado para o Vínculo</> : selected.length ? `${selected.length} selecionado(s)` : 'Selecione um drop'}</span>
+          <span>{selectedForBoundProgression ? <><Gem size={14} /> Componente reservado para o Vínculo</> : selected ? '1 item selecionado' : 'Selecione um item'}</span>
           <div>
             {tradeMode === 'convert' && <GameButton variant="secondary" disabled={!canConvert} onClick={() => setAction('convert')}>
               <FlaskConical size={16} /> Trocar por Essência
@@ -221,6 +234,29 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
         </div>
         <p className="modal-warning">Esta ação remove o drop do inventário. Itens de missão e favoritos são protegidos pelo domínio.</p>
       </Modal>
+      {hovered && (() => {
+        const item = save.inventory.find((instance) => instance.instanceId === hovered.instanceId)
+        const definition = item && content.items[item.definitionId]
+        if (!item || !definition) return null
+        const armor = definition.basicArmor
+        return createPortal(<aside className="inventory-hover-card" role="tooltip" aria-label={`Status de ${definition.name}`}
+          style={{ left: hovered.x, top: hovered.y }}>
+          <span className="inventory-hover-card__eyebrow">STATUS DO ITEM</span>
+          <strong>{definition.name}{item.refinementLevel ? ` +${item.refinementLevel}` : ''}</strong>
+          <small>{armor ? `Tier ${armor.tier} · Proteção simples` : `${definition.category} · ${definition.rarity}`}</small>
+          {armor && <div className="inventory-hover-card__stats">
+            <span>Defesa <b>+${armor.mitigation + (item.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel}</b></span>
+            <span>Iniciativa <b>{armor.initiative > 0 ? '+' : ''}{armor.initiative}</b></span>
+            <span>Refinamento <b>+{item.refinementLevel ?? 0}/{armor.maxRefinement}</b></span>
+          </div>}
+          <p>{definition.description}</p>
+          <small>{item.instanceId === save.character.basicArmorInstanceId ? 'EQUIPADO' :
+            definition.basicArmor && save.character.bondedEquipment.armor ? 'BLOQUEADO: ARMADURA VINCULADA' :
+              definition.basicArmor ? 'CLIQUE NO ITEM PARA EQUIPAR' : 'ITEM DA MOCHILA'}</small>
+          <small>{definition.sellable ? `${definition.sellValue * item.quantity} Ouro` : 'Não vendável'} ·
+            {definition.convertToEssence ? ` ${definition.essenceValue * item.quantity} Essência` : ' Não conversível'}</small>
+        </aside>, document.body)
+      })()}
     </>
   )
 }
