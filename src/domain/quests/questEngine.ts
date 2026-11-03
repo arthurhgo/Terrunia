@@ -142,6 +142,28 @@ export const acceptQuest = (
   return ok(refreshTutorialQuestProgress(refreshDeliveryQuestProgress(reconciled, catalog, now), catalog, now))
 }
 
+/** Upgrade old saves with multiple flags without touching objectives, rewards or equipment. */
+export const normalizeTrackedQuests = (save: GameSave): GameSave => {
+  const active = Object.values(save.quests).filter((quest) =>
+    quest.tracked && ['active', 'ready_to_turn_in'].includes(quest.status))
+  if (active.length <= 1) return save
+  const trackedIds = new Set(active.map((quest) => quest.questId))
+  const mostRecent = [...save.eventLog].reverse().find((event) => {
+    const match = /^(?:QuestTrackingChanged:([^:]+):true|QuestAccepted:([^:]+))$/.exec(event)
+    return match && trackedIds.has(match[1] ?? match[2])
+  })
+  const chosen = mostRecent
+    ? (/^(?:QuestTrackingChanged:([^:]+):true|QuestAccepted:([^:]+))$/.exec(mostRecent)?.slice(1).find(Boolean) ?? active[0].questId)
+    : active[0].questId
+  const next = structuredClone(save)
+  for (const quest of Object.values(next.quests)) {
+    if (quest.questId !== chosen && quest.tracked) quest.tracked = false
+  }
+  next.revision += 1
+  next.eventLog.push(`QuestTrackingNormalized:${chosen}`)
+  return next
+}
+
 export const setQuestTracked = (
   save: GameSave,
   questId: string,
