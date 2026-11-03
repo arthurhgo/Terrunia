@@ -111,7 +111,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
   const restAtHome = useGameStore((state) => state.restAtHome)
   const enterBase = useGameStore((state) => state.enterBase)
-  const useBaseKeyOnDoor = useGameStore((state) => state.useBaseKeyOnDoor)
+  const unlockBaseWithKey = useGameStore((state) => state.unlockBaseWithKey)
   const leaveBase = useGameStore((state) => state.leaveBase)
   const [drawer, setDrawer] = useState<Drawer>(null)
   const drawerRef = useRef<HTMLElement>(null)
@@ -187,7 +187,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     if (enterBase()) showHomeInterior()
   }
   const confirmHomeKey = () => {
-    if (!useBaseKeyOnDoor()) return
+    if (!unlockBaseWithKey()) return
     setBaseDoorPrompt(false)
     showHomeInterior()
   }
