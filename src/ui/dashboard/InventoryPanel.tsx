@@ -37,11 +37,6 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
     return true
   })
   const selectedItems = save.inventory.filter((instance) => selected === instance.instanceId)
-  const selectedItem = selectedItems.length === 1 ? selectedItems[0] : null
-  const selectedDefinition = selectedItem && content.items[selectedItem.definitionId]
-  const neededForQuests = selectedItem ? Object.values(content.quests).filter((quest) =>
-    ['active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status ?? '') &&
-    quest.turnInItems?.some((need) => need.itemId === selectedItem.definitionId)) : []
   const canConvert = selectedItems.length > 0 && selectedItems.every((instance) => {
     const definition = content.items[instance.definitionId]
     return definition?.convertToEssence && !definition.questLocked && !instance.locked && !instance.favorite && instance.instanceId !== save.character.basicArmorInstanceId
@@ -127,11 +122,6 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
                 onFocus={(event) => showTooltip(instance.instanceId, event.currentTarget)}
                 onBlur={() => setHovered(null)}
                 aria-pressed={isSelected}
-                title={definition.basicArmor ? `${definition.name}${instance.refinementLevel ? ' +1' : ''} — Defesa +${definition.basicArmor.mitigation + (instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel} · Iniciativa +${definition.basicArmor.initiative}` : definition.canInfuseBoundItem
-                  ? `${definition.name} — reservado para Infusão em item vinculado`
-                  : definition.gemComponentId
-                    ? `${definition.name} — reservada para Lapidação em item vinculado`
-                    : `${definition.name} — ${definition.essenceValue} Essência ou ${definition.sellValue} Ouro`}
               >
                 <AssetImage assetId={definition.iconAssetId} alt="" aria-hidden="true" />
                 <span>{definition.name}</span>
@@ -149,7 +139,7 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
             <div className="inventory-empty">
               <PackageOpen size={26} />
               <span>Inventário vazio</span>
-              <small>Rosetta entrega suas primeiras túnicas na Praça do Portal.</small>
+              <small>Itens adquiridos em missões e explorações aparecem aqui.</small>
             </div>
           )}
         </div>
@@ -158,27 +148,12 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
           <AssetImage assetId={selectedArmor.definition.iconAssetId} />
           <div><strong>{selectedArmor.definition.name}{selectedArmor.instance.refinementLevel ? ' +1' : ''}</strong><p>Tier {selectedArmor.armor.tier} · {selectedArmor.definition.description}</p>
             <small>Defesa +{selectedArmor.armor.mitigation + (selectedArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel} · Iniciativa +{selectedArmor.armor.initiative}</small></div>
-          <small>{equippedArmor?.instance.instanceId === selectedArmor.instance.instanceId
-            ? 'Proteção em uso: retire antes de vender ou converter.'
-            : 'Peça reserva: Lorian converte em Essência e Feril paga Ouro no Mercado.'}</small>
           {save.character.bondedEquipment.armor ? <p>Você já usa uma Armadura vinculada.</p> : <button type="button" disabled={Boolean(save.battle) || selectedArmor.instance.locked}
             onClick={() => equipArmor(equippedArmor?.instance.instanceId === selectedArmor.instance.instanceId ? null : selectedArmor.instance.instanceId)}>
             {equippedArmor?.instance.instanceId === selectedArmor.instance.instanceId ? 'Retirar proteção' : `Equipar ${selectedArmor.definition.name}`}</button>}
         </section>}
 
 
-        {tradeMode === 'browse' && selectedItem && !selectedArmor && selectedDefinition && <section className="inventory-item-purpose" aria-label="Utilidade do item">
-          <strong>{selectedDefinition.name} · Para que serve?</strong>
-          {selectedDefinition.questLocked && <p>Item protegido de missão: não pode ser vendido nem convertido.</p>}
-          {selectedDefinition.canInfuseBoundItem && <p>Material para Infusão de um Vínculo permanente.</p>}
-          {selectedDefinition.gemComponentId && <p>Joia para Lapidação de um Vínculo permanente.</p>}
-          {neededForQuests.map((quest) => <p key={quest.id}>Necessário em: {quest.title}</p>)}
-          {(selectedDefinition.convertToEssence || selectedDefinition.sellable) && <p>
-            {selectedDefinition.convertToEssence ? `Lorian: +${selectedDefinition.essenceValue * selectedItem.quantity} Essência` : ''}
-            {selectedDefinition.convertToEssence && selectedDefinition.sellable ? ' · ' : ''}
-            {selectedDefinition.sellable ? `Feril: +${selectedDefinition.sellValue * selectedItem.quantity} Ouro` : ''}
-          </p>}
-        </section>}
         {tradeMode !== 'browse' && <div className="inventory-actions">
           <span>{selectedForBoundProgression ? <><Gem size={14} /> Componente reservado para o Vínculo</> : selected ? '1 item selecionado' : 'Selecione um item'}</span>
           <div>
@@ -253,8 +228,6 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
           <small>{item.instanceId === save.character.basicArmorInstanceId ? 'EQUIPADO' :
             definition.basicArmor && save.character.bondedEquipment.armor ? 'BLOQUEADO: ARMADURA VINCULADA' :
               definition.basicArmor ? 'CLIQUE NO ITEM PARA EQUIPAR' : 'ITEM DA MOCHILA'}</small>
-          <small>{definition.sellable ? `${definition.sellValue * item.quantity} Ouro` : 'Não vendável'} ·
-            {definition.convertToEssence ? ` ${definition.essenceValue * item.quantity} Essência` : ' Não conversível'}</small>
         </aside>, document.body)
       })()}
     </>
