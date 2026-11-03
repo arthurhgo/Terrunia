@@ -2,6 +2,10 @@
 
 Vertical slice jogável do RPG de progressão permanente de Terrúnia. O projeto transforma a especificação v0.4 em uma base React/TypeScript orientada a dados, com trilhas sequenciais, combate tático em turnos, primeira Ruína, Vínculos, Infusão, Lapidação de Joias, Skill Tree e save local-first.
 
+## Observações contextuais nas missões
+
+Orientações secundárias (como o destino de peças de reserva com Lorian/Feril) saem dos cards do inventário e passam ao campo opcional `contextNote` das missões, com apresentação cinza, itálica e discreta nos detalhes do Diário e nos diálogos dos NPCs. Não há alteração do save ou do gameplay. [Padrão UI](docs/QUEST_CONTEXT_NOTES_UI_v0.15.md).
+
 ## Equipamentos Tier I–III e inventário v0.15
 
 A primeira missão de Rosetta agora visita o Mercado e, na entrega, o jogador escolhe **uma única proteção Tier I**. A próxima lição ensina a equipar e comprar; a última ensina a reforçar. O inventário suporta seleção única, tooltip de atributos no hover/foco e botão Equipar; os Tiers II/III são desbloqueados com a campanha. Saves migrados ao schema 16 preservam conquistas. [Direção e limites](docs/STARTER_GEAR_TIERS_REWARD_CHOICE_v0.15.md).
