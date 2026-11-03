@@ -61,6 +61,41 @@ afterEach(() => {
 })
 
 describe('interfaces de Terran', () => {
+  it('abre Missões com rota da missão atual e alterna dourado/azul conforme o rastreamento', () => {
+    loadSave()
+    const save = useGameStore.getState().save!
+    save.quests.vs_astravel_first_contact.status = 'active'
+    save.quests.vs_astravel_first_contact.tracked = true
+    save.quests.side_street_arlen.status = 'active'
+    useGameStore.setState({ save })
+    const { container } = render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    expect(screen.queryByRole('img', { name: 'Caminho pontilhado da missão rastreada' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Missões' }))
+    const visible = screen.getByRole('img', { name: 'Caminho pontilhado da missão rastreada' })
+    expect(visible).toHaveAttribute('data-route-tone', 'gold')
+    expect(container.querySelectorAll('.rosetta-quest-lines path')).toHaveLength(1)
+    expect(container.querySelector('.rosetta-minimap-lines')).toHaveAttribute('data-route-tone', 'gold')
+    expect(screen.getByText(/MISSÃO ATUAL/)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Detalhes da missão Patrulha de Arlen' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Rastrear missão' }))
+    expect(useGameStore.getState().save?.quests.side_street_arlen.tracked).toBe(true)
+    expect(useGameStore.getState().save?.quests.vs_astravel_first_contact.tracked).toBe(false)
+    const path = container.querySelector('.rosetta-quest-lines')
+    expect(path).toHaveAttribute('data-route-tone', 'blue')
+    expect(path?.querySelectorAll('path')).toHaveLength(1)
+    expect(path?.querySelector('path')).toHaveAttribute('data-quest-ids', 'side_street_arlen')
+    expect(container.querySelector('.rosetta-minimap-lines')).toHaveAttribute('data-route-tone', 'blue')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remover rastreamento' }))
+    expect(useGameStore.getState().save?.quests.side_street_arlen.tracked).toBe(false)
+    expect(container.querySelector('.rosetta-quest-lines')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
+    expect(container.querySelector('.rosetta-quest-lines')).toBeNull()
+  })
+
+
   it('mostra os nomes dos NPCs nas ruas e interiores sem ocultar os marcadores', () => {
     loadSave('location_terran_eldamar_house')
     render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
