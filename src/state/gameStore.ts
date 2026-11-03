@@ -90,7 +90,7 @@ type GameState = {
   offerQuest: (questId: string) => void
   declineQuest: (questId: string) => void
   acceptQuest: (questId: string) => void
-  turnInQuest: (questId: string, npcId: string) => void
+  turnInQuest: (questId: string, npcId: string, choiceItemId?: string) => void
   setQuestTracked: (questId: string, tracked: boolean) => void
   performSocialTrial: (questId: string) => void
   joinClan: (clanId: string) => void
@@ -349,10 +349,10 @@ export const useGameStore = create<GameState>((set, get) => {
       show('Missão aceita', content.quests[questId]?.title ?? questId, 'neutral')
     },
 
-    turnInQuest: (questId, npcId) => {
+    turnInQuest: (questId, npcId, choiceItemId) => {
       const save = get().save
       if (!save) return
-      const completed = turnInQuestDomain(save, questId, npcId, content, nowIso())
+      const completed = turnInQuestDomain(save, questId, npcId, content, nowIso(), choiceItemId)
       if (!completed.ok) return failAction(completed.message)
       commit(completed.value)
       show('Missão concluída', 'Recompensas aplicadas e registro movido para Concluídas.', 'success')
