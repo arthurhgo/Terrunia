@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { NpcMarker } from './NpcMarker'
+import { NpcNameplate } from './NpcNameplate'
 import { resolveAsset } from '../../assets/assetRegistry'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
@@ -349,6 +350,7 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
           onFocus={() => { if (actor.presence.npcId === 'npc_rosetta') setRosettaFocused(true) }}
           onBlur={() => { if (actor.presence.npcId === 'npc_rosetta') setRosettaFocused(false) }}
           disabled={!enabled} onClick={() => walkToActor(actor)}>
+          <NpcNameplate name={actor.presence.label} />
           <NpcMarker state={actor.marker} phase={actor.markerPhase} />
         </button>)}
         {terranLandmarks.map((landmark) => <button key={landmark.id} type="button" className="pixel-city__landmark"
