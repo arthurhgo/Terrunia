@@ -1,3 +1,12 @@
+## Terran v0.24 — Porta da Base e coluna fixa (2026-11-03)
+
+- Corrigida migração que abria a Base automaticamente ao encontrar save já dentro dela: agora apenas o evento comprovado de uso da Chave de Daeryn autoriza a abertura;
+- saves migrados indevidamente retornam à Praça e preservam a chave ou a recebem após completar a missão, sem reiniciar progresso;
+- removidos atalhos locais Menu / Local / Inventário / Missões; o Menu superior conserva a navegação completa;
+- painel esquerdo permanente dividido: cards de Missões no topo, mochila paginada (12 slots) abaixo, sem barra de rolagem própria;
+- painéis contextuais continuam com sobreposição quando necessários; progressão, itens e Vínculos preservados;
+- testes e contrato em `BASE_KEY_STRICT_FIXED_SIDEBAR_v0.24.md`.
+
 ## Terran v0.23 — Chave de Daeryn, Base e portas (2026-11-03)
 
 - chave de Daeryn concedida uma única vez ao entregar `main_terran_first_home`, exibida na mochila como item quest;
