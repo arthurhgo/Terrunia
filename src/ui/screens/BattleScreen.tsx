@@ -116,6 +116,11 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     || effect.type === 'restoreMp' && player.mp < player.maxMp
     || effect.type === 'cleanseHarmful' && player.statusEffects.some((status) => content.statusEffects[status.definitionId]?.tone === 'harmful'),
   ))
+  const hasUsableConsumable = consumables.some((item) => content.items[item.definitionId].combatEffects.some((effect) =>
+    (effect.type === 'restoreHp' && player.hp < player.maxHp) ||
+    (effect.type === 'restoreMp' && player.mp < player.maxMp) ||
+    (effect.type === 'cleanseHarmful' && player.statusEffects.some((status) =>
+      content.statusEffects[status.definitionId]?.tone === 'harmful'))))
   const isPlayerTurn = battle.phase === 'AwaitingAction' && !turnCue
   const drops = battle.rewards.lootDefinitionIds
   const lootGroups = groupBattleLoot(drops)
@@ -250,11 +255,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             {button('ESSÊNCIAS', <Zap />, () => setMenu(menu === 'essences' ? null : 'essences'),
               !isPlayerTurn || !hasUsefulSupplies('essence'), menu === 'essences')}
             {button('ITENS / POÇÕES', <Backpack />, () => setMenu(menu === 'items' ? null : 'items'),
-              !isPlayerTurn || !consumables.some((item) => content.items[item.definitionId].combatEffects.some((effect) =>
-                (effect.type === 'restoreHp' && player.hp < player.maxHp) ||
-                (effect.type === 'restoreMp' && player.mp < player.maxMp) ||
-                (effect.type === 'cleanseHarmful' && player.statusEffects.some((status) =>
-                  content.statusEffects[status.definitionId]?.tone === 'harmful'))), menu === 'items')}
+              !isPlayerTurn || !hasUsableConsumable, menu === 'items')}
             {button('DEFENDER', <Shield />, () => send({ type: 'defend' }), !isPlayerTurn)}
             {/* The domain explicitly returns FLEE_NOT_IMPLEMENTED; never display it as actionable. */}
             {button('FUGIR', <Footprints />, () => {}, true)}
