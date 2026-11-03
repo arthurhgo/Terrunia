@@ -2,6 +2,15 @@ import type { BoundItemBaseDefinition, ItemDefinition } from './types'
 import { basicArmorItems } from './rosettaTutorial'
 
 export const itemDefinitions = [
+  {
+    id: 'quest_daeryn_home_key',
+    name: 'Chave de Daeryn',
+    description: 'Chave do alojamento confiado por Daeryn. Use-a uma única vez na porta da Base do Terrírian.',
+    category: 'quest', rarity: 'unique', convertToEssence: false, essenceValue: 0,
+    sellable: false, sellValue: 0, questLocked: true, canInfuseBoundItem: false,
+    combatEffects: [], affinityTags: ['terran', 'home', 'daeryn'],
+    iconAssetId: 'item.daeryn-home-key', status: 'CONTENT_DRAFT',
+  },
   ...basicArmorItems,
   { id: 'material_linen_thread', name: 'Linha de Linho', description: 'Linha resistente usada por Durnan para o primeiro reforço das proteções simples.',
     category: 'material', rarity: 'common', convertToEssence: false, essenceValue: 0, sellable: false, sellValue: 0,
