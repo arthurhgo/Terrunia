@@ -1,0 +1,132 @@
+/* Terrúnia v0.14 — compact quest guidance and readable left-side journal.
+   Original pixel/arcane palette; no gameplay behavior depends on these rules. */
+.quest-board--remake {
+  display: grid;
+  gap: 13px;
+  min-width: 0;
+  max-width: 100%;
+}
+.quest-board__focus {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  border: 1px solid #95733e;
+  border-left: 3px solid #e1ae5d;
+  padding: 13px;
+  background: linear-gradient(140deg, #2f2b21, #142331 80%);
+  box-shadow: inset 0 0 0 1px #1a2630;
+}
+.quest-board__focus-label {
+  color: #f5c775;
+  font: 700 .63rem var(--display);
+  letter-spacing: .08em;
+}
+.quest-board__focus > strong {
+  min-width: 0;
+  color: #f5dfa7;
+  font: 700 .96rem/1.3 var(--display);
+  overflow-wrap: anywhere;
+}
+.quest-board__focus p {
+  margin: 0;
+  color: #e4e0d4;
+  font-size: .78rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.quest-board__focus small {
+  color: #a2c5ce;
+  font-size: .67rem;
+  line-height: 1.35;
+}
+.quest-board__focus button {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #86663b;
+  padding: 8px 10px;
+  color: #f3d7a2;
+  background: #1f2b32;
+  font: 700 .68rem var(--display);
+  cursor: pointer;
+}
+.quest-board__focus button:is(:hover, :focus-visible) {
+  outline: 2px solid #d4ae70;
+  outline-offset: 2px;
+}
+.quest-board--remake .quest-board__filters {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+.quest-board--remake .quest-board__rows,
+.quest-board--remake .quest-journal-group,
+.quest-board--remake .quest-row,
+.quest-board--remake .quest-board__grid {
+  min-width: 0;
+  max-width: 100%;
+}
+.quest-board--remake .quest-board__rows { gap: 12px; }
+.quest-board--remake .quest-journal-group > h3 { font-size: .78rem; }
+.quest-board--remake .quest-row--priority .quest-tile {
+  border-color: #d0a866;
+  box-shadow: inset 0 0 0 1px #6e5231;
+}
+.quest-board--remake .quest-row__body > strong,
+.quest-board--remake .quest-board__details p {
+  overflow-wrap: anywhere;
+}
+.quest-board__material-needs {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #40565f;
+  padding: 9px;
+  background: #101e26;
+}
+.quest-board__material-needs h4 { margin: 0; }
+.quest-board__material-needs p {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  color: #d0d3c7;
+  font-size: .7rem;
+}
+.quest-board__material-needs strong { color: #e9ce9e; }
+.quest-board--compact .quest-board__focus { padding: 10px; }
+.quest-board--compact .quest-board__focus > strong { font-size: .82rem; }
+.quest-board--compact .quest-board__focus p { font-size: .73rem; }
+.quest-board--compact .quest-board__filters button { min-height: 33px; padding: 6px 9px; font-size: .6rem; }
+.quest-board--compact .quest-board__rows { gap: 9px; }
+.quest-board--compact .quest-journal-group > h3 { margin-bottom: 6px; font-size: .7rem; }
+.quest-board--compact .quest-tile {
+  grid-template-columns: 20px minmax(0, 1fr) 38px;
+  gap: 7px;
+  min-height: 65px;
+  padding: 8px;
+}
+.quest-board--compact .quest-row__body { gap: 3px; }
+.quest-board--compact .quest-row__body > strong { font-size: .75rem; }
+.quest-board--compact .quest-row__meta { gap: 3px; font-size: .64rem; }
+.quest-board--compact .quest-row__icon svg { width: 17px; }
+.quest-board--compact .quest-board__details { min-width: 0; }
+.terran-game__drawer .quest-board--compact { min-width: 0; }
+.terran-game__drawer,
+.terran-game__drawer-content { overscroll-behavior: contain; }
+.terran-game__drawer-content { min-width: 0; }
+@media (max-width: 960px) {
+  .terran-game__drawer,
+  .terran-game__layout.has-drawer .terran-game__drawer {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  .quest-board--compact .quest-board__focus p { font-size: .72rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quest-board--remake * { scroll-behavior: auto; }
+}
