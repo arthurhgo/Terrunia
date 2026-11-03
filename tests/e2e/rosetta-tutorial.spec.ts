@@ -42,8 +42,7 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
 
   let guide = await meetRosetta(page)
   await expect(guide.getByRole('heading', { name: 'Uma Primeira Proteção', exact: true })).toBeVisible()
-  await expect(guide.getByRole('status')).toContainText('Abra o Inventário')
-  await page.screenshot({ path: '/tmp/terrunia-rosetta-lesson-1.png' })
+  await expect(guide.getByText(/Visite o Mercado de Terran/)).toBeVisible()
   await page.setViewportSize({ width: 390, height: 844 })
   const mobileLesson = await guide.boundingBox()
   expect(mobileLesson!.x).toBeGreaterThanOrEqual(0)
@@ -51,24 +50,34 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
   expect(mobileLesson!.y).toBeGreaterThanOrEqual(0)
   expect(mobileLesson!.y + mobileLesson!.height).toBeLessThanOrEqual(844)
   await guide.getByRole('button', { name: 'Aceitar missão', exact: true }).scrollIntoViewIfNeeded()
-  await page.screenshot({ path: '/tmp/terrunia-rosetta-mobile-lesson.png' })
   await guide.getByRole('button', { name: 'Aceitar missão', exact: true }).click()
-  await expect(guide.getByRole('status')).toContainText('já estão na sua mochila')
   await page.setViewportSize({ width: 1280, height: 720 })
+  await page.keyboard.press('Escape')
+  // No starter armor exists until the player explicitly chooses the quest reward.
+  expect(await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    return useGameStore.getState().save!.inventory.filter((item) => item.definitionId.startsWith('equipment_')).length
+  })).toBe(0)
+  await page.getByRole('button', { name: 'Ir para Mercado', exact: true }).click()
+  await page.getByRole('button', { name: 'Sair do interior para as ruas de Terran', exact: true }).click()
+  guide = await meetRosetta(page)
+  await expect(guide.getByRole('group', { name: 'Escolha um equipamento inicial' })).toBeVisible()
+  const collectReward = guide.getByRole('button', { name: 'Receber equipamento escolhido', exact: true })
+  await expect(collectReward).toBeDisabled()
+  await guide.getByRole('radio').first().check()
+  await collectReward.click()
+  await expect(guide.getByRole('heading', { name: 'Comprar para se Preparar', exact: true })).toBeVisible()
+  await guide.getByRole('button', { name: 'Aceitar missão', exact: true }).click()
   await guide.getByRole('button', { name: 'Abrir mochila', exact: true }).click()
-  let inventory = page.getByRole('complementary', { name: 'Painel lateral: Inventário' })
-  await inventory.getByRole('button', { name: /Túnica de Linho Gasta/ }).click()
+  const inventory = page.getByRole('complementary', { name: 'Painel lateral: Inventário' })
+  const tunicButton = inventory.getByRole('button', { name: /Túnica de Linho Gasta/ })
+  await tunicButton.hover()
+  await expect(page.getByRole('tooltip', { name: 'Status de Túnica de Linho Gasta' })).toContainText('Tier 1')
+  await tunicButton.click()
   await inventory.getByRole('button', { name: 'Equipar Túnica de Linho Gasta', exact: true }).click()
   await expect(inventory.getByLabel('Proteção simples equipada')).toContainText('Túnica de Linho Gasta')
   await expect(page.locator('.terran-character-hud__slot.is-starter img')).toHaveAttribute('src', /item_worn_linen_tunic/)
-  await page.screenshot({ path: '/tmp/terrunia-tunic-equipped.png' })
   await page.getByRole('button', { name: 'Fechar painel', exact: true }).click()
-  guide = await meetRosetta(page)
-  await guide.getByRole('button', { name: 'Entregar lição', exact: true }).click()
-  await expect(guide.getByRole('heading', { name: 'Comprar para se Preparar', exact: true })).toBeVisible()
-  await guide.getByRole('button', { name: 'Aceitar missão', exact: true }).click()
-  await page.keyboard.press('Escape')
-
   await page.getByRole('button', { name: 'Ir para Mercado', exact: true }).click()
   await page.getByRole('button', { name: 'Falar com Neris dentro do local', exact: true }).click()
   let shop = page.getByRole('dialog', { name: 'Neris', exact: true })
@@ -116,7 +125,7 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
       lessons: Object.values(save.quests).filter((quest) => quest.questId.startsWith('rosetta_tutorial_')).map((quest) => quest.status),
       supplies: save.inventory.filter((item) => item.definitionId.includes('tunic')).length }
   })
-  expect(persisted).toMatchObject({ schema: 15, gold: 54, armor: { definitionId: 'equipment_worn_linen_tunic', refinementLevel: 1 }, lessons: ['completed','completed','available','completed'], supplies: 2 })
+  expect(persisted).toMatchObject({ schema: 16, gold: 11, armor: { definitionId: 'equipment_worn_linen_tunic', refinementLevel: 1 }, lessons: ['completed','completed','available','completed'], supplies: 1 })
 
   // Only this extra offer is a visual fixture, to check a secondary route without replaying the story.
   await page.evaluate(async () => {
