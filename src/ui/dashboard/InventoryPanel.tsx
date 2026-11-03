@@ -13,7 +13,7 @@ import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
 
 type Action = 'convert' | 'sell' | null
 
-export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave; tradeMode?: 'browse' | 'convert' | 'sell' }) {
+export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: { save: GameSave; tradeMode?: 'browse' | 'convert' | 'sell'; compact?: boolean }) {
   const convert = useGameStore((state) => state.convertItems)
   const sell = useGameStore((state) => state.sellItems)
   const toggleFavorite = useGameStore((state) => state.toggleFavorite)
@@ -22,6 +22,7 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
   const [hovered, setHovered] = useState<{ instanceId: string; x: number; y: number } | null>(null)
   const [action, setAction] = useState<Action>(null)
   const [filter, setFilter] = useState<'all' | 'equipment' | 'convertible' | 'sellable'>('all')
+  const [page, setPage] = useState(0)
   const selectedArmorInstance = selected ? save.inventory.find((item) => selected === item.instanceId) : null
   const selectedArmorDefinition = selectedArmorInstance && content.items[selectedArmorInstance.definitionId]
   const selectedArmor = selectedArmorInstance && selectedArmorDefinition?.basicArmor
@@ -36,6 +37,9 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
     if (filter === 'sellable') return definition?.sellable
     return true
   })
+  const pageCount = Math.max(1, Math.ceil(visibleItems.length / 12))
+  const safePage = Math.min(page, pageCount - 1)
+  const pagedItems = compact ? visibleItems.slice(safePage * 12, (safePage + 1) * 12) : visibleItems
   const selectedItems = save.inventory.filter((instance) => selected === instance.instanceId)
   const canConvert = selectedItems.length > 0 && selectedItems.every((instance) => {
     const definition = content.items[instance.definitionId]
@@ -92,11 +96,11 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
         title="Mochila"
         eyebrow="ITENS COLETADOS"
         subtitle={tradeMode === 'browse' ? undefined : 'Selecione os materiais para negociar.'}
-        className="inventory-panel"
+        className={"inventory-panel" + (compact ? " inventory-panel--compact" : "")}
         action={
           <label className="compact-select">
             <Filter size={14} />
-            <select aria-label="Filtrar itens da mochila" value={filter} onChange={(event) => { setFilter(event.target.value as typeof filter); setSelected(null) }}>
+            <select aria-label="Filtrar itens da mochila" value={filter} onChange={(event) => { setFilter(event.target.value as typeof filter); setSelected(null); setPage(0) }}>
               <option value="all">Todos</option>
               <option value="equipment">Equipamentos simples</option>
               <option value="convertible">Conversíveis</option>
@@ -106,7 +110,7 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
         }
       >
         <div className="inventory-grid">
-          {visibleItems.map((instance) => {
+          {pagedItems.map((instance) => {
             const definition = content.items[instance.definitionId]
             if (!definition) return null
             const isSelected = selected === instance.instanceId
@@ -130,7 +134,7 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
               </button>
             )
           })}
-          {Array.from({ length: Math.max(0, 12 - visibleItems.length) }, (_, index) => (
+          {Array.from({ length: Math.max(0, 12 - pagedItems.length) }, (_, index) => (
             <span key={`empty-${index}`} className="inventory-slot inventory-slot--empty" />
           ))}
           {visibleItems.length === 0 && (
@@ -142,9 +146,15 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
           )}
         </div>
 
+        {compact && <nav className="inventory-panel__pagination" aria-label="Páginas da mochila">
+          <button type="button" onClick={() => { setPage(Math.max(0, safePage - 1)); setSelected(null) }} disabled={safePage === 0} aria-label="Página anterior da mochila">‹</button>
+          <span>{safePage + 1}/{pageCount} · {visibleItems.length} itens</span>
+          <button type="button" onClick={() => { setPage(Math.min(pageCount - 1, safePage + 1)); setSelected(null) }} disabled={safePage === pageCount - 1} aria-label="Próxima página da mochila">›</button>
+        </nav>}
+
         {tradeMode === 'browse' && selectedArmor && <section className="inventory-equipment-detail" aria-label={`Equipamento: ${selectedArmor.definition.name}`}>
           <AssetImage assetId={selectedArmor.definition.iconAssetId} />
-          <div><strong>{selectedArmor.definition.name}{selectedArmor.instance.refinementLevel ? ' +1' : ''}</strong><p>Tier {selectedArmor.armor.tier} · {selectedArmor.definition.description}</p>
+          <div><strong>{selectedArmor.definition.name}{selectedArmor.instance.refinementLevel ? ' +1' : ''}</strong>{!compact && <p>Tier {selectedArmor.armor.tier} · {selectedArmor.definition.description}</p>}
             <small>Defesa +{selectedArmor.armor.mitigation + (selectedArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel} · Iniciativa +{selectedArmor.armor.initiative}</small></div>
           {save.character.bondedEquipment.armor ? <p>Você já usa uma Armadura vinculada.</p> : <button type="button" disabled={Boolean(save.battle) || selectedArmor.instance.locked}
             onClick={() => { setSelected(null); setHovered(null); equipArmor(selectedArmor.instance.instanceId) }}>
