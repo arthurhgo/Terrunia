@@ -4,7 +4,7 @@ import { createNewSave } from '../game/createSave'
 import { migrateAndValidateSave } from '../../persistence/saveSchema'
 import { turnInQuest } from '../quests/questEngine'
 import { BASE_LOCATION_ID, PLAYER_HOME_DOOR_OPENED_FLAG, PLAYER_HOME_KEY_ITEM_ID,
-  enterPlayerBase, hasPlayerHomeKey, isPlayerHomeDoorOpen, useDaerynKeyOnDoor,
+  enterPlayerBase, hasPlayerHomeKey, isPlayerHomeDoorOpen, unlockPlayerBaseWithDaerynKey,
   leavePlayerBase, respawnDefeatedPlayer, transferBaseChestItem } from './base'
 
 const now = '2026-10-29T19:34:00.000Z'
@@ -27,7 +27,7 @@ describe('Base individual e mundo isolado por campanha', () => {
   it('mantém a Base trancada e concede a chave apenas ao entregar a missão de Daeryn', () => {
     const save = fresh()
     expect(enterPlayerBase(save, now).ok).toBe(false)
-    expect(useDaerynKeyOnDoor(save, now).ok).toBe(false)
+    expect(unlockPlayerBaseWithDaerynKey(save, now).ok).toBe(false)
     expect(hasPlayerHomeKey(save)).toBe(false)
     save.quests.main_terran_first_home.status = 'ready_to_turn_in'
     save.quests.main_terran_first_home.objectives.prepare_room = 1
@@ -44,13 +44,13 @@ describe('Base individual e mundo isolado por campanha', () => {
     expect(duplicate.ok).toBe(false)
     expect(rewarded.inventory).toHaveLength(1)
 
-    const used = useDaerynKeyOnDoor(rewarded, now)
+    const used = unlockPlayerBaseWithDaerynKey(rewarded, now)
     if (!used.ok) throw new Error(used.message)
     expect(used.value.world.currentLocationId).toBe(BASE_LOCATION_ID)
     expect(isPlayerHomeDoorOpen(used.value)).toBe(true)
     expect(hasPlayerHomeKey(used.value)).toBe(false)
     expect(used.value.eventLog).toContain('DaerynKeyUsedOnHomeDoor')
-    expect(useDaerynKeyOnDoor(used.value, now).ok).toBe(false)
+    expect(unlockPlayerBaseWithDaerynKey(used.value, now).ok).toBe(false)
     expect(save.world.currentLocationId).toBe('terran')
     expect(rewarded.inventory).toHaveLength(1)
     const exited = leavePlayerBase(used.value, now)
@@ -156,10 +156,10 @@ describe('Base individual e mundo isolado por campanha', () => {
   it('não permite usar uma chave guardada, ausente ou roubada de outro save', () => {
     const save = fresh()
     save.quests.main_terran_first_home.status = 'completed'
-    expect(useDaerynKeyOnDoor(save, now).ok).toBe(false)
+    expect(unlockPlayerBaseWithDaerynKey(save, now).ok).toBe(false)
     save.baseStorage.push({ instanceId: 'legacy-in-chest', definitionId: PLAYER_HOME_KEY_ITEM_ID,
       quantity: 1, rarity: 'unique', locked: true, favorite: false, acquiredAt: now })
-    expect(useDaerynKeyOnDoor(save, now).ok).toBe(false)
+    expect(unlockPlayerBaseWithDaerynKey(save, now).ok).toBe(false)
     const migrated = migrateAndValidateSave(save)
     expect(hasPlayerHomeKey(migrated)).toBe(true)
     expect(migrated.baseStorage).toHaveLength(0)
