@@ -1,4 +1,4 @@
-import { Check, Coins, Filter, FlaskConical, Gem, Heart, PackageOpen, Shield, Star } from 'lucide-react'
+import { Coins, Filter, FlaskConical, Gem, Heart, PackageOpen, Shield, Star } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './inventoryHover.css'
@@ -30,6 +30,8 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
     ? { instance: selectedArmorInstance, definition: selectedArmorDefinition, armor: selectedArmorDefinition.basicArmor } : null
 
   const visibleItems = save.inventory.filter((instance) => {
+    // Equipped starter protection stays in the save but is shown in its worn slot, not twice.
+    if (instance.instanceId === save.character.basicArmorInstanceId) return false
     const definition = content.items[instance.definitionId]
     if (filter === 'equipment') return Boolean(definition?.basicArmor)
     if (filter === 'convertible') return definition?.convertToEssence
@@ -105,7 +107,14 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
           </label>
         }
       >
-        {equippedArmor && <div className="inventory-worn" aria-label="Proteção simples equipada"><Shield size={14} /><span>{equippedArmor.definition.name}{equippedArmor.instance.refinementLevel ? ' +1' : ''}</span><small>Equipada</small></div>}
+        {equippedArmor && <div className="inventory-worn" aria-label="Proteção simples equipada">
+          <Shield size={14} aria-hidden="true" />
+          <span>{equippedArmor.definition.name}{equippedArmor.instance.refinementLevel ? ' +1' : ''}</span>
+          <small>Equipada</small>
+          {tradeMode === 'browse' && <button type="button" disabled={Boolean(save.battle)}
+            onClick={() => { setSelected(null); setHovered(null); equipArmor(null) }}
+            aria-label={`Retirar ${equippedArmor.definition.name}`}>Retirar</button>}
+        </div>}
         <div className="inventory-grid">
           {visibleItems.map((instance) => {
             const definition = content.items[instance.definitionId]
@@ -115,7 +124,7 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
               <button
                 type="button"
                 key={instance.instanceId}
-                className={`inventory-slot rarity-${instance.rarity} ${isSelected ? 'selected' : ''} ${equippedArmor?.instance.instanceId === instance.instanceId ? 'is-equipped' : ''}`}
+                className={`inventory-slot rarity-${instance.rarity} ${isSelected ? 'selected' : ''}`}
                 onClick={() => toggleSelection(instance.instanceId)}
                 onMouseEnter={(event) => showTooltip(instance.instanceId, event.currentTarget)}
                 onMouseLeave={() => setHovered(null)}
@@ -127,7 +136,6 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
                 <span>{definition.name}</span>
                 {instance.quantity > 1 && <strong>{instance.quantity}</strong>}
                 {instance.favorite && <Star size={12} className="favorite-mark" fill="currentColor" />}
-                {equippedArmor?.instance.instanceId === instance.instanceId && <Check size={13} className="equipped-mark" aria-label="Equipada" />}
                 {Boolean(instance.refinementLevel) && <b className="refinement-mark">+{instance.refinementLevel}</b>}
               </button>
             )
@@ -135,7 +143,7 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
           {Array.from({ length: Math.max(0, 12 - visibleItems.length) }, (_, index) => (
             <span key={`empty-${index}`} className="inventory-slot inventory-slot--empty" />
           ))}
-          {save.inventory.length === 0 && (
+          {visibleItems.length === 0 && (
             <div className="inventory-empty">
               <PackageOpen size={26} />
               <span>Inventário vazio</span>
@@ -149,8 +157,8 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
           <div><strong>{selectedArmor.definition.name}{selectedArmor.instance.refinementLevel ? ' +1' : ''}</strong><p>Tier {selectedArmor.armor.tier} · {selectedArmor.definition.description}</p>
             <small>Defesa +{selectedArmor.armor.mitigation + (selectedArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel} · Iniciativa +{selectedArmor.armor.initiative}</small></div>
           {save.character.bondedEquipment.armor ? <p>Você já usa uma Armadura vinculada.</p> : <button type="button" disabled={Boolean(save.battle) || selectedArmor.instance.locked}
-            onClick={() => equipArmor(equippedArmor?.instance.instanceId === selectedArmor.instance.instanceId ? null : selectedArmor.instance.instanceId)}>
-            {equippedArmor?.instance.instanceId === selectedArmor.instance.instanceId ? 'Retirar proteção' : `Equipar ${selectedArmor.definition.name}`}</button>}
+            onClick={() => { setSelected(null); setHovered(null); equipArmor(selectedArmor.instance.instanceId) }}>
+            {`Equipar ${selectedArmor.definition.name}`}</button>}
         </section>}
 
 
