@@ -35,7 +35,8 @@ describe('Portas clicáveis das casas de Terran', () => {
       const onEnter = vi.fn()
       renderDoor(getCityDoor(id), onEnter, vi.fn())
       fireEvent.click(screen.getByRole('button', { name: `Abrir porta de ${content.terranLocations[id].name}` }))
-      expect(onEnter).toHaveBeenCalledExactlyOnceWith(id)
+      expect(onEnter).toHaveBeenCalledTimes(1)
+      expect(onEnter).toHaveBeenCalledWith(id)
       cleanup()
     }
   })
