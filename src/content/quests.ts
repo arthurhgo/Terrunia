@@ -120,6 +120,7 @@ export const questDefinitions = [
     giverNpcId: 'npc_daeryn', turnInNpcId: 'npc_daeryn', category: 'main',
     objectives: [{ id: 'prepare_room', type: 'interact', targetId: 'prepare_player_home', required: 1, label: 'Preparar o alojamento com Daeryn' }],
     rewards: [{ type: 'characterXp', value: 30 }, { type: 'gold', value: 10 }],
+    itemRewards: [{ itemId: 'quest_daeryn_home_key', quantity: 1 }],
     outcomes: [{ type: 'worldFlag', flag: 'player_home_unlocked' }],
     prerequisites: [{ type: 'questCompleted', questId: 'vs_astravel_first_contact' }],
     initialStatus: 'locked',
