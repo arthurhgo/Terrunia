@@ -41,7 +41,7 @@ import { BASE_LOCATION_ID } from '../../domain/terran/base'
 import { getNpcActionableQuests } from '../../domain/quests/questSelectors'
 import { type TerranLandmark } from '../../content/terranExploration'
 import { CityLandmarkDialog } from '../terran/CityLandmarkDialog'
-import { getRosettaQuestRoutes } from '../../domain/terran/rosettaGuide'
+import { getRosettaQuestRoutes, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 
 type Drawer = 'local' | 'location' | 'inventory' | 'quests' | 'market' | 'home' | 'chest' | 'records' | 'forge' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
@@ -149,6 +149,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const scene = getNextCutscene(save)
   const cityCast = getCityCast(save)
   const guidance = getTerranQuestDestination(save, content)
+  const trackedRoute = getTrackedQuestRoute(save, content)
   const discovered = getDiscoveredTerranLocationIds(save).length
   const location = content.terranLocations[locationId]
   const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !socialQuestId && !dialogue && !inspected && !cityLandmark && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
@@ -282,7 +283,9 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                   homeUnlocked={true} onEnterHome={enterHome}
                   enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
                   actors={cityCast} onEnter={openLocation} onTalk={(id, presence) => talk(presence, id)}
-                  questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned} onHideQuestRoutes={() => setRosettaPathsPinned(false)}
+                  questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
+                  showTrackedQuestRoute={drawer === 'quests'} trackedQuestRoute={trackedRoute}
+                  onHideQuestRoutes={() => setRosettaPathsPinned(false)}
                   landmarkFlags={save.world.worldFlags} onInspectLandmark={(landmark) => {
                     useGameStore.getState().inspectCityLandmark(landmark.id)
                     setCityLandmark(landmark)
