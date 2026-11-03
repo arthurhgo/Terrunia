@@ -44,7 +44,7 @@ import {
 import { discoverCityLandmark, visitTerranLocation } from '../domain/terran/cityEngine'
 import { buyFromSylwen, receiveDaerynAid, restAtHome } from '../domain/terran/services'
 import { buyMarketItem, MARKET_LOCATION_ID } from '../domain/terran/market'
-import { enterPlayerBase, useDaerynKeyOnDoor, leavePlayerBase, respawnDefeatedPlayer, transferBaseChestItem } from '../domain/terran/base'
+import { enterPlayerBase, unlockPlayerBaseWithDaerynKey, leavePlayerBase, respawnDefeatedPlayer, transferBaseChestItem } from '../domain/terran/base'
 import {
   loadCampaignSeed,
   loadSynchronizedSave,
@@ -102,7 +102,7 @@ type GameState = {
   performTerranQuestTask: (questId: string) => void
   restAtHome: () => void
   enterBase: () => boolean
-  useBaseKeyOnDoor: () => boolean
+  unlockBaseWithKey: () => boolean
   leaveBase: () => void
   transferBaseItem: (direction: 'deposit' | 'withdraw', instanceId: string, quantity: number) => void
   receiveDaerynAid: () => void
@@ -462,10 +462,10 @@ export const useGameStore = create<GameState>((set, get) => {
       return true
     },
 
-    useBaseKeyOnDoor: () => {
+    unlockBaseWithKey: () => {
       const save = get().save
       if (!save) return false
-      const result = useDaerynKeyOnDoor(save, nowIso())
+      const result = unlockPlayerBaseWithDaerynKey(save, nowIso())
       if (!result.ok) { failAction(result.message); return false }
       commit(result.value)
       show('Base destrancada', 'A Chave de Daeryn foi usada na porta e retirada da mochila. Agora você pode entrar livremente.', 'success')
