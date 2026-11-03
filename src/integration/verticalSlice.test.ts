@@ -132,7 +132,7 @@ describe('vertical slice integrada', () => {
         store().returnToTerran()
         if (node.index === 6) {
           visit('location_terran_eldamar_house')
-          store().turnInQuest('vs_astravel_first_contact', 'npc_eldamar')
+          // The first investigation was delivered after combat 1 to earn the home key.
           visit('location_terran_vorren_post')
           accept('main_astravel_lost_hunters')
         } else {
@@ -180,8 +180,26 @@ describe('vertical slice integrada', () => {
       }
       store().finishBattleIntoExpedition()
       store().returnToTerran()
-      // Rest and convert between encounters are real gameplay choices, not stat fixtures.
-      store().enterBase(); store().restAtHome(); store().leaveBase()
+      // Obtain the home key through the real Daeryn mission after the first
+      // Fungorro encounter. Before that point the home stays correctly locked.
+      if (node.index === 1) {
+        expect(store().enterBase()).toBe(false)
+        visit('location_terran_eldamar_house')
+        expect(store().save!.quests.vs_astravel_first_contact.status).toBe('ready_to_turn_in')
+        store().turnInQuest('vs_astravel_first_contact', 'npc_eldamar')
+        visit('location_terran_daeryn_house')
+        accept('main_terran_first_home')
+        store().preparePlayerHome()
+        expect(store().save!.quests.main_terran_first_home.status).toBe('ready_to_turn_in')
+        store().turnInQuest('main_terran_first_home', 'npc_daeryn')
+        expect(store().save!.inventory.some((item) => item.definitionId === 'quest_daeryn_home_key')).toBe(true)
+        visit('location_terran_portal_plaza')
+        expect(store().unlockBaseWithKey()).toBe(true)
+        expect(store().save!.inventory.some((item) => item.definitionId === 'quest_daeryn_home_key')).toBe(false)
+      } else {
+        expect(store().enterBase()).toBe(true)
+      }
+      store().restAtHome(); store().leaveBase()
       visit('location_terran_bond_workshop')
       const materials = store().save!.inventory.filter((item) => content.items[item.definitionId].convertToEssence)
       if (materials.length) store().convertItems(materials.map((item) => item.instanceId))

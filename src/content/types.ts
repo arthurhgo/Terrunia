@@ -248,6 +248,8 @@ export type QuestDefinition = {
   acceptanceItems?: Array<{ itemId: string; quantity: number }>
   /** Optional one-of-N item reward; chosen explicitly at turn-in, never on offer/accept. */
   choiceRewardItemIds?: string[]
+  /** Deterministic, one-time item rewards granted only when delivering this quest. */
+  itemRewards?: Array<{ itemId: string; quantity: number }>
   rewards: Array<
     | { type: 'characterXp'; value: number }
     | { type: 'rawEssence'; value: number }

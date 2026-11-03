@@ -116,10 +116,11 @@ export const questDefinitions = [
   {
     id: 'main_terran_first_home',
     title: 'Um Lugar em Terran',
-    summary: 'Daeryn oferece um pequeno alojamento. Ajude a preparar o quarto para poder repousar entre expedições.',
+    summary: 'Ajude Daeryn a preparar o alojamento e conclua a missão para receber a Chave de Daeryn. Use-a na porta da Base para entrar.',
     giverNpcId: 'npc_daeryn', turnInNpcId: 'npc_daeryn', category: 'main',
     objectives: [{ id: 'prepare_room', type: 'interact', targetId: 'prepare_player_home', required: 1, label: 'Preparar o alojamento com Daeryn' }],
     rewards: [{ type: 'characterXp', value: 30 }, { type: 'gold', value: 10 }],
+    itemRewards: [{ itemId: 'quest_daeryn_home_key', quantity: 1 }],
     outcomes: [{ type: 'worldFlag', flag: 'player_home_unlocked' }],
     prerequisites: [{ type: 'questCompleted', questId: 'vs_astravel_first_contact' }],
     initialStatus: 'locked',

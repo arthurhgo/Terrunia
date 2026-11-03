@@ -5,6 +5,13 @@ import { fail, ok, type Result } from '../shared/types'
 /** This is a private interior, not a new city institution. */
 export const BASE_LOCATION_ID = 'location_terran_base'
 export const BASE_RETURN_LOCATION_ID = 'location_terran_portal_plaza'
+export const PLAYER_HOME_KEY_ITEM_ID = 'quest_daeryn_home_key'
+export const PLAYER_HOME_DOOR_OPENED_FLAG = 'player_home_door_opened'
+
+export const isPlayerHomeDoorOpen = (save: GameSave) => save.world.worldFlags.includes(PLAYER_HOME_DOOR_OPENED_FLAG)
+export const hasPlayerHomeKey = (save: GameSave) => save.inventory.some((item) =>
+  item.definitionId === PLAYER_HOME_KEY_ITEM_ID && item.quantity > 0)
+
 
 /** Changing scenes never updates global trail/quest progress. */
 export function enterPlayerBase(save: GameSave, now: string): Result<GameSave> {
@@ -16,12 +23,39 @@ export function enterPlayerBase(save: GameSave, now: string): Result<GameSave> {
     'location_terran_daeryn_house', 'location_terran_forge',
   ]].includes(save.world.currentLocationId)) return fail('BASE_OUTSIDE_TERRAN', 'Retorne a Terran antes de entrar na Base.')
   if (save.world.currentLocationId === BASE_LOCATION_ID) return ok(save)
+  if (!isPlayerHomeDoorOpen(save)) return fail('BASE_DOOR_LOCKED', 'A porta está trancada. Conclua a missão de Daeryn e use a chave na porta.')
   const next = structuredClone(save)
   next.world.currentLocationId = BASE_LOCATION_ID
   if (!next.world.unlockedLocationIds.includes(BASE_LOCATION_ID)) next.world.unlockedLocationIds.push(BASE_LOCATION_ID)
   next.revision += 1
   next.updatedAt = now
   next.eventLog.push('PlayerEnteredBase')
+  return ok(next)
+}
+
+/** One deliberate interaction on the actual home door. Consumes the unique key,
+ * opens the door permanently and enters the home as a single save transaction.
+ */
+export function unlockPlayerBaseWithDaerynKey(save: GameSave, now: string): Result<GameSave> {
+  if (isPlayerHomeDoorOpen(save)) return fail('BASE_ALREADY_OPEN', 'A porta da Base já está destrancada.')
+  if (save.quests.main_terran_first_home?.status !== 'completed') {
+    return fail('BASE_QUEST_REQUIRED', 'Conclua a missão do alojamento com Daeryn antes de abrir a Base.')
+  }
+  const index = save.inventory.findIndex((item) =>
+    item.definitionId === PLAYER_HOME_KEY_ITEM_ID && item.quantity > 0)
+  if (index < 0) return fail('BASE_KEY_REQUIRED', 'Você ainda não possui a Chave de Daeryn na mochila.')
+  // Reuse the same location/battle safety checks as ordinary entrance.
+  const prepared = structuredClone(save)
+  prepared.world.worldFlags.push(PLAYER_HOME_DOOR_OPENED_FLAG)
+  const allowed = enterPlayerBase(prepared, now)
+  if (!allowed.ok) return allowed
+  const next = allowed.value
+  const storedIndex = next.inventory.findIndex((item) =>
+    item.definitionId === PLAYER_HOME_KEY_ITEM_ID && item.quantity > 0)
+  if (storedIndex < 0) return fail('BASE_KEY_REQUIRED', 'A Chave de Daeryn não está disponível.')
+  if (next.inventory[storedIndex].quantity === 1) next.inventory.splice(storedIndex, 1)
+  else next.inventory[storedIndex].quantity -= 1
+  next.eventLog.push('DaerynKeyUsedOnHomeDoor')
   return ok(next)
 }
 
@@ -43,13 +77,58 @@ export function respawnDefeatedPlayer(save: GameSave, now: string): Result<GameS
   }
   const next = structuredClone(save)
   next.battle = null
-  next.world.currentLocationId = BASE_LOCATION_ID
-  if (!next.world.unlockedLocationIds.includes(BASE_LOCATION_ID)) next.world.unlockedLocationIds.push(BASE_LOCATION_ID)
+  // Before the key is used, respawn at the public plaza, not inside the locked home.
+  const destination = isPlayerHomeDoorOpen(save) ? BASE_LOCATION_ID : BASE_RETURN_LOCATION_ID
+  next.world.currentLocationId = destination
+  if (!next.world.unlockedLocationIds.includes(destination)) next.world.unlockedLocationIds.push(destination)
   next.vitals = { hp: 1, mp: 0 }
   next.revision += 1
   next.updatedAt = now
-  next.eventLog.push('PlayerRespawnedAtBase')
+  next.eventLog.push(destination === BASE_LOCATION_ID ? 'PlayerRespawnedAtBase' : 'PlayerRespawnedAtPlaza')
   return ok(next)
+}
+
+/** Legacy saves may predate Daeryn's physical key. Reconcile on load without
+ * resetting completed quests, items, HP, Vínculos or previous exploration.
+ */
+export function reconcileLegacyHomeKey(save: GameSave): GameSave {
+  const questDone = save.quests.main_terran_first_home?.status === 'completed'
+  const inside = save.world.currentLocationId === BASE_LOCATION_ID
+  const keyInChest = save.baseStorage.some((item) => item.definitionId === PLAYER_HOME_KEY_ITEM_ID && item.quantity > 0)
+  const needsUnlock = inside && !isPlayerHomeDoorOpen(save) && questDone
+  const needsRelocation = inside && !isPlayerHomeDoorOpen(save) && !questDone
+  const needsKey = questDone && !isPlayerHomeDoorOpen(save) && !inside && !hasPlayerHomeKey(save) && !keyInChest
+  const needsRetrieveKey = questDone && !isPlayerHomeDoorOpen(save) && !inside && keyInChest
+  if (!needsUnlock && !needsRelocation && !needsKey && !needsRetrieveKey) return save
+  const next = structuredClone(save)
+  if (needsUnlock) {
+    next.world.worldFlags.push(PLAYER_HOME_DOOR_OPENED_FLAG)
+    // The old campaign is already physically inside. If it has the new key,
+    // treat that first entry as its use so the item is not left orphaned.
+    const keyIndex = next.inventory.findIndex((item) => item.definitionId === PLAYER_HOME_KEY_ITEM_ID)
+    if (keyIndex >= 0) next.inventory.splice(keyIndex, 1)
+    next.eventLog.push('LegacyHomeDoorRecognized')
+  }
+  if (needsRelocation) {
+    next.world.currentLocationId = BASE_RETURN_LOCATION_ID
+    if (!next.world.unlockedLocationIds.includes(BASE_RETURN_LOCATION_ID)) next.world.unlockedLocationIds.push(BASE_RETURN_LOCATION_ID)
+    next.eventLog.push('LegacyHomeLocked:ReturnedToPlaza')
+  }
+  if (needsRetrieveKey) {
+    const index = next.baseStorage.findIndex((item) => item.definitionId === PLAYER_HOME_KEY_ITEM_ID && item.quantity > 0)
+    if (index >= 0) next.inventory.push(...next.baseStorage.splice(index, 1))
+    next.eventLog.push('LegacyHomeKeyRetrieved')
+  }
+  if (needsKey) {
+    next.inventory.push({
+      instanceId: `quest_reward_main_terran_first_home_${save.saveId}_${PLAYER_HOME_KEY_ITEM_ID}`,
+      definitionId: PLAYER_HOME_KEY_ITEM_ID, quantity: 1, rarity: 'unique',
+      locked: true, favorite: false, acquiredAt: next.updatedAt,
+    })
+    next.eventLog.push('LegacyHomeKeyGranted')
+  }
+  next.revision += 1
+  return next
 }
 
 export type BaseChestTransfer = 'deposit' | 'withdraw'

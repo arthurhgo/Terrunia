@@ -245,10 +245,31 @@ export const turnInQuest = (
     return fail('QUEST_CHOICE_INVALID', 'Esta missão não possui recompensa por escolha.')
   }
 
+  // Item rewards are a one-time part of the delivery transaction, not granted
+  // at offer/accept. Validate first so an invalid catalog never costs materials.
+  for (const reward of definition.itemRewards ?? []) {
+    const item = catalog.items[reward.itemId]
+    if (!item || !Number.isSafeInteger(reward.quantity) || reward.quantity < 1) {
+      return fail('QUEST_ITEM_REWARD_INVALID', 'Recompensa de item inválida para esta missão.')
+    }
+    const instanceId = `quest_reward_${questId}_${save.saveId}_${reward.itemId}`
+    if ([...save.inventory, ...save.baseStorage].some((entry) => entry.instanceId === instanceId)) {
+      return fail('QUEST_ITEM_REWARD_DUPLICATE', 'A recompensa desta missão já foi recebida.')
+    }
+  }
   const delivery = consumeQuestDelivery(save, definition, catalog)
   if (!delivery.ok) return delivery
   const next = delivery.value
   applyQuestRewards(next, definition)
+  for (const reward of definition.itemRewards ?? []) {
+    const item = catalog.items[reward.itemId]
+    next.inventory.push({
+      instanceId: `quest_reward_${questId}_${save.saveId}_${reward.itemId}`,
+      definitionId: reward.itemId, quantity: reward.quantity, rarity: item.rarity,
+      locked: item.questLocked, favorite: false, acquiredAt: now,
+    })
+    next.eventLog.push(`QuestItemReward:${questId}:${reward.itemId}:${reward.quantity}`)
+  }
   if (choiceItemId) {
     const reward = catalog.items[choiceItemId]
     next.inventory.push({

@@ -6,6 +6,7 @@ import { getBoundSlotCapacity } from '../domain/bond/boundItems'
 import type { GameSave } from '../domain/game/types'
 import { deriveCharacterStats } from '../domain/character/derivedStats'
 import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
+import { reconcileLegacyHomeKey } from '../domain/terran/base'
 
 export const CURRENT_SAVE_SCHEMA = 17
 
@@ -912,5 +913,6 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
 
   // Reconcile quest gates without resetting progress or rewards.
   const validated = gameSaveSchema.parse(candidate) as GameSave
-  return normalizeTrackedQuests(refreshQuestAvailability(validated, content, validated.updatedAt))
+  const withHomeAccess = reconcileLegacyHomeKey(validated)
+  return normalizeTrackedQuests(refreshQuestAvailability(withHomeAccess, content, withHomeAccess.updatedAt))
 }

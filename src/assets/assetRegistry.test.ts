@@ -97,8 +97,8 @@ describe('grade pixel art v0.1', () => {
     expect(manifest.schemaVersion).toBe('0.1')
     const ids = manifest.entries.map((entry) => entry.assetId)
     expect(new Set(ids).size).toBe(ids.length)
-    expect(ids).toHaveLength(133)
-    expect(manifest.entries.filter((entry) => entry.family === 'item')).toHaveLength(70)
+    expect(ids).toHaveLength(134)
+    expect(manifest.entries.filter((entry) => entry.family === 'item')).toHaveLength(71)
     expect(manifest.entries.filter((entry) => entry.family === 'monster')).toHaveLength(10)
     expect(manifest.entries.filter((entry) => entry.family === 'npc')).toHaveLength(51)
     for (const id of ['item.simple-ether', 'item.field-compress', 'item.antidote',
