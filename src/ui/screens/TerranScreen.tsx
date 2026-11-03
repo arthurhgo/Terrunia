@@ -274,6 +274,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
           </nav>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
             {interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
+                questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
+                showTrackedQuestRoute={drawer === 'quests'} trackedQuestRoute={trackedRoute}
                 onTalk={(presence) => { if (interiorId !== PLAYER_HOME_INTERIOR_ID) talk(presence, interiorId) }}
                 onServices={() => openRoomServices(interiorId)}
                 onFurniture={inspectFurniture}
