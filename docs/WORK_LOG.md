@@ -1,5 +1,14 @@
 # Registro de implementação
 
+## Terran v0.16 — caminho pontilhado por missão rastreada (2026-11-03)
+
+- ao abrir Missões, traça somente a missão atual da posição do Terrírian até objetivo/NPC, sem tomar o foco de outras ações;
+- tracking exclusivo: aceitar/rastrear muda a seleção, remover apaga a rota; objetivos paralelos não sobrescrevem a escolha;
+- linhas SVG douradas para principais e azul claro a 20% para secundárias/caçadas; minimapa compartilha seleção e destino;
+- o mapa usa o resolver de rota único; previa completa da Rosetta continua acessível independentemente;
+- saves schema 16 com tracking legado múltiplo são normalizados sem perda de progressão;
+- detalhes e limites de rotas fora de Terran em `QUEST_TRACKING_PATHS_v0.16.md`.
+
 ## Terran UI — notas contextuais em missões (2026-11-03)
 
 - removido do inventário o texto de Lorian/Feril e o bloco explicativo de utilidade de itens, preservando status e ação Equipar;
