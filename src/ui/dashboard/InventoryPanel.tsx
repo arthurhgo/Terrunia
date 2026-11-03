@@ -1,4 +1,4 @@
-import { Coins, Filter, FlaskConical, Gem, Heart, PackageOpen, Shield, Star } from 'lucide-react'
+import { Coins, Filter, FlaskConical, Gem, Heart, PackageOpen, Star } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './inventoryHover.css'
@@ -107,14 +107,6 @@ export function InventoryPanel({ save, tradeMode = 'browse' }: { save: GameSave;
           </label>
         }
       >
-        {equippedArmor && <div className="inventory-worn" aria-label="Proteção simples equipada">
-          <Shield size={14} aria-hidden="true" />
-          <span>{equippedArmor.definition.name}{equippedArmor.instance.refinementLevel ? ' +1' : ''}</span>
-          <small>Equipada</small>
-          {tradeMode === 'browse' && <button type="button" disabled={Boolean(save.battle)}
-            onClick={() => { setSelected(null); setHovered(null); equipArmor(null) }}
-            aria-label={`Retirar ${equippedArmor.definition.name}`}>Retirar</button>}
-        </div>}
         <div className="inventory-grid">
           {visibleItems.map((instance) => {
             const definition = content.items[instance.definitionId]
