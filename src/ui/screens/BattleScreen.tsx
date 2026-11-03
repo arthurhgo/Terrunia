@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Backpack, Bomb, Crosshair, Footprints, Gem, ScrollText, Shield, Sparkles, Swords, WandSparkles, Zap } from 'lucide-react'
+import { Backpack, Bomb, Crosshair, Footprints, Gem, ScrollText, Shield, Swords, Zap } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { boundSlotPreviewAssetIds } from '../../assets/assetRegistry'
@@ -13,6 +13,7 @@ import { BattleArenaBackdrop } from '../battle/BattleArenaBackdrop'
 import { BattleDicePlatform, type BattleDiceEvent } from '../battle/BattleDicePlatform'
 import { groupBattleLoot } from '../../domain/inventory/battleLoot'
 import './battlePixel.css'
+import './battleRemake.css'
 
 type Menu = 'combat' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
