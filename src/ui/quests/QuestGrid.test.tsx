@@ -31,6 +31,22 @@ describe('Registro visual de missões', () => {
     expect(screen.getByText(/Nenhuma missão nesta categoria/)).toBeInTheDocument()
   })
 
+  it('mostra observações apenas dentro da missão expandida, com estilo secundário', () => {
+    const save = createNewSave('notes-owner', 'Lysa', 'character.terririan.default', content)
+    const optional = content.quests.rosetta_tutorial_armor
+    save.quests[optional.id].status = 'active'
+    save.quests.vs_astravel_first_contact.status = 'active'
+    render(<MemoryRouter><QuestGrid save={save} compact /></MemoryRouter>)
+    expect(screen.queryByLabelText('Observação da missão')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: `Detalhes da missão ${optional.title}` }))
+    const note = screen.getByLabelText('Observação da missão')
+    expect(note).toHaveTextContent(optional.contextNote!)
+    expect(note).toHaveClass('quest-context-note')
+    expect(screen.getByRole('region', { name: `Detalhes: ${optional.title}` })).toContainElement(note)
+    fireEvent.click(screen.getByRole('button', { name: 'Detalhes da missão O Primeiro Rastro' }))
+    expect(screen.queryByLabelText('Observação da missão')).not.toBeInTheDocument()
+  })
+
   it('prioriza a história em andamento, empilha secundárias e deixa concluídas no final', () => {
     const save = createNewSave('quest-owner', 'Lysa', 'character.terririan.default', content)
     save.quests.vs_astravel_first_contact.status = 'completed'
