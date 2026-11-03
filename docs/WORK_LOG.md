@@ -1,5 +1,12 @@
 # Registro de implementação
 
+## Terran UI — notas contextuais em missões (2026-11-03)
+
+- removido do inventário o texto de Lorian/Feril e o bloco explicativo de utilidade de itens, preservando status e ação Equipar;
+- adicionado `QuestDefinition.contextNote?`, renderizado por componente único em cinza/itálico/fonte menor no Diário, em missões de NPCs e no tutorial de Rosetta;
+- notas adicionadas às missões de refinamento e armadura opcional; nenhuma mecânica, regra ou save alterado;
+- regressões de UI cobrem a ausência da dica na mochila e renderização condicional nas telas de missão. Ver `QUEST_CONTEXT_NOTES_UI_v0.15.md`.
+
 ## Terran v0.15 — tiers de proteção simples e escolha única (2026-11-03)
 
 - substituída a entrega automática de duas túnicas por recompensa de escolha ao concluir a primeira missão;
