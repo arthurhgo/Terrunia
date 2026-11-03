@@ -9,6 +9,7 @@ import { ArcanePanel } from '../components/ArcanePanel'
 import { AssetImage } from '../components/AssetImage'
 import { ProgressBar } from '../components/ProgressBar'
 import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
+import { useGameStore } from '../../state/gameStore'
 
 const slotIcons = {
   weapon: Sword,
@@ -25,10 +26,14 @@ function BoundItemCard({ slot, save }: { slot: BoundSlot; save: GameSave }) {
   const Icon = slotIcons[slot]
   const capacity = getBoundSlotCapacity(item?.grade ?? 1)
   const basic = slot === 'armor' ? getEquippedBasicArmor(save, content) : null
+  const equipArmor = useGameStore((state) => state.equipArmor)
   if (basic) return <article className="bound-card bound-card--starter"><header><Icon size={16} /><span>Armadura</span><small>Simples</small></header>
     <div className="bound-card__visual"><AssetImage assetId={basic.definition.iconAssetId} alt={basic.definition.name} /></div>
     <strong>{basic.definition.name}{basic.instance.refinementLevel ? ' +1' : ''}</strong><p>Equipada · sem Vínculo permanente.</p>
-    <small>Troque pela mochila. Durnan pode reforçar esta peça.</small></article>
+    <small>Tier {basic.armor.tier} · Defesa +{basic.armor.mitigation + (basic.instance.refinementLevel ?? 0)}</small>
+    <button type="button" className="bound-card__unequip" disabled={Boolean(save.battle)}
+      aria-label={`Retirar ${basic.definition.name}`} onClick={() => equipArmor(null)}>Retirar proteção</button>
+    <small>Ao retirar, a peça volta à mochila sem perder seu reforço.</small></article>
 
   return (
     <article className={`bound-card ${item ? 'bound-card--active' : 'bound-card--empty'}`}>
