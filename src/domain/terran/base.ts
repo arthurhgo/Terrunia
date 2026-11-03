@@ -98,11 +98,15 @@ export function reconcileLegacyHomeKey(save: GameSave): GameSave {
   const needsUnlock = inside && !isPlayerHomeDoorOpen(save) && questDone
   const needsRelocation = inside && !isPlayerHomeDoorOpen(save) && !questDone
   const needsKey = questDone && !isPlayerHomeDoorOpen(save) && !inside && !hasPlayerHomeKey(save) && !keyInChest
-  const needsRetrieveKey = questDone && !isPlayerHomeDoorOpen(save) && keyInChest
+  const needsRetrieveKey = questDone && !isPlayerHomeDoorOpen(save) && !inside && keyInChest
   if (!needsUnlock && !needsRelocation && !needsKey && !needsRetrieveKey) return save
   const next = structuredClone(save)
   if (needsUnlock) {
     next.world.worldFlags.push(PLAYER_HOME_DOOR_OPENED_FLAG)
+    // The old campaign is already physically inside. If it has the new key,
+    // treat that first entry as its use so the item is not left orphaned.
+    const keyIndex = next.inventory.findIndex((item) => item.definitionId === PLAYER_HOME_KEY_ITEM_ID)
+    if (keyIndex >= 0) next.inventory.splice(keyIndex, 1)
     next.eventLog.push('LegacyHomeDoorRecognized')
   }
   if (needsRelocation) {
