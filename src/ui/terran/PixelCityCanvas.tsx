@@ -336,6 +336,7 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
           data-route-mode={showTrackedQuestRoute ? 'tracked' : 'rosetta'}
           data-route-tone={showTrackedQuestRoute ? trackedQuestRoute?.tone : 'gold'} data-reduced-motion={reducedMotion}>
           {visibleRoutes.map((route) => <path key={route.id} data-quest-ids={route.questIds.join(' ')}
+            data-route-tone={route.tone ?? 'gold'} data-route-opacity={route.opacity ?? 1}
             ref={(path) => { if (path) routePathsRef.current.set('world:' + route.id, path); else routePathsRef.current.delete('world:' + route.id) }}><title>{route.titles.join(' · ')}</title></path>)}
         </svg>}
         {TERRAN_LOCATION_IDS.map((id) => {
@@ -397,6 +398,7 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
           {routesVisible && <g className="rosetta-minimap-lines" aria-hidden="true"
             data-route-mode={showTrackedQuestRoute ? 'tracked' : 'rosetta'}
             data-route-tone={showTrackedQuestRoute ? trackedQuestRoute?.tone : 'gold'}>{visibleRoutes.map((route) => <path key={route.id}
+            data-route-tone={route.tone ?? 'gold'} data-route-opacity={route.opacity ?? 1}
             ref={(path) => { if (path) routePathsRef.current.set('map:' + route.id, path); else routePathsRef.current.delete('map:' + route.id) }} />)}</g>}
           <rect ref={mapViewRef} x={cameraRef.current.x} y={cameraRef.current.y} width={CITY_VIEW_WIDTH} height={CITY_VIEW_HEIGHT} fill="none" stroke="#e5d6ad" strokeWidth="5" pointerEvents="none" />
           <circle ref={mapPlayerRef} cx={playerRef.current.x} cy={playerRef.current.y} r="11" fill="#ffe6a1" stroke="#17272d" strokeWidth="4" pointerEvents="none" />
