@@ -8,8 +8,8 @@ export const basicArmorItems: ItemDefinition[] = [
     basicArmor: { mitigation: 0, initiative: 1, maxRefinement: 1 }, iconAssetId: 'item.apprentice-tunic' },
   { id: 'equipment_simple_leather_armor', name: 'Armadura de Couro Simples', description: 'Proteção comum vendida por Neris. Pode ser equipada e reforçada antes do Vínculo permanente da Armadura.',
     basicArmor: { mitigation: 2, initiative: 0, maxRefinement: 1 }, iconAssetId: 'item.simple-leather-armor' },
-].map((item) => ({ ...item, category: 'equipment', rarity: 'common', convertToEssence: false, essenceValue: 0,
-  sellable: false, sellValue: 0, questLocked: false, canInfuseBoundItem: false, combatEffects: [],
+].map((item) => ({ ...item, category: 'equipment', rarity: 'common', convertToEssence: true, essenceValue: item.id === 'equipment_simple_leather_armor' ? 16 : 8,
+  sellable: true, sellValue: item.id === 'equipment_simple_leather_armor' ? 9 : 3, questLocked: false, canInfuseBoundItem: false, combatEffects: [],
   affinityTags: ['starter', 'armor'], status: 'BALANCE_DRAFT' }))
 
 export const ARMOR_REFINEMENT = { gold: 8, itemId: 'material_linen_thread', quantity: 1, mitigationPerLevel: 1 } as const
@@ -27,8 +27,8 @@ const lessons: Omit<QuestDefinition, 'giverNpcId' | 'turnInNpcId' | 'category' |
     rewards: [{ type: 'characterXp', value: 10 }],
     prerequisites: [{ type: 'questCompleted', questId: 'rosetta_tutorial_equip' }], initialStatus: 'locked',
     terranFlow: { active: 'location_terran_bond_workshop' } },
-  { id: 'rosetta_tutorial_armor', title: 'Proteção para a Estrada',
-    summary: 'Compre uma Armadura de Couro Simples com Neris e equipe a proteção pela mochila.',
+  { id: 'rosetta_tutorial_armor', title: 'Proteção para a Estrada (Opcional)',
+    summary: 'Missão extra: experimente a Armadura de Couro Simples com Neris. Sua túnica inicial pode ser mantida e reforçada sem esta compra.',
     objectives: [{ id: 'buy_armor', type: 'purchase', targetId: 'equipment_simple_leather_armor', required: 1, label: 'Compre a Armadura de Couro Simples por 35 Ouro' },
       { id: 'wear_leather', type: 'equip', targetId: 'equipment_simple_leather_armor', required: 1, label: 'Equipe a Armadura de Couro Simples na mochila' }],
     rewards: [{ type: 'characterXp', value: 15 }, { type: 'gold', value: 10 }],
@@ -39,9 +39,13 @@ const lessons: Omit<QuestDefinition, 'giverNpcId' | 'turnInNpcId' | 'category' |
     objectives: [{ id: 'refine_armor', type: 'refine', targetId: 'basic_armor', required: 1, label: 'Aprimore uma armadura simples para +1 na Casa do Ferreiro' }],
     acceptanceItems: [{ itemId: 'material_linen_thread', quantity: 1 }],
     rewards: [{ type: 'characterXp', value: 20 }, { type: 'gold', value: 10 }],
-    prerequisites: [{ type: 'questCompleted', questId: 'rosetta_tutorial_armor' }], initialStatus: 'locked',
+    prerequisites: [{ type: 'questCompleted', questId: 'rosetta_tutorial_supply' }], initialStatus: 'locked',
     terranFlow: { active: 'location_terran_forge' } },
 ]
 
-export const rosettaTutorialQuests: QuestDefinition[] = lessons.map((quest) => ({ ...quest, giverNpcId: 'npc_rosetta', turnInNpcId: 'npc_rosetta', category: 'main',
+/** Keep legacy quest IDs and progress; leather is an optional detour, never a gate for refinement. */
+export const ROSETTA_CORE_LESSON_IDS = ['rosetta_tutorial_equip', 'rosetta_tutorial_supply', 'rosetta_tutorial_refine'] as const
+
+export const rosettaTutorialQuests: QuestDefinition[] = lessons.map((quest) => ({ ...quest, giverNpcId: 'npc_rosetta', turnInNpcId: 'npc_rosetta',
+  category: quest.id === 'rosetta_tutorial_armor' ? 'secondary' : 'main',
   terranFlow: { ...quest.terranFlow, ready_to_turn_in: 'location_terran_portal_plaza' }, status: 'CONTENT_DRAFT' }))

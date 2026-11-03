@@ -48,4 +48,25 @@ describe('inventário de drops', () => {
     const favorite = item('drop_fungal_nucleus', { favorite: true })
     expect(convertInventoryItems([favorite], essence, [favorite.instanceId], content).ok).toBe(false)
   })
+  it('aproveita proteção reserva sem aceitar descarte da peça equipada', () => {
+    const equipped = item('equipment_worn_linen_tunic', { instanceId: 'tunic-in-use' })
+    const spare = item('equipment_apprentice_tunic', { instanceId: 'tunic-spare' })
+    const inventory = [equipped, spare]
+    const snapshot = structuredClone(inventory)
+    expect(convertInventoryItems(inventory, essence, [equipped.instanceId], content, [equipped.instanceId]))
+      .toMatchObject({ ok: false, code: 'EQUIPPED_ARMOR' })
+    expect(sellInventoryItems(inventory, 0, [equipped.instanceId], content, [equipped.instanceId]))
+      .toMatchObject({ ok: false, code: 'EQUIPPED_ARMOR' })
+    const converted = convertInventoryItems(inventory, essence, [spare.instanceId], content, [equipped.instanceId])
+    expect(converted.ok).toBe(true)
+    if (converted.ok) {
+      expect(converted.value.inventory).toEqual([equipped])
+      expect(converted.value.rawEssence).toBe(8)
+    }
+    const sold = sellInventoryItems(inventory, 0, [spare.instanceId], content, [equipped.instanceId])
+    expect(sold.ok).toBe(true)
+    if (sold.ok) expect(sold.value.gainedGold).toBe(3)
+    expect(inventory).toEqual(snapshot)
+  })
+
 })

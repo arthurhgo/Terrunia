@@ -1,5 +1,5 @@
 import { BookOpen, Grid2X2, MapPin, Package, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { TerranLocationDefinition } from '../../content/types'
@@ -112,6 +112,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const enterBase = useGameStore((state) => state.enterBase)
   const leaveBase = useGameStore((state) => state.leaveBase)
   const [drawer, setDrawer] = useState<Drawer>(null)
+  const drawerRef = useRef<HTMLElement>(null)
   const [locationId, setLocationId] = useState<TerranLocationId>('location_terran_portal_plaza')
   const [interiorId, setInteriorId] = useState<TerranInteriorId | null>(
     save?.world.currentLocationId === BASE_LOCATION_ID ? PLAYER_HOME_INTERIOR_ID : null)
@@ -127,6 +128,10 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [localQuestId, setLocalQuestId] = useState<string | null>(null)
   const [marketNpc, setMarketNpc] = useState<Presence | null>(null)
   const [cityLandmark, setCityLandmark] = useState<TerranLandmark | null>(null)
+
+  useEffect(() => {
+    if (drawer) drawerRef.current?.scrollTo?.({ top: 0, behavior: 'auto' })
+  }, [drawer, localQuestId])
 
   useEffect(() => {
     if (!waking) return
@@ -295,7 +300,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             {dialogue && <DialogueBox save={save} presence={dialogue} onClose={() => setDialogue(null)} />}
           </section>
           <TerranCharacterHud save={save} />
-          {drawer && <aside className={`terran-game__drawer ${eldamarOpen || socialQuestId || localQuestId || dialogue || drawer === 'market' || drawer === 'forge' ? 'terran-game__drawer--dialogue' : ''}`} aria-label={`Painel lateral: ${activeTitle}`}>
+          {drawer && <aside ref={drawerRef} className={`terran-game__drawer ${eldamarOpen || socialQuestId || localQuestId || dialogue || drawer === 'market' || drawer === 'forge' ? 'terran-game__drawer--dialogue' : ''}`} aria-label={`Painel lateral: ${activeTitle}`}>
             <header><span className="eyebrow">NEXO · INTERAÇÃO CONTÍNUA</span><h2>{activeTitle}</h2>
               <button type="button" onClick={() => { setDrawer(null); setLocalQuestId(null) }} aria-label="Fechar painel"><X size={19} /></button>
             </header>

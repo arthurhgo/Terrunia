@@ -2,6 +2,7 @@ import type { ContentCatalog } from '../../content/catalog'
 import type { QuestDefinition } from '../../content/types'
 import type { GameSave } from '../game/types'
 import { getActiveQuestCount } from '../quests/questEngine'
+import { getPrioritizedQuestEntries } from '../quests/questSelectors'
 import { streetNpcPlacements } from '../../content/streetNpcs'
 
 export type RosettaQuestHint = {
@@ -70,7 +71,7 @@ const hint = (quest: QuestDefinition, npcId: string, catalog: ContentCatalog, in
 export function getRosettaGuidance(save: GameSave, catalog: ContentCatalog) {
   const activeCount = getActiveQuestCount(save)
   const canReceive = true
-  const definitions = Object.values(catalog.quests)
+  const definitions = getPrioritizedQuestEntries(save, catalog).map(({ definition }) => definition)
   const ready = definitions.filter((quest) => save.quests[quest.id]?.status === 'ready_to_turn_in')
   const active = definitions.filter((quest) => save.quests[quest.id]?.status === 'active')
   const offered = definitions.filter((quest) => ['available', 'offered'].includes(save.quests[quest.id]?.status ?? 'locked'))
@@ -86,8 +87,12 @@ export function getRosettaGuidance(save: GameSave, catalog: ContentCatalog) {
   const eligibleHints = offered.map((quest) => hint(quest, quest.giverNpcId, catalog,
     `Fale com ${catalog.npcs[quest.giverNpcId]?.name ?? 'o responsável'} para receber a missão.`))
 
-  const next = readyHints[0] ?? activeHints[0] ??
-    (canReceive ? eligibleHints[0] : undefined) ?? null
+  const first = definitions[0]
+  const firstStatus = first && save.quests[first.id]?.status
+  const next = first ? (firstStatus === 'ready_to_turn_in'
+    ? readyHints.find((entry) => entry.id === first.id)
+    : firstStatus === 'active' ? activeHints.find((entry) => entry.id === first.id)
+      : eligibleHints.find((entry) => entry.id === first.id)) ?? null : null
 
   return {
     next,

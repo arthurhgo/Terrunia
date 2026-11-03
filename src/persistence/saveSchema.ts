@@ -857,5 +857,7 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)
   }
 
-  return gameSaveSchema.parse(candidate) as GameSave
+  // Reconcile newly loosened quest gates in schema-15 saves without resetting progress or rewards.
+  const validated = gameSaveSchema.parse(candidate) as GameSave
+  return refreshQuestAvailability(validated, content, validated.updatedAt)
 }

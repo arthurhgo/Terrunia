@@ -896,7 +896,7 @@ export const useGameStore = create<GameState>((set, get) => {
       const save = get().save
       if (!save) return
       if (save.battle || save.world.currentLocationId !== MARKET_LOCATION_ID) return failAction('Troque itens por Essência com Lorian no Mercado.')
-      const result = convertInventoryItems(save.inventory, save.essence, instanceIds, content)
+      const result = convertInventoryItems(save.inventory, save.essence, instanceIds, content, save.character.basicArmorInstanceId ? [save.character.basicArmorInstanceId] : [])
       if (!result.ok) return failAction(result.message)
       const next = structuredClone(save)
       next.inventory = result.value.inventory
@@ -919,7 +919,7 @@ export const useGameStore = create<GameState>((set, get) => {
       const save = get().save
       if (!save) return
       if (save.battle || save.world.currentLocationId !== MARKET_LOCATION_ID) return failAction('Venda itens por Ouro com Feril no Mercado.')
-      const result = sellInventoryItems(save.inventory, save.wallet.gold, instanceIds, content)
+      const result = sellInventoryItems(save.inventory, save.wallet.gold, instanceIds, content, save.character.basicArmorInstanceId ? [save.character.basicArmorInstanceId] : [])
       if (!result.ok) return failAction(result.message)
       const next = structuredClone(save)
       next.inventory = result.value.inventory

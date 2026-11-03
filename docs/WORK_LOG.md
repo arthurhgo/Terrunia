@@ -1,5 +1,13 @@
 # Registro de implementação
 
+## Terran v0.14 — progressão fluida de missões e painel esquerdo (2026-11-03)
+
+- rota essencial de Rosetta simplificada para equipar → comprar Tônico → reforçar túnica; couro reclassificado como opcional, preservando IDs e saves;
+- peças comuns reservas convertíveis/vendáveis, nunca a peça vestida; proteção dos cinco Vínculos inalterada;
+- diário com objetivo prioritário, indicadores de uso de materiais, lista compacta e orientação coerente com Rosetta/cidade;
+- painel contextual volta ao topo a cada aba; testes de fluxo, inventário e compatibilidade adicionados;
+- detalhes, valores provisórios e decisões em `QUEST_FLOW_REMAKE_v0.14.md`.
+
 ## Terran v0.13 — tutorial prático de Rosetta e orientação dourada (2026-10-30)
 
 - recolhido o histórico de concluídas por padrão, com contador e expansão por botão;

@@ -1,7 +1,8 @@
 import type { ContentCatalog } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { GameSave } from '../game/types'
-import { getTrackedQuestEntries } from '../quests/questSelectors'
+import { getPrioritizedQuestEntries } from '../quests/questSelectors'
+import { getRosettaQuestRoutes } from './rosettaGuide'
 import { fail, ok, type Result } from '../shared/types'
 import { cityLandmarkFlag, terranLandmarks } from '../../content/terranExploration'
 
@@ -28,16 +29,18 @@ export const getTerranQuestDestination = (
   save: GameSave,
   catalog: ContentCatalog,
 ): { questId: string; locationId: TerranLocationId; status: 'active' | 'ready_to_turn_in' } | null => {
-  const tracked = getTrackedQuestEntries(save, catalog)
-  const priority: Array<'ready_to_turn_in' | 'active'> = ['ready_to_turn_in', 'active']
-  for (const status of priority) {
-    for (const { definition, progress } of tracked) {
-      if (progress.status !== status) continue
-      const locationId = definition.terranFlow?.[status]
-      if (locationId && isTerranLocationId(locationId)) return { questId: progress.questId, locationId, status }
+  const routes = getRosettaQuestRoutes(save, catalog)
+  // The city's guidance shares the same priorities and destinations as Rosetta.
+  for (const { progress } of getPrioritizedQuestEntries(save, catalog)) {
+    if (!progress.tracked || !['active', 'ready_to_turn_in'].includes(progress.status)) continue
+    const route = routes.find((entry) => entry.questIds.includes(progress.questId))
+    if (!route || route.player || !isTerranLocationId(route.locationId)) continue
+    return {
+      questId: progress.questId,
+      locationId: route.locationId,
+      status: progress.status as 'active' | 'ready_to_turn_in',
     }
   }
-
   return null
 }
 

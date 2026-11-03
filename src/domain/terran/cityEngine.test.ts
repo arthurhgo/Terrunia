@@ -71,6 +71,12 @@ describe('Terran city engine', () => {
     save.quests.vs_astravel_first_contact.status = 'active'
     save.quests.vs_astravel_first_contact.tracked = true
     expect(getTerranQuestDestination(save, content)).toMatchObject({
+      locationId: 'location_terran_eldamar_house',
+      status: 'active',
+    })
+    // The map follows the actual remaining objective instead of skipping the NPC.
+    save.quests.vs_astravel_first_contact.objectives.talk_eldamar = 1
+    expect(getTerranQuestDestination(save, content)).toMatchObject({
       locationId: 'location_terran_portal_plaza',
       status: 'active',
     })

@@ -16,6 +16,7 @@ export const convertInventoryItems = (
   essence: EssenceProgress,
   selectedInstanceIds: string[],
   catalog: ContentCatalog,
+  protectedInstanceIds: string[] = [],
 ): Result<ConversionResult> => {
   const selected = new Set(selectedInstanceIds)
   if (selected.size === 0) return fail('EMPTY_SELECTION', 'Selecione pelo menos um item para converter.')
@@ -27,6 +28,7 @@ export const convertInventoryItems = (
     if (!selected.has(instance.instanceId)) continue
     const definition = catalog.items[instance.definitionId]
     if (!definition) return fail('UNKNOWN_ITEM', `Item desconhecido: ${instance.definitionId}`)
+    if (protectedInstanceIds.includes(instance.instanceId)) return fail('EQUIPPED_ARMOR', 'Retire a proteção equipada antes de convertê-la.')
     if (instance.locked || instance.favorite || definition.questLocked || !definition.convertToEssence) {
       return fail('ITEM_PROTECTED', `${definition.name} está protegido e não pode ser convertido.`)
     }
@@ -62,6 +64,7 @@ export const sellInventoryItems = (
   gold: number,
   selectedInstanceIds: string[],
   catalog: ContentCatalog,
+  protectedInstanceIds: string[] = [],
 ): Result<SaleResult> => {
   const selected = new Set(selectedInstanceIds)
   if (selected.size === 0) return fail('EMPTY_SELECTION', 'Selecione pelo menos um item para vender.')
@@ -72,6 +75,7 @@ export const sellInventoryItems = (
     if (!selected.has(instance.instanceId)) continue
     const definition = catalog.items[instance.definitionId]
     if (!definition) return fail('UNKNOWN_ITEM', `Item desconhecido: ${instance.definitionId}`)
+    if (protectedInstanceIds.includes(instance.instanceId)) return fail('EQUIPPED_ARMOR', 'Retire a proteção equipada antes de vendê-la.')
     if (instance.locked || instance.favorite || definition.questLocked || !definition.sellable) {
       return fail('ITEM_PROTECTED', `${definition.name} está protegido e não pode ser vendido.`)
     }
