@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { refreshQuestAvailability, createQuestProgress } from '../domain/quests/questEngine'
+import { refreshQuestAvailability, createQuestProgress, normalizeTrackedQuests } from '../domain/quests/questEngine'
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
 import { content } from '../content/catalog'
 import { getBoundSlotCapacity } from '../domain/bond/boundItems'
@@ -885,5 +885,5 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
 
   // Reconcile quest gates without resetting progress or rewards.
   const validated = gameSaveSchema.parse(candidate) as GameSave
-  return refreshQuestAvailability(validated, content, validated.updatedAt)
+  return normalizeTrackedQuests(refreshQuestAvailability(validated, content, validated.updatedAt))
 }
