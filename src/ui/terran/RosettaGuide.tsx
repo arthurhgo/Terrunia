@@ -1,4 +1,4 @@
-import { BookOpen, CheckCircle2, ClipboardList, Compass, Route, Shield } from 'lucide-react'
+import { CheckCircle2, ClipboardList, Compass, Route, Shield } from 'lucide-react'
 import { useState } from 'react'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
@@ -80,11 +80,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
         </div>)}</details>}
         <button type="button" onClick={onOpenQuests}>Consultar diário de missões</button>
       </article>
-      <article className="rosetta-guide__library">
-        <h3><BookOpen size={16}/> Biblioteca de Eldamar</h3>
-        <p>Na Biblioteca de Eldamar, procure a <strong>Estante dos Registros</strong>. Ela contém o Guia do Viajante, o Arsenal Visual e informações sobre os Vínculos.</p>
-        <small>Entre na Casa de Eldamar em Terran: a estante fica no interior da biblioteca.</small>
-      </article>
+
     </div>
   </DialogueWindow>
 }
