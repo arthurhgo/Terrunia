@@ -5,7 +5,7 @@
   top: 0;
   right: calc(100% + 8px);
   display: grid;
-  grid-template-rows: minmax(0, 46%) minmax(0, 54%);
+  grid-template-rows: minmax(0, 1fr);
   width: var(--terran-drawer-width, 332px);
   height: 100%;
   min-height: 0;
@@ -79,36 +79,36 @@
 .terran-quick-journal__actions .is-tracked { border-color: #85aeb8; background: #2a3b3f; }
 .terran-quick-journal__actions span { color: #9fb6bc; font-size: .56rem; font-style: italic; }
 .terran-quick-journal__empty { margin: auto; color: #96b0b6; font-size: .7rem; }
-.terran-game__fixed-inventory {
+.terran-game__backpack-panel {
   display: flex; min-height: 0; overflow: hidden;
   padding: 7px 8px 8px; box-sizing: border-box;
 }
-.terran-game__fixed-inventory > .inventory-panel { width: 100%; min-height: 0; }
-.terran-game__fixed-inventory .inventory-panel--compact {
+.terran-game__backpack-panel > .inventory-panel { width: 100%; min-height: 0; }
+.terran-game__backpack-panel .inventory-panel--compact {
   display: flex; flex-direction: column; min-height: 0;
   padding: 5px; overflow: hidden;
 }
-.terran-game__fixed-inventory .inventory-panel--compact .arcane-panel__header {
+.terran-game__backpack-panel .inventory-panel--compact .arcane-panel__header {
   flex: none; padding: 6px 7px; gap: 5px;
 }
-.terran-game__fixed-inventory .inventory-panel--compact .arcane-panel__header h2 { font-size: .83rem; }
-.terran-game__fixed-inventory .inventory-panel--compact .arcane-panel__header .eyebrow { font-size: .54rem; }
-.terran-game__fixed-inventory .inventory-panel--compact .arcane-panel__content {
+.terran-game__backpack-panel .inventory-panel--compact .arcane-panel__header h2 { font-size: .83rem; }
+.terran-game__backpack-panel .inventory-panel--compact .arcane-panel__header .eyebrow { font-size: .54rem; }
+.terran-game__backpack-panel .inventory-panel--compact .arcane-panel__content {
   display: flex; flex-direction: column; flex: 1; min-height: 0;
   padding: 6px; gap: 5px; overflow: hidden;
 }
-.terran-game__fixed-inventory .inventory-panel--compact .inventory-grid {
+.terran-game__backpack-panel .inventory-panel--compact .inventory-grid {
   display: grid; grid-template-columns: repeat(4,minmax(0,1fr));
   grid-template-rows: repeat(3,minmax(0,1fr));
   gap: 3px; flex: 1 1 auto; min-height: 80px; overflow: hidden;
 }
-.terran-game__fixed-inventory .inventory-panel--compact .inventory-slot {
+.terran-game__backpack-panel .inventory-panel--compact .inventory-slot {
   min-width: 0; min-height: 0; width: 100%; height: 100%; padding: 2px;
 }
-.terran-game__fixed-inventory .inventory-panel--compact .inventory-slot .asset-image {
+.terran-game__backpack-panel .inventory-panel--compact .inventory-slot .asset-image {
   width: min(29px,80%); height: min(29px,70%); object-fit: contain;
 }
-.terran-game__fixed-inventory .inventory-panel--compact .inventory-slot span {
+.terran-game__backpack-panel .inventory-panel--compact .inventory-slot span {
   display: none;
 }
 .inventory-panel__pagination {
@@ -120,17 +120,17 @@
   background: #172933; color: #e3c486; cursor: pointer;
 }
 .inventory-panel__pagination button:disabled { opacity: .3; cursor: default; }
-.terran-game__fixed-inventory .inventory-equipment-detail {
+.terran-game__backpack-panel .inventory-equipment-detail {
   flex: none; display: grid; grid-template-columns: minmax(0,1fr) auto;
   gap: 4px; margin: 0; padding: 4px 5px;
 }
-.terran-game__fixed-inventory .inventory-equipment-detail > img,
-.terran-game__fixed-inventory .inventory-equipment-detail small { display: none; }
-.terran-game__fixed-inventory .inventory-equipment-detail strong { font-size: .58rem; }
-.terran-game__fixed-inventory .inventory-equipment-detail button {
+.terran-game__backpack-panel .inventory-equipment-detail > img,
+.terran-game__backpack-panel .inventory-equipment-detail small { display: none; }
+.terran-game__backpack-panel .inventory-equipment-detail strong { font-size: .58rem; }
+.terran-game__backpack-panel .inventory-equipment-detail button {
   grid-column: 2; padding: 4px; font-size: .6rem;
 }
-.terran-game__fixed-inventory .inventory-equipment-detail > p { font-size: .58rem; margin: 0; }
+.terran-game__backpack-panel .inventory-equipment-detail > p { font-size: .58rem; margin: 0; }
 .terran-game__drawer,
 .terran-game__layout.has-drawer .terran-game__drawer { z-index: 38; }
 @media (min-width: 961px) {
@@ -153,13 +153,13 @@
     right: calc(100% + 6px);
     width: min(275px,43vw);
   }
-  .terran-game__fixed-inventory .inventory-panel--compact .inventory-grid { min-height: 50px; }
+  .terran-game__backpack-panel .inventory-panel--compact .inventory-grid { min-height: 50px; }
 }
 @media (max-width: 720px) {
   .terran-game__fixed-left {
     position: relative; right: auto; top: auto;
     width: 100%; height: min(490px,75dvh);
-    grid-template-rows: 45% 55%;
+    grid-template-rows: minmax(0, 1fr);
     order: 2; margin-top: 8px;
   }
   .terran-game__frame { display: flex; flex-direction: column; width: 100%; aspect-ratio: auto; }
@@ -175,5 +175,40 @@
 @media (max-height: 670px) and (min-width: 961px) {
   .terran-quick-journal { gap: 3px; padding: 5px 7px; }
   .terran-quick-journal__quest { padding: 4px 6px; gap: 2px; }
-  .terran-game__fixed-inventory { padding: 4px 5px; }
+  .terran-game__backpack-panel { padding: 4px 5px; }
 }
+
+/* v0.5 — collapsible backpack floats over exploration, never consumes the quest rail. */
+.terran-game__fixed-left > .terran-quick-journal { height: 100%; min-height: 0; overflow-y: auto; scrollbar-color: #9b8052 #091b26; }
+.terran-game__backpack-toggle {
+  position: absolute; top: 10px; left: 10px; z-index: 35;
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px; padding: 8px 11px;
+  border: 2px solid #b39157; color: #f9dca6; background: #11252cf2;
+  font: 700 .69rem var(--display); cursor: pointer;
+}
+.terran-game__backpack-toggle small { color: #abc9bf; font: 600 .58rem var(--display); }
+.terran-game__backpack-toggle:focus-visible { outline: 2px solid #77f3a5; outline-offset: 3px; }
+.terran-game__backpack-panel {
+  position: absolute; top: 55px; left: 10px; z-index: 36;
+  width: min(340px, calc(100% - 20px)); height: min(420px, calc(100% - 65px));
+  min-height: 180px; margin: 0; background: #081520fa;
+  box-shadow: 0 12px 30px #000c; border: 2px solid #ad8a4b;
+}
+.terran-game__backpack-panel > .inventory-panel { min-height: 0; height: 100%; }
+.terran-quick-journal__deliveries { display: grid; gap: 6px; padding: 7px; margin: 3px 0; border: 1px solid #42865e; background: #102c26; }
+.terran-quick-journal__deliveries h3 { display: flex; justify-content: space-between; margin: 0; font: 700 .64rem var(--display); color: #a2ffc7; }
+.terran-quick-journal__delivery { display: grid; gap: 3px; padding: 5px; border-left: 2px solid #62ff9b; background: #152d2b; }
+.terran-quick-journal__delivery strong { font: 700 .64rem var(--display); color: #e2f7e8; overflow-wrap: anywhere; }
+.terran-quick-journal__delivery small { font-size: .6rem; color: #b3d6c2; }
+.terran-quick-journal__delivery button { justify-self: start; background: #1b5740; border: 1px solid #7deaaa; color: #ddffed; padding: 4px 7px; cursor: pointer; font: 700 .58rem var(--display); }
+@media (max-width: 720px) {
+  .terran-game__fixed-left { height: min(280px, 38dvh); }
+  .terran-game__backpack-toggle { top: 6px; left: 6px; padding: 5px 7px; min-height: 30px; }
+  .terran-game__backpack-panel { top: 42px; left: 6px; width: min(300px, calc(100% - 12px)); height: calc(100% - 49px); min-height: 0; }
+}
+
+.terran-shop__backpacks { display: grid; gap: 9px; margin-top: 16px; border-top: 1px solid #6c6744; padding-top: 12px; }
+.terran-shop__backpacks > h3 { display: flex; gap: 7px; align-items: center; color: #f8dcaa; font-size: .82rem; }
+.terran-shop__backpacks > p { margin: 0; color: #a1bcb4; font-size: .72rem; }
+.inventory-panel__capacity { display: block; padding: 3px 4px; color: #a8e3bd; font: 600 .6rem var(--display); }

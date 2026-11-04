@@ -5,6 +5,7 @@ import './inventoryHover.css'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
+import { getBackpackCapacity } from '../../domain/inventory/backpacks'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
@@ -146,6 +147,9 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
           )}
         </div>
 
+        {compact && <small className="inventory-panel__capacity" aria-label="Capacidade da mochila">
+          Mochila: {save.inventory.length}/{getBackpackCapacity(save)} espaços
+        </small>}
         {compact && <nav className="inventory-panel__pagination" aria-label="Páginas da mochila">
           <button type="button" onClick={() => { setPage(Math.max(0, safePage - 1)); setSelected(null) }} disabled={safePage === 0} aria-label="Página anterior da mochila">‹</button>
           <span>{safePage + 1}/{pageCount} · {visibleItems.length} itens</span>

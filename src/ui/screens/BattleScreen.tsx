@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Backpack, Bomb, Crosshair, Footprints, Gem, ScrollText, Shield, Swords, Zap } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
+import { submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { useGameStore } from '../../state/gameStore'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
@@ -37,7 +38,11 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const [turnCue, setTurnCue] = useState(false)
   const [turnAnnouncement, setTurnAnnouncement] = useState<string | null>(null)
   const [showLog, setShowLog] = useState(false)
-  const [lastDice, setLastDice] = useState<BattleDiceEvent | null>(null)
+  const [activeDice, setActiveDice] = useState<BattleDiceEvent | null>(null)
+  const [diceQueue, setDiceQueue] = useState<BattleDiceEvent[]>([])
+  const [resolvingRolls, setResolvingRolls] = useState(false)
+  const previewTimer = useRef<number | null>(null)
+  const seenDiceLog = useRef<{ id: string; count: number } | null>(null)
   const previous = useRef<{ id: string; hp: Record<string, number> } | null>(null)
   const reducedMotion = Boolean(save?.settings.reducedMotion)
   const defeated = battle?.phase === 'Defeat' && player?.hp === 0
@@ -55,7 +60,12 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }, [enemies, targetId])
   useEffect(() => {
     setMenu(null)
-    setLastDice(null)
+    setActiveDice(null)
+    setDiceQueue([])
+    setResolvingRolls(false)
+    if (previewTimer.current !== null) window.clearTimeout(previewTimer.current)
+    previewTimer.current = null
+    seenDiceLog.current = null
     previous.current = null
   }, [battle?.id])
   useEffect(() => {
@@ -72,6 +82,42 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     const timer = window.setTimeout(() => { setHit(null); setTurnCue(false) }, 620)
     return () => window.clearTimeout(timer)
   }, [battle, enemies, player, reducedMotion])
+
+  useEffect(() => () => {
+    if (previewTimer.current !== null) window.clearTimeout(previewTimer.current)
+  }, [])
+
+  // Domain log records actual dice faces, including enemy attacks.
+  useEffect(() => {
+    if (!battle) return
+    const cursor = seenDiceLog.current
+    const start = cursor?.id === battle.id ? cursor.count : 0
+    seenDiceLog.current = { id: battle.id, count: battle.log.length }
+    const incoming: BattleDiceEvent[] = battle.log.slice(start).flatMap((entry) => {
+      if (entry.tone !== 'damage' || !entry.roll) return []
+      const damage = entry.message.match(/ causa (\d+) de dano /)
+      if (!damage) return []
+      const actor = battle.combatants[entry.roll.actorId]
+      return [{
+        id: entry.id, sides: entry.roll.sides, face: entry.roll.face,
+        damage: Number(damage[1]), action: entry.roll.action,
+        actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy',
+      }]
+    })
+    if (incoming.length) setDiceQueue((queue) => [...queue, ...incoming])
+  }, [battle])
+
+  useEffect(() => {
+    if (activeDice || !diceQueue.length) return
+    setActiveDice(diceQueue[0])
+    setDiceQueue((queue) => queue.slice(1))
+  }, [activeDice, diceQueue])
+
+  useEffect(() => {
+    if (!activeDice || resolvingRolls) return
+    const timer = window.setTimeout(() => setActiveDice(null), reducedMotion ? 800 : 1250)
+    return () => window.clearTimeout(timer)
+  }, [activeDice, reducedMotion, resolvingRolls])
 
   // Announces the initiative-owned turn without changing the battle state machine.
   useEffect(() => {
@@ -120,30 +166,48 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     (effect.type === 'restoreMp' && player.mp < player.maxMp) ||
     (effect.type === 'cleanseHarmful' && player.statusEffects.some((status) =>
       content.statusEffects[status.definitionId]?.tone === 'harmful'))))
-  const isPlayerTurn = battle.phase === 'AwaitingAction' && !turnCue
+  const isPlayerTurn = battle.phase === 'AwaitingAction' && !turnCue && !activeDice && !diceQueue.length && !resolvingRolls
   const drops = battle.rewards.lootDefinitionIds
   const lootGroups = groupBattleLoot(drops)
 
   const send = (command: Parameters<typeof submit>[0]) => {
     if (!isPlayerTurn) return
-    const lastLogCount = battle.log.length
     setMenu(null)
-    submit(command)
-    if (command.type !== 'attack' && command.type !== 'skill') return
-    const resolvedBattle = useGameStore.getState().save?.battle
-    const playerDamage = resolvedBattle?.log.slice(lastLogCount).find((entry) =>
-      entry.tone === 'damage' && entry.message.startsWith(`${player.name} causa `))
-    const damage = playerDamage?.message.match(/ causa (\\d+) de dano /)
-    if (!playerDamage || !damage) return
-    const bondedWeapon = save.character.bondedEquipment.weapon
-    const baseId = bondedWeapon ? save.boundItems[bondedWeapon]?.baseItemId : null
-    const scaling = baseId ? content.boundItemBases[baseId]?.scalingAttribute ?? 'strength' : 'strength'
-    const sides = save.character.attributes[scaling].die
-    const face = playerDamage.id.split('').reduce((seed, char) => (seed * 31 + char.charCodeAt(0)) % 2147483647, 17) % sides + 1
-    setLastDice({
-      id: playerDamage.id, sides, face, damage: Number(damage[1]),
-      action: command.type === 'attack' ? 'Ataque da arma' : content.combatSkills[command.skillId]?.name ?? 'Habilidade',
+    // Compute a pure preview without touching player HP, cloud save, or domain state.
+    // Show all deterministic faces (player and each enemy), then apply once via store.
+    const preview = previewBattleCommand(battle, command, content, save.inventory)
+    if (!preview.ok) { submit(command); return }
+    const rolls: BattleDiceEvent[] = preview.value.log.slice(battle.log.length).flatMap((entry) => {
+      if (entry.tone !== 'damage' || !entry.roll) return []
+      const match = entry.message.match(/ causa (\d+) de dano /)
+      if (!match) return []
+      const actor = preview.value.combatants[entry.roll.actorId]
+      return [{
+        id: entry.id, sides: entry.roll.sides, face: entry.roll.face,
+        damage: Number(match[1]), action: entry.roll.action,
+        actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy',
+      }]
     })
+    if (rolls.length === 0) { submit(command); return }
+
+    setResolvingRolls(true)
+    setActiveDice(rolls[0])
+    let index = 0
+    const step = () => {
+      index += 1
+      if (index < rolls.length) {
+        setActiveDice(rolls[index])
+        previewTimer.current = window.setTimeout(step, reducedMotion ? 800 : 1250)
+        return
+      }
+      // The committed deterministic log is already shown: avoid replaying each die.
+      seenDiceLog.current = { id: battle.id, count: preview.value.log.length }
+      previewTimer.current = null
+      setActiveDice(null)
+      setResolvingRolls(false)
+      submit(command)
+    }
+    previewTimer.current = window.setTimeout(step, reducedMotion ? 800 : 1250)
   }
   const end = (toCity: boolean) => {
     if (toCity) returnToTerran()
@@ -159,7 +223,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     </button>
   )
 
-  const scene = <section className="pixel-battle" role="region" aria-label="Viewport unificada de combate">
+  const scene = <section className={`pixel-battle ${activeDice ? "pixel-battle--dice-pending" : ""}`} role="region" aria-label="Viewport unificada de combate">
     <header className="pixel-battle__header" aria-label="Encontro de combate">
       <strong>TERRÚNIA</strong>
       <div className="pixel-battle__encounter-label"><span>{battle.waveIndex ? 'PORTAL · ONDAS DA RUÍNA' : encounter?.locationLabel ?? 'ASTRAVÉL'}</span><h1>{encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}</h1></div>
@@ -192,7 +256,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           </span>
         })}
       </div>
-      {lastDice && !defeated && <BattleDicePlatform roll={lastDice} reducedMotion={reducedMotion} />}
+      {activeDice && <BattleDicePlatform key={activeDice.id} roll={activeDice} reducedMotion={reducedMotion} />}
       {(turnCue || turnAnnouncement) && !defeated && <div className="pixel-battle__turn-cue" role="status">
         {turnCue ? 'TURNO DOS INIMIGOS' : turnAnnouncement}
       </div>}

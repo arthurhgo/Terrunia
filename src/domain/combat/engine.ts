@@ -18,6 +18,7 @@ import type {
   BattlePhase,
   BattleState,
   Combatant,
+  CombatRoll,
 } from './types'
 
 const addPhase = (state: BattleState, phase: BattlePhase) => {
@@ -29,13 +30,21 @@ const addLog = (
   state: BattleState,
   message: string,
   tone: BattleLogEntry['tone'] = 'neutral',
+  roll?: CombatRoll,
 ) => {
   state.log.push({
     id: `${state.id}_log_${state.log.length + 1}`,
     round: state.round,
     message,
     tone,
+    ...(roll ? { roll } : {}),
   })
+}
+
+/** Deterministic, actual dice samples; never derive a fake face from log IDs. */
+const rollCombatDie = (state: BattleState, sides: 4 | 6 | 8 | 10 | 12) => {
+  state.rngSeed = (state.rngSeed * 48271) % 2147483647
+  return 1 + Math.floor(state.rngSeed / 2147483647 * sides)
 }
 
 const rollChance = (state: BattleState, chance: number) => {
@@ -87,6 +96,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     alive: true,
     defending: false,
     skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds])],
+    attackDie: character.attributes[catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.scalingAttribute ?? 'strength'].die,
     statusEffects: [],
   }
 }
@@ -113,6 +123,8 @@ const deriveEnemyCombatant = (
     alive: true,
     defending: false,
     skillIds: enemy.skillIds,
+    // BALANCE_DRAFT: enemies without explicit dice currently use d4, not a new damage rule.
+    attackDie: 4,
     statusEffects: [],
     // Firestore rejects undefined; enemies without a special skill omit this field.
     ...(enemy.aiSkillEveryRounds !== undefined
@@ -153,6 +165,7 @@ const applyCombatEffects = (
   target: Combatant,
   effects: CombatEffectDefinition[],
   catalog: ContentCatalog,
+  action = 'Ataque básico',
 ) => {
   for (const effect of effects) {
     if (effect.type === 'damage') {
@@ -164,7 +177,11 @@ const applyCombatEffects = (
       target.hp = Math.max(0, target.hp - damage)
       target.alive = target.hp > 0
       target.defending = false
-      addLog(state, `${actor.name} causa ${damage} de dano em ${target.name}.`, 'damage')
+      const sides = actor.attackDie ?? 4
+      const face = rollCombatDie(state, sides)
+      addLog(state, `${actor.name} causa ${damage} de dano em ${target.name}.`, 'damage', {
+        actorId: actor.id, sides, face, action,
+      })
     }
     if (effect.type === 'restoreHp') {
       const restored = Math.min(effect.value, target.maxHp - target.hp)
@@ -212,7 +229,7 @@ const resolveSkill = (
   addPhase(state, 'ResolvingAction')
   actor.mp -= skill.mpCost
   addLog(state, `${actor.name} usa ${skill.name}.`, 'system')
-  applyCombatEffects(state, actor, target, skill.effects, catalog)
+  applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name)
   addPhase(state, 'ResolvingReactions')
   addPhase(state, 'ApplyingStatuses')
   addPhase(state, 'CheckEndConditions')
@@ -228,7 +245,7 @@ const resolveItem = (
   addPhase(state, 'SelectingTarget')
   addPhase(state, 'ResolvingAction')
   addLog(state, `${actor.name} usa ${item.name}.`, 'system')
-  applyCombatEffects(state, actor, target, item.combatEffects, catalog)
+  applyCombatEffects(state, actor, target, item.combatEffects, catalog, item.name)
   addPhase(state, 'ResolvingReactions')
   addPhase(state, 'ApplyingStatuses')
   addPhase(state, 'CheckEndConditions')

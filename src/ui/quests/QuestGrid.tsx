@@ -64,6 +64,7 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
   const [completedExpanded, setCompletedExpanded] = useState(false)
   const historyId = useId()
   const entries = getQuestJournalEntries(save, content)
+  const ready = entries.filter(({ progress }) => progress.status === 'ready_to_turn_in')
   const filtered = entries.filter(({ definition, progress }) =>
     category === 'all' || (category === 'completed' ? progress.status === 'completed' :
       progress.status !== 'completed' && definition.category === category))
@@ -88,10 +89,18 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
       <p>{recommendation.instruction}</p>
       <small>{recommendation.npcName} · {recommendation.locationName}</small>
       {current && <small className="quest-board__route-hint">{currentRoute
-        ? 'Rota pontilhada ativa no cenário: ' + (currentRoute.tone === 'blue' ? 'azul claro · 20%' : 'dourado')
+        ? 'Rota ativa no cenário: ' + (currentRoute.tone === 'green' ? 'verde fluorescente · entrega' : currentRoute.tone === 'blue' ? 'azul claro · 20%' : 'dourado')
         : 'Sem caminho disponível para este objetivo.'}</small>}
       {suggestedInJournal && <button type="button" onClick={openSuggested}>Ver esta missão <ArrowRight size={14} /></button>}
     </aside>}
+    {ready.length > 0 && <section className="quest-board__deliveries" aria-label="Prontas para entrega">
+      <h3>PRONTAS PARA ENTREGA <small>{ready.length}</small></h3>
+      {ready.map(({ definition, progress }) => <div key={progress.questId} className="quest-board__delivery">
+        <div><strong>{definition.title}</strong><small>Entregar para {content.npcs[definition.turnInNpcId]?.name ?? 'NPC responsável'}</small></div>
+        <button type="button" onClick={() => { setTracked(progress.questId, true); setCategory('all'); setSelectedId(progress.questId) }}>
+          {progress.tracked ? '✓ Rastreando entrega' : 'Rastrear entrega'}</button>
+      </div>)}
+    </section>}
     <div className="quest-board__filters" role="group" aria-label="Filtrar missões">
       {filters.map((filter) => {
         const count = filter.id === 'all' ? entries.length : entries.filter(({ definition, progress }) =>

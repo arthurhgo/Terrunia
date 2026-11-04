@@ -31,3 +31,8 @@
 @media (prefers-reduced-motion: reduce) {
   .pixel-interior__quest-paths path { animation: none; }
 }
+
+.pixel-interior__quest-paths path[data-route-tone="green"] {
+  stroke: #62ff9b; stroke-width: 2.4; stroke-dasharray: 4 4; opacity: 1;
+  filter: drop-shadow(0 0 3px #43ff95);
+}

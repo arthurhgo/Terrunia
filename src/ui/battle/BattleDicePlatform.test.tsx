@@ -14,7 +14,7 @@ describe('Plataforma de dados em combate', () => {
     expect(screen.getByText('Rolando…')).toBeInTheDocument()
     act(() => { vi.advanceTimersByTime(800) })
     expect(screen.getByText('9 de dano')).toBeInTheDocument()
-    expect(screen.getByText(/dano mostrado é o resultado real/)).toBeInTheDocument()
+    expect(screen.getByText(/Face registrada pelo motor de combate/)).toBeInTheDocument()
   })
 
   it('respeita redução de movimento e mostra o resultado sem animação', () => {

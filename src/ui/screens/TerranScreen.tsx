@@ -1,4 +1,4 @@
-import { MapPin, X } from 'lucide-react'
+import { Backpack, MapPin, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -42,7 +42,7 @@ import { getNpcActionableQuests } from '../../domain/quests/questSelectors'
 import { type TerranLandmark } from '../../content/terranExploration'
 import { CityLandmarkDialog } from '../terran/CityLandmarkDialog'
 import { Modal } from '../components/Modal'
-import { getRosettaQuestRoutes, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
+import { getReadyDeliveryQuestRoute, getRosettaQuestRoutes, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 
 type Drawer = 'location' | 'market' | 'home' | 'chest' | 'records' | 'forge' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
@@ -105,6 +105,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [eldamarOpen, setEldamarOpen] = useState(false)
   const [rosettaOpen, setRosettaOpen] = useState(false)
   const [rosettaPathsPinned, setRosettaPathsPinned] = useState(false)
+  const [backpackOpen, setBackpackOpen] = useState(false)
   const [dialogue, setDialogue] = useState<Presence | null>(null)
   const [localQuestId, setLocalQuestId] = useState<string | null>(null)
   const [marketNpc, setMarketNpc] = useState<Presence | null>(null)
@@ -133,7 +134,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const scene = getNextCutscene(save)
   const cityCast = getCityCast(save)
   const guidance = getTerranQuestDestination(save, content)
-  const trackedRoute = getTrackedQuestRoute(save, content)
+  const trackedRoute = getTrackedQuestRoute(save, content) ?? getReadyDeliveryQuestRoute(save, content)
   const discovered = getDiscoveredTerranLocationIds(save).length
   const location = content.terranLocations[locationId]
   const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !dialogue && !inspected && !cityLandmark && !baseDoorPrompt && !activeQuestObjectId && !missionNpc && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
@@ -265,13 +266,18 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
         </header>
         <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
           <div className="terran-game__frame" data-testid="terran-centered-gameplay">
-          <aside className="terran-game__fixed-left" aria-label="Missões e inventário fixos">
+          <aside className="terran-game__fixed-left" aria-label="Diário de missões">
             <TerranQuickJournal save={save} />
-            <section className="terran-game__fixed-inventory" aria-label="Inventário fixo">
-              <InventoryPanel save={save} compact />
-            </section>
           </aside>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
+            <button type="button" className="terran-game__backpack-toggle" aria-expanded={backpackOpen}
+              aria-controls="terran-backpack-panel" onClick={() => setBackpackOpen((open) => !open)}>
+              <Backpack size={17} aria-hidden="true" /> {backpackOpen ? 'Recolher mochila' : 'Mochila'}
+              <small>{save.inventory.length} itens</small>
+            </button>
+            {backpackOpen && <aside id="terran-backpack-panel" className="terran-game__backpack-panel" aria-label="Mochila expandida">
+              <InventoryPanel save={save} compact />
+            </aside>}
             {interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
                 questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
                 showTrackedQuestRoute={Boolean(trackedRoute)} trackedQuestRoute={trackedRoute}
@@ -315,7 +321,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               <button type="button" onClick={() => setInspected(null)}>Continuar explorando</button>
             </div>}
             {rosettaOpen && <RosettaGuide save={save} onClose={() => setRosettaOpen(false)}
-              onOpenInventory={() => { setRosettaOpen(false); setDrawer(null) }}
+              onOpenInventory={() => { setRosettaOpen(false); setDrawer(null); setBackpackOpen(true) }}
               onShowPaths={() => { setRosettaOpen(false); setDrawer(null); setRosettaPathsPinned(true) }}
               onOpenQuests={() => { setRosettaOpen(false); setDrawer(null) }} />}
             {dialogue && <DialogueBox save={save} presence={dialogue} onClose={() => setDialogue(null)} />}

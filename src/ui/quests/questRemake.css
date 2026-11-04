@@ -131,3 +131,13 @@
   .quest-board--remake * { scroll-behavior: auto; }
 }
 
+
+.quest-board__deliveries { display: grid; gap: 8px; padding: 12px; border: 1px solid #3f9867; background: #0d2c25; }
+.quest-board__deliveries h3 { display: flex; gap: 9px; align-items: center; margin: 0 0 4px; color: #a5ffca; font: 700 .85rem var(--display); }
+.quest-board__deliveries h3 small { padding: 2px 7px; border-radius: 9px; background: #236645; }
+.quest-board__delivery { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 10px; border-left: 2px solid #62ff9b; background: #153932; }
+.quest-board__delivery div { display: grid; gap: 4px; min-width: 0; }
+.quest-board__delivery strong { color: #e6f7eb; font: 700 .75rem var(--display); overflow-wrap: anywhere; }
+.quest-board__delivery small { color: #abccbe; font-size: .7rem; }
+.quest-board__delivery button { flex: none; border: 1px solid #7bdfaa; padding: 7px 10px; background: #235c43; color: #e6ffef; font: 700 .68rem var(--display); cursor: pointer; }
+@media(max-width: 580px) { .quest-board__delivery { flex-direction: column; align-items: stretch; } }

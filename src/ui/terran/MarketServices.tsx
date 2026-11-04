@@ -1,7 +1,7 @@
 import { getTerranDialogue } from '../../domain/terran/cityDialogue'
 import { DialogueWindow } from './DialogueWindow'
 import { getPresencePortrait } from '../../content/npcVisuals'
-import { Coins, FlaskConical, Gem, Hammer, ShoppingBasket, Sparkles } from 'lucide-react'
+import { Backpack, Coins, FlaskConical, Gem, Hammer, ShoppingBasket, Sparkles } from 'lucide-react'
 import type { TerranNpcPresence } from '../../content/types'
 import { content } from '../../content/catalog'
 import { getGradeThreeGemCandidates, getGradeTwoInfusionCandidates } from '../../domain/bond/boundItems'
@@ -11,6 +11,7 @@ import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { AssetImage } from '../components/AssetImage'
+import { BACKPACK_UPGRADES, backpackFlag, getBackpackCapacity } from '../../domain/inventory/backpacks'
 
 function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
   const buy = useGameStore((state) => state.buyFromMarket)
@@ -36,6 +37,21 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
         </article>
       })}
     </div>
+    {npcId === 'presence_neris' && <section className="terran-shop__backpacks" aria-label="Mochilas de expansão">
+      <h3><Backpack size={18} /> Mochilas · {save.inventory.length}/{getBackpackCapacity(save)} espaços</h3>
+      <p>Uma melhoria permanente de capacidade, separada dos cinco Vínculos.</p>
+      <div className="terran-shop__stock">{BACKPACK_UPGRADES.map((upgrade) => {
+        const owned = save.world.worldFlags.includes(backpackFlag(upgrade.id))
+        const previous = !upgrade.previousId || save.world.worldFlags.includes(backpackFlag(upgrade.previousId))
+        return <article key={upgrade.id}>
+          <Backpack size={28} aria-hidden="true"/>
+          <div><strong>{upgrade.name}</strong><small>{upgrade.capacity} espaços de inventário {owned ? '· adquirida' : !previous ? '· requer mochila anterior' : ''}</small></div>
+          <button type="button" aria-label={'Comprar ' + upgrade.name + ' por ' + upgrade.price + ' ouro'}
+            disabled={owned || !previous || save.wallet.gold < upgrade.price}
+            onClick={() => buy(npcId, upgrade.id)}>{owned ? 'Adquirida' : upgrade.price}<Coins size={13}/></button>
+        </article>
+      })}</div>
+    </section>}
   </section>
 }
 

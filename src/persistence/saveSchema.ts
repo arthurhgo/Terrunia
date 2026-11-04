@@ -211,6 +211,7 @@ const combatantSchema = z.object({
     remainingTurns: positiveInteger,
   })),
   aiSkillEveryRounds: positiveInteger.optional(),
+  attackDie: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(10), z.literal(12)]).optional(),
 })
 
 const battleSchema = z.object({
@@ -231,6 +232,7 @@ const battleSchema = z.object({
     round: positiveInteger,
     message: z.string(),
     tone: z.enum(['neutral', 'damage', 'defense', 'reward', 'system']),
+    roll: z.object({ actorId: idSchema, sides: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(10), z.literal(12)]), face: positiveInteger, action: z.string().min(1) }).optional(),
   })),
   rewards: z.object({
     characterXp: nonnegativeNumber,

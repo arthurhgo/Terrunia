@@ -9,6 +9,8 @@ export type BattleDiceEvent = {
   face: number
   damage: number
   action: string
+  actorName?: string
+  actorSide?: 'player' | 'enemy'
 }
 
 export function BattleDicePlatform({ roll, reducedMotion }: { roll: BattleDiceEvent | null; reducedMotion: boolean }) {
@@ -22,9 +24,9 @@ export function BattleDicePlatform({ roll, reducedMotion }: { roll: BattleDiceEv
   }, [roll, reducedMotion])
 
   if (!roll) return null
-  return <aside className={`battle-dice-platform ${settled ? 'is-settled' : 'is-rolling'}`}
+  return <aside className={`battle-dice-platform ${settled ? 'is-settled' : 'is-rolling'} ${roll.actorSide === 'enemy' ? 'is-enemy-roll' : 'is-player-roll'}`}
     role="status" aria-live="polite" aria-label={`Lançamento visual de d${roll.sides} para ${roll.action}`}>
-    <header><span>RITUAL DO DADO</span><strong>{roll.action}</strong></header>
+    <header><span>{roll.actorSide === 'enemy' ? 'ROLAGEM DO INIMIGO' : 'ROLAGEM DO TERRÍRIAN'}</span><strong>{roll.actorName ? `${roll.actorName} · ${roll.action}` : roll.action}</strong></header>
     <div className="battle-dice-platform__stage">
       <span className="battle-dice-platform__rune" aria-hidden="true" />
       <span className="battle-dice-platform__shadow" aria-hidden="true" />
@@ -36,6 +38,6 @@ export function BattleDicePlatform({ roll, reducedMotion }: { roll: BattleDiceEv
       <small>d{roll.sides} · {settled ? 'Dado assentado' : 'Lançando na plataforma…'}</small>
       <strong>{settled ? `${roll.damage} de dano` : 'Rolando…'}</strong>
     </div>
-    <p>A face é uma representação visual. O dano mostrado é o resultado real calculado pelas regras atuais.</p>
+    <p>Face registrada pelo motor de combate. O dano usa a fórmula atual até aprovação da regra de rolagem.</p>
   </aside>
 }

@@ -27,22 +27,22 @@ describe('Rastreamento de missões dentro de casas', () => {
     expect(paths[0].d).toContain(' L ')
   })
 
-  it('leva secundárias azuis (20%) até o NPC interno correto ou até a porta de saída', () => {
+  it('leva entregas verdes (100%) até o NPC interno correto ou até a porta de saída', () => {
     const save = fresh()
     const room = 'location_terran_daeryn_house' as const
     const residents = getInteriorResidents(save, room)
     save.quests.side_npc_daeryn.status = 'ready_to_turn_in'
     save.quests.side_npc_daeryn.tracked = true
     const route = getTrackedQuestRoute(save, content)!
-    expect(route.tone).toBe('blue')
-    expect(route.opacity).toBe(0.2)
+    expect(route.tone).toBe('green')
+    expect(route.opacity).toBe(1)
     const towardNpc = getInteriorQuestPaths(room, getRoomPlan(room).spawn, residents, [route])
     expect(towardNpc).toHaveLength(1)
-    expect(towardNpc[0]).toMatchObject({ targetKind: 'npc', tone: 'blue', opacity: 0.2 })
+    expect(towardNpc[0]).toMatchObject({ targetKind: 'npc', tone: 'green', opacity: 1 })
     const elsewhere = getInteriorQuestPaths('location_terran_eldamar_house',
       getRoomPlan('location_terran_eldamar_house').spawn,
       getInteriorResidents(save, 'location_terran_eldamar_house'), [route])
-    expect(elsewhere[0]).toMatchObject({ targetKind: 'exit', tone: 'blue', opacity: 0.2 })
+    expect(elsewhere[0]).toMatchObject({ targetKind: 'exit', tone: 'green', opacity: 1 })
   })
 
   it('Rosetta continua preview das missões dentro da casa e não inventa rota ao equipar', () => {
