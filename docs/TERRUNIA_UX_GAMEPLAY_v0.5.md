@@ -28,7 +28,7 @@ Implementação incremental na branch `feature/ux-missions-dice-backpacks-v05`. 
 - Inimigos utilizam `d4` como **BALANCE_DRAFT**, até receberem dados por monstro/ação no catálogo.
 - Animações apresentam jogador e inimigos na sequência registrada pelo motor; respeitam redução de movimento.
 - **OWNER_DECISION:** vínculo da face à fórmula final de dano, duração final de suspense, ordem de revelação dos turnos inimigos. No estado atual, dados são rolagens verdadeiras e reproduzíveis de apresentação, e **não alteram a fórmula de dano atual**.
-- A resolução do motor continua síncrona. Exibir a rolagem **antes do dano ser computado** requer fase adicional explícita de combate e não deve ser representado como concluído nesta versão.
+- Antes de confirmar uma ação do jogador, a UI calcula uma **prévia pura determinística**, apresenta as rolagens de ambos os lados em sequência e **só então confirma** o comando no store, aplicando o dano e salvando. A prévia não altera o save. O motor mantém resolução síncrona interna, preservando a máquina de estados e testes.
 
 ## Validação obrigatória
 - `npm run check` via GitHub Actions CI.
