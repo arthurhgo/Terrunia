@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -23,7 +23,7 @@ const createBattleSave = () => {
 
 beforeAll(() => vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null))
 afterAll(() => vi.restoreAllMocks())
-afterEach(() => { cleanup(); useGameStore.getState().resetSession() })
+afterEach(() => { cleanup(); vi.useRealTimers(); useGameStore.getState().resetSession() })
 
 describe('combate visual v0.17', () => {
   it('mostra iniciativa e centraliza ataque, magia e habilidade, deixando opções ausentes cinzas', () => {
@@ -44,6 +44,21 @@ describe('combate visual v0.17', () => {
     expect(screen.getByRole('button', { name: /ATAQUE BÁSICO/ })).toBeEnabled()
     expect(screen.getByText('ATAQUE · MAGIAS · HABILIDADES', { selector: '.pixel-battle__submenu-heading' })).toBeVisible()
     expect(screen.queryByRole('button', { name: 'MAGIAS' })).not.toBeInTheDocument()
+  })
+
+  it('aguarda a sequência de dados antes de aplicar dano e avançar turnos no save', () => {
+    vi.useFakeTimers()
+    const save = createBattleSave()
+    const initialLogCount = save.battle!.log.length
+    const initialHp = save.battle!.combatants.combatant_player.hp
+    render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    fireEvent.click(screen.getByRole('button', { name: 'ATAQUE · MAGIAS · HABILIDADES' }))
+    fireEvent.click(screen.getByRole('button', { name: /ATAQUE BÁSICO/ }))
+    expect(screen.getByRole('status', { name: /Lançamento visual de d/ })).toBeInTheDocument()
+    expect(useGameStore.getState().save?.battle?.log).toHaveLength(initialLogCount)
+    expect(useGameStore.getState().save?.battle?.combatants.combatant_player.hp).toBe(initialHp)
+    act(() => { vi.advanceTimersByTime(4500) })
+    expect(useGameStore.getState().save?.battle?.log.length).toBeGreaterThan(initialLogCount)
   })
 
   it('mostra cinco slots reais; vazios cinza; hover/foco e toque revelam atributos do equipamento', () => {
