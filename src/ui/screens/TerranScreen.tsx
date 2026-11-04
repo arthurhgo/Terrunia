@@ -266,13 +266,18 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
         </header>
         <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
           <div className="terran-game__frame" data-testid="terran-centered-gameplay">
-          <aside className="terran-game__fixed-left" aria-label="Missões e inventário fixos">
+          <aside className="terran-game__fixed-left" aria-label="Diário de missões">
             <TerranQuickJournal save={save} />
-            <section className="terran-game__fixed-inventory" aria-label="Inventário fixo">
-              <InventoryPanel save={save} compact />
-            </section>
           </aside>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
+            <button type="button" className="terran-game__backpack-toggle" aria-expanded={backpackOpen}
+              aria-controls="terran-backpack-panel" onClick={() => setBackpackOpen((open) => !open)}>
+              <Backpack size={17} aria-hidden="true" /> {backpackOpen ? 'Recolher mochila' : 'Mochila'}
+              <small>{save.inventory.length} itens</small>
+            </button>
+            {backpackOpen && <aside id="terran-backpack-panel" className="terran-game__backpack-panel" aria-label="Mochila expandida">
+              <InventoryPanel save={save} compact />
+            </aside>}
             {interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
                 questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
                 showTrackedQuestRoute={Boolean(trackedRoute)} trackedQuestRoute={trackedRoute}
