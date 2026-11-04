@@ -84,7 +84,7 @@ export function CharacterCreationScreen() {
             <Sparkles size={18} />
             <div>
               <strong>Fundação neutra</strong>
-              <p>Astúcia, Agilidade, Força, Vigor e Espírito começam em d4. Você distribui três pontos livremente antes do primeiro Vínculo.</p>
+              <p>Astúcia, Agilidade, Força, Vigor e Espírito começam em d4. Você começa com três Pontos de Atributo; cada avanço de dado custa dois pontos antes do primeiro Vínculo.</p>
             </div>
           </div>
 
