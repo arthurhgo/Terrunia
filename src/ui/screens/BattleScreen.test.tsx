@@ -58,10 +58,51 @@ describe('combate visual v0.17', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ATAQUE · MAGIAS · HABILIDADES' }))
     fireEvent.click(screen.getByRole('button', { name: /ATAQUE BÁSICO/ }))
     expect(screen.getByRole('status', { name: /Lançamento visual de d/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Rolar dado d/ })).toBeInTheDocument()
     expect(useGameStore.getState().save?.battle?.log).toHaveLength(initialLogCount)
     expect(useGameStore.getState().save?.battle?.combatants.combatant_player.hp).toBe(initialHp)
+    fireEvent.click(screen.getByRole('button', { name: /Rolar dado d/ }))
     act(() => { vi.advanceTimersByTime(4500) })
     expect(useGameStore.getState().save?.battle?.log.length).toBeGreaterThan(initialLogCount)
+  })
+
+  it('anuncia Turno 1, solicita iniciativa e só resolve quando clicar no dado', () => {
+    vi.useFakeTimers()
+    const save = createBattleSave()
+    save.battle = createBattle(save, content.encounters.encounter_fungorro_01, content,
+      'battle_initiative_ui', { manualInitiative: true })
+    useGameStore.setState({ save })
+    const initialLog = save.battle.log.length
+    render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    expect(screen.getByText('TURNO 1', { selector: '.pixel-battle__turn-cue' })).toBeInTheDocument()
+    const button = screen.getByRole('button', { name: 'Rolar dado de iniciativa d4' })
+    expect(button).toBeDisabled()
+    expect(useGameStore.getState().save?.battle?.phase).toBe('AwaitingInitiative')
+    act(() => { vi.advanceTimersByTime(950) })
+    expect(button).toBeEnabled()
+    fireEvent.click(button)
+    expect(screen.getByRole('status', { name: /Lançamento visual de d4 para iniciativa/ })).toBeInTheDocument()
+    expect(useGameStore.getState().save?.battle?.log).toHaveLength(initialLog)
+    act(() => { vi.advanceTimersByTime(5500) })
+    const committed = useGameStore.getState().save?.battle
+    expect(committed?.phase).not.toBe('AwaitingInitiative')
+    expect(committed?.log.some((entry) => entry.roll?.action === 'Iniciativa')).toBe(true)
+  })
+
+  it('exibe status reais de monstros ao passar o mouse e marca a morte para animação', () => {
+    const save = createBattleSave()
+    const { container } = render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    const enemyButton = screen.getAllByRole('button', { name: /Selecionar/ })[0]
+    fireEvent.mouseEnter(enemyButton)
+    expect(screen.getByRole('tooltip', { name: /Status de/ })).toHaveTextContent('Iniciativa:')
+    expect(screen.getByRole('tooltip', { name: /Status de/ })).toHaveTextContent('Defesa:')
+    fireEvent.mouseLeave(enemyButton)
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    const dead = structuredClone(save)
+    const enemy = Object.values(dead.battle!.combatants).find((actor) => actor.side === 'enemy')!
+    enemy.hp = 0; enemy.alive = false
+    useGameStore.setState({ save: dead })
+    expect(container.querySelector('.pixel-battle__enemy.is-dead')).toBeInTheDocument()
   })
 
   it('mostra cinco slots reais; vazios cinza; hover/foco e toque revelam atributos do equipamento', () => {
