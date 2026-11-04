@@ -39,7 +39,7 @@ describe('combate visual v0.17', () => {
     expect(screen.getByRole('button', { name: 'DEFENDER' })).toBeEnabled()
     const turnOrder = screen.getByLabelText('Ordem de turnos')
     expect(turnOrder).toHaveTextContent(String(useGameStore.getState().save!.battle!.combatants.combatant_player.initiative))
-    expect(screen.getByRole('status')).toHaveTextContent('TURNO DE TERRÍRIAN')
+    expect(screen.getAllByRole('status').some((element) => element.textContent?.includes('TURNO DE TERRÍRIAN'))).toBe(true)
     fireEvent.click(combat)
     expect(screen.getByRole('button', { name: /ATAQUE BÁSICO/ })).toBeEnabled()
     expect(screen.getByText('ATAQUE · MAGIAS · HABILIDADES', { selector: '.pixel-battle__submenu-heading' })).toBeVisible()
