@@ -212,3 +212,70 @@
 .terran-shop__backpacks > h3 { display: flex; gap: 7px; align-items: center; color: #f8dcaa; font-size: .82rem; }
 .terran-shop__backpacks > p { margin: 0; color: #a1bcb4; font-size: .72rem; }
 .inventory-panel__capacity { display: block; padding: 3px 4px; color: #a8e3bd; font: 600 .6rem var(--display); }
+
+/* v0.5.1 — mission rail uses compact horizontal rows, never pre-acceptance offers. */
+.terran-game__fixed-left > .terran-quick-journal { display: block; overflow-y: auto; padding: 9px; }
+.terran-quick-journal > header { display: flex; margin-bottom: 9px; }
+.terran-quick-journal__intro {
+  display: grid; gap: 4px; padding: 9px 10px; margin-bottom: 10px;
+  border: 1px solid #c4a064; border-left: 3px solid #f3d49c;
+  background: #25352f; color: #ffe1a2;
+}
+.terran-quick-journal__intro strong { font: 700 .7rem var(--display); }
+.terran-quick-journal__intro small { color: #c5d0bd; font: .66rem Georgia,serif; }
+.terran-quick-journal__group { display: grid; gap: 5px; margin-bottom: 10px; min-width: 0; }
+.terran-quick-journal__group > h3 {
+  display: flex; align-items: center; gap: 6px; margin: 0; color: #e2ce9c;
+  font: 700 .66rem var(--display);
+}
+.terran-quick-journal__group > h3 small, .terran-quick-journal__history > summary small {
+  margin-left: auto; color: #9ca9a8; font-size: .58rem;
+}
+.terran-quick-journal__group[aria-label="Prontas para entrega"] > h3 { color: #a1f5bd; }
+.terran-quick-journal__line {
+  display: flex; align-items: center; justify-content: space-between; gap: 7px;
+  min-width: 0; min-height: 39px; padding: 6px 8px;
+  border: 1px solid #56675e; border-left: 3px solid #ae9760;
+  background: #152b35; color: #e5d7b6;
+}
+.terran-quick-journal__line-content { display: grid; min-width: 0; gap: 3px; }
+.terran-quick-journal__line-content strong {
+  display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 700 .67rem var(--display);
+}
+.terran-quick-journal__line-content small {
+  display: block; color: #b4c6c6; font: .6rem/1.3 Georgia,serif;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.terran-quick-journal__line > button {
+  flex: 0 0 auto; display: grid; place-items: center; width: 29px; height: 28px;
+  border: 1px solid #907950; background: #23423d; color: #f0d8a4; cursor: pointer;
+}
+.terran-quick-journal__line > button:focus-visible { outline: 2px solid #c8edb1; }
+.terran-quick-journal__line--ready_to_turn_in { border-left-color: #62ff9b; background: #14372b; }
+.terran-quick-journal__line--completed { border-left-color: #7d9b8d; color: #9ead9f; }
+.terran-quick-journal__line--empty {
+  border-color: #3f4a4d; border-left-color: #62686b;
+  background: #1b262a; color: #788b90; opacity: .74;
+  font: italic .65rem Georgia,serif; cursor: default;
+}
+.terran-quick-journal__history { margin-bottom: 10px; border: 1px solid #45595d; }
+.terran-quick-journal__history > summary {
+  display: flex; align-items: center; gap: 6px; padding: 8px; cursor: pointer;
+  background: #16252e; color: #9aaca8; font: 700 .66rem var(--display);
+}
+.terran-quick-journal__history > .terran-quick-journal__line { margin: 4px; }
+/* The action stays next to the player viewport's lower-right HUD rather than the quest rail. */
+.terran-game__stage .terran-game__backpack-toggle {
+  top: auto; left: auto; right: 10px; bottom: 10px;
+}
+.terran-game__stage .terran-game__backpack-panel {
+  top: auto; left: auto; right: 10px; bottom: 56px;
+  max-height: calc(100% - 64px); min-height: 0;
+}
+@media (max-width:720px) {
+  .terran-game__stage .terran-game__backpack-toggle { top: auto; left: auto; right: 6px; bottom: 6px; }
+  .terran-game__stage .terran-game__backpack-panel {
+    top: auto; left: auto; right: 6px; bottom: 44px; height: min(320px,calc(100% - 50px));
+  }
+}
