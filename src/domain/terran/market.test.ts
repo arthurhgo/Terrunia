@@ -1,3 +1,4 @@
+import { getBackpackCapacity } from '../inventory/backpacks'
 import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
