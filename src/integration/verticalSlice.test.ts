@@ -213,7 +213,7 @@ describe('vertical slice integrada', () => {
       if (materials.length) store().convertItems(materials.map((item) => item.instanceId))
       if (node.index === 1) store().unlockNode('weapon_bond_core')
       if (store().save!.essence.essencePoints > 0 && !store().save!.boundItems[weaponId].skillTree.unlockedNodeIds.includes('weapon_resonant_edge')) store().unlockNode('weapon_resonant_edge')
-      while (store().save!.character.unspentAttributePoints > 0 && store().save!.character.attributes.vigor.die < 10) store().adjustAttribute('vigor', 1)
+      while (store().save!.character.unspentAttributePoints >= 2 && store().save!.character.attributes.vigor.die < 10) store().adjustAttribute('vigor', 1)
       if (node.index !== 15) { visit('location_terran_portal_plaza'); store().enterAstravel() }
     }
     expect(store().save!.quests.main_astravel_corruption.status).toBe('ready_to_turn_in')
