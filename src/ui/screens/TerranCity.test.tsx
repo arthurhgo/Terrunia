@@ -7,9 +7,6 @@ import { bindPrologueWeapon, createNewSave } from '../../domain/game/createSave'
 import { useGameStore } from '../../state/gameStore'
 import { TerranLocationScreen } from './TerranLocationScreen'
 import { InventoryScreen } from './InventoryScreen'
-import { LocalScreen } from './LocalScreen'
-import { QuestsScreen } from './QuestsScreen'
-import { SkillTreeScreen } from './SkillTreeScreen'
 import { TerranScreen } from './TerranScreen'
 
 const createPlayableSave = () => {
