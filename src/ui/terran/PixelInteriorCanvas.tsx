@@ -49,8 +49,9 @@ export function PixelInteriorCanvas({
   const residents = getInteriorResidents(save, locationId)
   const furniture = roomFurniture[locationId]
   const plan = getRoomPlan(locationId)
-  const showingTracked = showTrackedQuestRoute && !showQuestRoutes
-  const activeRoutes: readonly RosettaQuestRoute[] = showQuestRoutes ? questRoutes
+  const showRosettaPreview = showQuestRoutes && questRoutes.length > 0
+  const showingTracked = showTrackedQuestRoute && !showRosettaPreview
+  const activeRoutes: readonly RosettaQuestRoute[] = showRosettaPreview ? questRoutes
     : showingTracked && trackedQuestRoute ? [trackedQuestRoute] : []
   const routesRef = useRef(activeRoutes)
   const routeElementsRef = useRef(new Map<string, SVGPathElement>())
