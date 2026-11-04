@@ -3975,3 +3975,66 @@ code {
 }
 .terran-quest-dialog__item-reward .asset-image { width: 26px; height: 26px; image-rendering: pixelated; }
 .terran-quest-dialog__item-reward small { color: #a7bdbb; font-size: .66rem; font-style: italic; }
+
+/* Terrúnia v0.25 — the home service hot spot is the actual bed. */
+.pixel-interior__service:has(.pixel-interior__bed-label) {
+  min-width: 110px;
+  height: auto;
+  min-height: 34px;
+  padding: 5px 9px;
+  border-color: #d0aa71;
+  background: #14272de8;
+  white-space: normal;
+  cursor: pointer;
+}
+.pixel-interior__bed-label {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  line-height: 1.15;
+  text-align: center;
+}
+.pixel-interior__bed-label strong {
+  font: 700 .7rem/1.2 var(--display);
+  color: #f6d7a3;
+}
+.pixel-interior__bed-label small {
+  font: italic .56rem/1.2 Georgia,serif;
+  color: #c1d4d0;
+  white-space: nowrap;
+}
+.terran-service-hint {
+  border-left: 2px solid #c1a067;
+  padding: 8px 10px;
+  background: #1d302e;
+  font: italic .78rem/1.45 Georgia,serif;
+  color: #d4ded7;
+}
+
+/* V0.25 — quest furniture has a visible, clickable in-world caption. */
+.pixel-interior__furniture--quest {
+  width: 80px;
+  min-height: 39px;
+  height: 39px;
+  border: 1px solid #987845;
+  background: #142632be;
+  color: #f4d58e;
+  box-shadow: inset 0 0 0 1px #2e4b53, 0 0 7px #b7955560;
+  z-index: 4;
+}
+.pixel-interior__furniture--quest > span {
+  top: -12px; right: -6px;
+}
+.pixel-interior__furniture-caption {
+  display: block;
+  width:100%;
+  font: 700 clamp(7px,.65vw,10px)/1.1 var(--display);
+  text-align:center;
+  white-space: normal;
+  color:#f7d69a;
+  text-shadow:1px 1px #090e13;
+}
+.pixel-interior__furniture--quest:is(:hover,:focus-visible) {
+  background:#284a48;
+  border-color:#e8bb6e;
+}
