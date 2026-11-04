@@ -23,7 +23,7 @@ export function NpcDialog({ open, onClose, save }: { open: boolean; onClose: () 
     if (progress.status === 'available') offerQuest(quest.id)
   }, [discover, offerQuest, open, progress.status, quest.id, save.relationships.npc_eldamar.discovered])
 
-  const accept = () => { acceptQuest(quest.id); onClose() }
+  const accept = () => acceptQuest(quest.id)
   const decline = () => { declineQuest(quest.id); onClose() }
   const complete = () => { turnInQuest(quest.id, npc.id); onClose() }
   const offered = ['available', 'offered'].includes(progress.status)

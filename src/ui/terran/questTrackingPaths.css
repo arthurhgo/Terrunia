@@ -75,3 +75,9 @@
 @media (prefers-reduced-motion: reduce) {
   .rosetta-quest-lines[data-route-mode="rosetta"] path { animation: none; }
 }
+
+/* v0.5.2 — Both white offer guidance and accepted blue sidequest routes = 40% alpha. */
+.rosetta-quest-lines[data-route-mode="rosetta"] path,
+.rosetta-minimap-lines[data-route-mode="rosetta"] path { opacity: .4; }
+.rosetta-quest-lines[data-route-mode="tracked"][data-route-tone="blue"] path,
+.rosetta-minimap-lines[data-route-mode="tracked"][data-route-tone="blue"] path { opacity: .4; }

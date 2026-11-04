@@ -33,6 +33,6 @@ describe('NPC — janela única, missão primeiro', () => {
     expect(within(dialog).queryByRole('group', { name: 'Respostas para Vorren' })).not.toBeInTheDocument()
     fireEvent.click(within(dialog).getByRole('button', { name: 'Aceitar missão' }))
     expect(useGameStore.getState().save?.quests.main_vorren_bestiary.status).toBe('active')
-    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(onClose).not.toHaveBeenCalled()
   })
 })

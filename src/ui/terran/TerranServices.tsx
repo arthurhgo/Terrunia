@@ -176,7 +176,7 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded 
       <button type="button" className="terran-quest-dialog__later"
         onClick={() => { if (progress.status === 'offered') decline(questId); onClose() }}>Agora não</button>
       <button type="button" className="terran-quest-dialog__accept"
-        onClick={() => { accept(questId); onClose() }}><Check size={16} /> Aceitar missão</button>
+        onClick={() => accept(questId)}><Check size={16} /> Aceitar missão</button>
     </div>}
     {progress.status === 'ready_to_turn_in' && <button type="button" className="terran-service-action" onClick={() => { complete(questId, definition.turnInNpcId); onClose() }}><Check size={17} /> Entregar missão</button>}
     {progress.status === 'active' && (definition.category === 'clan' || definition.category === 'class') &&

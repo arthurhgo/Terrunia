@@ -270,10 +270,10 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             <TerranQuickJournal save={save} />
           </aside>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
-            <button type="button" className="terran-game__backpack-toggle" aria-expanded={backpackOpen}
+            <button type="button" className="terran-game__backpack-toggle" aria-label={backpackOpen ? 'Recolher mochila' : 'Mochila'}
+              title={backpackOpen ? 'Recolher mochila' : 'Abrir mochila'} aria-expanded={backpackOpen}
               aria-controls="terran-backpack-panel" onClick={() => setBackpackOpen((open) => !open)}>
-              <Backpack size={17} aria-hidden="true" /> {backpackOpen ? 'Recolher mochila' : 'Mochila'}
-              <small>{save.inventory.length} itens</small>
+              <Backpack size={23} strokeWidth={1.7} aria-hidden="true" />
             </button>
             {backpackOpen && <aside id="terran-backpack-panel" className="terran-game__backpack-panel" aria-label="Mochila expandida">
               <InventoryPanel save={save} compact />

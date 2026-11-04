@@ -32,7 +32,7 @@ export function NexusOverview({ save }: { save: GameSave }) {
         </div>
         <ProgressBar value={character.xp} max={character.xpRequired} label="Experiência" />
         <div className="nexus-attribute-grid">{ATTRIBUTE_IDS.map((id) => <div key={id}><span>{attributeLabels[id]}</span><strong>d{character.attributes[id].die}{character.attributes[id].bonus ? ` +${character.attributes[id].bonus}` : ''}</strong></div>)}</div>
-        {character.unspentAttributePoints > 0 ? <AttributeAllocator save={save} compact /> : null}
+        <AttributeAllocator save={save} compact />
         <div className="nexus-derived-grid">
           <DerivedStatCard label="Vida" stat={stats.life} icon={Activity} />
           <DerivedStatCard label="Mana" stat={stats.mana} icon={WandSparkles} />

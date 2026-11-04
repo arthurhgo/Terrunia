@@ -206,6 +206,30 @@ describe('máquina de estados de combate', () => {
     expect(result.value.phase).toBe('Victory')
   })
 
+  it('aguarda comando manual e resolve iniciativa real determinística para todos', () => {
+    const battle = createBattle(makeSave(), firstEncounter, content, 'battle_manual_initiative', { manualInitiative: true })
+    expect(battle.phase).toBe('AwaitingInitiative')
+    expect(battle.log.some((entry) => entry.roll)).toBe(false)
+    const base = Object.fromEntries(Object.values(battle.combatants).map((actor) => [actor.id, actor.initiative]))
+    const rolled = submitBattleCommand(battle, { type: 'rollInitiative' }, content)
+    expect(rolled.ok).toBe(true)
+    if (!rolled.ok) return
+    const results = rolled.value.log.filter((entry) => entry.roll?.action === 'Iniciativa')
+    expect(results).toHaveLength(Object.keys(battle.combatants).length)
+    expect(results.some((entry) => entry.roll?.actorId === 'combatant_player')).toBe(true)
+    for (const entry of results) {
+      const roll = entry.roll!
+      expect(roll.face).toBeGreaterThanOrEqual(1)
+      expect(roll.face).toBeLessThanOrEqual(roll.sides)
+      expect(rolled.value.combatants[roll.actorId].initiative).toBe(base[roll.actorId] + roll.face)
+    }
+    expect(rolled.value.initiativeOrder.map((id) => rolled.value.combatants[id].initiative))
+      .toEqual([...rolled.value.initiativeOrder.map((id) => rolled.value.combatants[id].initiative)].sort((a, b) => b - a))
+    expect(battle.phase).toBe('AwaitingInitiative')
+    expect(submitBattleCommand(rolled.value, { type: 'rollInitiative' }, content))
+      .toMatchObject({ ok: false, code: 'INITIATIVE_ALREADY_ROLLED' })
+  })
+
   it('registra rolagens reais do jogador e dos monstros no log', () => {
     const battle = createBattle(makeSave(), firstEncounter, content, 'battle_real_dice')
     const result = submitBattleCommand(battle, { type: 'attack', targetId: firstTargetId }, content)

@@ -16,7 +16,10 @@ const weapons = Object.values(content.boundItemBases).filter(
 )
 
 const allocateFor = (initial: GameSave, definition: BoundItemBaseDefinition) => {
-  let save = initial
+  const fixture = structuredClone(initial)
+  // Weapon requirement fixtures model a character who has gained enough levels.
+  fixture.character.unspentAttributePoints = Math.max(fixture.character.unspentAttributePoints, 16)
+  let save = fixture
   for (const [attributeId, requiredDie] of Object.entries(definition.requirements.attributes)) {
     while (save.character.attributes[attributeId as keyof typeof save.character.attributes].die < requiredDie) {
       const result = adjustCharacterAttribute(

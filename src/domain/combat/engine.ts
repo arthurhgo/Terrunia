@@ -93,6 +93,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     attackPower: stats.primaryAttack.value,
     mitigation: stats.defense.value,
     initiative: stats.initiative.value,
+    initiativeDie: character.attributes.agility.die,
     alive: true,
     defending: false,
     skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds])],
@@ -120,6 +121,7 @@ const deriveEnemyCombatant = (
     attackPower: enemy.attackPower,
     mitigation: enemy.mitigation,
     initiative: Math.max(1, enemy.level + 3),
+    initiativeDie: 4, // BALANCE_DRAFT until each creature's initiative die is authored.
     alive: true,
     defending: false,
     skillIds: enemy.skillIds,
@@ -346,11 +348,41 @@ const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
   }
 }
 
+/**
+ * Manual initiative is a real deterministic battle action. Each actor rolls its
+ * initiative die; base initiative + face determines turn order. No save is mutated
+ * before this command is committed. Old already-started battles remain valid.
+ */
+const resolveInitiative = (state: BattleState, catalog: ContentCatalog): void => {
+  const actors = Object.values(state.combatants)
+  for (const actor of actors) {
+    const sides = actor.initiativeDie ?? 4
+    const face = rollCombatDie(state, sides)
+    actor.initiative += face
+    addLog(state, `${actor.name} rola iniciativa: d${sides} = ${face} (total ${actor.initiative}).`, 'system',
+      { actorId: actor.id, sides, face, action: 'Iniciativa' })
+  }
+  state.initiativeOrder = actors.sort((a, b) => b.initiative - a.initiative || a.id.localeCompare(b.id)).map((actor) => actor.id)
+  state.actorCursor = 0
+  state.actorId = state.initiativeOrder[0]
+  const actor = state.combatants[state.actorId]
+  addPhase(state, 'TurnStart')
+  addLog(state, `Turno de ${actor.name} · Iniciativa ${actor.initiative}.`, 'system')
+  applyStartStatuses(state, actor, catalog)
+  if (checkBattleEnd(state)) return
+  if (actor.side === 'player') addPhase(state, 'AwaitingAction')
+  else {
+    resolveEnemyAction(state, actor, catalog)
+    if (!checkBattleEnd(state)) advanceUntilPlayer(state, catalog)
+  }
+}
+
 export const createBattle = (
   save: GameSave,
   encounter: EncounterDefinition,
   catalog: ContentCatalog,
   id: string = createRandomId(),
+  options: { manualInitiative?: boolean } = {},
 ): BattleState => {
   const player = derivePlayerCombatant(save, catalog)
   const enemies = encounter.enemyDefinitionIds.map((definitionId, index) =>
@@ -382,6 +414,11 @@ export const createBattle = (
   }
 
   addLog(state, `${encounter.name} bloqueia o avanço em Astravél.`, 'system')
+  if (options.manualInitiative) {
+    addPhase(state, 'AwaitingInitiative')
+    addLog(state, 'Turno 1 · Prepare a rolagem de iniciativa.', 'system')
+    return state
+  }
   const actor = state.combatants[state.actorId]
   addPhase(state, 'TurnStart')
   addLog(state, `Turno de ${actor.name} · Iniciativa ${actor.initiative}.`, 'system')
@@ -411,6 +448,12 @@ export const submitBattleCommand = (
   catalog: ContentCatalog,
   inventory: InventoryItemInstance[] = [],
 ): Result<BattleState> => {
+  if (command.type === 'rollInitiative') {
+    if (battle.phase !== 'AwaitingInitiative') return fail('INITIATIVE_ALREADY_ROLLED', 'A iniciativa já foi determinada.')
+    const next = structuredClone(battle)
+    resolveInitiative(next, catalog)
+    return ok(next)
+  }
   if (battle.phase !== 'AwaitingAction') {
     return fail('INVALID_BATTLE_PHASE', 'A batalha não está aguardando uma ação do jogador.')
   }

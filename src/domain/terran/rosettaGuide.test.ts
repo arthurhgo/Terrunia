@@ -64,7 +64,7 @@ describe('Rosetta orienta usando apenas dados do save', () => {
     expect(ids).not.toContain('main_astravel_corruption')
     expect(routes.find((route) => route.npcId === 'npc_street_arlen')?.questIds).toHaveLength(2)
     expect(new Set(ids).size).toBe(ids.length)
-    expect(routes.every((route) => route.tone === 'white' && route.opacity === 1)).toBe(true)
+    expect(routes.every((route) => route.tone === 'white' && route.opacity === 0.4)).toBe(true)
     expect(save).toEqual(before)
   })
 
@@ -85,7 +85,7 @@ describe('Rosetta orienta usando apenas dados do save', () => {
     expect(ids).not.toContain('rosetta_tutorial_refine')
     expect(ids).not.toContain('vs_astravel_first_contact')
     expect(ids).not.toContain('side_npc_daeryn')
-    expect(offered.every((route) => route.tone === 'white' && route.opacity === 1)).toBe(true)
+    expect(offered.every((route) => route.tone === 'white' && route.opacity === 0.4)).toBe(true)
     expect(getTrackedQuestRoute(save, content)?.questId).toBe('vs_astravel_first_contact')
   })
   it('resolve rota principal dourada do jogador para o objetivo e NPC de entrega', () => {
@@ -108,7 +108,7 @@ describe('Rosetta orienta usando apenas dados do save', () => {
     save.quests.side_street_arlen.status = 'active'
     save.quests.side_street_arlen.tracked = true
     expect(getTrackedQuestRoute(save, content)).toMatchObject({
-      questId: 'side_street_arlen', tone: 'blue', opacity: 0.2,
+      questId: 'side_street_arlen', tone: 'blue', opacity: 0.4,
       locationId: 'location_terran_portal_plaza',
     })
     save.quests.side_street_arlen.status = 'ready_to_turn_in'

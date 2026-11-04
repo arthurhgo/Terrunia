@@ -22,8 +22,8 @@ export const adjustCharacterAttribute = (
       direction === 1 ? 'Este atributo já alcançou d12.' : 'Este atributo já está no dado-base d4.',
     )
   }
-  if (direction === 1 && save.character.unspentAttributePoints < 1) {
-    return fail('ATTRIBUTE_POINTS_REQUIRED', 'Nenhum Ponto de Atributo está disponível.')
+  if (direction === 1 && save.character.unspentAttributePoints < BALANCE.attributePointsPerDieUpgrade) {
+    return fail('ATTRIBUTE_POINTS_REQUIRED', `São necessários ${BALANCE.attributePointsPerDieUpgrade} Pontos de Atributo para avançar um dado.`)
   }
   if (direction === -1 && save.character.bondedEquipment.weapon) {
     return fail('ATTRIBUTE_REFUND_LOCKED', 'A distribuição inicial torna-se permanente após o primeiro Vínculo.')
@@ -31,7 +31,7 @@ export const adjustCharacterAttribute = (
 
   const next = structuredClone(save)
   next.character.attributes[attributeId].die = targetDie
-  next.character.unspentAttributePoints -= direction
+  next.character.unspentAttributePoints -= direction * BALANCE.attributePointsPerDieUpgrade
   next.updatedAt = now
   next.revision += 1
   next.eventLog.push(`AttributeAdjusted:${attributeId}:d${targetDie}`)

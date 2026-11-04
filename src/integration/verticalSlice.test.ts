@@ -21,6 +21,7 @@ describe('vertical slice integrada', () => {
     expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_entry')
     expect(useGameStore.getState().notification?.message).toContain('Registre o retorno')
     useGameStore.getState().startBattle('astravel_fungorro_01')
+    useGameStore.getState().submitBattleCommand({ type: 'rollInitiative' })
     const enemy = 'combatant_enemy_fungorro_crawler_1'
     useGameStore.getState().submitBattleCommand({ type: 'attack', targetId: enemy })
     useGameStore.getState().submitBattleCommand({ type: 'attack', targetId: enemy })
@@ -78,6 +79,7 @@ describe('vertical slice integrada', () => {
     useGameStore.getState().travelInTerran('location_terran_portal_plaza')
     useGameStore.getState().enterAstravel()
     useGameStore.getState().startBattle()
+    useGameStore.getState().submitBattleCommand({ type: 'rollInitiative' })
 
     const targetId = 'combatant_enemy_fungorro_crawler_1'
     useGameStore.getState().submitBattleCommand({ type: 'attack', targetId })
@@ -109,7 +111,15 @@ describe('vertical slice integrada', () => {
     await useGameStore.getState().boot(ownerId)
     const store = () => useGameStore.getState()
     store().createGame('Lysa', 'character.terririan.default')
-    store().adjustAttribute('strength', 1); store().adjustAttribute('strength', 1); store().adjustAttribute('vigor', 1)
+    // This regression runs the ENTIRE 15-encounter story, not a level-1 balance test.
+    // Simulate a legitimately prepared character who earned 12 points before the trail.
+    // Production creation and XP rewards are unchanged.
+    const equippedFixture = structuredClone(store().save!)
+    equippedFixture.character.unspentAttributePoints = 12
+    useGameStore.setState({ save: equippedFixture })
+    store().adjustAttribute('strength', 1); store().adjustAttribute('strength', 1)
+    store().adjustAttribute('vigor', 1); store().adjustAttribute('vigor', 1); store().adjustAttribute('vigor', 1)
+    store().adjustAttribute('agility', 1)
     store().bindPrologueWeapon()
     const weaponId = store().save!.character.bondedEquipment.weapon!
     const visit = (id: string) => store().travelInTerran(id)
@@ -153,6 +163,7 @@ describe('vertical slice integrada', () => {
       }
       store().startBattle(node.id)
       expect(store().save!.battle?.encounterId, node.label).toBe(node.encounterId)
+      store().submitBattleCommand({ type: 'rollInitiative' })
       // Use a weapon skill when possible and basic attacks when Mana runs out.
       for (let turn = 0; turn < 50 && store().save!.battle?.phase === 'AwaitingAction'; turn++) {
         const battle = store().save!.battle!
@@ -206,7 +217,7 @@ describe('vertical slice integrada', () => {
       if (materials.length) store().convertItems(materials.map((item) => item.instanceId))
       if (node.index === 1) store().unlockNode('weapon_bond_core')
       if (store().save!.essence.essencePoints > 0 && !store().save!.boundItems[weaponId].skillTree.unlockedNodeIds.includes('weapon_resonant_edge')) store().unlockNode('weapon_resonant_edge')
-      while (store().save!.character.unspentAttributePoints > 0 && store().save!.character.attributes.vigor.die < 10) store().adjustAttribute('vigor', 1)
+      while (store().save!.character.unspentAttributePoints >= 2 && store().save!.character.attributes.vigor.die < 10) store().adjustAttribute('vigor', 1)
       if (node.index !== 15) { visit('location_terran_portal_plaza'); store().enterAstravel() }
     }
     expect(store().save!.quests.main_astravel_corruption.status).toBe('ready_to_turn_in')

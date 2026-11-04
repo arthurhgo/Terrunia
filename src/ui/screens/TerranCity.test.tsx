@@ -282,7 +282,7 @@ describe('interfaces de Terran', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Falar com Rosetta' }))
     expect(screen.getByRole('dialog', { name: 'Orientações de Rosetta' })).toBeInTheDocument()
     expect(screen.getAllByRole('status').some((node) => node.textContent?.includes('Vou lhe entregar duas túnicas simples.'))).toBe(true)
-    expect(screen.getByText('Estante dos Registros')).toBeInTheDocument()
+    expect(screen.queryByText('Estante dos Registros')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Missões que pode receber' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Consultar diário de missões' }))
     expect(screen.getByRole('complementary', { name: 'Diário de missões' })).toBeInTheDocument()

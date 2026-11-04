@@ -1,5 +1,6 @@
 export type BattlePhase =
   | 'Initializing'
+  | 'AwaitingInitiative'
   | 'TurnStart'
   | 'AwaitingAction'
   | 'SelectingTarget'
@@ -37,6 +38,7 @@ export type Combatant = {
   statusEffects: ActiveStatus[]
   aiSkillEveryRounds?: number
   attackDie?: CombatDie
+  initiativeDie?: CombatDie
 }
 
 export type CombatDie = 4 | 6 | 8 | 10 | 12
@@ -95,6 +97,7 @@ export type BattleState = {
 }
 
 export type BattleCommand =
+  | { type: 'rollInitiative' }
   | { type: 'attack'; targetId: string }
   | { type: 'defend' }
   | { type: 'skill'; skillId: string; targetId: string }

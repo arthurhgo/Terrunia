@@ -28,22 +28,22 @@ export function AttributeAllocator({ save, compact = false, layout = 'grid' }: {
           const attribute = save.character.attributes[id]
           const increasedDie = nextAttributeDie(attribute.die, 1)
           const decreasedDie = nextAttributeDie(attribute.die, -1)
-          const canIncrease = save.character.unspentAttributePoints > 0 && Boolean(increasedDie)
+          const canIncrease = save.character.unspentAttributePoints >= BALANCE.attributePointsPerDieUpgrade && Boolean(increasedDie)
           const canRefund = !locked && Boolean(decreasedDie) && attribute.die > BALANCE.defaultAttributeDie
           return (
             <article key={id} title={labels[id].combat}>
               <div><strong>{labels[id].name}</strong><small>{labels[id].role}</small></div>
               <div className="attribute-stepper">
-                <button type="button" aria-label={`Reduzir ${labels[id].name}`} title={decreasedDie ? `d${attribute.die} → d${decreasedDie} · devolve 1 ponto` : 'Dado mínimo: d4'} disabled={!canRefund} onClick={() => adjust(id, -1)}><Minus size={14} /></button>
+                <button type="button" aria-label={`Reduzir ${labels[id].name}`} title={decreasedDie ? `d${attribute.die} → d${decreasedDie} · devolve ${BALANCE.attributePointsPerDieUpgrade} pontos` : 'Dado mínimo: d4'} disabled={!canRefund} onClick={() => adjust(id, -1)}><Minus size={14} /></button>
                 <span className="attribute-stepper__die"><DieIcon sides={attribute.die} /> <b>d{attribute.die}{attribute.bonus ? ` +${attribute.bonus}` : ''}</b></span>
-                <button type="button" aria-label={`Aumentar ${labels[id].name}`} title={increasedDie ? `d${attribute.die} → d${increasedDie} · custa 1 ponto` : 'Dado máximo: d12'} disabled={!canIncrease} onClick={() => adjust(id, 1)}><Plus size={14} /></button>
+                <button type="button" aria-label={`Aumentar ${labels[id].name}`} title={increasedDie ? `d${attribute.die} → d${increasedDie} · custa ${BALANCE.attributePointsPerDieUpgrade} pontos` : 'Dado máximo: d12'} disabled={!canIncrease} onClick={() => adjust(id, 1)}><Plus size={14} /></button>
               </div>
               <p className="attribute-allocator__combat" title={labels[id].combat}>{labels[id].combat}</p>
             </article>
           )
         })}
       </div>
-      <p>Dados avançam de 2 em 2 faces: d4 → d6 → d8 → d10 → d12. Cada avanço consome 1 ponto. {locked ? 'Após o primeiro Vínculo, não é possível reembolsar pontos.' : 'Antes do Vínculo, a distribuição pode ser refeita.'}</p>
+      <p>Dados avançam de 2 em 2 faces: d4 → d6 → d8 → d10 → d12. Cada avanço consome 2 Pontos de Atributo. {locked ? 'Após o primeiro Vínculo, não é possível reembolsar pontos.' : 'Antes do Vínculo, a distribuição pode ser refeita.'}</p>
     </section>
   )
 }

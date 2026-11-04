@@ -178,6 +178,7 @@ const worldSchema = z.object({
 
 const battlePhaseSchema = z.enum([
   'Initializing',
+  'AwaitingInitiative',
   'TurnStart',
   'AwaitingAction',
   'SelectingTarget',
@@ -212,6 +213,7 @@ const combatantSchema = z.object({
   })),
   aiSkillEveryRounds: positiveInteger.optional(),
   attackDie: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(10), z.literal(12)]).optional(),
+  initiativeDie: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(10), z.literal(12)]).optional(),
 })
 
 const battleSchema = z.object({

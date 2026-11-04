@@ -9,6 +9,8 @@ export const BALANCE = {
   attributeDieOrder: [4, 6, 8, 10, 12] as const,
   // One rank advances exactly two die faces: d4 -> d6 -> d8 -> d10 -> d12.
   attributeDieFaceStep: 2,
+  /** BALANCE_DRAFT v0.5.2: each d4→d6→d8→d10→d12 rank costs TWO attribute points. */
+  attributePointsPerDieUpgrade: 2,
   xpThresholds: [0, 250, 750, 1500, 2500, 4000, 6000, 8500, 11500, 15000, 19000, 24000, 30000, 37000] as const,
   // Rebased with d4 defaults so the vertical slice keeps its previous survivability.
   baseHp: 12,
