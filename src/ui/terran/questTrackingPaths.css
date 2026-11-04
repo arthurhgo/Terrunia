@@ -46,3 +46,18 @@
   stroke: #a8e6ff;
   opacity: .2;
 }
+
+/* Turn-in routes override ordinary tracking: bright green, with accessible motion fallback. */
+.rosetta-quest-lines[data-route-mode="tracked"][data-route-tone="green"] path {
+  stroke: #62ff9b; stroke-width: 2.4; stroke-dasharray: 5 5; opacity: 1;
+  filter: drop-shadow(0 0 4px #43ff95);
+  animation: rosetta-gold-flow 1.1s linear infinite;
+}
+.rosetta-minimap-lines[data-route-mode="tracked"][data-route-tone="green"] path {
+  stroke: #62ff9b; stroke-width: 4; stroke-dasharray: 8 6; opacity: 1;
+  filter: drop-shadow(0 0 3px #43ff95);
+}
+.rosetta-quest-lines[data-route-mode="tracked"][data-route-tone="green"][data-reduced-motion="true"] path { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .rosetta-quest-lines[data-route-mode="tracked"][data-route-tone="green"] path { animation: none; }
+}
