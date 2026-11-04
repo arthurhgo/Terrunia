@@ -32,7 +32,7 @@ describe('diário compacto v0.5.1', () => {
     expect(screen.getByText('Uma Primeira Proteção')).toBeInTheDocument()
     expect(screen.getByText('O Primeiro Rastro')).toBeInTheDocument()
     expect(container.querySelectorAll('.terran-quick-journal__line--ready_to_turn_in')).toHaveLength(1)
-    const history = screen.getByText('Concluídas', { selector: 'summary' })
+    const history = screen.getByText(/Concluídas/, { selector: 'summary' })
     expect(history.closest('details')).not.toHaveAttribute('open')
     fireEvent.click(history)
     expect(history.closest('details')).toHaveAttribute('open')
