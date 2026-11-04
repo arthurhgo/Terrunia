@@ -36,6 +36,16 @@ export type Combatant = {
   skillIds: string[]
   statusEffects: ActiveStatus[]
   aiSkillEveryRounds?: number
+  attackDie?: CombatDie
+}
+
+export type CombatDie = 4 | 6 | 8 | 10 | 12
+export type CombatRoll = {
+  actorId: string
+  sides: CombatDie
+  face: number
+  action: string
+  /** VISUAL_DRAFT: the combat damage formula is unchanged until owner approval. */
 }
 
 export type BattleLogEntry = {
@@ -43,6 +53,7 @@ export type BattleLogEntry = {
   round: number
   message: string
   tone: 'neutral' | 'damage' | 'defense' | 'reward' | 'system'
+  roll?: CombatRoll
 }
 
 export type BattleRewards = {
