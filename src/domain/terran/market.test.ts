@@ -12,6 +12,29 @@ const base = () => {
 }
 
 describe('Mercado de Terran', () => {
+  it('vende melhorias permanentes de mochila e impede recompra ou salto de tier', () => {
+    const save = base()
+    expect(buyMarketItem(save, 'presence_neris', 'backpack_arcane', 1, content, now))
+      .toMatchObject({ ok: false, code: 'BACKPACK_PREREQUISITE' })
+    const first = buyMarketItem(save, 'presence_neris', 'backpack_sturdy', 1, content, now)
+    expect(first.ok).toBe(true)
+    if (!first.ok) return
+    expect(first.value.wallet.gold).toBe(405)
+    expect(getBackpackCapacity(first.value)).toBe(18)
+    expect(first.value.inventory).toEqual(save.inventory)
+    expect(buyMarketItem(first.value, 'presence_neris', 'backpack_sturdy', 1, content, now))
+      .toMatchObject({ ok: false, code: 'BACKPACK_OWNED' })
+    const second = buyMarketItem(first.value, 'presence_neris', 'backpack_traveler', 1, content, now)
+    expect(second.ok).toBe(true)
+    if (second.ok) expect(getBackpackCapacity(second.value)).toBe(24)
+  })
+
+  it('aplica preços progressivos mais altos às armaduras do Mercado', () => {
+    expect(MARKET_STOCK.find((offer) => offer.itemId === 'equipment_worn_linen_tunic')?.price).toBe(22)
+    expect(MARKET_STOCK.find((offer) => offer.itemId === 'equipment_simple_leather_armor')?.price).toBe(60)
+    expect(MARKET_STOCK.find((offer) => offer.itemId === 'equipment_terran_guard_armor')?.price).toBe(135)
+  })
+
   it('mantém os seis comerciantes e especialistas mapeados sem alterar o ID do local', () => {
     for (const id of ['presence_lithwynn', 'presence_talia', 'presence_valmira', 'presence_edran', 'presence_feril', 'presence_lorian']) {
       expect(isMarketNpc(id)).toBe(true)
