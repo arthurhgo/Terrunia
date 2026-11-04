@@ -1,3 +1,4 @@
+import { BACKPACK_UPGRADES, routeNewItemOverflow } from '../domain/inventory/backpacks'
 import { executeForgeRecipe } from '../domain/terran/forge'
 import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmor'
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
@@ -174,7 +175,7 @@ export const useGameStore = create<GameState>((set, get) => {
   }
 
   const commit = (candidate: GameSave) => {
-    const save = refreshTutorialQuestProgress(refreshDeliveryQuestProgress(candidate, content, candidate.updatedAt), content, candidate.updatedAt)
+    const save = routeNewItemOverflow(get().save, refreshTutorialQuestProgress(refreshDeliveryQuestProgress(candidate, content, candidate.updatedAt), content, candidate.updatedAt))
     set({ save, status: 'ready', error: null })
     return persist(save)
   }
@@ -554,7 +555,9 @@ export const useGameStore = create<GameState>((set, get) => {
       const result = buyMarketItem(save, npcId, itemId, quantity, content, nowIso())
       if (!result.ok) return failAction(result.message)
       commit(result.value)
-      show('Compra realizada', `${quantity}× ${content.items[itemId].name} recebido no Mercado.`, 'success')
+      show('Compra realizada', BACKPACK_UPGRADES.find((upgrade) => upgrade.id === itemId)
+        ? 'Capacidade da mochila expandida e salva no personagem.'
+        : `${quantity}× ${content.items[itemId].name} recebido no Mercado.`, 'success')
     },
 
     recordCutsceneViewed: (sceneId) => {
