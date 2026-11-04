@@ -39,3 +39,22 @@
  .npc-mission-hub__topics { max-height:26dvh; }
  .npc-mission-hub__detail { max-height:32dvh; }
 }
+
+/* v0.5: keep the entire mission and its decision buttons in the viewport. */
+.vn-overlay:has(.npc-mission-hub) { align-items: center; padding: 12px; }
+.npc-mission-hub { width: min(900px, 100%); max-height: calc(100dvh - 24px); }
+.npc-mission-hub .vn-textbox { width: 100%; height: auto; max-height: calc(100dvh - 24px); overflow: hidden; }
+.npc-mission-hub .vn-details { flex: 1 1 auto; max-height: min(70dvh, 570px); padding: 10px; overflow: hidden; }
+.npc-mission-hub__content { height: 100%; max-height: min(67dvh, 550px); min-height: 0; }
+.npc-mission-hub__topics, .npc-mission-hub__detail { max-height: 100%; min-height: 0; }
+.npc-mission-hub__detail .terran-quest-dialog__actions {
+  position: sticky; bottom: 0; z-index: 3; display: flex; gap: 8px;
+  padding: 10px 4px; background: #091724; border-top: 1px solid #80673d;
+}
+.npc-mission-hub__detail .terran-quest-dialog__actions button { min-height: 40px; flex: 1; }
+@media (max-width: 580px) {
+  .npc-mission-hub .vn-details { overflow: auto; max-height: calc(100dvh - 102px); }
+  .npc-mission-hub__content { display: flex; flex-direction: column; max-height: none; height: auto; }
+  .npc-mission-hub__topics { flex: 0 0 auto; max-height: 22dvh; }
+  .npc-mission-hub__detail { flex: 1 1 auto; max-height: 44dvh; }
+}
