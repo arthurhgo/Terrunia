@@ -60,7 +60,7 @@ describe('janela única de conversa', () => {
     expect(next.eventLog).toContain('QuestOffered:side_npc_eldamar')
     expect(next.eventLog).toContain('QuestAccepted:side_npc_eldamar')
     expect(next.revision).toBe(save.revision + 2)
-    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(onClose).not.toHaveBeenCalled()
   })
 
   it('Agora não preserva missão disponível e recusa oferta antiga sem aceitar nada', () => {
