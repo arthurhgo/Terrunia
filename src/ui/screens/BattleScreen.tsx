@@ -11,6 +11,7 @@ import { GameShell } from '../components/GameShell'
 import { BattleArenaBackdrop } from '../battle/BattleArenaBackdrop'
 import { BattleEquipmentHud } from '../battle/BattleEquipmentHud'
 import { BattleDicePlatform, type BattleDiceEvent } from '../battle/BattleDicePlatform'
+import { DieIcon } from '../components/DieIcon'
 import { groupBattleLoot } from '../../domain/inventory/battleLoot'
 import './battlePixel.css'
 import './battleRemake.css'
@@ -41,6 +42,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const [activeDice, setActiveDice] = useState<BattleDiceEvent | null>(null)
   const [diceQueue, setDiceQueue] = useState<BattleDiceEvent[]>([])
   const [resolvingRolls, setResolvingRolls] = useState(false)
+  const [diceAwaitingClick, setDiceAwaitingClick] = useState(false)
+  const [initiativeReady, setInitiativeReady] = useState(false)
+  const [hoveredEnemyId, setHoveredEnemyId] = useState<string | null>(null)
+  const pendingRollsRef = useRef<{ rolls: BattleDiceEvent[]; cursor: number; commit: () => void } | null>(null)
   const previewTimer = useRef<number | null>(null)
   const seenDiceLog = useRef<{ id: string; count: number } | null>(null)
   const previous = useRef<{ id: string; hp: Record<string, number> } | null>(null)
@@ -63,6 +68,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     setActiveDice(null)
     setDiceQueue([])
     setResolvingRolls(false)
+    setDiceAwaitingClick(false)
+    setInitiativeReady(false)
+    setHoveredEnemyId(null)
+    pendingRollsRef.current = null
     if (previewTimer.current !== null) window.clearTimeout(previewTimer.current)
     previewTimer.current = null
     seenDiceLog.current = null
@@ -129,6 +138,18 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     return () => window.clearTimeout(timer)
   }, [battle?.id, battle?.round, battle?.actorId, battle?.phase, reducedMotion])
 
+  // First announce the round, then invite the player to roll real initiative.
+  useEffect(() => {
+    if (!battle || battle.phase !== 'AwaitingInitiative') return
+    setInitiativeReady(false)
+    setTurnAnnouncement('TURNO ' + battle.round)
+    const timer = window.setTimeout(() => {
+      setInitiativeReady(true)
+      setTurnAnnouncement('ROLAGEM DE INICIATIVA')
+    }, reducedMotion ? 400 : 950)
+    return () => window.clearTimeout(timer)
+  }, [battle?.id, battle?.phase, reducedMotion])
+
   if (!save) return <Navigate to="/terran" replace />
   if (!battle) {
     const destination = save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon'
@@ -170,44 +191,77 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const drops = battle.rewards.lootDefinitionIds
   const lootGroups = groupBattleLoot(drops)
 
-  const send = (command: Parameters<typeof submit>[0]) => {
-    if (!isPlayerTurn) return
-    setMenu(null)
-    // Compute a pure preview without touching player HP, cloud save, or domain state.
-    // Show all deterministic faces (player and each enemy), then apply once via store.
-    const preview = previewBattleCommand(battle, command, content, save.inventory)
-    if (!preview.ok) { submit(command); return }
-    const rolls: BattleDiceEvent[] = preview.value.log.slice(battle.log.length).flatMap((entry) => {
-      if (entry.tone !== 'damage' || !entry.roll) return []
-      const match = entry.message.match(/ causa (\d+) de dano /)
-      if (!match) return []
-      const actor = preview.value.combatants[entry.roll.actorId]
-      return [{
-        id: entry.id, sides: entry.roll.sides, face: entry.roll.face,
-        damage: Number(match[1]), action: entry.roll.action,
-        actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy',
-      }]
-    })
-    if (rolls.length === 0) { submit(command); return }
-
-    setResolvingRolls(true)
-    setActiveDice(rolls[0])
-    let index = 0
-    const step = () => {
-      index += 1
-      if (index < rolls.length) {
-        setActiveDice(rolls[index])
-        previewTimer.current = window.setTimeout(step, reducedMotion ? 800 : 1250)
+  // Queue visual rolls before committing the pure deterministic preview to the save.
+  const scheduleRollStep = () => {
+    previewTimer.current = window.setTimeout(() => {
+      const sequence = pendingRollsRef.current
+      if (!sequence) return
+      sequence.cursor += 1
+      if (sequence.cursor >= sequence.rolls.length) {
+        pendingRollsRef.current = null
+        previewTimer.current = null
+        setActiveDice(null)
+        setDiceAwaitingClick(false)
+        setResolvingRolls(false)
+        sequence.commit()
         return
       }
-      // The committed deterministic log is already shown: avoid replaying each die.
-      seenDiceLog.current = { id: battle.id, count: preview.value.log.length }
-      previewTimer.current = null
-      setActiveDice(null)
-      setResolvingRolls(false)
-      submit(command)
+      const next = sequence.rolls[sequence.cursor]
+      setActiveDice(next)
+      const playerMustClick = next.actorSide === 'player' && next.kind !== 'initiative'
+      setDiceAwaitingClick(playerMustClick)
+      if (!playerMustClick) scheduleRollStep()
+    }, reducedMotion ? 850 : 1350)
+  }
+  const clickPlayerDie = () => {
+    if (!diceAwaitingClick || !pendingRollsRef.current) return
+    setDiceAwaitingClick(false)
+    scheduleRollStep()
+  }
+  const send = (command: Parameters<typeof submit>[0]) => {
+    const initiative = command.type === 'rollInitiative'
+    if (initiative ? battle.phase !== 'AwaitingInitiative' || !initiativeReady : !isPlayerTurn) return
+    setMenu(null)
+    setTurnAnnouncement(null)
+    const preview = previewBattleCommand(battle, command, content, save.inventory)
+    if (!preview.ok) { submit(command); return }
+
+    const rolls: BattleDiceEvent[] = preview.value.log.slice(battle.log.length).flatMap((entry) => {
+      if (!entry.roll) return []
+      const roll = entry.roll
+      const actor = preview.value.combatants[roll.actorId]
+      if (roll.action === 'Iniciativa') {
+        return [{
+          id: entry.id, sides: roll.sides, face: roll.face,
+          damage: 0, action: 'Iniciativa', kind: 'initiative' as const,
+          initiativeTotal: actor?.initiative,
+          actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy' as const,
+        }]
+      }
+      if (entry.tone !== 'damage') return []
+      const match = entry.message.match(/ causa (\d+) de dano /)
+      if (!match) return []
+      return [{
+        id: entry.id, sides: roll.sides, face: roll.face, damage: Number(match[1]),
+        action: roll.action, kind: 'damage' as const,
+        actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy' as const,
+      }]
+    })
+    if (!rolls.length) { submit(command); return }
+    setResolvingRolls(true)
+    setActiveDice(rolls[0])
+    const requireClick = !initiative && rolls[0].actorSide === 'player'
+    setDiceAwaitingClick(requireClick)
+    const originalBattleId = battle.id
+    const logCount = preview.value.log.length
+    pendingRollsRef.current = {
+      rolls, cursor: 0,
+      commit: () => {
+        seenDiceLog.current = { id: originalBattleId, count: logCount }
+        submit(command)
+      },
     }
-    previewTimer.current = window.setTimeout(step, reducedMotion ? 800 : 1250)
+    if (!requireClick) scheduleRollStep()
   }
   const end = (toCity: boolean) => {
     if (toCity) returnToTerran()
@@ -256,8 +310,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           </span>
         })}
       </div>
-      {activeDice && <BattleDicePlatform key={activeDice.id} roll={activeDice} reducedMotion={reducedMotion} />}
-      {(turnCue || turnAnnouncement) && !defeated && <div className="pixel-battle__turn-cue" role="status">
+      {activeDice && <BattleDicePlatform key={activeDice.id} roll={activeDice} reducedMotion={reducedMotion}
+          awaitingClick={diceAwaitingClick} onRoll={clickPlayerDie} />}
+      {(turnCue || turnAnnouncement) && !defeated && !activeDice && <div className="pixel-battle__turn-cue" role="status">
         {turnCue ? 'TURNO DOS INIMIGOS' : turnAnnouncement}
       </div>}
       {defeated && <div className="pixel-battle__death" role="status" aria-label="Terrírian derrotado">
