@@ -452,7 +452,7 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(next)
       show('Objetivo realizado', `Retorne a ${content.npcs[definition.turnInNpcId]?.name ?? 'quem entregou a missão'} para receber a recompensa.`, 'success')
       return true
-    }
+    },
 
     preparePlayerHome: () => {
       failAction('Aproxime-se da Estante de Cura na Casa de Daeryn e organize as poções.')
