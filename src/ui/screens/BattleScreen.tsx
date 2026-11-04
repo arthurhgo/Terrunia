@@ -256,7 +256,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           </span>
         })}
       </div>
-      {activeDice && <BattleDicePlatform roll={activeDice} reducedMotion={reducedMotion} />}
+      {activeDice && <BattleDicePlatform key={activeDice.id} roll={activeDice} reducedMotion={reducedMotion} />}
       {(turnCue || turnAnnouncement) && !defeated && <div className="pixel-battle__turn-cue" role="status">
         {turnCue ? 'TURNO DOS INIMIGOS' : turnAnnouncement}
       </div>}
