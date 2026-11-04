@@ -279,3 +279,19 @@
     top: auto; left: auto; right: 6px; bottom: 44px; height: min(320px,calc(100% - 50px));
   }
 }
+
+/* v0.5.2: icon-only square anchored immediately ABOVE "Explorar Terran". */
+.terran-game__stage .terran-game__backpack-toggle {
+  top: auto; left: auto; right: 12px; bottom: 56px;
+  width: 40px; height: 40px; min-height: 40px; padding: 0; border-radius: 0;
+  display: grid; place-items: center; z-index: 35;
+}
+.terran-game__stage .terran-game__backpack-toggle svg { width: 23px; height: 23px; }
+.terran-game__stage .terran-game__backpack-panel {
+  top: auto; left: auto; right: 12px; bottom: 104px;
+  max-height: calc(100% - 112px);
+}
+@media(max-width:720px){
+  .terran-game__stage .terran-game__backpack-toggle { right: 6px; bottom: 52px; width: 36px; height: 36px; min-height: 36px; }
+  .terran-game__stage .terran-game__backpack-panel { right: 6px; bottom: 96px; height: min(320px,calc(100% - 103px)); }
+}
