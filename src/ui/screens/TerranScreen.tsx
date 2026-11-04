@@ -1,4 +1,4 @@
-import { MapPin, X } from 'lucide-react'
+import { Backpack, MapPin, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -42,7 +42,7 @@ import { getNpcActionableQuests } from '../../domain/quests/questSelectors'
 import { type TerranLandmark } from '../../content/terranExploration'
 import { CityLandmarkDialog } from '../terran/CityLandmarkDialog'
 import { Modal } from '../components/Modal'
-import { getRosettaQuestRoutes, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
+import { getReadyDeliveryQuestRoute, getRosettaQuestRoutes, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 
 type Drawer = 'location' | 'market' | 'home' | 'chest' | 'records' | 'forge' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
@@ -105,6 +105,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [eldamarOpen, setEldamarOpen] = useState(false)
   const [rosettaOpen, setRosettaOpen] = useState(false)
   const [rosettaPathsPinned, setRosettaPathsPinned] = useState(false)
+  const [backpackOpen, setBackpackOpen] = useState(false)
   const [dialogue, setDialogue] = useState<Presence | null>(null)
   const [localQuestId, setLocalQuestId] = useState<string | null>(null)
   const [marketNpc, setMarketNpc] = useState<Presence | null>(null)
@@ -133,7 +134,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const scene = getNextCutscene(save)
   const cityCast = getCityCast(save)
   const guidance = getTerranQuestDestination(save, content)
-  const trackedRoute = getTrackedQuestRoute(save, content)
+  const trackedRoute = getTrackedQuestRoute(save, content) ?? getReadyDeliveryQuestRoute(save, content)
   const discovered = getDiscoveredTerranLocationIds(save).length
   const location = content.terranLocations[locationId]
   const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !dialogue && !inspected && !cityLandmark && !baseDoorPrompt && !activeQuestObjectId && !missionNpc && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
@@ -315,7 +316,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               <button type="button" onClick={() => setInspected(null)}>Continuar explorando</button>
             </div>}
             {rosettaOpen && <RosettaGuide save={save} onClose={() => setRosettaOpen(false)}
-              onOpenInventory={() => { setRosettaOpen(false); setDrawer(null) }}
+              onOpenInventory={() => { setRosettaOpen(false); setDrawer(null); setBackpackOpen(true) }}
               onShowPaths={() => { setRosettaOpen(false); setDrawer(null); setRosettaPathsPinned(true) }}
               onOpenQuests={() => { setRosettaOpen(false); setDrawer(null) }} />}
             {dialogue && <DialogueBox save={save} presence={dialogue} onClose={() => setDialogue(null)} />}
