@@ -140,3 +140,13 @@
 /* Enemy dice have a distinct accent and share existing accessible motion behavior. */
 .battle-dice-platform.is-enemy-roll { border-color: #b96f72; box-shadow: 0 0 16px #bf47583b, inset 0 0 18px #37152244; }
 .battle-dice-platform.is-enemy-roll .die-icon__shape { fill: #53303b; stroke: #f1a3a3; }
+
+/* Visual suspense: don't reveal the new HP values while a logged die is rolling. */
+.pixel-battle--dice-pending .pixel-battle__enemy-bar i,
+.pixel-battle--dice-pending .pixel-battle__meter i { opacity: .15; }
+.pixel-battle--dice-pending .pixel-battle__stats label span { filter: blur(4px); user-select: none; }
+.pixel-battle--dice-pending .pixel-battle__enemy.is-hit,
+.pixel-battle--dice-pending .pixel-battle__hero.is-hit { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .pixel-battle--dice-pending .pixel-battle__stats label span { filter: none; }
+}
