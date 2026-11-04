@@ -78,7 +78,7 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
   const [rosettaHovered, setRosettaHovered] = useState(false)
   const [rosettaFocused, setRosettaFocused] = useState(false)
   // Rosetta's hovered/pinned white preview takes precedence; accepted paths remain separate.
-  const showRosettaPreview = rosettaHovered || rosettaFocused || showQuestRoutes
+  const showRosettaPreview = (rosettaHovered || rosettaFocused || showQuestRoutes) && questRoutes.length > 0
   const showingTracked = showTrackedQuestRoute && !showRosettaPreview
   const visibleRoutes: readonly RosettaQuestRoute[] = showingTracked
     ? trackedQuestRoute ? [trackedQuestRoute] : [] : questRoutes
