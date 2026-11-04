@@ -33,7 +33,7 @@ export type RosettaQuestRoute = {
   id: string; npcId: string | null; locationId: string; player: boolean
   questIds: string[]; titles: string[]
   /** Presentation metadata: an exclusively secondary destination stays blue in previews. */
-  tone?: 'gold' | 'blue'
+  tone?: 'gold' | 'blue' | 'green'
   opacity?: number
 }
 
