@@ -43,7 +43,7 @@ export const waveEncounter = (catalog: ContentCatalog, requestedWave: number): E
 
 export const createWaveBattle = (save: GameSave, catalog: ContentCatalog, wave: number): BattleState => {
   const requested = Number.isSafeInteger(wave) && wave > 0 ? wave : 1
-  const battle = createBattle(save, waveEncounter(catalog, requested), catalog)
+  const battle = createBattle(save, waveEncounter(catalog, requested), catalog, undefined, { manualInitiative: true })
   const difficulty = Math.min(50, 1 + (requested - 1) * 0.14)
   for (const enemy of Object.values(battle.combatants).filter((actor) => actor.side === 'enemy')) {
     enemy.maxHp = Math.max(1, Math.ceil(enemy.maxHp * difficulty))
