@@ -64,25 +64,29 @@ describe('Rosetta orienta usando apenas dados do save', () => {
     expect(ids).not.toContain('main_astravel_corruption')
     expect(routes.find((route) => route.npcId === 'npc_street_arlen')?.questIds).toHaveLength(2)
     expect(new Set(ids).size).toBe(ids.length)
+    expect(routes.every((route) => route.tone === 'white' && route.opacity === 1)).toBe(true)
     expect(save).toEqual(before)
   })
 
-  it('leva o tutorial à mochila, Mercado e forja e leva combate ao Portal e entrega ao responsável', () => {
+  it('orienta apenas ofertas ainda não aceitas e deixa missões ativas para rastreamento do diário', () => {
     const save = fresh()
+    save.quests.side_street_arlen.status = 'available'
     save.quests.rosetta_tutorial_equip.status = 'active'
     save.quests.rosetta_tutorial_supply.status = 'active'
     save.quests.rosetta_tutorial_refine.status = 'active'
     save.quests.vs_astravel_first_contact.status = 'active'
-    save.quests.vs_astravel_first_contact.objectives.talk_eldamar = 1
-    save.quests.side_street_arlen.status = 'ready_to_turn_in'
-    const routes = getRosettaQuestRoutes(save, content)
-    expect(routes.find((route) => route.questIds.includes('rosetta_tutorial_equip'))?.locationId).toBe('location_terran_bond_workshop')
-    expect(routes.find((route) => route.questIds.includes('rosetta_tutorial_supply'))?.player).toBe(true)
-    save.quests.rosetta_tutorial_supply.objectives.wear_armor = 1
-    expect(getRosettaQuestRoutes(save, content).find((route) => route.questIds.includes('rosetta_tutorial_supply'))?.locationId).toBe('location_terran_bond_workshop')
-    expect(routes.find((route) => route.questIds.includes('rosetta_tutorial_refine'))?.locationId).toBe('location_terran_forge')
-    expect(routes.find((route) => route.questIds.includes('vs_astravel_first_contact'))?.locationId).toBe('location_terran_portal_plaza')
-    expect(routes.find((route) => route.questIds.includes('side_street_arlen'))?.npcId).toBe('npc_street_arlen')
+    save.quests.vs_astravel_first_contact.tracked = true
+    save.quests.side_npc_daeryn.status = 'ready_to_turn_in'
+    const offered = getRosettaQuestRoutes(save, content)
+    const ids = offered.flatMap((route) => route.questIds)
+    expect(ids).toContain('side_street_arlen')
+    expect(ids).not.toContain('rosetta_tutorial_equip')
+    expect(ids).not.toContain('rosetta_tutorial_supply')
+    expect(ids).not.toContain('rosetta_tutorial_refine')
+    expect(ids).not.toContain('vs_astravel_first_contact')
+    expect(ids).not.toContain('side_npc_daeryn')
+    expect(offered.every((route) => route.tone === 'white' && route.opacity === 1)).toBe(true)
+    expect(getTrackedQuestRoute(save, content)?.questId).toBe('vs_astravel_first_contact')
   })
   it('resolve rota principal dourada do jogador para o objetivo e NPC de entrega', () => {
     const save = fresh()

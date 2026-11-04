@@ -9,6 +9,16 @@ import { QuestGrid } from './QuestGrid'
 afterEach(() => { cleanup(); useGameStore.getState().resetSession() })
 
 describe('Registro visual de missões', () => {
+  it('não mostra ofertas não aceitas e conserva categorias vazias em linhas cinzas', () => {
+    const save = createNewSave('new-player', 'Terrírian', 'character.terririan.default', content)
+    render(<MemoryRouter><QuestGrid save={save} /></MemoryRouter>)
+    expect(screen.queryByRole('button', { name: 'Detalhes da missão O Primeiro Rastro' })).not.toBeInTheDocument()
+    expect(screen.queryByText('O Primeiro Rastro')).not.toBeInTheDocument()
+    const rows = document.querySelectorAll('.quest-row--empty')
+    expect(rows.length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByRole('button', { name: 'Secundárias 0' })).toHaveAttribute('data-empty', 'true')
+  })
+
   it('mostra missões em linhas e abre objetivos e recompensas apenas por interação', () => {
     const save = createNewSave('quest-owner', 'Lysa', 'character.terririan.default', content)
     save.quests.vs_astravel_first_contact.status = 'active'

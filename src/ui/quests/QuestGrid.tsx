@@ -3,7 +3,7 @@ import { useId, useState } from 'react'
 import { content } from '../../content/catalog'
 import type { QuestCategory } from '../../content/types'
 import type { GameSave } from '../../domain/game/types'
-import { getQuestJournalEntries, getQuestJournalGroups, getQuestStatusLabel, getSuggestedQuest, getTrackedQuestEntries, type QuestJournalEntry } from '../../domain/quests/questSelectors'
+import { getQuestJournalEntries, getQuestJournalGroups, getQuestStatusLabel, getTrackedQuestEntries, type QuestJournalEntry } from '../../domain/quests/questSelectors'
 import { useGameStore } from '../../state/gameStore'
 import { getRosettaGuidance, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 import { QuestContextNote } from './QuestContextNote'
@@ -68,9 +68,20 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
   const filtered = entries.filter(({ definition, progress }) =>
     category === 'all' || (category === 'completed' ? progress.status === 'completed' :
       progress.status !== 'completed' && definition.category === category))
-  const groups = getQuestJournalGroups(filtered)
+  const existingGroups = getQuestJournalGroups(filtered)
+  // Keep consistent horizontal rows even when the corresponding mission category is empty.
+  const groups = category === 'all'
+    ? [
+        ...([
+          { id: 'main', label: 'Missão principal' },
+          { id: 'secondary', label: 'Secundárias' },
+        ].map((section) => existingGroups.find((group) => group.id === section.id) ?? { ...section, entries: [] as QuestJournalEntry[] })),
+        ...existingGroups.filter((group) => group.id !== 'main' && group.id !== 'secondary'),
+      ]
+    : existingGroups
   const current = getTrackedQuestEntries(save, content)[0]
-  const suggested = current ?? getSuggestedQuest(save, content)
+  const suggested = current ?? entries.find(({ progress }) => progress.status === 'ready_to_turn_in')
+    ?? entries.find(({ progress }) => progress.status === 'active') ?? null
   const guidance = getRosettaGuidance(save, content)
   const recommendation = current
     ? [...guidance.ready, ...guidance.inProgress].find((entry) => entry.id === current.progress.questId) ?? guidance.next
@@ -106,9 +117,8 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
         const count = filter.id === 'all' ? entries.length : entries.filter(({ definition, progress }) =>
           filter.id === 'completed' ? progress.status === 'completed' :
             definition.category === filter.id && progress.status !== 'completed').length
-        if (compact && count === 0 && filter.id !== 'all') return null
         return <button type="button" key={filter.id} aria-pressed={category === filter.id}
-          className={category === filter.id ? 'active' : ''} onClick={() => { setCategory(filter.id); setSelectedId(null) }}>
+          className={category === filter.id ? 'active' : ''} data-empty={count === 0} onClick={() => { setCategory(filter.id); setSelectedId(null) }}>
           {filter.label} <small>{count}</small>
         </button>
       })}
@@ -139,8 +149,10 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
             </button>
             {selected && <QuestDetails entry={entry} save={save} onTrack={() => setTracked(progress.questId, !progress.tracked)} />}
           </div>
-        })}</div>
+        })}{group.entries.length === 0 && <div className="quest-row quest-row--empty" aria-disabled="true">
+          Nenhuma missão nesta etapa
+        </div>}</div>
       </section>)}
-    </div> : <div className="quest-board__empty"><X size={22} /> Nenhuma missão nesta categoria. Aceite as ofertas com os NPCs.</div>}
+    </div> : <div className="quest-board__empty quest-row--empty"><X size={22} /> Nenhuma missão nesta categoria.</div>}
   </section>
 }

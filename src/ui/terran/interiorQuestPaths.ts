@@ -8,7 +8,7 @@ import type { TerranInteriorId } from './roomContent'
 export type InteriorQuestPath = {
   id: string
   questIds: string[]
-  tone: 'gold' | 'blue' | 'green'
+  tone: 'gold' | 'blue' | 'green' | 'white'
   opacity: number
   targetKind: 'npc' | 'service' | 'exit'
   d: string

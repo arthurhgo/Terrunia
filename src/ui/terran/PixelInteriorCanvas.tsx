@@ -49,8 +49,10 @@ export function PixelInteriorCanvas({
   const residents = getInteriorResidents(save, locationId)
   const furniture = roomFurniture[locationId]
   const plan = getRoomPlan(locationId)
-  const activeRoutes: readonly RosettaQuestRoute[] = showTrackedQuestRoute
-    ? trackedQuestRoute ? [trackedQuestRoute] : [] : showQuestRoutes ? questRoutes : []
+  const showRosettaPreview = showQuestRoutes && questRoutes.length > 0
+  const showingTracked = showTrackedQuestRoute && !showRosettaPreview
+  const activeRoutes: readonly RosettaQuestRoute[] = showRosettaPreview ? questRoutes
+    : showingTracked && trackedQuestRoute ? [trackedQuestRoute] : []
   const routesRef = useRef(activeRoutes)
   const routeElementsRef = useRef(new Map<string, SVGPathElement>())
   routesRef.current = activeRoutes
@@ -229,8 +231,8 @@ export function PixelInteriorCanvas({
       className="pixel-interior__canvas" onPointerDown={pointerWalk}
       aria-label={`Interior pixelado de ${getRoomName(locationId)}; caminhe, aproxime-se dos NPCs e pressione E`} />
     {activeRoutes.length > 0 && <svg className="pixel-interior__quest-paths" viewBox="0 0 384 256"
-      preserveAspectRatio="none" role="img" aria-label={showTrackedQuestRoute ? 'Caminho pontilhado da missão no interior' : 'Caminhos de Rosetta dentro da casa'}
-      data-route-mode={showTrackedQuestRoute ? 'tracked' : 'rosetta'} data-reduced-motion={save.settings.reducedMotion}>
+      preserveAspectRatio="none" role="img" aria-label={showingTracked ? 'Caminho pontilhado da missão no interior' : 'Caminhos brancos de Rosetta dentro da casa'}
+      data-route-mode={showingTracked ? 'tracked' : 'rosetta'} data-reduced-motion={save.settings.reducedMotion}>
       {getInteriorQuestPaths(locationId, playerRef.current, residents, activeRoutes).map((route) =>
         <path key={route.id} ref={(element) => { if (element) routeElementsRef.current.set(route.id, element); else routeElementsRef.current.delete(route.id) }}
           d={route.d} data-quest-ids={route.questIds.join(' ')} data-route-tone={route.tone}

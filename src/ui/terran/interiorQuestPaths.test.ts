@@ -52,8 +52,8 @@ describe('Rastreamento de missões dentro de casas', () => {
     const room = 'location_terran_daeryn_house' as const
     const paths = getInteriorQuestPaths(room, getRoomPlan(room).spawn,
       getInteriorResidents(save, room), getRosettaQuestRoutes(save, content))
-    expect(paths.some((route) => route.tone === 'gold')).toBe(true)
-    expect(paths.some((route) => route.tone === 'blue' && route.opacity === 0.2)).toBe(true)
+    expect(paths.some((route) => route.tone === 'white' && route.opacity === 1)).toBe(true)
+    expect(paths.every((route) => route.tone === 'white')).toBe(true)
     const equip = { id: 'equip-in-mochila', npcId: null, locationId: room, player: true, questIds: ['equip'], titles: ['Equipar'] }
     expect(resolveInteriorRouteTarget(room, getInteriorResidents(save, room), equip)).toBeNull()
   })

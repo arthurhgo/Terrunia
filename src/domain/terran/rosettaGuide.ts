@@ -32,8 +32,8 @@ const locationForNpc = (npcId: string, catalog: ContentCatalog) => {
 export type RosettaQuestRoute = {
   id: string; npcId: string | null; locationId: string; player: boolean
   questIds: string[]; titles: string[]
-  /** Presentation metadata: an exclusively secondary destination stays blue in previews. */
-  tone?: 'gold' | 'blue' | 'green'
+  /** Rosetta's unaccepted opportunities are shown in white. */
+  tone?: 'white' | 'gold' | 'blue' | 'green'
   opacity?: number
 }
 
@@ -42,30 +42,19 @@ export function getRosettaQuestRoutes(save: GameSave, catalog: ContentCatalog): 
   const routes = new Map<string, RosettaQuestRoute>()
   for (const quest of Object.values(catalog.quests)) {
     if (!['main', 'secondary', 'bounty'].includes(quest.category)) continue
-    const progress = save.quests[quest.id]
-    if (!progress || !['available', 'offered', 'active', 'ready_to_turn_in'].includes(progress.status)) continue
-    let npcId: string | null = progress.status === 'ready_to_turn_in' ? quest.turnInNpcId : quest.giverNpcId
-    let locationId = getRosettaNpcLocation(npcId, catalog)
-    let player = false
-    if (progress.status === 'active') {
-      const objective = quest.objectives.find((entry) => (progress.objectives[entry.id] ?? 0) < entry.required)
-      npcId = null
-      if (objective?.type === 'equip') player = true
-      else if (objective?.type === 'purchase') { npcId = 'npc_neris'; locationId = 'location_terran_bond_workshop' }
-      else if (objective?.type === 'refine') { npcId = 'npc_durnan'; locationId = 'location_terran_forge' }
-      else if (objective?.type === 'talk' && catalog.npcs[objective.targetId]) { npcId = objective.targetId; locationId = getRosettaNpcLocation(npcId, catalog) }
-      else locationId = quest.terranFlow?.active ?? 'location_terran_portal_plaza'
-    }
-    if (npcId === 'npc_rosetta') continue // Rosetta is already the origin of the guidance.
-    const id = player ? 'player:inventory' : npcId ? `npc:${npcId}` : `location:${locationId}`
-    const sideQuest = quest.category === 'secondary' || quest.category === 'bounty'
+    const status = save.quests[quest.id]?.status
+    // Opportunities only: accepted missions use the journal's own tracked path.
+    if (status !== 'available' && status !== 'offered') continue
+    const npcId = quest.giverNpcId
+    if (npcId === 'npc_rosetta') continue // Rosetta is the guide and the path origin.
+    const locationId = getRosettaNpcLocation(npcId, catalog)
+    const id = 'npc:' + npcId
     const route = routes.get(id) ?? {
-      id, npcId, locationId, player, questIds: [], titles: [],
-      tone: sideQuest ? 'blue' as const : 'gold' as const, opacity: sideQuest ? 0.2 : 1,
+      id, npcId, locationId, player: false, questIds: [], titles: [],
+      tone: 'white' as const, opacity: 1,
     }
-    // Shared main/side destinations are displayed as gold so main story is never suppressed.
-    if (!sideQuest) { route.tone = 'gold'; route.opacity = 1 }
-    route.questIds.push(quest.id); route.titles.push(quest.title)
+    route.questIds.push(quest.id)
+    route.titles.push(quest.title)
     routes.set(id, route)
   }
   return [...routes.values()]

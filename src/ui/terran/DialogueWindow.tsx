@@ -5,6 +5,7 @@ import type { QuestDefinition } from '../../content/types'
 import { buildNpcConversation } from '../../domain/terran/npcConversation'
 import { AssetImage } from '../components/AssetImage'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
+import './dialogueWindow.css'
 
 function Conversation({ save, portraitAssetId, title, lines, quest }: {
   save: GameSave; portraitAssetId: string; title: string; lines: string[]; quest?: QuestDefinition
@@ -12,6 +13,8 @@ function Conversation({ save, portraitAssetId, title, lines, quest }: {
   const conversation = buildNpcConversation(save, portraitAssetId, lines, quest)
   const [nodeId, setNodeId] = useState(conversation.startId)
   const [reply, setReply] = useState('')
+  const [optionsOpen, setOptionsOpen] = useState(false)
+  const repliesId = useId()
   const speech = useRef<HTMLDivElement>(null)
   const scroll = useRef<HTMLDivElement>(null)
   const node = conversation.nodes[nodeId] ?? conversation.nodes[conversation.startId]
@@ -21,13 +24,19 @@ function Conversation({ save, portraitAssetId, title, lines, quest }: {
       <div ref={speech} className="vn-speech" tabIndex={-1} role="status" aria-live="polite" aria-atomic="true"><p>{node.text}</p></div>
       <div className="vn-player-reply"><div className="vn-cast__player"><EquippedCharacter save={save} /></div>
         <span><strong>{save.character.name}</strong>{reply || 'Escolha sua resposta.'}</span></div>
-      <div className="vn-replies" role="group" aria-label={`Respostas para ${title}`}>
-        {node.choices.map((choice) => <button type="button" key={choice.id} onClick={() => {
-          setReply(choice.label); setNodeId(choice.nextId)
-          if (scroll.current) scroll.current.scrollTop = 0
-          speech.current?.focus({ preventScroll: true })
-        }}><span aria-hidden="true">›</span>{choice.label}</button>)}
-      </div>
+      {node.choices.length > 0 && <div className="vn-reply-picker">
+        <button type="button" className="vn-reply-toggle" aria-expanded={optionsOpen}
+          aria-controls={repliesId} onClick={() => setOptionsOpen((value) => !value)}>
+          Responder <span aria-hidden="true">{optionsOpen ? "⌃" : "⌄"}</span>
+        </button>
+        {optionsOpen && <div id={repliesId} className="vn-replies" role="group" aria-label={`Respostas para ${title}`}>
+          {node.choices.map((choice) => <button type="button" key={choice.id} onClick={() => {
+            setReply(choice.label); setNodeId(choice.nextId); setOptionsOpen(false)
+            if (scroll.current) scroll.current.scrollTop = 0
+            speech.current?.focus({ preventScroll: true })
+          }}><span aria-hidden="true">›</span>{choice.label}</button>)}
+        </div>}
+      </div>}
     </div>
   </div>
 }
@@ -59,7 +68,7 @@ export function DialogueWindow({ open = true, save, title, portraitAssetId, eyeb
   }, [open])
   if (!open) return null
   return createPortal(<div className="vn-overlay">
-    <div ref={panel} tabIndex={-1} role="dialog" aria-modal="true" aria-label={ariaLabel} aria-labelledby={ariaLabel ? undefined : titleId} className={`vn-dialog ${className}`}>
+    <div ref={panel} tabIndex={-1} role="dialog" aria-modal="true" aria-label={ariaLabel} aria-labelledby={ariaLabel ? undefined : titleId} data-has-details={Boolean(children)} className={`vn-dialog ${className}`}>
       <section className="vn-textbox">
         <header><div>{eyebrow && <span className="eyebrow">{eyebrow}</span>}<h2 id={titleId}>{title}</h2></div>
           <button type="button" className="vn-close" aria-label="Encerrar diálogo" onClick={onClose}>×</button></header>

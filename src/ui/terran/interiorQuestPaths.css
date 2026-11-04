@@ -36,3 +36,8 @@
   stroke: #62ff9b; stroke-width: 2.4; stroke-dasharray: 4 4; opacity: 1;
   filter: drop-shadow(0 0 3px #43ff95);
 }
+
+.pixel-interior__quest-paths path[data-route-tone="white"] {
+  stroke: #f4fbff; stroke-width: 2.1; stroke-dasharray: 4 5; opacity: 1;
+  filter: drop-shadow(0 0 3px #e5faff);
+}

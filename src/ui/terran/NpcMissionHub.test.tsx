@@ -25,6 +25,8 @@ describe('NPC — janela única, missão primeiro', () => {
     expect(within(dialog).queryByRole('group', { name: 'Respostas para Vorren' })).not.toBeInTheDocument()
     expect(within(dialog).getByRole('group', { name: 'Confirmar missão: O Livro das Criaturas' })).toBeInTheDocument()
     fireEvent.click(within(dialog).getByRole('button', { name: /Conversar com Vorren/ }))
+    expect(within(dialog).queryByRole('group', { name: 'Respostas para Vorren' })).not.toBeInTheDocument()
+    fireEvent.click(within(dialog).getByRole('button', { name: /Responder/ }))
     expect(within(dialog).getByRole('group', { name: 'Respostas para Vorren' })).toBeInTheDocument()
     expect(screen.getAllByRole('dialog')).toHaveLength(1)
     fireEvent.click(within(dialog).getByRole('button', { name: /O Livro das Criaturas/ }))

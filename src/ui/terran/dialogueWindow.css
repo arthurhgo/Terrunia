@@ -1,0 +1,97 @@
+/* v0.5.1: same centered, responsive shell for every NPC dialogue. */
+.vn-overlay:has(.vn-dialog) {
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  box-sizing: border-box;
+  background: #020914c9;
+}
+.vn-overlay .vn-dialog {
+  box-sizing: border-box;
+  flex: 0 1 860px;
+  width: min(860px, calc(100vw - 24px));
+  height: min(620px, calc(100dvh - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+}
+.vn-overlay .vn-dialog .vn-textbox {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+.vn-overlay .vn-dialog .vn-textbox > header,
+.vn-overlay .vn-dialog .vn-textbox > footer { flex: 0 0 auto; }
+.vn-overlay .vn-dialog[data-has-details="true"] .vn-conversation {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: min(210px, 34dvh);
+  overflow-y: auto;
+}
+.vn-overlay .vn-dialog[data-has-details="false"] .vn-conversation {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+}
+.vn-overlay .vn-dialog .vn-details {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.vn-overlay .npc-mission-hub .vn-details { padding: 10px; overflow: hidden; }
+.vn-overlay .npc-mission-hub .npc-mission-hub__content {
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+}
+.vn-overlay .npc-mission-hub .npc-mission-hub__topics,
+.vn-overlay .npc-mission-hub .npc-mission-hub__detail {
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+}
+.vn-reply-picker { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; }
+.vn-reply-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  min-height: 32px;
+  padding: 6px 13px;
+  border: 1px solid #b59863;
+  background: #26413e;
+  color: #ffdfac;
+  font: 700 .72rem var(--display);
+  cursor: pointer;
+}
+.vn-reply-toggle:hover, .vn-reply-toggle:focus-visible { border-color: #f7d18b; background: #35534a; }
+.vn-reply-toggle[aria-expanded="true"] { background: #365448; }
+.vn-reply-picker > .vn-replies {
+  width: 100%;
+  grid-template-columns: 1fr;
+  max-height: min(175px, 26dvh);
+  overflow-y: auto;
+  scrollbar-color: #987c4c #0e2530;
+}
+.vn-reply-picker .vn-replies button { min-height: 30px; padding: 6px 9px; }
+@media(max-height: 540px) {
+  .vn-overlay .vn-dialog[data-has-details="true"] .vn-conversation { max-height: 30dvh; }
+  .vn-overlay .vn-dialog .vn-conversation .vn-cast__npc { width: 54px; height: 54px; }
+  .vn-overlay .vn-dialog .vn-conversation { grid-template-columns: 54px minmax(0,1fr); gap: 8px; padding: 7px 10px; }
+  .vn-overlay .vn-dialog .vn-conversation .vn-speech { min-height: 44px; padding: 7px 9px; }
+}
+@media(max-width:580px) {
+  .vn-overlay:has(.vn-dialog) { padding: 6px; }
+  .vn-overlay .vn-dialog { width: calc(100vw - 12px); height: calc(100dvh - 12px); max-height: calc(100dvh - 12px); }
+  .vn-overlay .npc-mission-hub .vn-details { overflow-y: auto; }
+  .vn-overlay .npc-mission-hub .npc-mission-hub__content { max-height: none; height: auto; }
+  .vn-overlay .npc-mission-hub .npc-mission-hub__topics { max-height: 20dvh; }
+  .vn-overlay .npc-mission-hub .npc-mission-hub__detail { max-height: none; overflow-y: visible; }
+}
