@@ -312,7 +312,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           </span>}
         </button>)}
       </div>
-      <div className="pixel-battle__turn-order" aria-label="Ordem de turnos">
+      {battle.phase !== 'AwaitingInitiative' && <div className="pixel-battle__turn-order" aria-label="Ordem de turnos">
         {battle.initiativeOrder.map((id) => {
           const actor = battle.combatants[id]
           return <span key={id} className={`${id === battle.actorId ? 'is-current' : ''} ${!actor.alive ? 'is-dead' : ''}`}
@@ -321,7 +321,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             {actor.side === 'player' ? '★' : '✦'}<b>{actor.initiative}</b>
           </span>
         })}
-      </div>
+      </div>}
       {activeDice && <BattleDicePlatform key={activeDice.id} roll={activeDice} reducedMotion={reducedMotion}
           awaitingClick={diceAwaitingClick} onRoll={clickPlayerDie} />}
       {(turnCue || turnAnnouncement) && !defeated && !activeDice && <div className="pixel-battle__turn-cue" role="status">
