@@ -249,7 +249,8 @@ export function PixelInteriorCanvas({
           <NpcNameplate presence={resident.presence} />
           <NpcMarker state={resident.marker} phase={resident.markerPhase} />
         </button>)}
-      {furniture.map((item) => <button type="button" key={item.id}
+      {furniture.filter((item) => !(locationId === PLAYER_HOME_INTERIOR_ID && item.id === 'home_bed'))
+        .map((item) => <button type="button" key={item.id}
         className={`pixel-interior__furniture ${item.behavior === 'quest' ? 'pixel-interior__furniture--quest' : ''}`}
         disabled={!enabled} data-quest-object={item.questId}
         aria-label={`Interagir com ${item.name}`} title={item.description}
@@ -262,7 +263,12 @@ export function PixelInteriorCanvas({
         className="pixel-interior__service"
         style={{ left: `${plan.service.x / 384 * 100}%`, top: `${plan.service.y / 256 * 100}%` }}
         aria-label={locationId === PLAYER_HOME_INTERIOR_ID ? 'Cama · descansar e recuperar' : 'Abrir serviços do local'}
-        onClick={onServices}>
+        onClick={() => {
+          // A cama é um objeto do mundo: clicar nela aproxima o personagem
+          // antes de descansar, em vez de curar de qualquer ponto da sala.
+          if (locationId === PLAYER_HOME_INTERIOR_ID) walkTo(plan.service, 'services')
+          else onServices()
+        }}>
         {locationId === PLAYER_HOME_INTERIOR_ID
           ? <span className="pixel-interior__bed-label"><strong>Cama</strong><small>descansar e recuperar</small></span>
           : 'Serviços'}
