@@ -189,7 +189,8 @@ describe('vertical slice integrada', () => {
         store().turnInQuest('vs_astravel_first_contact', 'npc_eldamar')
         visit('location_terran_daeryn_house')
         accept('main_terran_first_home')
-        store().preparePlayerHome()
+        store().performTerranQuestTask('main_terran_first_home', 'daeryn_healing_shelf',
+          ['consumable_minor_tonic', 'consumable_simple_ether', 'consumable_antidote'])
         expect(store().save!.quests.main_terran_first_home.status).toBe('ready_to_turn_in')
         store().turnInQuest('main_terran_first_home', 'npc_daeryn')
         expect(store().save!.inventory.some((item) => item.definitionId === 'quest_daeryn_home_key')).toBe(true)

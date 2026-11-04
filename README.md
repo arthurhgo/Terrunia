@@ -14,6 +14,10 @@ A proteção simples equipada agora é transferida da mochila para um **slot per
 
 A proteção simples equipada deixa de ocupar espaço visual na grade da mochila (sem apagar a instância salva). Missões rastreadas e caminhos de Rosetta continuam dentro das casas, até NPCs ou saídas, com linhas douradas e azuis de sidequests. NPCs exibem título/função em linha itálica menor sob o nome. [Documento v0.18](docs/INTERIOR_QUEST_PATHS_EQUIPPED_NPC_LABELS_v0.18.md).
 
+## Objetos interativos, minigames e diálogo de NPC v0.25
+
+As missões de Terran de interação local passaram a depender de móveis clicáveis e de uma atividade resolvida (poções na estante de Daeryn, bestiário em livros de Vorren, marca investigativa de Astravél e ecos no Salão dos Clãs). A janela de NPC apresenta **missões primeiro** e **Conversar** na mesma lista. A cama mostra o subtítulo `descansar e recuperar`. [Contrato v0.25](docs/QUEST_OBJECT_MINIGAMES_NPC_DIALOG_v0.25.md).
+
 ## Base com chave obrigatória e lateral fixa v0.24
 
 O acesso à Base foi corrigido para exigir **uso comprovado da Chave de Daeryn na porta**, revogando desbloqueios automáticos de saves legados. A lateral de Terran agora mostra **Missões fixas acima da Mochila**, paginadas e sem rolagem, sem as abas redundantes Menu/Local. [Contrato v0.24](docs/BASE_KEY_STRICT_FIXED_SIDEBAR_v0.24.md).

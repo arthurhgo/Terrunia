@@ -4,6 +4,7 @@ import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import { BOUND_SLOTS, BOUND_SLOT_LABELS } from '../../domain/shared/types'
 import { EquipmentCatalog } from '../dashboard/EquipmentCatalog'
+import './eldamarBookshelf.css'
 
 type RecordTab = 'manual' | 'arsenal' | 'foundations'
 
@@ -46,15 +47,24 @@ const guide = [
 
 /** Reference-only world archive; opening it never changes the character or inventory. */
 export function EldamarRecords({ save }: { save: GameSave }) {
-  const [tab, setTab] = useState<RecordTab>('manual')
+  const [tab, setTab] = useState<string>('manual')
+  const selectedChapter = tab.startsWith('chapter_') ? guide[Number(tab.slice(8))] : null
+  const shelfBooks = [...pages, ...guide.map((section, index) => ({ id: `chapter_${index}`, label: `Caderno ${index + 1} · ${section.title}` }))]
   return <section className="eldamar-records" aria-label="Arquivo da Estante dos Registros de Eldamar">
     <p className="eldamar-records__intro"><ScrollText size={17} aria-hidden="true" />
       Documentos de referência guardados na Casa de Eldamar. A leitura não concede equipamentos nem altera seu progresso.</p>
-    <div className="eldamar-records__tabs" role="group" aria-label="Seções dos registros">
-      {pages.map((page) => <button key={page.id} type="button"
-        className={tab === page.id ? 'active' : ''}
-        aria-pressed={tab === page.id} onClick={() => setTab(page.id)}>{page.label}</button>)}
+    <div className="eldamar-records__tabs eldamar-records__bookshelf" role="group" aria-label="Seções dos registros">
+      {shelfBooks.map((page, index) => <button key={page.id} type="button"
+        className={tab === page.id ? 'active' : ''} title={page.label}
+        aria-pressed={tab === page.id} onClick={() => setTab(page.id)}>
+        <span className="eldamar-records__spine" data-book-color={index % 5}>{page.label}</span>
+      </button>)}
     </div>
+    {selectedChapter && <article className="eldamar-records__selected-book" aria-label={'Livro aberto: ' + selectedChapter.title}>
+      <p className="eyebrow">ESTANTE DE ELDAMAR · VOLUME ABERTO</p>
+      <h3><BookOpen size={19} /> {selectedChapter.title}</h3>
+      <p>{selectedChapter.content}</p>
+    </article>}
     {tab === 'manual' && <div className="eldamar-records__manual">
       <h3><BookOpen size={18} aria-hidden="true" /> Manual de Terrúnia</h3>
       {guide.map((section) => <details key={section.title}>

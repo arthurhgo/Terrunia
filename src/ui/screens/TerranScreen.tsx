@@ -14,7 +14,6 @@ import { ClanHallPanel } from '../dashboard/ClanHallPanel'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { NpcDialog } from '../dashboard/NpcDialog'
 import { PortalPanel } from '../dashboard/PortalPanel'
-import { SocialQuestDialog } from '../dashboard/SocialQuestDialog'
 import { DialogueWindow } from '../terran/DialogueWindow'
 import { ForgePanel } from '../terran/ForgePanel'
 import { getPresencePortrait } from '../../content/npcVisuals'
@@ -23,13 +22,15 @@ import { GameShell } from '../components/GameShell'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { PixelCityCanvas } from '../terran/PixelCityCanvas'
 import { PixelInteriorCanvas } from '../terran/PixelInteriorCanvas'
+import { QuestObjectPuzzle } from '../terran/QuestObjectPuzzle'
+import { NpcMissionHub } from '../terran/NpcMissionHub'
 import { getNpcSubtitle } from '../terran/NpcNameplate'
 import { EldamarRecords } from '../terran/EldamarRecords'
 import { RosettaGuide } from '../terran/RosettaGuide'
 import { TerranCharacterHud } from '../terran/TerranCharacterHud'
 import { TerranQuickJournal } from '../terran/TerranQuickJournal'
 import { hasTerranInterior } from '../terran/interiorLayout'
-import { getRoomName, PLAYER_HOME_DOOR, PLAYER_HOME_INTERIOR_ID, type RoomFurniture, type TerranInteriorId } from '../terran/roomContent'
+import { getRoomName, PLAYER_HOME_DOOR, PLAYER_HOME_INTERIOR_ID, roomFurniture, type RoomFurniture, type TerranInteriorId } from '../terran/roomContent'
 import { streetNpcPlacements } from '../../content/streetNpcs'
 import type { WorldPoint } from '../terran/pixelCityArt'
 import { getCityCast } from '../terran/cityCast'
@@ -104,12 +105,13 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [eldamarOpen, setEldamarOpen] = useState(false)
   const [rosettaOpen, setRosettaOpen] = useState(false)
   const [rosettaPathsPinned, setRosettaPathsPinned] = useState(false)
-  const [socialQuestId, setSocialQuestId] = useState<string | null>(null)
   const [dialogue, setDialogue] = useState<Presence | null>(null)
   const [localQuestId, setLocalQuestId] = useState<string | null>(null)
   const [marketNpc, setMarketNpc] = useState<Presence | null>(null)
   const [cityLandmark, setCityLandmark] = useState<TerranLandmark | null>(null)
   const [baseDoorPrompt, setBaseDoorPrompt] = useState(false)
+  const [activeQuestObjectId, setActiveQuestObjectId] = useState<string | null>(null)
+  const [missionNpc, setMissionNpc] = useState<{ presence: Presence; questId: string; sourceId: TerranLocationId } | null>(null)
 
   useEffect(() => {
     if (drawer) drawerRef.current?.scrollTo?.({ top: 0, behavior: 'auto' })
@@ -134,11 +136,13 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const trackedRoute = getTrackedQuestRoute(save, content)
   const discovered = getDiscoveredTerranLocationIds(save).length
   const location = content.terranLocations[locationId]
-  const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !socialQuestId && !dialogue && !inspected && !cityLandmark && !baseDoorPrompt && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
+  const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !dialogue && !inspected && !cityLandmark && !baseDoorPrompt && !activeQuestObjectId && !missionNpc && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
 
   const openLocation = (id: TerranLocationId) => {
     setStreetSpawn(null)
     setInspected(null)
+    setActiveQuestObjectId(null)
+    setMissionNpc(null)
     travel(id)
     setLocationId(id)
     setLocalQuestId(null)
@@ -174,7 +178,9 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setLocalQuestId(null)
   }
   const inspectFurniture = (furniture: RoomFurniture) => {
-    if (furniture.behavior === 'archive' && interiorId === 'location_terran_eldamar_house') {
+    if (furniture.behavior === 'quest' && furniture.questId) {
+      setActiveQuestObjectId(furniture.questId)
+    } else if (furniture.behavior === 'archive' && interiorId === 'location_terran_eldamar_house') {
       setDrawer('records')
     } else if (furniture.behavior === 'storage') {
       setDrawer('chest')
@@ -195,14 +201,36 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setLocalQuestId(null)
     setMarketNpc(null)
     setInspected(null)
+    setActiveQuestObjectId(null)
+    setMissionNpc(null)
   }
   const talk = (presence: Presence, sourceId: TerranLocationId = locationId) => {
     if (presence.npcId === 'npc_rosetta') {
       travel('location_terran_portal_plaza')
       setLocationId('location_terran_portal_plaza')
       setDialogue(null)
+      setMissionNpc(null)
       setDrawer(null)
       setRosettaOpen(true)
+      return
+    }
+    const isStreetNpc = streetNpcPlacements.some((entry) => entry.id === presence.id)
+    travel(sourceId)
+    setLocationId(sourceId)
+    setLocalQuestId(null)
+    setDialogue(null)
+    setMarketNpc(null)
+    setMissionNpc(null)
+    // The first face of a conversation with an actionable quest is that quest.
+    // Eldamar discovery remains authoritative and is performed before re-reading offers.
+    if (presence.npcId === 'npc_eldamar' && !save.relationships.npc_eldamar.discovered) {
+      useGameStore.getState().discoverEldamar()
+    }
+    const currentSave = useGameStore.getState().save ?? save
+    const quest = presence.npcId ? getNpcActionableQuests(currentSave, presence.npcId, content)[0] : undefined
+    if (quest) {
+      setDrawer(null)
+      setMissionNpc({ presence, questId: quest.id, sourceId })
       return
     }
     if (sourceId === 'location_terran_forge') {
@@ -210,28 +238,17 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
       else openLocation(sourceId)
       return
     }
-    const isStreetNpc = streetNpcPlacements.some((entry) => entry.id === presence.id)
-    travel(sourceId)
-    setLocationId(sourceId)
-    setDrawer('location')
-    setLocalQuestId(null)
     if (sourceId === 'location_terran_bond_workshop' && interiorId === sourceId && isMarketNpc(presence.id)) {
       setMarketNpc(presence)
       setDrawer('market')
       return
     }
-    setMarketNpc(null)
-    const quest = presence.npcId ? getNpcActionableQuests(save, presence.npcId, content)[0] : undefined
-    if (presence.npcId === 'npc_eldamar' && (!quest || quest.id === 'vs_astravel_first_contact')) {
+    if (presence.npcId === 'npc_eldamar') {
       setEldamarOpen(true)
       return
     }
-    if (quest && (quest.category === 'clan' || quest.category === 'class')) {
-      setSocialQuestId(quest.id)
-      return
-    }
-    if (quest) { setLocalQuestId(quest.id); return }
     if (isStreetNpc) setDrawer(null)
+    else setDrawer('location')
     setDialogue(presence)
   }
   const currentLabel = interiorId ? getRoomName(interiorId) : content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
@@ -259,7 +276,12 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
                 showTrackedQuestRoute={Boolean(trackedRoute)} trackedQuestRoute={trackedRoute}
                 onTalk={(presence) => { if (interiorId !== PLAYER_HOME_INTERIOR_ID) talk(presence, interiorId) }}
-                onServices={() => openRoomServices(interiorId)}
+                onServices={() => {
+                  if (interiorId === PLAYER_HOME_INTERIOR_ID) {
+                    const bed = roomFurniture[PLAYER_HOME_INTERIOR_ID].find((furniture) => furniture.id === 'home_bed')
+                    if (bed) inspectFurniture(bed)
+                  } else openRoomServices(interiorId)
+                }}
                 onFurniture={inspectFurniture}
                 onExit={exitInterior} />
               : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} reducedMotion={save.settings.reducedMotion}
@@ -297,9 +319,22 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               onShowPaths={() => { setRosettaOpen(false); setDrawer(null); setRosettaPathsPinned(true) }}
               onOpenQuests={() => { setRosettaOpen(false); setDrawer(null) }} />}
             {dialogue && <DialogueBox save={save} presence={dialogue} onClose={() => setDialogue(null)} />}
+            {missionNpc && <NpcMissionHub save={save} presence={missionNpc.presence}
+              initialQuestId={missionNpc.questId}
+              onClose={() => setMissionNpc(null)}
+              onServices={missionNpc.sourceId === 'location_terran_forge' ||
+                (missionNpc.sourceId === 'location_terran_bond_workshop' && isMarketNpc(missionNpc.presence.id))
+                ? () => {
+                    const from = missionNpc
+                    setMissionNpc(null)
+                    if (from.sourceId === 'location_terran_forge') setDrawer('forge')
+                    else { setMarketNpc(from.presence); setDrawer('market') }
+                  } : undefined} />}
+            {activeQuestObjectId && <QuestObjectPuzzle key={activeQuestObjectId} save={save}
+              questId={activeQuestObjectId} onClose={() => setActiveQuestObjectId(null)} />}
           </section>
           <TerranCharacterHud save={save} />
-          {drawer && <aside ref={drawerRef} className={`terran-game__drawer ${eldamarOpen || socialQuestId || localQuestId || dialogue || drawer === 'market' || drawer === 'forge' ? 'terran-game__drawer--dialogue' : ''}`} aria-label={`Painel lateral: ${activeTitle}`}>
+          {drawer && <aside ref={drawerRef} className={`terran-game__drawer ${eldamarOpen || localQuestId || dialogue || drawer === 'market' || drawer === 'forge' ? 'terran-game__drawer--dialogue' : ''}`} aria-label={`Painel lateral: ${activeTitle}`}>
             <header><span className="eyebrow">NEXO · INTERAÇÃO CONTÍNUA</span><h2>{activeTitle}</h2>
               <button type="button" onClick={() => { setDrawer(null); setLocalQuestId(null) }} aria-label="Fechar painel"><X size={19} /></button>
             </header>
@@ -327,7 +362,6 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
           </div>
         </div>
         <NpcDialog open={eldamarOpen} onClose={() => setEldamarOpen(false)} save={save} />
-        <SocialQuestDialog questId={socialQuestId} save={save} onClose={() => setSocialQuestId(null)} />
         {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId}
           reducedMotion={save.settings.reducedMotion} onComplete={() => recordCutsceneViewed(scene.id)} />}
     </div>

@@ -10,7 +10,8 @@ export type RoomFurniture = {
   id: string
   name: string
   point: WorldPoint
-  behavior: 'inspect' | 'services' | 'rest' | 'storage' | 'archive'
+  behavior: 'inspect' | 'services' | 'rest' | 'storage' | 'archive' | 'quest'
+  questId?: string
   description: string
 }
 
@@ -26,10 +27,12 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
   ],
   location_terran_vorren_post: [
     { id: 'vorren_map', name: 'Mapa de Trilhas', point: { x: 88, y: 194 }, behavior: 'inspect', description: 'Rotas de Astravél estão marcadas junto a anotações de campo e avistamentos.' },
-    { id: 'vorren_bestiary', name: 'Bestiário', point: { x: 301, y: 197 }, behavior: 'services', description: 'Consulta ao Bestiário e aos serviços de Vorren.' },
+    { id: 'vorren_bestiary', name: 'Estante do Bestiário', point: { x: 255, y: 197 }, behavior: 'quest', questId: 'main_vorren_bestiary', description: 'Livros de campo interativos sobre criaturas e vestígios.' },
+    { id: 'vorren_service_desk', name: 'Mesa de Vorren', point: { x: 310, y: 197 }, behavior: 'services', description: 'Consultar os serviços de Vorren.' },
   ],
   location_terran_bond_workshop: [
     { id: 'bond_anvil', name: 'Bigorna Rúnica', point: { x: 82, y: 195 }, behavior: 'inspect', description: 'Uma bigorna marcada por padrões arcanos. Os Vínculos evoluem, não são substituídos.' },
+    { id: 'bond_inscription_table', name: 'Mesa da Marca de Astravél', point: { x: 238, y: 197 }, behavior: 'quest', questId: 'main_lithwynn_signs', description: 'Comparar vestígios e registrar uma hipótese para Lithwynn.' },
     { id: 'bond_station', name: 'Balcão Central do Mercado', point: { x: 310, y: 198 }, behavior: 'services', description: 'Consulte os serviços disponíveis. Para negociar, vender, converter ou evoluir itens, fale diretamente com os NPCs.' },
   ],
   location_terran_zareth_barracks: [
@@ -38,10 +41,12 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
   ],
   location_terran_clan_hall: [
     { id: 'clan_banners', name: 'Estandartes dos Clãs', point: { x: 108, y: 125 }, behavior: 'inspect', description: 'Os estandartes representam caminhos que devem ser conquistados em jogo.' },
+    { id: 'clan_echo_table', name: 'Mesa dos Ecos', point: { x: 192, y: 198 }, behavior: 'quest', questId: 'main_lore_identity_01', description: 'Anotações sobre Personagem, Clã e Classe; interpretar não concede filiação ou disciplina.' },
     { id: 'clan_council', name: 'Mesa dos Representantes', point: { x: 250, y: 193 }, behavior: 'services', description: 'Representantes e mestres apresentam os requisitos de Clã e Classe.' },
   ],
   location_terran_daeryn_house: [
     { id: 'daeryn_herbs', name: 'Jardim de Ervas', point: { x: 96, y: 184 }, behavior: 'inspect', description: 'Ervas e frascos preparados para a recuperação de viajantes.' },
+    { id: 'daeryn_healing_shelf', name: 'Estante de Cura', point: { x: 195, y: 201 }, behavior: 'quest', questId: 'main_terran_first_home', description: 'Organize os frascos de Vida, Mana e Antídoto antes de receber a chave.' },
     { id: 'daeryn_shop', name: 'Balcão de Sylwen', point: { x: 297, y: 194 }, behavior: 'services', description: 'Poções e suprimentos de campo da loja de Sylwen.' },
   ],
   location_terran_portal_plaza: [],

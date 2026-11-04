@@ -10,6 +10,7 @@ import { AssetImage } from '../components/AssetImage'
 import { ProgressBar } from '../components/ProgressBar'
 import { getNpcActionableQuests, getQuestStatusLabel } from '../../domain/quests/questSelectors'
 import { getDeliverableCount } from '../../domain/quests/questInventory'
+import { isQuestObjectActivityId, questObjectActivities } from '../../domain/terran/questActivities'
 
 // VISUAL_DRAFT: mapa de pixels 20×12, sem dependência entre arte e lógica.
 const homePixels = [
@@ -46,7 +47,7 @@ export function HomeDrawer({ save, canRest = false }: { save: GameSave; canRest?
   return <div className="terran-drawer__section">
     <HomeRoomPixels />
     <p><BedDouble size={17} /> <strong>Base do Terrírian</strong></p>
-    <p>Seu refúgio particular em Terran. É possível entrar desde o início, guardar materiais no baú e recuperar Vida e Mana na cama.</p>
+    <p>Seu refúgio particular em Terran. Depois de usar a Chave de Daeryn na porta, você pode guardar materiais no baú e recuperar Vida e Mana na cama.</p>
     <small>{prepared ? 'Daeryn entregou a chave na conclusão da missão. Ela destranca a porta da Base no primeiro uso.' : 'A Base permanece trancada até concluir a missão de Daeryn e usar a chave na porta.'}</small>
     <ProgressBar value={save.vitals.hp} max={stats.life.value} label="Vida atual" tone="health" />
     <ProgressBar value={save.vitals.mp} max={stats.mana.value} label="Mana atual" />
@@ -102,16 +103,14 @@ export function SylwenShop({ save }: { save: GameSave }) {
 }
 
 export function DaerynServices({ save }: { save: GameSave }) {
-  const prepare = useGameStore((state) => state.preparePlayerHome)
   const aid = useGameStore((state) => state.receiveDaerynAid)
   const progress = save.quests.main_terran_first_home
   return <div className="terran-drawer__section">
     <h3><HeartPulse size={18} /> Cura e alojamento</h3>
     {save.vitals.hp === 0 && <button type="button" className="terran-service-action" onClick={aid}>Receber socorro emergencial gratuito</button>}
-    {progress?.status === 'active' && <button type="button" className="terran-service-action" onClick={prepare}>
-      {progress.objectives.prepare_room ? <Check size={17} /> : <BedDouble size={17} />}
-      {progress.objectives.prepare_room ? 'Quarto preparado · entregar a Daeryn' : 'Preparar o alojamento'}
-    </button>}
+    {progress?.status === 'active' && <p className="terran-service-hint">
+      {progress.objectives.prepare_room ? 'Poções organizadas. Entregue a missão para receber a chave.' : 'Tutorial: aproxime-se da Estante de Cura nesta sala e organize os três tipos de poção.'}
+    </p>}
     <SylwenShop save={save} />
   </div>
 }
@@ -134,17 +133,17 @@ export function VorrenBestiary({ save }: { save: GameSave }) {
   </section>
 }
 
-export function QuestNpcPanel({ save, questId, onClose, onSelectQuest }: { save: GameSave; questId: string; onClose: () => void; onSelectQuest?: (id: string) => void }) {
+export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded = false }: { save: GameSave; questId: string; onClose: () => void; onSelectQuest?: (id: string) => void; embedded?: boolean }) {
   const accept = useGameStore((state) => state.acceptQuest)
   const decline = useGameStore((state) => state.declineQuest)
   const complete = useGameStore((state) => state.turnInQuest)
-  const perform = useGameStore((state) => state.performTerranQuestTask)
+  const performTrial = useGameStore((state) => state.performSocialTrial)
   const definition = content.quests[questId]
   const progress = save.quests[questId]
   if (!definition || !progress) return null
   const npc = content.npcs[definition.giverNpcId]
   const conversations = getNpcActionableQuests(save, npc.id, content)
-  return <DialogueWindow save={save} title={npc.name} eyebrow={npc.title} portraitAssetId={npc.portraitAssetId} lines={npc.dialogue} quest={definition} onClose={onClose}><section className="terran-drawer__section terran-quest-dialog" aria-label={`Missão de ${npc.name}`}>
+  const details = <section className="terran-drawer__section terran-quest-dialog" aria-label={`Missão de ${npc.name}`}>
     {onSelectQuest && conversations.length > 1 && <nav className="npc-quest-choices" aria-label={`Missões de ${npc.name}`}>
       {(['main', 'secondary', 'other'] as const).map((group) => {
         const quests = conversations.filter((quest) => group === 'main' ? quest.category === 'main'
@@ -179,7 +178,16 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest }: { save:
         onClick={() => { accept(questId); onClose() }}><Check size={16} /> Aceitar missão</button>
     </div>}
     {progress.status === 'ready_to_turn_in' && <button type="button" className="terran-service-action" onClick={() => { complete(questId, definition.turnInNpcId); onClose() }}><Check size={17} /> Entregar missão</button>}
-    {progress.status === 'active' && definition.category === 'main' && definition.objectives.some((objective) => objective.type === 'interact') &&
-      <button type="button" className="terran-service-action" onClick={() => perform(questId)}>Realizar objetivo no local</button>}
-  </section></DialogueWindow>
+    {progress.status === 'active' && (definition.category === 'clan' || definition.category === 'class') &&
+      <button type="button" className="terran-service-action" onClick={() => performTrial(questId)}>
+        Realizar prova com representante
+      </button>}
+    {progress.status === 'active' && isQuestObjectActivityId(questId) &&
+      <p className="terran-quest-dialog__object-hint">
+        <strong>Objetivo interativo:</strong> aproxime-se de <strong>{questObjectActivities[questId].title}</strong> neste local.
+        Interaja com o objeto, resolva a atividade e depois retorne para entregar a missão.
+      </p>}
+  </section>
+  return embedded ? details : <DialogueWindow save={save} title={npc.name} eyebrow={npc.title}
+    portraitAssetId={npc.portraitAssetId} lines={npc.dialogue} quest={definition} onClose={onClose}>{details}</DialogueWindow>
 }

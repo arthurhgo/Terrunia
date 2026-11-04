@@ -43,6 +43,7 @@ import {
 } from '../domain/progression/progressionEngine'
 import { discoverCityLandmark, visitTerranLocation } from '../domain/terran/cityEngine'
 import { buyFromSylwen, receiveDaerynAid, restAtHome } from '../domain/terran/services'
+import { canCompleteQuestObjectActivity } from '../domain/terran/questActivities'
 import { buyMarketItem, MARKET_LOCATION_ID } from '../domain/terran/market'
 import { enterPlayerBase, unlockPlayerBaseWithDaerynKey, leavePlayerBase, respawnDefeatedPlayer, transferBaseChestItem } from '../domain/terran/base'
 import {
@@ -99,7 +100,7 @@ type GameState = {
   travelInTerran: (locationId: string) => void
   inspectCityLandmark: (landmarkId: string) => void
   preparePlayerHome: () => void
-  performTerranQuestTask: (questId: string) => void
+  performTerranQuestTask: (questId: string, objectId?: string, completedSteps?: readonly string[]) => void
   restAtHome: () => void
   enterBase: () => boolean
   unlockBaseWithKey: () => boolean
@@ -394,6 +395,7 @@ export const useGameStore = create<GameState>((set, get) => {
         return failAction('As provas sociais desta build são iniciadas no Salão dos Clãs.')
       }
       if (progress.status !== 'active') return failAction('Aceite a prova antes de realizá-la.')
+      if (isHallMainLore) return failAction('Interaja com a Mesa dos Ecos no Salão para investigar sua identidade.')
       const next = applyQuestEvent(save, { type: 'interact', targetId: questId }, content, nowIso())
       commit(next)
       show('Prova realizada', 'Retorne ao representante para concluir a avaliação.', 'success')
@@ -435,22 +437,23 @@ export const useGameStore = create<GameState>((set, get) => {
       }
     },
 
-    performTerranQuestTask: (questId) => {
+    performTerranQuestTask: (questId, objectId, completedSteps) => {
       const save = get().save
       const definition = content.quests[questId]
       const objective = definition?.objectives.find((entry) => entry.type === 'interact')
       if (!save || !definition || definition.category !== 'main' || !objective) return failAction('Interação indisponível.')
-      if (definition.terranFlow?.active !== save.world.currentLocationId) {
-        return failAction('Este objetivo precisa ser realizado no local indicado pela missão.')
+      if (!objectId || !completedSteps || !canCompleteQuestObjectActivity(save, questId, objectId, completedSteps)) {
+        return failAction('Interaja com o objeto da missão e conclua suas etapas antes de registrar o objetivo.')
       }
-      if (save.quests[questId]?.status !== 'active') return failAction('Aceite primeiro esta missão.')
       const next = applyQuestEvent(save, { type: 'interact', targetId: objective.targetId }, content, nowIso())
+      if (next === save) return
+      next.eventLog.push(`QuestObjectSolved:${questId}:${objectId}`)
       commit(next)
       show('Objetivo realizado', `Retorne a ${content.npcs[definition.turnInNpcId]?.name ?? 'quem entregou a missão'} para receber a recompensa.`, 'success')
     },
 
     preparePlayerHome: () => {
-      get().performTerranQuestTask('main_terran_first_home')
+      failAction('Aproxime-se da Estante de Cura na Casa de Daeryn e organize as poções.')
     },
 
     enterBase: () => {

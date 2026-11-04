@@ -1,0 +1,62 @@
+/* Terrúnia v0.25 — the in-world archive is a shelf with vertical book spines. */
+.eldamar-records__bookshelf {
+  display: grid;
+  grid-template-columns: repeat(5,minmax(0,1fr));
+  gap: 4px;
+  align-items: stretch;
+  padding: 9px 10px 12px;
+  border: 8px solid #644831;
+  border-bottom-width: 14px;
+  background: repeating-linear-gradient(90deg,#241c1a 0 4px,#382c22 4px 8px);
+  box-shadow: inset 0 5px 10px #0008, 0 5px #39281f;
+}
+.eldamar-records__bookshelf button {
+  min-width:0;
+  min-height:126px;
+  display:grid;place-items:stretch;
+  padding:0;
+  border:1px solid #2c2020;
+  background:transparent;
+  cursor:pointer;
+}
+.eldamar-records__bookshelf button:is(:hover,:focus-visible),
+.eldamar-records__bookshelf button.active {
+  outline:2px solid #e4c386;outline-offset:1px;
+  box-shadow:0 0 10px #cba26079;
+  transform:translateY(-3px);
+}
+.eldamar-records__spine {
+  display:grid;place-items:center;
+  background:#3a6673;
+  color:#ffdfaf;
+  padding:5px 2px;
+  border:3px ridge #aa8b5b;
+  font:700 clamp(9px,.8vw,12px)/1.1 Georgia,serif;
+  letter-spacing:.06em;
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  text-align:center;
+  overflow:hidden;
+}
+.eldamar-records__spine[data-book-color="1"]{background:#6d3d4a}
+.eldamar-records__spine[data-book-color="2"]{background:#565c42}
+.eldamar-records__spine[data-book-color="3"]{background:#584e76}
+.eldamar-records__spine[data-book-color="4"]{background:#79573f}
+.eldamar-records__selected-book {
+  padding:15px; border:2px solid #857154;
+  background:linear-gradient(145deg,#152a32,#111d29);
+}
+.eldamar-records__selected-book h3 {
+  display:flex;align-items:center;gap:8px;
+  color:#efcf98;
+  font:700 .94rem/1.3 var(--display);
+}
+.eldamar-records__selected-book p:not(.eyebrow) {
+  color:#e1decf;
+  font:.83rem/1.6 Georgia,serif;
+}
+@media(max-width:640px) {
+  .eldamar-records__bookshelf { gap:2px;padding:5px;border-width:5px; }
+  .eldamar-records__bookshelf button { min-height:110px; }
+  .eldamar-records__spine { padding:2px;font-size:9px; }
+}

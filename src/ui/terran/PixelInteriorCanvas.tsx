@@ -250,18 +250,22 @@ export function PixelInteriorCanvas({
           <NpcMarker state={resident.marker} phase={resident.markerPhase} />
         </button>)}
       {furniture.map((item) => <button type="button" key={item.id}
-        className="pixel-interior__furniture" disabled={!enabled}
+        className={`pixel-interior__furniture ${item.behavior === 'quest' ? 'pixel-interior__furniture--quest' : ''}`}
+        disabled={!enabled} data-quest-object={item.questId}
         aria-label={`Interagir com ${item.name}`} title={item.description}
         style={{ left: item.point.x / 384 * 100 + '%', top: (item.point.y - 9) / 256 * 100 + '%' }}
         onClick={() => walkTo(item.point, item.id)}>
         <span aria-hidden="true">✦</span>
+        {item.behavior === 'quest' && <small className="pixel-interior__furniture-caption">{item.name}</small>}
       </button>)}
       <button type="button" disabled={!enabled}
         className="pixel-interior__service"
         style={{ left: `${plan.service.x / 384 * 100}%`, top: `${plan.service.y / 256 * 100}%` }}
-        aria-label={locationId === PLAYER_HOME_INTERIOR_ID ? 'Abrir serviços da casa' : 'Abrir serviços do local'}
+        aria-label={locationId === PLAYER_HOME_INTERIOR_ID ? 'Cama · descansar e recuperar' : 'Abrir serviços do local'}
         onClick={onServices}>
-        {locationId === PLAYER_HOME_INTERIOR_ID ? 'Casa' : 'Serviços'}
+        {locationId === PLAYER_HOME_INTERIOR_ID
+          ? <span className="pixel-interior__bed-label"><strong>Cama</strong><small>descansar e recuperar</small></span>
+          : 'Serviços'}
       </button>
       <button type="button" disabled={!enabled}
         className="pixel-interior__exit"

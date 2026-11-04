@@ -34,9 +34,9 @@ function Conversation({ save, portraitAssetId, title, lines, quest }: {
 
 /** One speaker, one portrait and one spoken text; player replies branch without changing progress. */
 export function DialogueWindow({ open = true, save, title, portraitAssetId, eyebrow, lines = [], children,
-  footer, onClose, ariaLabel, className = '', quest }: {
+  footer, onClose, ariaLabel, className = '', quest, showConversation = true }: {
   open?: boolean; save: GameSave; title: string; portraitAssetId: string; eyebrow?: string
-  lines?: string[]; children?: ReactNode; footer?: ReactNode; ariaLabel?: string; onClose: () => void; className?: string; quest?: QuestDefinition
+  lines?: string[]; children?: ReactNode; footer?: ReactNode; ariaLabel?: string; onClose: () => void; className?: string; quest?: QuestDefinition; showConversation?: boolean
 }) {
   const titleId = useId()
   const panel = useRef<HTMLDivElement>(null)
@@ -63,7 +63,7 @@ export function DialogueWindow({ open = true, save, title, portraitAssetId, eyeb
       <section className="vn-textbox">
         <header><div>{eyebrow && <span className="eyebrow">{eyebrow}</span>}<h2 id={titleId}>{title}</h2></div>
           <button type="button" className="vn-close" aria-label="Encerrar diálogo" onClick={onClose}>×</button></header>
-        <Conversation key={`${portraitAssetId}:${quest?.id ?? 'ambient'}`} save={save} portraitAssetId={portraitAssetId} title={title} lines={lines} quest={quest} />
+        {showConversation && <Conversation key={`${portraitAssetId}:${quest?.id ?? 'ambient'}`} save={save} portraitAssetId={portraitAssetId} title={title} lines={lines} quest={quest} />}
         {children && <div className="vn-details">{children}</div>}
         {footer && <footer>{footer}</footer>}
       </section>

@@ -1,3 +1,16 @@
+## Terran v0.25 — Móveis interativos, minigames e uma janela para NPCs (2026-11-04)
+
+- **Cama** substitui o botão `Casa`, com subtítulo itálico `descansar e recuperar` e ação de repouso real.
+- NPC com missão abre lista de assuntos em modal único; missões em prioridade, depois **Conversar**, e serviços quando disponíveis.
+- Missão principal com ação local passa a exigir objeto e três passos de atividade; excluído o botão genérico sem gameplay.
+- Daeryn: arrumação de Tônico/Éter/Antídoto, aprendendo os usos dos consumíveis.
+- Vorren: pesquisa de campo na estante com livros pixelados e títulos verticais.
+- Lithwynn: investigação da marca de Astravél como hipótese, sem inventar causa canônica.
+- Salão: Mesa dos Ecos apresenta Personagem → Clã → Classe, sem filiação automática.
+- Eldamar: estante navegável com dez lombadas e documentos de referência existentes.
+- Dados do minigame fora dos sprites; registro validado pelo domínio, sem antecipar recompensas.
+- Documentação `QUEST_OBJECT_MINIGAMES_NPC_DIALOG_v0.25.md`.
+
 ## Terran v0.24 — Porta da Base e coluna fixa (2026-11-03)
 
 - Corrigida migração que abria a Base automaticamente ao encontrar save já dentro dela: agora apenas o evento comprovado de uso da Chave de Daeryn autoriza a abertura;
