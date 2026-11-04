@@ -414,6 +414,10 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
               onClick={() => walkToSite(id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); walkToSite(id) } }}>
               <title>{content.terranLocations[id].name}</title>
               <rect x={p.x - 27} y={p.y - 23} width="54" height="46" fill={id === objectiveId ? '#f2c36b' : '#99aba0'} stroke="#19292d" strokeWidth="5" />
+               <text x={p.x} y={p.y + 42} textAnchor="middle" fontSize="20" fontWeight="bold"
+                 fill="#fce4b2" stroke="#101e22" strokeWidth="5" paintOrder="stroke" pointerEvents="none">
+                 {content.terranLocations[id].shortName}
+               </text>
             </g>
           })}
           {terranLandmarks.map((landmark) => <circle key={landmark.id} cx={landmark.point.x} cy={landmark.point.y} r="9" fill={landmarkFlags.includes(cityLandmarkFlag(landmark.id)) ? '#8caf8a' : '#d0ac69'} />)}
