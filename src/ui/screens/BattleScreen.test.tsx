@@ -101,7 +101,7 @@ describe('combate visual v0.17', () => {
     const dead = structuredClone(save)
     const enemy = Object.values(dead.battle!.combatants).find((actor) => actor.side === 'enemy')!
     enemy.hp = 0; enemy.alive = false
-    useGameStore.setState({ save: dead })
+    act(() => { useGameStore.setState({ save: dead }) })
     expect(container.querySelector('.pixel-battle__enemy.is-dead')).toBeInTheDocument()
   })
 
