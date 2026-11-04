@@ -100,7 +100,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   useEffect(() => {
     if (!battle) return
     const cursor = seenDiceLog.current
-    const start = cursor?.id === battle.id ? cursor.count : 0
+    const start = cursor?.id === battle.id ? cursor.count : battle.log.length
     seenDiceLog.current = { id: battle.id, count: battle.log.length }
     const incoming: BattleDiceEvent[] = battle.log.slice(start).flatMap((entry) => {
       if (entry.tone !== 'damage' || !entry.roll) return []
@@ -226,7 +226,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     const preview = previewBattleCommand(battle, command, content, save.inventory)
     if (!preview.ok) { submit(command); return }
 
-    const rolls: BattleDiceEvent[] = preview.value.log.slice(battle.log.length).flatMap((entry) => {
+    const rolls: BattleDiceEvent[] = preview.value.log.slice(battle.log.length).flatMap<BattleDiceEvent>((entry) => {
       if (!entry.roll) return []
       const roll = entry.roll
       const actor = preview.value.combatants[roll.actorId]
@@ -281,7 +281,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     <header className="pixel-battle__header" aria-label="Encontro de combate">
       <strong>TERRÚNIA</strong>
       <div className="pixel-battle__encounter-label"><span>{battle.waveIndex ? 'PORTAL · ONDAS DA RUÍNA' : encounter?.locationLabel ?? 'ASTRAVÉL'}</span><h1>{encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}</h1></div>
-      <small>{battle.waveIndex ? 'ONDA ' + battle.waveIndex + ' · ' : ''}RODADA {battle.round} · {turnCue ? 'TURNO DOS INIMIGOS' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'TURNO DO JOGADOR'}</small>
+      <small>{battle.waveIndex ? 'ONDA ' + battle.waveIndex + ' · ' : ''}RODADA {battle.round} · {turnCue ? 'TURNO DOS INIMIGOS' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : battle.phase === 'AwaitingInitiative' ? 'INICIATIVA PENDENTE' : 'TURNO DO JOGADOR'}</small>
     </header>
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
       <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} />
