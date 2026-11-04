@@ -141,3 +141,17 @@
 .quest-board__delivery small { color: #abccbe; font-size: .7rem; }
 .quest-board__delivery button { flex: none; border: 1px solid #7bdfaa; padding: 7px 10px; background: #235c43; color: #e6ffef; font: 700 .68rem var(--display); cursor: pointer; }
 @media(max-width: 580px) { .quest-board__delivery { flex-direction: column; align-items: stretch; } }
+
+/* v0.5.1: empty categories retain the same row geometry in neutral gray. */
+.quest-board--remake .quest-row--empty {
+  display: flex; align-items: center; min-height: 52px; padding: 10px 13px;
+  border: 1px solid #47545b; border-left: 3px solid #626c71;
+  background: #19262c; color: #84969b; opacity: .8;
+  font: italic .75rem/1.4 Georgia,serif;
+}
+.quest-board--remake .quest-board__filters button[data-empty="true"] {
+  border-color: #3b4c55; background: #17252b; color: #899da2;
+}
+.quest-board--remake .quest-board__filters button[data-empty="true"].active {
+  outline: 1px solid #778686;
+}
