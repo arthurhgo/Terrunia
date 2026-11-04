@@ -61,3 +61,17 @@
 @media (prefers-reduced-motion: reduce) {
   .rosetta-quest-lines[data-route-mode="tracked"][data-route-tone="green"] path { animation: none; }
 }
+
+/* Rosetta = unaccepted opportunities only; active routes stay gold/blue and deliveries stay green. */
+.rosetta-quest-lines[data-route-mode="rosetta"] path {
+  stroke: #f4fbff; stroke-width: 2.2; stroke-dasharray: 5 5; opacity: 1;
+  filter: drop-shadow(0 0 4px #e5faff);
+  animation: rosetta-gold-flow 1.25s linear infinite;
+}
+.rosetta-minimap-lines[data-route-mode="rosetta"] path {
+  stroke: #f4fbff; stroke-width: 4; opacity: 1;
+  filter: drop-shadow(0 0 3px #d9f3ff);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rosetta-quest-lines[data-route-mode="rosetta"] path { animation: none; }
+}
