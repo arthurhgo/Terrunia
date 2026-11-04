@@ -206,6 +206,21 @@ describe('máquina de estados de combate', () => {
     expect(result.value.phase).toBe('Victory')
   })
 
+  it('registra rolagens reais do jogador e dos monstros no log', () => {
+    const battle = createBattle(makeSave(), firstEncounter, content, 'battle_real_dice')
+    const result = submitBattleCommand(battle, { type: 'attack', targetId: firstTargetId }, content)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    const damageEntries = result.value.log.filter((entry) => entry.tone === 'damage' && entry.roll)
+    expect(damageEntries.length).toBeGreaterThanOrEqual(2)
+    expect(damageEntries.some((entry) => entry.roll?.actorId === 'combatant_player')).toBe(true)
+    expect(damageEntries.some((entry) => entry.roll?.actorId !== 'combatant_player')).toBe(true)
+    for (const entry of damageEntries) {
+      expect(entry.roll!.face).toBeGreaterThanOrEqual(1)
+      expect(entry.roll!.face).toBeLessThanOrEqual(entry.roll!.sides)
+    }
+  })
+
   it('ação inválida não altera o estado', () => {
     const battle = createBattle(makeSave(), firstEncounter, content)
     battle.phase = 'ResolvingAction'
