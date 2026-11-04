@@ -111,11 +111,15 @@ describe('vertical slice integrada', () => {
     await useGameStore.getState().boot(ownerId)
     const store = () => useGameStore.getState()
     store().createGame('Lysa', 'character.terririan.default')
-    // Test fixture with earned points: three upgrades at 2 points each; production starts with 3.
+    // This regression runs the ENTIRE 15-encounter story, not a level-1 balance test.
+    // Simulate a legitimately prepared character who earned 12 points before the trail.
+    // Production creation and XP rewards are unchanged.
     const equippedFixture = structuredClone(store().save!)
-    equippedFixture.character.unspentAttributePoints = 6
+    equippedFixture.character.unspentAttributePoints = 12
     useGameStore.setState({ save: equippedFixture })
-    store().adjustAttribute('strength', 1); store().adjustAttribute('strength', 1); store().adjustAttribute('vigor', 1)
+    store().adjustAttribute('strength', 1); store().adjustAttribute('strength', 1)
+    store().adjustAttribute('vigor', 1); store().adjustAttribute('vigor', 1); store().adjustAttribute('vigor', 1)
+    store().adjustAttribute('agility', 1)
     store().bindPrologueWeapon()
     const weaponId = store().save!.character.bondedEquipment.weapon!
     const visit = (id: string) => store().travelInTerran(id)
