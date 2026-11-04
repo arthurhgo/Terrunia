@@ -15,6 +15,7 @@ export function TerranQuickJournal({ save }: { save: GameSave }) {
   const [mainIndex, setMainIndex] = useState(0)
   const [sideIndex, setSideIndex] = useState(0)
   const entries = getPrioritizedQuestEntries(save, content)
+  const ready = entries.filter(({ progress }) => progress.status === 'ready_to_turn_in')
   const main = entries.filter(({ definition }) => definition.category === 'main')
   const side = entries.filter(({ definition }) => definition.category !== 'main')
   const mainEntry = main[mainIndex % Math.max(1, main.length)]
@@ -61,6 +62,15 @@ export function TerranQuickJournal({ save }: { save: GameSave }) {
 
   return <section className="terran-quick-journal" aria-label="Missões fixas">
     <header><BookOpen size={16} /><h2>MISSÕES</h2><Link to="/quests">Diário completo</Link></header>
+    {ready.length > 0 && <section className="terran-quick-journal__deliveries" aria-label="Missões prontas para entrega">
+      <h3>PRONTAS PARA ENTREGA <span>{ready.length}</span></h3>
+      {ready.map(({ definition, progress }) => <div key={progress.questId} className="terran-quick-journal__delivery">
+        <strong title={definition.title}>{definition.title}</strong>
+        <small>{content.npcs[definition.turnInNpcId]?.name ?? 'NPC responsável'}</small>
+        <button type="button" aria-label={'Rastrear entrega de ' + definition.title}
+          onClick={() => setTracked(progress.questId, true)}>{progress.tracked ? '✓ Rastreando' : 'Rastrear entrega'}</button>
+      </div>)}
+    </section>}
     {renderCard(mainEntry, 'main', main.length, mainIndex, setMainIndex)}
     {renderCard(sideEntry, 'side', side.length, sideIndex, setSideIndex)}
   </section>
