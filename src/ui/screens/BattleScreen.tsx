@@ -83,6 +83,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     return () => window.clearTimeout(timer)
   }, [battle, enemies, player, reducedMotion])
 
+  useEffect(() => () => {
+    if (previewTimer.current !== null) window.clearTimeout(previewTimer.current)
+  }, [])
+
   // Domain log records actual dice faces, including enemy attacks.
   useEffect(() => {
     if (!battle) return
