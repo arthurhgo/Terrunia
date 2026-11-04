@@ -27,8 +27,10 @@ afterEach(() => { cleanup(); vi.useRealTimers(); useGameStore.getState().resetSe
 
 describe('combate visual v0.17', () => {
   it('mostra iniciativa e centraliza ataque, magia e habilidade, deixando opções ausentes cinzas', () => {
+    vi.useFakeTimers()
     createBattleSave()
     render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    act(() => { vi.advanceTimersByTime(1600) })
     const combat = screen.getByRole('button', { name: 'ATAQUE · MAGIAS · HABILIDADES' })
     expect(combat).toBeEnabled()
     expect(screen.getByRole('button', { name: 'ARREMESSÁVEIS' })).toBeDisabled()
@@ -52,6 +54,7 @@ describe('combate visual v0.17', () => {
     const initialLogCount = save.battle!.log.length
     const initialHp = save.battle!.combatants.combatant_player.hp
     render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    act(() => { vi.advanceTimersByTime(1600) })
     fireEvent.click(screen.getByRole('button', { name: 'ATAQUE · MAGIAS · HABILIDADES' }))
     fireEvent.click(screen.getByRole('button', { name: /ATAQUE BÁSICO/ }))
     expect(screen.getByRole('status', { name: /Lançamento visual de d/ })).toBeInTheDocument()
