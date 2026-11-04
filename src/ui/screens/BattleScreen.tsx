@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Backpack, Bomb, Crosshair, Footprints, Gem, ScrollText, Shield, Swords, Zap } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
+import { submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { useGameStore } from '../../state/gameStore'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
@@ -39,6 +40,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const [showLog, setShowLog] = useState(false)
   const [activeDice, setActiveDice] = useState<BattleDiceEvent | null>(null)
   const [diceQueue, setDiceQueue] = useState<BattleDiceEvent[]>([])
+  const [resolvingRolls, setResolvingRolls] = useState(false)
+  const previewTimer = useRef<number | null>(null)
   const seenDiceLog = useRef<{ id: string; count: number } | null>(null)
   const previous = useRef<{ id: string; hp: Record<string, number> } | null>(null)
   const reducedMotion = Boolean(save?.settings.reducedMotion)
@@ -59,6 +62,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     setMenu(null)
     setActiveDice(null)
     setDiceQueue([])
+    setResolvingRolls(false)
+    if (previewTimer.current !== null) window.clearTimeout(previewTimer.current)
+    previewTimer.current = null
     seenDiceLog.current = null
     previous.current = null
   }, [battle?.id])
@@ -104,10 +110,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }, [activeDice, diceQueue])
 
   useEffect(() => {
-    if (!activeDice) return
+    if (!activeDice || resolvingRolls) return
     const timer = window.setTimeout(() => setActiveDice(null), reducedMotion ? 800 : 1250)
     return () => window.clearTimeout(timer)
-  }, [activeDice, reducedMotion])
+  }, [activeDice, reducedMotion, resolvingRolls])
 
   // Announces the initiative-owned turn without changing the battle state machine.
   useEffect(() => {
@@ -156,14 +162,48 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     (effect.type === 'restoreMp' && player.mp < player.maxMp) ||
     (effect.type === 'cleanseHarmful' && player.statusEffects.some((status) =>
       content.statusEffects[status.definitionId]?.tone === 'harmful'))))
-  const isPlayerTurn = battle.phase === 'AwaitingAction' && !turnCue
+  const isPlayerTurn = battle.phase === 'AwaitingAction' && !turnCue && !activeDice && !diceQueue.length && !resolvingRolls
   const drops = battle.rewards.lootDefinitionIds
   const lootGroups = groupBattleLoot(drops)
 
   const send = (command: Parameters<typeof submit>[0]) => {
     if (!isPlayerTurn) return
     setMenu(null)
-    submit(command)
+    // Compute a pure preview without touching player HP, cloud save, or domain state.
+    // Show all deterministic faces (player and each enemy), then apply once via store.
+    const preview = previewBattleCommand(battle, command, content, save.inventory)
+    if (!preview.ok) { submit(command); return }
+    const rolls: BattleDiceEvent[] = preview.value.log.slice(battle.log.length).flatMap((entry) => {
+      if (entry.tone !== 'damage' || !entry.roll) return []
+      const match = entry.message.match(/ causa (\d+) de dano /)
+      if (!match) return []
+      const actor = preview.value.combatants[entry.roll.actorId]
+      return [{
+        id: entry.id, sides: entry.roll.sides, face: entry.roll.face,
+        damage: Number(match[1]), action: entry.roll.action,
+        actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy',
+      }]
+    })
+    if (rolls.length === 0) { submit(command); return }
+
+    setResolvingRolls(true)
+    setActiveDice(rolls[0])
+    let index = 0
+    const step = () => {
+      index += 1
+      if (index < rolls.length) {
+        setActiveDice(rolls[index])
+        previewTimer.current = window.setTimeout(step, reducedMotion ? 800 : 1250)
+        return
+      }
+      // The committed deterministic log is already shown: avoid replaying each die.
+      seenDiceLog.current = { id: battle.id, count: preview.value.log.length }
+      previewTimer.current = null
+      setActiveDice(null)
+      setResolvingRolls(false)
+      submit(command)
+    }
+    previewTimer.current = window.setTimeout(step, reducedMotion ? 800 : 1250)
   }
   const end = (toCity: boolean) => {
     if (toCity) returnToTerran()
