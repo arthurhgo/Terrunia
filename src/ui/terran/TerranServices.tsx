@@ -169,6 +169,7 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded 
     {definition.turnInItems && <div className="quest-delivery-items">
       {definition.turnInItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />
         {content.items[input.itemId].name}<strong>{getDeliverableCount(save, input.itemId, content)}/{input.quantity}</strong></span>)}
+      <small>Materiais na mochila (ainda não entregues).</small>
     </div>}
     {['available', 'offered'].includes(progress.status) && <div className="terran-quest-dialog__actions"
       role="group" aria-label={`Confirmar missão: ${definition.title}`}>
