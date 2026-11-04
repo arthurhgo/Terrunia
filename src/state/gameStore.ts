@@ -100,7 +100,7 @@ type GameState = {
   travelInTerran: (locationId: string) => void
   inspectCityLandmark: (landmarkId: string) => void
   preparePlayerHome: () => void
-  performTerranQuestTask: (questId: string, objectId?: string, completedSteps?: readonly string[]) => void
+  performTerranQuestTask: (questId: string, objectId?: string, completedSteps?: readonly string[]) => boolean
   restAtHome: () => void
   enterBase: () => boolean
   unlockBaseWithKey: () => boolean
@@ -441,15 +441,17 @@ export const useGameStore = create<GameState>((set, get) => {
       const save = get().save
       const definition = content.quests[questId]
       const objective = definition?.objectives.find((entry) => entry.type === 'interact')
-      if (!save || !definition || definition.category !== 'main' || !objective) return failAction('Interação indisponível.')
+      if (!save || !definition || definition.category !== 'main' || !objective) { failAction('Interação indisponível.'); return false }
       if (!objectId || !completedSteps || !canCompleteQuestObjectActivity(save, questId, objectId, completedSteps)) {
-        return failAction('Interaja com o objeto da missão e conclua suas etapas antes de registrar o objetivo.')
+        failAction('Interaja com o objeto da missão e conclua suas etapas antes de registrar o objetivo.')
+        return false
       }
       const next = applyQuestEvent(save, { type: 'interact', targetId: objective.targetId }, content, nowIso())
-      if (next === save) return
+      if (next === save) { failAction('Este objetivo não pode ser registrado novamente.'); return false }
       next.eventLog.push(`QuestObjectSolved:${questId}:${objectId}`)
       commit(next)
       show('Objetivo realizado', `Retorne a ${content.npcs[definition.turnInNpcId]?.name ?? 'quem entregou a missão'} para receber a recompensa.`, 'success')
+      return true
     },
 
     preparePlayerHome: () => {

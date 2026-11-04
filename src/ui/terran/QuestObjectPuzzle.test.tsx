@@ -69,6 +69,27 @@ describe('minigames vinculados a móveis de Terran', () => {
     expect(useGameStore.getState().save?.inventory).toEqual(original)
   })
 
+  it('mantém minigame e feedback abertos se o save mudar de local antes de registrar', () => {
+    const save = game('main_terran_first_home', 'location_terran_daeryn_house')
+    const onClose = vi.fn()
+    render(<QuestObjectPuzzle save={save} questId="main_terran_first_home" onClose={onClose} />)
+    chooseAndConfirm('Tônico de Campo', 'Confirmar posição')
+    chooseAndConfirm('Éter Simples', 'Confirmar posição')
+    chooseAndConfirm('Antídoto', 'Confirmar posição')
+    expect(screen.getByText('3/3 etapas')).toBeInTheDocument()
+
+    // A loaded/synchronized save might invalidate the old UI location.
+    const newerSave = structuredClone(save)
+    newerSave.world.currentLocationId = 'location_terran_portal_plaza'
+    useGameStore.setState({ save: newerSave })
+    fireEvent.click(screen.getByRole('button', { name: 'Registrar objetivo' }))
+    expect(onClose).not.toHaveBeenCalled()
+    expect(screen.getByRole('dialog', { name: 'Organizar a Estante de Cura' })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Não foi possível registrar o objetivo')
+    expect(useGameStore.getState().save?.quests.main_terran_first_home.status).toBe('active')
+    expect(useGameStore.getState().save?.eventLog).not.toContain('QuestObjectSolved:main_terran_first_home:daeryn_healing_shelf')
+  })
+
   it('permite explorar objetos antes da missão, mas não registrar recompensas', () => {
     const save = game('main_terran_first_home', 'location_terran_daeryn_house')
     save.quests.main_terran_first_home.status = 'available'

@@ -1,3 +1,11 @@
+## Terran v0.26 — Correção das interações físicas (2026-11-04)
+
+- Eliminado descanso à distância pelo atalho Cama: o personagem caminha ao leito antes da ação.
+- Removido alvo de clique redundante do mesmo móvel, preservando interação com E e IDs de gameplay.
+- Minigame de objeto confirma o resultado no store antes de fechar; se o save rejeita, mantém o puzzle visível e informa o motivo.
+- Regressões automatizadas adicionadas em `PixelInteriorBed.test.tsx` e `QuestObjectPuzzle.test.tsx`.
+- Contrato registrado em `TERRAN_OBJECT_INTERACTION_HARDENING_v0.26.md`.
+
 ## Terran v0.25 — Móveis interativos, minigames e uma janela para NPCs (2026-11-04)
 
 - **Cama** substitui o botão `Casa`, com subtítulo itálico `descansar e recuperar` e ação de repouso real.
