@@ -700,7 +700,7 @@ export const useGameStore = create<GameState>((set, get) => {
       const encounter = content.encounters[node.encounterId]
       if (!encounter) return failAction('Conteúdo do encontro não encontrado.')
       const next = structuredClone(save)
-      next.battle = createBattle(next, encounter, content)
+      next.battle = createBattle(next, encounter, content, undefined, { manualInitiative: true })
       const startingPlayer = next.battle.combatants.combatant_player
       next.vitals = { hp: startingPlayer.hp, mp: startingPlayer.mp }
       if (next.world.currentLocationId !== FUNGAL_DUNGEON_ID) next.world.currentLocationId = node.id
@@ -734,7 +734,7 @@ export const useGameStore = create<GameState>((set, get) => {
       const permitted = canStartPortalHunt(save, encounterId, content)
       if (!permitted.ok) return failAction(permitted.message)
       const next = structuredClone(save)
-      const battle = createBattle(next, content.encounters[encounterId], content)
+      const battle = createBattle(next, content.encounters[encounterId], content, undefined, { manualInitiative: true })
       battle.portalHuntId = encounterId
       next.battle = battle
       next.vitals = { hp: battle.combatants.combatant_player.hp, mp: battle.combatants.combatant_player.mp }
