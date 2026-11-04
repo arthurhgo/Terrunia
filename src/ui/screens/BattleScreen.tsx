@@ -292,12 +292,24 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         {enemies.map((enemy, i) => <button type="button" key={enemy.id}
           className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${!enemy.alive ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''}`}
           onClick={() => enemy.alive && setTargetId(enemy.id)} disabled={!enemy.alive}
+          onMouseEnter={() => setHoveredEnemyId(enemy.id)} onMouseLeave={() => setHoveredEnemyId(null)}
+          onFocus={() => setHoveredEnemyId(enemy.id)} onBlur={() => setHoveredEnemyId(null)}
+          aria-describedby={hoveredEnemyId === enemy.id ? 'enemy-status-' + i : undefined}
           aria-label={`Selecionar ${enemy.name} ${i + 1}, ${enemy.hp} de ${enemy.maxHp} de Vida`}
           aria-pressed={enemy.id === target.id}>
           {enemy.alive && enemy.id === target.id && <span className="pixel-battle__target-arrow" aria-hidden="true">◆</span>}
           <span className="pixel-battle__enemy-bar"><i style={{ width: clampPercent(enemy.hp, enemy.maxHp) + '%' }} /></span>
           <AssetImage assetId={content.enemies[enemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} alt="" />
           <small>{enemy.name}</small>
+          {hoveredEnemyId === enemy.id && <span className="pixel-battle__enemy-tooltip" role="tooltip"
+            aria-label={'Status de ' + enemy.name} id={'enemy-status-' + i}>
+            <strong>{enemy.name}</strong>
+            <span>Vida: {enemy.hp}/{enemy.maxHp} · Mana: {enemy.mp}/{enemy.maxMp}</span>
+            <span>Ataque: {enemy.attackPower} · Defesa: {enemy.mitigation}</span>
+            <span>Iniciativa: {enemy.initiative} · Dado d{enemy.attackDie ?? 4}</span>
+            <span>{enemy.statusEffects.length ? enemy.statusEffects.map((status) =>
+              content.statusEffects[status.definitionId]?.name ?? status.definitionId).join(', ') : 'Sem efeitos ativos'}</span>
+          </span>}
         </button>)}
       </div>
       <div className="pixel-battle__turn-order" aria-label="Ordem de turnos">
@@ -350,8 +362,16 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         <BattleEquipmentHud save={save} />
       </section>
       <section className="pixel-battle__panel pixel-battle__actions" aria-label="Ações de combate">
-        <h2>{battle.phase === 'AwaitingAction' ? 'ESCOLHA SUA AÇÃO' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'COMBATE'}</h2>
-        {battle.phase === 'AwaitingAction' ? <>
+        <h2>{battle.phase === 'AwaitingInitiative' ? 'ROLAGEM DE INICIATIVA' : battle.phase === 'AwaitingAction' ? 'ESCOLHA SUA AÇÃO' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'COMBATE'}</h2>
+        {battle.phase === 'AwaitingInitiative' ? <div className="pixel-battle__initiative" aria-label="Preparar rolagem de iniciativa">
+          <strong>{initiativeReady ? 'ROLAGEM DE INICIATIVA' : 'TURNO ' + battle.round}</strong>
+          <button type="button" disabled={!initiativeReady || resolvingRolls} aria-label={'Rolar dado de iniciativa d' + (player.initiativeDie ?? 4)}
+            onClick={() => send({ type: 'rollInitiative' })}>
+            <DieIcon sides={player.initiativeDie ?? 4} />
+            <span>{resolvingRolls ? 'Resolvendo iniciativa…' : initiativeReady ? 'CLIQUE NO DADO PARA ROLAR' : 'PREPARANDO O TURNO…'}</span>
+          </button>
+          <small>Seu dado de Agilidade define a ordem junto à iniciativa-base. Monstros rolam automaticamente.</small>
+        </div> : battle.phase === 'AwaitingAction' ? <>
           <div className="pixel-battle__commands">
             {button('ATAQUE · MAGIAS · HABILIDADES', <Swords />, () => setMenu(menu === 'combat' ? null : 'combat'),
               !isPlayerTurn || !target.alive, menu === 'combat')}
