@@ -77,7 +77,7 @@ export function getRosettaQuestRoutes(save: GameSave, catalog: ContentCatalog): 
  */
 export type TrackedQuestRoute = RosettaQuestRoute & {
   questId: string
-  tone: 'gold' | 'blue'
+  tone: 'gold' | 'blue' | 'green'
   opacity: number
 }
 
@@ -121,8 +121,8 @@ export function getTrackedQuestRoute(save: GameSave, catalog: ContentCatalog): T
     player: false,
     questIds: [quest.id],
     titles: [quest.title],
-    tone: blue ? 'blue' : 'gold',
-    opacity: blue ? 0.2 : 1,
+    tone: progress.status === 'ready_to_turn_in' ? 'green' : blue ? 'blue' : 'gold',
+    opacity: progress.status === 'ready_to_turn_in' ? 1 : blue ? 0.2 : 1,
   }
 }
 
@@ -170,4 +170,13 @@ export function getRosettaGuidance(save: GameSave, catalog: ContentCatalog) {
     maxActive: null,
     canReceive,
   }
+}
+
+/** Fallback navigation for finished quests: available even before the player selects tracking. */
+export const getReadyDeliveryQuestRoute = (save: GameSave, catalog: ContentCatalog): TrackedQuestRoute | null => {
+  const ready = Object.values(save.quests).find((entry) => entry.status === 'ready_to_turn_in')
+  if (!ready) return null
+  const candidate = structuredClone(save)
+  for (const progress of Object.values(candidate.quests)) progress.tracked = progress.questId === ready.questId
+  return getTrackedQuestRoute(candidate, catalog)
 }
