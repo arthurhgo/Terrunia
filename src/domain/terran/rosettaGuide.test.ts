@@ -85,7 +85,7 @@ describe('Rosetta orienta usando apenas dados do save', () => {
     expect(ids).not.toContain('rosetta_tutorial_refine')
     expect(ids).not.toContain('vs_astravel_first_contact')
     expect(ids).not.toContain('side_npc_daeryn')
-    expect(offered.every((route) => route.tone === 'white' && route.opacity === 1)).toBe(true)
+    expect(offered.every((route) => route.tone === 'white' && route.opacity === 0.4)).toBe(true)
     expect(getTrackedQuestRoute(save, content)?.questId).toBe('vs_astravel_first_contact')
   })
   it('resolve rota principal dourada do jogador para o objetivo e NPC de entrega', () => {
