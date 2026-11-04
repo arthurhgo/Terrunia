@@ -51,7 +51,7 @@ export function getRosettaQuestRoutes(save: GameSave, catalog: ContentCatalog): 
     const id = 'npc:' + npcId
     const route = routes.get(id) ?? {
       id, npcId, locationId, player: false, questIds: [], titles: [],
-      tone: 'white' as const, opacity: 1,
+      tone: 'white' as const, opacity: 0.4,
     }
     route.questIds.push(quest.id)
     route.titles.push(quest.title)
@@ -111,7 +111,7 @@ export function getTrackedQuestRoute(save: GameSave, catalog: ContentCatalog): T
     questIds: [quest.id],
     titles: [quest.title],
     tone: progress.status === 'ready_to_turn_in' ? 'green' : blue ? 'blue' : 'gold',
-    opacity: progress.status === 'ready_to_turn_in' ? 1 : blue ? 0.2 : 1,
+    opacity: progress.status === 'ready_to_turn_in' ? 1 : blue ? 0.4 : 1,
   }
 }
 
