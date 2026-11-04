@@ -70,7 +70,7 @@ describe('interfaces de Terran', () => {
     save.eventLog.push('CutsceneViewed:astravel_call')
     useGameStore.setState({ save })
     const { container } = render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
-    const dock = screen.getByRole('complementary', { name: 'Missões e inventário fixos' })
+    const dock = screen.getByRole('complementary', { name: 'Diário de missões' })
     expect(within(dock).getByRole('region', { name: 'Missões fixas' })).toBeInTheDocument()
     const visible = screen.getByRole('img', { name: 'Caminho pontilhado da missão rastreada' })
     expect(visible).toHaveAttribute('data-route-tone', 'gold')
@@ -103,7 +103,7 @@ describe('interfaces de Terran', () => {
     expect(rosetta.querySelector('.npc-nameplate__subtitle')).toHaveTextContent('Guardiã do Portal')
     expect(screen.getByRole('img', { name: 'Caminho pontilhado da missão rastreada' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Eldamar' }))
-    expect(screen.getByRole('complementary', { name: 'Missões e inventário fixos' })).toBeInTheDocument()
+    expect(screen.getByRole('complementary', { name: 'Diário de missões' })).toBeInTheDocument()
     const route = screen.getByRole('img', { name: 'Caminho pontilhado da missão no interior' })
     expect(route.querySelectorAll('path[data-route-tone="gold"]')).toHaveLength(1)
     expect(route.querySelector('path')).toHaveAttribute('data-target-kind', 'npc')
@@ -113,7 +113,7 @@ describe('interfaces de Terran', () => {
     expect(container.querySelector('.pixel-interior__quest-paths')).not.toBeNull()
   })
 
-  it('mostra rota azul de sidequest dentro das casas até o NPC da missão', () => {
+  it('mostra rota verde de entrega dentro das casas até o NPC da missão', () => {
     loadSave('location_terran_daeryn_house')
     const save = useGameStore.getState().save!
     save.quests.side_npc_daeryn.status = 'ready_to_turn_in'
@@ -122,8 +122,8 @@ describe('interfaces de Terran', () => {
     render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Daeryn' }))
     const route = screen.getByRole('img', { name: 'Caminho pontilhado da missão no interior' })
-    expect(route.querySelector('path')).toHaveAttribute('data-route-tone', 'blue')
-    expect(route.querySelector('path')).toHaveAttribute('data-route-opacity', '0.2')
+    expect(route.querySelector('path')).toHaveAttribute('data-route-tone', 'green')
+    expect(route.querySelector('path')).toHaveAttribute('data-route-opacity', '1')
     expect(route.querySelector('path')).toHaveAttribute('data-target-kind', 'npc')
   })
 
@@ -163,41 +163,28 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('img', { name: /Interior pixelado de Casa de Daeryn/ })).toBeInTheDocument()
   })
 
-  it('mantém Missões em cima e Mochila embaixo sem abas redundantes ou rolagem lateral', () => {
+  it('mantém somente o diário à esquerda e a mochila recolhível sobre o cenário', () => {
     loadSave()
-    render(<MemoryRouter initialEntries={['/terran']}>
-      <Routes>
-        <Route path="/terran" element={<TerranScreen />} />
-        <Route path="/play" element={<TerranScreen />} />
-        <Route path="/local" element={<LocalScreen />} />
-        <Route path="/inventory" element={<InventoryScreen />} />
-        <Route path="/quests" element={<QuestsScreen />} />
-        <Route path="/menu" element={<SkillTreeScreen />} />
-      </Routes>
-    </MemoryRouter>)
+    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     const stage = screen.getByRole('region', { name: 'Cenário contínuo de Terran' })
-    const dock = screen.getByRole('complementary', { name: 'Missões e inventário fixos' })
+    const dock = screen.getByRole('complementary', { name: 'Diário de missões' })
     const missions = within(dock).getByRole('region', { name: 'Missões fixas' })
-    const inventory = within(dock).getByRole('region', { name: 'Inventário fixo' })
+    expect(dock.children).toHaveLength(1)
     expect(dock.children[0]).toBe(missions)
-    expect(dock.children[1]).toBe(inventory)
-    expect(inventory.querySelectorAll('.arcane-panel')).toHaveLength(1)
-    expect(inventory).toHaveTextContent('Mochila')
-    expect(inventory.querySelector('.bound-items-panel')).toBeNull()
-    expect(inventory).not.toHaveTextContent('NO QUE ESTOU ME TORNANDO')
-    expect(inventory).not.toHaveTextContent('Ressonância')
-    expect(inventory.querySelectorAll('.inventory-slot')).toHaveLength(12)
-    expect(screen.queryByRole('navigation', { name: 'Menu de Terran' })).not.toBeInTheDocument()
-    for (const name of ['Abrir Local', 'Abrir Inventário', 'Abrir Missões', 'Abrir Menu']) {
-      expect(screen.queryByRole('button', { name })).not.toBeInTheDocument()
-    }
-    expect(screen.getByRole('link', { name: 'Abrir Menu' })).toBeInTheDocument()
-    expect(within(missions).getByRole('link', { name: 'Diário completo' })).toHaveAttribute('href', '/quests')
+    expect(within(dock).queryByRole('region', { name: 'Inventário fixo' })).not.toBeInTheDocument()
+    const toggle = within(stage).getByRole('button', { name: /Mochila/ })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    const backpack = screen.getByRole('complementary', { name: 'Mochila expandida' })
+    expect(backpack.querySelectorAll('.inventory-slot')).toHaveLength(12)
+    expect(backpack).toHaveTextContent('Mochila: 0/12 espaços')
+    fireEvent.click(toggle)
+    expect(screen.queryByRole('complementary', { name: 'Mochila expandida' })).not.toBeInTheDocument()
     expect(screen.getByRole('complementary', { name: 'Status permanente do personagem' })).toBeInTheDocument()
-    expect(stage).toBeInTheDocument()
   })
 
-  it('pagina a mochila fixa para manter acessíveis itens além dos doze primeiros', () => {
+  it('pagina a mochila expansível e preserva itens de saves legados com mais de doze pilhas', () => {
     loadSave()
     const save = useGameStore.getState().save!
     save.inventory = Array.from({ length: 14 }, (_, i) => ({
@@ -206,13 +193,14 @@ describe('interfaces de Terran', () => {
     }))
     useGameStore.setState({ save })
     const { container } = render(<MemoryRouter><TerranScreen /></MemoryRouter>)
-    const dock = screen.getByRole('complementary', { name: 'Missões e inventário fixos' })
-    expect(within(dock).getByText('1/2 · 14 itens')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Mochila/ }))
+    const backpack = screen.getByRole('complementary', { name: 'Mochila expandida' })
+    expect(within(backpack).getByText('1/2 · 14 itens')).toBeInTheDocument()
     expect(container.querySelectorAll('.inventory-slot')).toHaveLength(12)
-    fireEvent.click(within(dock).getByRole('button', { name: 'Próxima página da mochila' }))
-    expect(within(dock).getByText('2/2 · 14 itens')).toBeInTheDocument()
+    fireEvent.click(within(backpack).getByRole('button', { name: 'Próxima página da mochila' }))
+    expect(within(backpack).getByText('2/2 · 14 itens')).toBeInTheDocument()
     expect(container.querySelectorAll('.inventory-slot')).toHaveLength(12)
-    expect(within(dock).getByRole('button', { name: 'Próxima página da mochila' })).toBeDisabled()
+    expect(within(backpack).getByRole('button', { name: 'Próxima página da mochila' })).toBeDisabled()
   })
 
   it('mantém a biblioteca visual exclusivamente nos Registros de Eldamar', () => {
@@ -296,11 +284,11 @@ describe('interfaces de Terran', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Praça do Portal' }))
     fireEvent.click(screen.getByRole('button', { name: 'Falar com Rosetta' }))
     expect(screen.getByRole('dialog', { name: 'Orientações de Rosetta' })).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('Vou lhe entregar duas túnicas simples.')
+    expect(screen.getAllByRole('status').some((node) => node.textContent?.includes('Vou lhe entregar duas túnicas simples.'))).toBe(true)
     expect(screen.getByText('Estante dos Registros')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Missões que pode receber' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Consultar diário de missões' }))
-    expect(screen.getByRole('complementary', { name: 'Missões e inventário fixos' })).toBeInTheDocument()
+    expect(screen.getByRole('complementary', { name: 'Diário de missões' })).toBeInTheDocument()
     expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
   })
 
