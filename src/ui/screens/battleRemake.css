@@ -136,3 +136,7 @@
 @media (prefers-reduced-motion: reduce) {
   .pixel-battle__turn-cue { animation: none; }
 }
+
+/* Enemy dice have a distinct accent and share existing accessible motion behavior. */
+.battle-dice-platform.is-enemy-roll { border-color: #b96f72; box-shadow: 0 0 16px #bf47583b, inset 0 0 18px #37152244; }
+.battle-dice-platform.is-enemy-roll .die-icon__shape { fill: #53303b; stroke: #f1a3a3; }
