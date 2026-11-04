@@ -150,3 +150,77 @@
 @media (prefers-reduced-motion: reduce) {
   .pixel-battle--dice-pending .pixel-battle__stats label span { filter: none; }
 }
+
+/* v0.5.2 — manual dice prompts (keyboard accessible) and deterministic initiative. */
+.battle-dice-platform.is-awaiting-click .die-icon__number,
+.pixel-battle__initiative button .die-icon__number { opacity: 0; }
+.battle-dice-platform__roll-trigger {
+  position: relative; z-index: 3; display: grid; justify-items: center; align-content: center;
+  gap: 5px; width: min(180px, 75%); min-height: 123px;
+  border: 2px solid #ecc179; border-radius: 5px; cursor: pointer;
+  color: #ffebba; background: #163a41ee;
+  box-shadow: 0 0 18px #86ffcf57, inset 0 0 16px #c6ffaf22;
+  animation: battle-die-ready 1.3s steps(4,end) infinite;
+}
+.battle-dice-platform__roll-trigger .die-icon { width: 69px; height: 69px; }
+.battle-dice-platform__roll-trigger small { font: 700 .67rem/1.3 var(--display); text-align: center; }
+.battle-dice-platform__roll-trigger:hover,
+.battle-dice-platform__roll-trigger:focus-visible { outline: 2px solid #dfffe5; outline-offset: 2px; }
+@keyframes battle-die-ready { 50% { box-shadow: 0 0 26px #caffb6a0, inset 0 0 18px #ffe9a944; transform: translateY(-2px); } }
+.pixel-battle__initiative {
+  display: grid; gap: 8px; justify-items: center; align-content: center; flex: 1;
+  min-height: 132px; padding: 12px; text-align: center; color: #f9dcab;
+}
+.pixel-battle__initiative > strong { letter-spacing: .09em; font-size: clamp(13px,1.2vw,17px); }
+.pixel-battle__initiative button {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 61px; width: min(100%,260px); padding: 7px 11px;
+  border: 2px solid #b6965b; color: #ffe3ae; background: #1d3a41;
+  font: 700 .67rem var(--display); cursor: pointer;
+}
+.pixel-battle__initiative button .die-icon { flex: none; width: 50px; height: 50px; }
+.pixel-battle__initiative button:hover:enabled,
+.pixel-battle__initiative button:focus-visible { outline: 2px solid #8ae9d3; background: #315653; }
+.pixel-battle__initiative small { color: #b8cfcd; font: .67rem/1.4 Georgia,serif; max-width: 325px; }
+.pixel-battle__enemy-tooltip {
+  position: absolute; z-index: 18; left: 50%; bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  width: max-content; min-width: 176px; max-width: min(245px,75vw);
+  display: grid; gap: 6px; padding: 10px 12px;
+  border: 2px solid #c5a064; background: #0a1c2af5; color: #e6e7ce;
+  box-shadow: 0 8px 22px #000c; pointer-events: none; text-align: left; white-space: normal;
+  font: .66rem/1.3 Georgia,serif; text-shadow: none;
+}
+.pixel-battle__enemy-tooltip > strong { color: #ffe0a3; font: 700 .76rem var(--display); }
+.pixel-battle__enemy-tooltip > span { display: block; }
+.pixel-battle__enemy { isolation: isolate; }
+.pixel-battle__enemy:has(.pixel-battle__enemy-tooltip) { z-index: 12; }
+.pixel-battle .pixel-battle__enemy.is-dead {
+  animation: pb-enemy-death 1.4s steps(9,end) forwards;
+  transform-origin: 50% 85%; pointer-events: none;
+}
+.pixel-battle__enemy.is-dead img {
+  animation: pb-enemy-death-sprite 1.4s steps(9,end) forwards;
+}
+@keyframes pb-enemy-death {
+  0% { opacity: 1; transform: rotate(0) scale(1); filter: none; }
+  24% { opacity: 1; transform: translateY(-7px) scale(1.05); filter: sepia(1) saturate(8) hue-rotate(-40deg) brightness(1.7); }
+  53% { opacity: .8; transform: rotate(16deg) scale(.92); filter: grayscale(1) brightness(.9); }
+  76% { opacity: .4; transform: rotate(45deg) translateY(12px) scale(.77); filter: grayscale(1) brightness(.5); }
+  100% { opacity: .1; transform: rotate(60deg) translateY(19px) scale(.63); filter: grayscale(1) brightness(.28); }
+}
+@keyframes pb-enemy-death-sprite {
+  0%,35% { clip-path: inset(0); }
+  65% { clip-path: inset(13% 8% 22% 9%); }
+  100% { clip-path: inset(28% 20% 35% 20%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .battle-dice-platform__roll-trigger,
+  .pixel-battle .pixel-battle__enemy.is-dead,
+  .pixel-battle__enemy.is-dead img { animation: none !important; }
+  .pixel-battle .pixel-battle__enemy.is-dead { opacity: .25; filter: grayscale(1); }
+}
+@media(max-width:560px) {
+  .pixel-battle__enemy-tooltip { min-width: 160px; padding: 7px; bottom: calc(100% + 1px); }
+  .pixel-battle__initiative { min-height: 120px; }
+}
