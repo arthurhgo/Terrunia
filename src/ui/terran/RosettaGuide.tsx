@@ -64,7 +64,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
           </button>}
         </div>
       </section> : <p className="rosetta-tutorial__done"><CheckCircle2 size={16} /> As três lições principais foram concluídas. Sua proteção escolhida evolui com você; novas peças são opcionais.</p>}
-      {onShowPaths && <button type="button" className="rosetta-guide__paths" onClick={onShowPaths}><Route size={16} /> Mostrar caminhos dourados no mapa</button>}
+      {onShowPaths && <button type="button" className="rosetta-guide__paths" onClick={onShowPaths}><Route size={16} /> Mostrar caminhos brancos para novas missões</button>}
       {guidance.next && guidance.next.id !== lesson?.id && <article className="rosetta-guide__next">
         <h3><Compass size={16}/> O que fazer agora</h3>
           <strong>{guidance.next.title}</strong>
