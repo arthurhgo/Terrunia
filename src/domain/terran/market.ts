@@ -1,3 +1,4 @@
+import { BACKPACK_UPGRADES, backpackFlag } from '../inventory/backpacks'
 import type { ContentCatalog } from '../../content/catalog'
 import type { GameSave } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
@@ -7,11 +8,11 @@ export const MARKET_LOCATION_ID = 'location_terran_bond_workshop' as const
 
 /** BALANCE_DRAFT: trade offers are separated by the NPC who actually sells them. */
 export const MARKET_STOCK = [
-  { npcId: 'presence_neris', itemId: 'equipment_simple_leather_armor', price: 35, requiresQuestId: 'rosetta_tutorial_refine' },
-  { npcId: 'presence_neris', itemId: 'equipment_terran_guard_armor', price: 75, requiresQuestId: 'main_astravel_lost_hunters' },
-  { npcId: 'presence_neris', itemId: 'equipment_light_leather_vest', price: 12 },
-  { npcId: 'presence_neris', itemId: 'equipment_worn_linen_tunic', price: 12 },
-  { npcId: 'presence_neris', itemId: 'equipment_apprentice_tunic', price: 12 },
+  { npcId: 'presence_neris', itemId: 'equipment_simple_leather_armor', price: 60, requiresQuestId: 'rosetta_tutorial_refine' },
+  { npcId: 'presence_neris', itemId: 'equipment_terran_guard_armor', price: 135, requiresQuestId: 'main_astravel_lost_hunters' },
+  { npcId: 'presence_neris', itemId: 'equipment_light_leather_vest', price: 25 },
+  { npcId: 'presence_neris', itemId: 'equipment_worn_linen_tunic', price: 22 },
+  { npcId: 'presence_neris', itemId: 'equipment_apprentice_tunic', price: 28 },
   { npcId: 'presence_neris', itemId: 'material_linen_thread', price: 4 },
   { npcId: 'presence_neris', itemId: 'drop_ruin_shard', price: 60 },
   { npcId: 'presence_neris', itemId: 'drop_mycelial_fiber', price: 48 },
@@ -48,6 +49,22 @@ export function buyMarketItem(
 ): Result<GameSave> {
   if (save.battle || save.world.currentLocationId !== MARKET_LOCATION_ID) {
     return fail('MARKET_LOCATION', 'Compre itens dentro do Mercado de Terran.')
+  }
+  const backpack = BACKPACK_UPGRADES.find((offer) => offer.id === itemId)
+  if (backpack) {
+    if (npcId !== backpack.npcId || quantity !== 1) return fail('BACKPACK_OFFER', 'Esta mochila só pode ser adquirida uma vez no Mercado.')
+    if (save.world.worldFlags.includes(backpackFlag(backpack.id))) return fail('BACKPACK_OWNED', 'Esta mochila já foi adquirida.')
+    if (backpack.previousId && !save.world.worldFlags.includes(backpackFlag(backpack.previousId))) {
+      return fail('BACKPACK_PREREQUISITE', 'Adquira a mochila anterior para desbloquear esta melhoria.')
+    }
+    if (save.wallet.gold < backpack.price) return fail('MARKET_GOLD', 'Ouro insuficiente para a compra.')
+    const next = structuredClone(save)
+    next.wallet.gold -= backpack.price
+    next.world.worldFlags.push(backpackFlag(backpack.id))
+    next.updatedAt = now
+    next.revision += 1
+    next.eventLog.push(`BackpackPurchased:${backpack.id}:${backpack.price}`)
+    return ok(next)
   }
   const offer = MARKET_STOCK.find((entry) => entry.npcId === npcId && entry.itemId === itemId)
   const item = catalog.items[itemId]
