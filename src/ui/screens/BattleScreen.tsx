@@ -179,7 +179,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     </button>
   )
 
-  const scene = <section className="pixel-battle" role="region" aria-label="Viewport unificada de combate">
+  const scene = <section className={`pixel-battle ${activeDice ? "pixel-battle--dice-pending" : ""}`} role="region" aria-label="Viewport unificada de combate">
     <header className="pixel-battle__header" aria-label="Encontro de combate">
       <strong>TERRÚNIA</strong>
       <div className="pixel-battle__encounter-label"><span>{battle.waveIndex ? 'PORTAL · ONDAS DA RUÍNA' : encounter?.locationLabel ?? 'ASTRAVÉL'}</span><h1>{encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}</h1></div>
