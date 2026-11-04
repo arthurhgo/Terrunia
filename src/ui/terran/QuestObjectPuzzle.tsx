@@ -93,8 +93,13 @@ export function QuestObjectPuzzle({ save, questId, onClose }: {
   }
   const register = () => {
     if (!active || !complete) return
-    finish(questId, activity.objectId, steps)
-    onClose()
+    // The store validates the current persisted save; UI state may be stale if
+    // the quest or location changed during a synchronization.
+    if (finish(questId, activity.objectId, steps)) {
+      onClose()
+    } else {
+      setFeedback('Não foi possível registrar o objetivo. Confira a missão ativa e o local antes de tentar novamente.')
+    }
   }
 
   return <Modal open title={activity.title} eyebrow="TERRAN · INTERAÇÃO DE OBJETO"
