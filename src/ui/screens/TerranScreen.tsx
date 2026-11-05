@@ -291,7 +291,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 }}
                 onFurniture={inspectFurniture}
                 onExit={exitInterior} />
-              : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save)} reducedMotion={save.settings.reducedMotion}
+              : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save)} guideHasOffers={getNpcActionableQuests(save, 'npc_rosetta', content).some((quest) => ['available', 'offered'].includes(save.quests[quest.id]?.status ?? 'locked'))} reducedMotion={save.settings.reducedMotion}
                   currentLocationId={save.world.currentLocationId} spawnPoint={streetSpawn}
                   homeUnlocked={isPlayerHomeDoorOpen(save)} onEnterHome={enterHome}
                   enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
