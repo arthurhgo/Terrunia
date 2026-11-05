@@ -1,4 +1,6 @@
 import { drawActorImage } from '../terran/worldSprites'
+import { drawEquipmentLayer } from '../characters/equipmentCanvas'
+import type { VisualItem } from '../characters/equipmentVisuals'
 import type { TrailDefinition, TrailNodeDefinition } from '../../content/types'
 import { getAstravelSector } from '../../content/astravel'
 import type { TrailNodeStatus } from '../../domain/game/types'
@@ -75,6 +77,7 @@ export function drawAstravel(
   player: WorldPoint, sprite: HTMLImageElement | null, frame: number, walking: boolean,
   facing: ActorFacing, variant: 'terririan' | 'sigil', camera: WorldPoint = { x: 0, y: 0 },
   enemySprites: Record<string, HTMLImageElement> = {},
+  equipped: readonly VisualItem[] = [],
 ) {
   ctx.imageSmoothingEnabled = false
   ctx.clearRect(0, 0, ASTRAVEL_VIEW_WIDTH, ASTRAVEL_VIEW_HEIGHT)
@@ -137,6 +140,8 @@ export function drawAstravel(
   drawPlayerAura(ctx, player.x, player.y, frame)
   pixel(ctx, '#11282b', player.x - 5, player.y - 2, 10, 3)
   const stride = walking ? Math.floor(frame / 8) % 3 : 0
+  drawEquipmentLayer(ctx, equipped, 'back', facing, player.x, player.y)
   if (!drawActorImage(ctx, sprite, player.x, player.y, facing, stride)) drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[variant], WORLD_ACTOR_SCALE)
+  drawEquipmentLayer(ctx, equipped, 'front', facing, player.x, player.y)
   ctx.restore()
 }
