@@ -21,6 +21,7 @@ import { AssetImage } from '../components/AssetImage'
 import { GameShell } from '../components/GameShell'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { PixelCityCanvas } from '../terran/PixelCityCanvas'
+import { getVisualEquipment } from '../characters/equipmentVisuals'
 import { PixelInteriorCanvas } from '../terran/PixelInteriorCanvas'
 import { QuestObjectPuzzle } from '../terran/QuestObjectPuzzle'
 import { NpcMissionHub } from '../terran/NpcMissionHub'
@@ -290,7 +291,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 }}
                 onFurniture={inspectFurniture}
                 onExit={exitInterior} />
-              : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} reducedMotion={save.settings.reducedMotion}
+              : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save)} reducedMotion={save.settings.reducedMotion}
                   currentLocationId={save.world.currentLocationId} spawnPoint={streetSpawn}
                   homeUnlocked={isPlayerHomeDoorOpen(save)} onEnterHome={enterHome}
                   enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
@@ -368,7 +369,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
           </div>
         </div>
         <NpcDialog open={eldamarOpen} onClose={() => setEldamarOpen(false)} save={save} />
-        {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance}
+        {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save)}
           reducedMotion={save.settings.reducedMotion} onComplete={() => recordCutsceneViewed(scene.id)} />}
     </div>
   )
