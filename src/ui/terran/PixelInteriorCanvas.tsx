@@ -4,6 +4,7 @@ import { NpcNameplate } from './NpcNameplate'
 import { CITY_NPC_SIZE } from './cityWorld'
 import { resolveAsset } from '../../assets/assetRegistry'
 import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
+import { getVisualEquipment, equipmentVisualIds } from '../characters/equipmentVisuals'
 import { getRoomName, roomFurniture, type RoomFurniture, type TerranInteriorId, PLAYER_HOME_INTERIOR_ID } from './roomContent'
 import type { TerranNpcPresence } from '../../content/types'
 import { findInteriorPath, getInteriorResidents, isInteriorWalkable, type InteriorResident } from './interiorLayout'
@@ -47,6 +48,8 @@ export function PixelInteriorCanvas({
   showTrackedQuestRoute?: boolean
   trackedQuestRoute?: TrackedQuestRoute | null
 }) {
+  const equipmentKey = equipmentVisualIds(save)
+  const equipped = getVisualEquipment(save)
   const residents = getInteriorResidents(save, locationId)
   const furniture = roomFurniture[locationId]
   const plan = getRoomPlan(locationId)
@@ -195,7 +198,7 @@ export function PixelInteriorCanvas({
       }
       drawTerranInterior(ctx, locationId, playerRef.current, sprite,
         reducedRef.current ? 0 : frame, faceRef.current, walking && !reducedRef.current,
-        save.character.portraitAssetId, residentsRef.current)
+        save.character.portraitAssetId, residentsRef.current, equipped)
       raf = requestAnimationFrame(tick)
     }
     window.addEventListener('keydown', keydown)
@@ -208,7 +211,7 @@ export function PixelInteriorCanvas({
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', clearKeys)
     }
-  }, [locationId, save.character.portraitAssetId, appearanceSource])
+  }, [locationId, save.character.portraitAssetId, appearanceSource, equipmentKey])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return
