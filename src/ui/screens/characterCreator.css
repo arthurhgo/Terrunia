@@ -8,7 +8,7 @@
 .character-creator__preview-orbit { position: absolute; bottom: 53px; width: 138px; height: 36px;
   border: 2px solid #d9b66b99; border-radius: 50%; box-shadow: 0 0 22px #edc17f60; }
 .character-creator__preview .character-creator__sprite { position: relative; z-index: 2; display: block;
-  width: 145px; height: 145px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 8px 7px #000c); }
+  width: 128px; height: 128px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 8px 7px #000c); }
 .character-creator__preview strong { color: #ebd4a1; font: 700 .9rem var(--display); }
 .character-creator__preview small { color: #a2c7c9; font-size: .7rem; }
 .character-creator__quick { display: flex; justify-content: center; gap: 9px; }
@@ -30,5 +30,8 @@
 @media (max-width: 720px) {
   .character-creator__fields { grid-template-columns: 1fr; }
   .character-creator__preview { min-height: 205px; }
-  .character-creator__preview .character-creator__sprite { width: 116px; height: 116px; }
+  .character-creator__preview .character-creator__sprite { width: 112px; height: 112px; }
 }
+
+/* Native 32px sprite matches NPC footprint; preview scales by integer multiples. */
+.character-creator__preview .character-creator__sprite { object-fit: contain; image-rendering: pixelated; }
