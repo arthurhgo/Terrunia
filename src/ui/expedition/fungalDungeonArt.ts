@@ -1,4 +1,6 @@
 import { drawActorImage } from '../terran/worldSprites'
+import { drawEquipmentLayer } from '../characters/equipmentCanvas'
+import type { VisualItem } from '../characters/equipmentVisuals'
 import type { DungeonDefinition, DungeonRoomDefinition } from '../../content/types'
 import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, WORLD_ACTOR_SCALE, type ActorFacing } from '../terran/pixelActorArt'
 import type { WorldPoint } from '../terran/pixelCityArt'
@@ -59,6 +61,7 @@ export function drawFungalDungeon(
   ctx: CanvasRenderingContext2D, dungeon: DungeonDefinition, player: WorldPoint,
   sprite: HTMLImageElement | null, frame: number, walking: boolean,
   facing: ActorFacing, variant: 'terririan' | 'sigil', state: DrawState,
+  equipped: readonly VisualItem[] = [],
 ) {
   ctx.imageSmoothingEnabled = false
   ctx.clearRect(0, 0, DUNGEON_WIDTH, DUNGEON_HEIGHT)
@@ -104,5 +107,7 @@ export function drawFungalDungeon(
   drawPlayerAura(ctx, player.x, player.y, frame)
   fill(ctx, '#17282d', player.x - 5, player.y - 2, 10, 3)
   const stride = walking ? Math.floor(frame / 8) % 3 : 0
+  drawEquipmentLayer(ctx, equipped, 'back', facing, player.x, player.y)
   if (!drawActorImage(ctx, sprite, player.x, player.y, facing, stride)) drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[variant], WORLD_ACTOR_SCALE)
+  drawEquipmentLayer(ctx, equipped, 'front', facing, player.x, player.y)
 }
