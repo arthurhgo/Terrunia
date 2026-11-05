@@ -3,6 +3,7 @@ import type { GameSave } from '../../domain/game/types'
 import { content } from '../../content/catalog'
 import { getWeaponGripProfile } from '../prologue/weaponGripProfiles'
 import { AssetImage } from '../components/AssetImage'
+import { CharacterSprite } from './CharacterSprite'
 
 /** The same selected character image, with the actual permanent weapon anchored at the hand. */
 export function EquippedCharacter({ save, className = '', alt }: { save: GameSave; className?: string; alt?: string }) {
@@ -15,7 +16,7 @@ export function EquippedCharacter({ save, className = '', alt }: { save: GameSav
     '--handle-x': `${grip.handleX}%`, '--handle-y': `${grip.handleY}%`, '--weapon-angle': `${grip.rotation}deg`,
   } as CSSProperties : undefined
   return <div className={`equipped-character ${className}`} style={style} data-facing="right" data-weapon-id={weapon?.id}>
-    <AssetImage assetId={save.character.portraitAssetId} className="equipped-character__body" alt={alt ?? save.character.name} />
+    <CharacterSprite portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} className="equipped-character__body" alt={alt ?? save.character.name} />
     {weapon && item && <AssetImage assetId={weapon.assetIdByGrade[item.grade] ?? weapon.assetIdByGrade[1] ?? ''}
       className="equipped-character__weapon" alt={`${weapon.name} na mão de ${save.character.name}`}
       data-forged={Boolean(item.forging?.upgradeIds.length)} />}
