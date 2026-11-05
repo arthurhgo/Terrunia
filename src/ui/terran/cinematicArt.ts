@@ -70,6 +70,7 @@ function riteHall(ctx: CanvasRenderingContext2D, frame: number, classRite: boole
 /** VISUAL_DRAFT cinematic plates, frame-driven and independent from the quest engine. */
 export function drawCinematicFrame(
   ctx: CanvasRenderingContext2D, tone: Tone, step: number, frame: number, variant: 'terririan' | 'sigil',
+  playerSheet?: HTMLImageElement | null, customPlayer = false,
 ) {
   const ruins = tone === 'ruins', victory = tone === 'victory', ritual = tone === 'clan' || tone === 'class'
   const night = ruins || tone === 'portal' || ritual
@@ -113,10 +114,12 @@ export function drawCinematicFrame(
     const y = (i * 23 + 55 - pulse * 2 + 1600) % 115
     rect(ctx, ruins ? '#ad86ba' : ritual ? '#d7b1db' : victory ? '#eacb91' : '#81cbd4', x, y, 2 + i % 2, 2 + i % 2)
   }
-  if (!drawActorImage(ctx, getWorldSprite(variant === 'sigil' ? 'character.terririan.sigil' : 'character.terririan.default'),
-    ritual ? 192 : ruins ? 143 : victory ? 150 : 126, 137, ritual || victory ? 'down' : 'right', Math.floor(frame / 12) % 3)) {
-  drawPixelActor(ctx, ritual ? 192 : ruins ? 143 : victory ? 150 : 126, 137, ritual || victory ? 'down' : 'right',
-    Math.floor(frame / 12) % 3, ACTOR_PALETTES[variant], 2)
+  const playerX = ritual ? 192 : ruins ? 143 : victory ? 150 : 126
+  const playerFacing = ritual || victory ? 'down' : 'right'
+  const stride = Math.floor(frame / 12) % 3
+  const image = customPlayer ? playerSheet : getWorldSprite(variant === 'sigil' ? 'character.terririan.sigil' : 'character.terririan.default')
+  if (!drawActorImage(ctx, image ?? null, playerX, 137, playerFacing, stride) && !customPlayer) {
+    drawPixelActor(ctx, playerX, 137, playerFacing, stride, ACTOR_PALETTES[variant], 2)
   }
   if (tone === 'portal') {
     rect(ctx, '#bfe8e4', 180, 18 + pulse % 17, 5, 12)
