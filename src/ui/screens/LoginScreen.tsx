@@ -5,6 +5,8 @@ import { isFirebaseConfigured } from '../../services/firebase/firebase'
 import { useAuthStore } from '../../state/authStore'
 import { GameButton } from '../components/GameButton'
 import { LoadingScreen } from './LoadingScreen'
+import { CharacterComposite } from '../characters/EquippedCharacter'
+import { readCosmeticAvatar } from '../characters/deviceAvatar'
 
 export function LoginScreen() {
   const status = useAuthStore((state) => state.status)
@@ -12,6 +14,7 @@ export function LoginScreen() {
   const error = useAuthStore((state) => state.error)
   const loginGoogle = useAuthStore((state) => state.loginGoogle)
   const continueAsGuest = useAuthStore((state) => state.continueAsGuest)
+  const recent = readCosmeticAvatar()
 
   if (status === 'loading') return <LoadingScreen label="Reconhecendo sua assinatura…" />
   if (status === 'signedIn' && user) return <Navigate to="/" replace />
@@ -26,6 +29,12 @@ export function LoginScreen() {
         <p className="eyebrow">RPG DE PROGRESSÃO PERSISTENTE</p>
         <h1>Terrúnia</h1>
         <p className="login-card__subtitle">Resquícios das Ruínas</p>
+        <div className="login-card__character-preview" aria-label="Prévia cosmética do último Terrírian usado neste dispositivo">
+          <CharacterComposite appearance={recent?.appearance}
+            portraitAssetId={recent?.portraitAssetId ?? 'character.terririan.default'}
+            visuals={recent?.visuals ?? []} alt="Terrírian em pixel art" />
+          <small>{recent ? 'ÚLTIMO TERRÍRIAN DESTE DISPOSITIVO' : 'SEU TERRÍRIAN AGUARDA'}</small>
+        </div>
         <p className="login-card__intro">
           Crie um Terrírian cru. Descubra seu Clã no mundo. Transforme cinco vínculos permanentes pela jornada.
         </p>
