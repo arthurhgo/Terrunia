@@ -1,0 +1,165 @@
+/* Terrúnia v0.5.5 — silent portrait initiative rail, arena dice and combat VFX. */
+.combat-timeline.combat-timeline--portraits {
+  display:flex; justify-content:center; align-items:center; gap:0;
+  flex:0 0 65px; height:65px; max-height:65px; min-height:65px;
+  padding:5px 12px; border-bottom:2px solid #a78b55;
+  background:linear-gradient(90deg,#061322,#112b37 50%,#061322);
+  overflow-x:auto; scrollbar-width:thin;
+}
+.combat-timeline--portraits .combat-timeline__actors {
+  display:flex; justify-content:center; align-items:center; min-height:54px;
+  gap:13px; padding:2px 9px; margin:0; flex:0 0 auto; overflow:visible;
+  background:linear-gradient(#aa9665,#aa9665) center/100% 2px no-repeat;
+}
+.combat-timeline--portraits .combat-timeline__portrait {
+  display:block; position:relative; flex:0 0 48px; min-width:48px;
+  max-width:48px; height:48px; padding:0; border:0; background:transparent;
+  overflow:visible; box-shadow:none; filter:none;
+}
+.combat-timeline--portraits .combat-timeline__face {
+  position:absolute; inset:2px; display:block; overflow:hidden; border:2px solid #947f60;
+  border-radius:50%; background:#1b2c39; box-shadow:0 2px 7px #000b;
+}
+.combat-timeline--portraits .combat-timeline__face img {
+  position:absolute; inset:0; display:block; width:100%; height:100%;
+  object-fit:cover; image-rendering:pixelated;
+}
+.combat-timeline--portraits .is-enemy .combat-timeline__face img {
+  height:175%; width:175%; max-width:none;
+  left:-38%; top:-9%; object-fit:cover;
+}
+.combat-timeline--portraits .is-player .combat-timeline__face { border-color:#67c4aa; }
+.combat-timeline--portraits .is-enemy .combat-timeline__face { border-color:#b77571; }
+.combat-timeline--portraits .combat-timeline__initiative {
+  display:grid; place-items:center; position:absolute; z-index:2; bottom:-5px; right:-4px;
+  min-width:18px; height:18px; border:1px solid #cda966; border-radius:10px;
+  background:#10202e; color:#ffe6a8; font:700 10px var(--display);
+  padding:0 3px; box-sizing:border-box; pointer-events:none;
+}
+.combat-timeline--portraits .combat-timeline__portrait.is-current .combat-timeline__face {
+  border-color:#ffe2a1; box-shadow:0 0 0 2px #d69b42,0 0 14px #f4b764a8;
+  animation:combat-active-portrait 1.2s ease-in-out infinite;
+}
+.combat-timeline--portraits .combat-timeline__portrait.is-acted {opacity:.53;}
+.combat-timeline--portraits .combat-timeline__portrait.is-defeated {opacity:.27;filter:grayscale(1);}
+@keyframes combat-active-portrait{50%{box-shadow:0 0 0 2px #e8c36a,0 0 19px #ffdf91;}}
+/* No popup, card or rectangular altar; the world itself becomes the dice stage. */
+.pixel-battle__arena .battle-dice-platform--in-arena {
+  position:absolute; inset:0; left:0; top:0; width:100%; height:100%; transform:none;
+  display:block; box-sizing:border-box; padding:0; margin:0; border:0;
+  background:transparent; box-shadow:none; pointer-events:none; z-index:11; text-align:center;
+}
+.battle-dice-platform--in-arena .battle-dice-platform__veil {
+  position:absolute; inset:0; background:#030b17a6; pointer-events:none;
+  animation:combat-veil .3s ease-out both;
+}
+.battle-dice-platform--in-arena .battle-dice-platform__actor {
+  position:absolute; z-index:2; left:50%; top:6%; transform:translateX(-50%);
+  display:flex; gap:8px; align-items:center; justify-content:center;
+  color:#f9ddb0; white-space:nowrap; text-shadow:0 2px 3px #000;
+  font:700 clamp(11px,1.05vw,15px) var(--display);
+}
+.battle-dice-platform--in-arena .battle-dice-platform__actor small {
+  color:#b9d5d5; font:700 9px var(--display);
+}
+.battle-dice-platform--in-arena .battle-dice-platform__actor-face {
+  position:relative; display:block; flex:0 0 43px; width:43px; height:43px;
+  overflow:hidden; border:2px solid #d9b66c; border-radius:50%; background:#152b39;
+}
+.battle-dice-platform--in-arena .battle-dice-platform__actor-face img {
+  display:block; width:100%; height:100%; object-fit:cover; image-rendering:pixelated;
+}
+.battle-dice-platform--in-arena.is-enemy-roll .battle-dice-platform__actor-face img {
+  width:175%; height:175%; max-width:none; transform:translate(-21%,-5%);
+}
+.battle-dice-platform--in-arena .battle-dice-platform__stage {
+  position:absolute; top:34%; left:50%; width:164px; height:160px;
+  transform:translateX(-50%); display:grid; place-items:center;
+  border:0; background:transparent; pointer-events:none;
+}
+.battle-dice-platform--in-arena .battle-dice-platform__die { position:relative; z-index:3; }
+.battle-dice-platform--in-arena .battle-dice-platform__die .die-icon {
+  width:clamp(58px,8vw,88px); height:clamp(58px,8vw,88px);
+  filter:drop-shadow(0 10px 12px #000) drop-shadow(0 0 16px #ffd58e70);
+}
+.battle-dice-platform--in-arena .battle-dice-platform__shadow {
+  z-index:1; bottom:23px; width:74px; height:17px; background:#000b; filter:blur(7px);
+}
+.battle-dice-platform--in-arena .battle-dice-platform__result {
+  position:absolute; z-index:4; top:100%; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  white-space:nowrap; text-shadow:0 2px 3px #000;
+}
+.battle-dice-platform--in-arena .battle-dice-platform__result strong { color:#ffdb8e; font:700 15px var(--display); }
+.battle-dice-platform--in-arena .battle-dice-platform__result small { color:#cce6d7; font:700 11px var(--display); }
+.battle-dice-platform--in-arena.is-awaiting-click .battle-dice-platform__veil { background:#07172677; }
+.battle-dice-platform--in-arena.is-rolling .battle-dice-platform__die {
+  animation:combat-die-from-actions 1.35s cubic-bezier(.2,.72,.22,1) both;
+}
+.battle-dice-platform--in-arena.is-rolling .die-icon__number { opacity:0; }
+.battle-dice-platform--in-arena.is-settled .battle-dice-platform__die {
+  transform:translateY(5px) rotate(8deg); animation:none;
+}
+.battle-dice-platform--in-arena .battle-dice-platform__rune {display:none;}
+@keyframes combat-veil{from{opacity:0}to{opacity:1}}
+@keyframes combat-die-from-actions {
+  0%{transform:translateY(160px) rotate(-480deg) scale(.7);opacity:.3}
+  37%{transform:translateY(-43px) rotate(140deg) scale(1.15);opacity:1}
+  61%{transform:translateY(19px) rotate(305deg) scale(.96)}
+  78%{transform:translateY(-17px) rotate(385deg) scale(.94)}
+  92%{transform:translateY(8px) rotate(440deg) scale(1)}
+  100%{transform:translateY(5px) rotate(448deg) scale(1)}
+}
+/* Player picks action then physically throws the die from this action bar. */
+.pixel-battle--dice-awaiting .pixel-battle__commands,
+.pixel-battle--dice-awaiting .pixel-battle__submenu { display:none; }
+.pixel-battle__actions > .battle-die-drag {
+  margin:auto; width:min(100%,270px); min-height:118px;
+  border-color:#d4b16d; box-shadow:0 0 15px #b3dcbb42;
+}
+.pixel-battle__actions > .battle-die-drag .die-icon { width:64px;height:64px; }
+.pixel-battle--dice-awaiting .pixel-battle__actions h2 {font-size:clamp(13px,1.4vw,18px);}
+.pixel-battle__round-curtain {inset:auto 0;top:39%;height:67px;gap:2px;
+  background:linear-gradient(90deg,#03101b12,#0b1b2be6 24%,#0b1b2be6 76%,#03101b12);}
+.pixel-battle__round-curtain > span,.pixel-battle__round-curtain > small {display:none;}
+.pixel-battle__round-curtain > strong {font-size:clamp(17px,2vw,28px);}
+.pixel-battle__turn-cue {display:none!important;}
+/* Scripted hit VFX: presentation only, never applies damage. */
+.pixel-battle__hero.is-striking {animation:combat-player-lunge .7s steps(7,end) both;}
+.pixel-battle__enemy.is-striking {animation:combat-enemy-lunge .7s steps(7,end) both;}
+.pixel-battle__strike-fx {
+  position:absolute; z-index:12; top:46%; height:7px; width:23%;
+  pointer-events:none; transform-origin:left center; border-radius:50%;
+  background:linear-gradient(90deg,transparent,#ffebbf,#f3a751,transparent);
+  box-shadow:0 0 12px #ffd47f,0 0 24px #efab629e;
+  animation:combat-slash .65s steps(7,end) both;
+}
+.pixel-battle__strike-fx.to-enemy{left:47%;transform:rotate(-20deg);}
+.pixel-battle__strike-fx.to-player{left:18%;transform:rotate(155deg);}
+.pixel-battle__strike-fx.is-arcane {
+  height:13px; background:linear-gradient(90deg,transparent,#93fcff,#c9a6ff,transparent);
+  box-shadow:0 0 14px #68e9ff,0 0 29px #7c82e6b9;
+  animation:combat-arcane-shot .65s linear both;
+}
+.pixel-battle__strike-fx.is-projectile {height:5px;background:linear-gradient(90deg,transparent,#ffe2a4,#f9f4ea);}
+.pixel-battle__enemy.is-strike-target,.pixel-battle__hero.is-strike-target {animation:combat-strike-impact .65s steps(5,end) both;}
+@keyframes combat-player-lunge {25%{transform:translateX(25px) scale(1.04)}50%{transform:translateX(59px) scale(1.06)}100%{transform:none}}
+@keyframes combat-enemy-lunge {25%{transform:translateX(-14px)}50%{transform:translateX(-34px) scale(1.03)}100%{transform:none}}
+@keyframes combat-slash {0%{opacity:0;clip-path:inset(0 100% 0 0)}35%{opacity:1;clip-path:inset(0 12% 0 0)}100%{opacity:0;clip-path:inset(0 0 0 0)}}
+@keyframes combat-arcane-shot {0%{opacity:0;translate:-55% -20px}30%{opacity:1}85%{opacity:1}100%{opacity:0;translate:45% 0}}
+@keyframes combat-strike-impact{25%,55%{filter:brightness(2) sepia(1) saturate(8) hue-rotate(-35deg) drop-shadow(0 0 12px #ff554d)}100%{filter:none}}
+@media(max-width:600px){
+  .combat-timeline.combat-timeline--portraits {flex-basis:56px;height:56px;min-height:56px;padding:3px 5px;}
+  .combat-timeline--portraits .combat-timeline__actors{gap:8px;}
+  .combat-timeline--portraits .combat-timeline__portrait{flex-basis:41px;min-width:41px;max-width:41px;height:41px;}
+  .battle-dice-platform--in-arena .battle-dice-platform__actor{top:5%;gap:4px;}
+  .battle-dice-platform--in-arena .battle-dice-platform__actor-face{width:31px;height:31px;flex-basis:31px;}
+  .battle-dice-platform--in-arena .battle-dice-platform__stage{top:32%;}
+}
+@media(prefers-reduced-motion:reduce){
+  .combat-timeline--portraits .combat-timeline__portrait.is-current .combat-timeline__face,
+  .battle-dice-platform--in-arena.is-rolling .battle-dice-platform__die,
+  .pixel-battle__hero.is-striking,.pixel-battle__enemy.is-striking,
+  .pixel-battle__strike-fx,.pixel-battle__enemy.is-strike-target,
+  .pixel-battle__hero.is-strike-target{animation:none!important;}
+}
