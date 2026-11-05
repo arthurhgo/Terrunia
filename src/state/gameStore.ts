@@ -274,9 +274,9 @@ export const useGameStore = create<GameState>((set, get) => {
     prepareStarterWeapon: (baseItemId) => {
       const save = get().save
       const weapon = content.boundItemBases[baseItemId]
-      if (!save || !weapon) return failAction('Arma inicial não encontrada.')
+      if (!save || !weapon) { failAction('Arma inicial não encontrada.'); return false }
       const result = prepareStarterWeapon(save, weapon, nowIso())
-      if (!result.ok) return failAction(result.message)
+      if (!result.ok) { failAction(result.message); return false }
       commit(result.value)
       show('Atributos preparados', `Requisitos de ${weapon.name} atendidos. Você ainda pode personalizar os dados antes do Vínculo.`, 'success')
       return true
