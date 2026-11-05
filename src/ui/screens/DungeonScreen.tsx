@@ -112,7 +112,7 @@ export function DungeonScene({ unified = false }: { unified?: boolean }) {
           </div>
         </aside>}
       </div>
-      {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId}
+      {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance}
         reducedMotion={save.settings.reducedMotion} onComplete={() => recordCutsceneViewed(scene.id)} />}
     </div>
 
