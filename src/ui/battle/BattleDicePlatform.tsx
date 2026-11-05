@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { AttributeDie } from '../../domain/game/types'
 import { DieIcon } from '../components/DieIcon'
+import { DraggableBattleDie } from './DraggableBattleDie'
 
 export type BattleDiceEvent = {
   id: string
@@ -15,7 +16,7 @@ export type BattleDiceEvent = {
 }
 
 /** Shows the result that the deterministic battle engine actually recorded.
- * A player's attack die never starts rolling until its button is clicked.
+ * A player's attack die starts rolling only after an upward drag and release.
  */
 export function BattleDicePlatform({ roll, reducedMotion, awaitingClick = false, onRoll }: {
   roll: BattleDiceEvent | null
@@ -46,18 +47,15 @@ export function BattleDicePlatform({ roll, reducedMotion, awaitingClick = false,
       <span className="battle-dice-platform__rune" aria-hidden="true" />
       <span className="battle-dice-platform__shadow" aria-hidden="true" />
       {awaitingClick
-        ? <button type="button" className="battle-dice-platform__roll-trigger" aria-label={`Rolar dado d${roll.sides}`}
-            onClick={onRoll} title="Clique no dado para rolar">
-            <DieIcon sides={roll.sides} face={roll.face} />
-            <small>Clique no dado para rolar</small>
-          </button>
+        ? <DraggableBattleDie sides={roll.sides} onThrow={() => onRoll?.()}
+            ariaLabel={`Arrastar dado d${roll.sides} para cima para rolar`} />
         : <div className="battle-dice-platform__die" key={roll.id}>
             <DieIcon sides={roll.sides} face={roll.face} />
           </div>}
     </div>
     <div className="battle-dice-platform__result">
-      <small>d{roll.sides} · {awaitingClick ? 'Aguardando seu clique' : settled ? 'Dado assentado' : 'Rolando na plataforma…'}</small>
-      <strong>{awaitingClick ? 'Clique para lançar' : settled
+      <small>d{roll.sides} · {awaitingClick ? 'Aguardando lançamento' : settled ? 'Dado assentado' : 'Rolando na plataforma…'}</small>
+      <strong>{awaitingClick ? 'Arraste para cima e solte' : settled
         ? initiative ? `Iniciativa: ${roll.initiativeTotal ?? roll.face}` : `${roll.damage} de dano`
         : 'Rolando…'}</strong>
     </div>
