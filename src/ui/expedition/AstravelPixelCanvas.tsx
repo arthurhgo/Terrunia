@@ -45,6 +45,9 @@ function nearestReachableNode(point: WorldPoint, radius: number, trail: TrailDef
 
 export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portraitAssetId, appearance, equipment = [], reducedMotion, enabled, onInspect, onEngage, onTravelStart }: Props) {
   const appearanceSource = appearance ? appearanceSpriteSheetUri(appearance) : null
+  const equipmentKey = equipment.map((item) => item.assetId).join('|')
+  const equipmentRef = useRef(equipment)
+  equipmentRef.current = equipment
   const start = trail.nodes.find((node) => node.id === currentLocationId)
     ?? [...trail.nodes].reverse().find((node) => statuses[node.id] === 'completed')
     ?? trail.nodes[0]
@@ -203,7 +206,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
         setView(nextView)
       }
       drawAstravel(ctx, trail, statusesRef.current, playerRef.current, sheet, reducedMotion ? 0 : frame,
-        walking && !reducedMotion, facingRef.current, portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', camera, enemySprites, equipment)
+        walking && !reducedMotion, facingRef.current, portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', camera, enemySprites, equipmentRef.current)
       raf = requestAnimationFrame(tick)
     }
     window.addEventListener('keydown', keydown)
@@ -216,7 +219,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', blur)
     }
-  }, [trail, portraitAssetId, appearanceSource, reducedMotion, activateNode, equipment])
+  }, [trail, portraitAssetId, appearanceSource, reducedMotion, activateNode, equipmentKey])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return
