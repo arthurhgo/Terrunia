@@ -2,6 +2,7 @@ import { Sparkles } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import type { GameSave } from '../../domain/game/types'
 import { AssetImage } from '../components/AssetImage'
+import { CharacterSprite } from '../characters/CharacterSprite'
 import { getWeaponGripProfile } from './weaponGripProfiles'
 
 type Props = {
@@ -31,8 +32,8 @@ export function BoundWeaponCharacterPreview({ save, weapon }: Props) {
     <div className={`prologue-hero-preview__stage ${weapon ? 'is-armed' : 'is-unarmed'}`}>
       <div className="prologue-hero-preview__actor" data-weapon-id={weapon?.id}>
         <span className="prologue-hero-preview__circle" aria-hidden="true" />
-        <AssetImage assetId={save.character.portraitAssetId} className="prologue-hero-preview__character"
-          alt={`Terrírian ${save.character.name}`} />
+        <CharacterSprite portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance}
+          className="prologue-hero-preview__character" alt={`Terrírian ${save.character.name}`} />
         {weapon && <AssetImage key={weapon.assetId} assetId={weapon.assetId}
           style={gripStyle} className="prologue-hero-preview__equipped-weapon"
           alt={`${weapon.name} na mão do personagem (prévia)`} />}
