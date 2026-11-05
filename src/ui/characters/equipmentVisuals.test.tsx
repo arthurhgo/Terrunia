@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { DEFAULT_CHARACTER_APPEARANCE } from '../../domain/character/appearance'
 import { bindPrologueWeapon, createNewSave } from '../../domain/game/createSave'
+import { createBoundItem } from '../../domain/bond/boundItems'
 import { CharacterComposite, EquippedCharacter } from './EquippedCharacter'
 import { getEquipmentAnchor, getVisualEquipment, VISUAL_EQUIPMENT_ORDER } from './equipmentVisuals'
 import { readCosmeticAvatar, rememberCosmeticAvatar } from './deviceAvatar'
@@ -61,6 +62,27 @@ describe('visual do equipamento vinculado: fonte única', () => {
     const equipped = getVisualEquipment(save)
     expect(equipped.map((item) => item.slot)).toEqual(['armor', 'weapon'])
     expect(equipped[0].itemId).toBe('equipment_worn_linen_tunic')
+  })
+
+  it('aplica os cinco slots realmente equipados sem peças substitutas de inventário', () => {
+    const save = fresh()
+    for (const slot of VISUAL_EQUIPMENT_ORDER) {
+      const definition = Object.values(content.boundItemBases).find((base) => base.slot === slot)
+      if (!definition) throw new Error('Catálogo sem definição: ' + slot)
+      const item = createBoundItem(save.character.id, definition, save.updatedAt, 'slot-' + slot)
+      save.boundItems[item.id] = item
+      save.character.bondedEquipment[slot] = item.id
+    }
+    const visuals = getVisualEquipment(save)
+    expect(visuals).toHaveLength(5)
+    expect(visuals.map((item) => item.slot)).toEqual([...VISUAL_EQUIPMENT_ORDER])
+    const { container } = render(<EquippedCharacter save={save} facing="down" />)
+    expect(container.querySelectorAll('.equipped-character__layer')).toHaveLength(5)
+    for (const slot of VISUAL_EQUIPMENT_ORDER) {
+      expect(container.querySelector('[data-slot="' + slot + '"]')).toBeInTheDocument()
+    }
+    expect(getEquipmentAnchor(visuals.find((item) => item.slot === 'shield')!, 'up').layer).toBe('back')
+    expect(save.character.level).toBe(1) // visual fixtures do not grant equipment requirements.
   })
 
   it('login só reutiliza dados COSMÉTICOS do dispositivo, sem nome nem identidade da conta', () => {
