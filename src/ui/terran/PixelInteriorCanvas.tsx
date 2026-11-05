@@ -262,6 +262,7 @@ export function PixelInteriorCanvas({
         .map((item) => <button type="button" key={item.id}
         className={`pixel-interior__furniture ${item.behavior === 'quest' ? 'pixel-interior__furniture--quest' : ''}`}
         disabled={!enabled} data-quest-object={item.questId}
+        data-interaction-glow={item.questId && ['active','available','offered','ready_to_turn_in'].includes(save.quests[item.questId]?.status ?? 'locked') ? 'quest' : item.behavior === 'archive' ? 'inspect' : undefined}
         aria-label={`Interagir com ${item.name}`} title={item.description}
         style={{ left: item.point.x / 384 * 100 + '%', top: (item.point.y - 9) / 256 * 100 + '%' }}
         onClick={() => walkTo(item.point, item.id)}>
@@ -269,7 +270,7 @@ export function PixelInteriorCanvas({
         {item.behavior === 'quest' && <small className="pixel-interior__furniture-caption">{item.name}</small>}
       </button>)}
       <button type="button" disabled={!enabled}
-        className="pixel-interior__service"
+        className="pixel-interior__service" data-interaction-glow="service"
         style={{ left: `${plan.service.x / 384 * 100}%`, top: `${plan.service.y / 256 * 100}%` }}
         aria-label={locationId === PLAYER_HOME_INTERIOR_ID ? 'Cama · descansar e recuperar' : 'Abrir serviços do local'}
         onClick={() => {
