@@ -50,3 +50,14 @@
 }
 @media (prefers-reduced-motion: reduce) { .pixel-battle__round-curtain, .battle-dice-platform.is-rolling .battle-dice-platform__die,
   .battle-dice-platform.is-rolling .battle-dice-platform__rune { animation: none !important; } }
+
+/* Actual continuous timeline rails, not merely disconnected event cards. */
+.combat-timeline__actors, .combat-timeline__events {
+  background-image: linear-gradient(90deg, transparent 0%, #b6975b 4%, #5ca6a4 96%, transparent 100%);
+  background-position: left 49%;
+  background-repeat: no-repeat;
+  background-size: 100% 2px;
+}
+.combat-timeline__actors li, .combat-timeline__events li {
+  position: relative; z-index: 1; box-shadow: 0 2px 5px #03121dbb;
+}
