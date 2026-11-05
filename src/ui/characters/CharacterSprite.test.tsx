@@ -11,6 +11,7 @@ describe('criador modular de sprites', () => {
     const preset = { ...DEFAULT_CHARACTER_APPEARANCE, hairStyle: 'cacheado' as const, hairColor: '#cc2299', skinTone: '#aa7755' }
     const svg = appearanceSpriteSvg(preset)
     expect(svg).toContain('shape-rendering="crispEdges"')
+    expect(svg).toContain('width="16" height="16"')
     expect(svg).toContain('#cc2299')
     expect(svg).toContain('#aa7755')
     expect(appearanceSpriteUri(preset)).toContain('data:image/svg+xml')
