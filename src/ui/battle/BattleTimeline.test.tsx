@@ -1,5 +1,7 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { cleanup, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it } from 'vitest'
+
+afterEach(cleanup)
 import { DEFAULT_CHARACTER_APPEARANCE } from '../../domain/character/appearance'
 import { createNewSave } from '../../domain/game/createSave'
 import { createBattle } from '../../domain/combat/engine'
