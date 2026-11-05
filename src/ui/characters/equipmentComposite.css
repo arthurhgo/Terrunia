@@ -1,0 +1,98 @@
+/* v0.5.6 — one 32px coordinate system across DOM and world canvas.
+   Position/rotation are calculated by getEquipmentAnchor, never by item icon size.
+*/
+.character-composite.equipped-character {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  isolation: isolate;
+  overflow: visible;
+}
+.character-composite > .equipped-character__body {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  margin: 0;
+  object-fit: contain;
+  image-rendering: pixelated;
+  border: 0;
+  background: transparent;
+}
+.character-composite > .equipped-character__layer {
+  display: block;
+  position: absolute;
+  margin: 0;
+  max-width: none;
+  min-width: 0;
+  min-height: 0;
+  z-index: 3;
+  box-sizing: border-box;
+  object-fit: contain;
+  image-rendering: pixelated;
+  border: 0;
+  outline: none;
+  border-radius: 0;
+  background: transparent;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px #05070cb8);
+}
+.character-composite > .equipped-character__layer--back { z-index: 0; }
+.character-composite > .equipped-character__layer--armor { z-index: 2; }
+.character-composite > .equipped-character__layer--necklace,
+.character-composite > .equipped-character__layer--bracelet { z-index: 3; }
+.character-composite > .equipped-character__layer--shield { z-index: 4; }
+.character-composite > .equipped-character__layer--weapon { z-index: 5; }
+.character-composite > .equipped-character__layer[data-forged="true"] {
+  filter: drop-shadow(0 0 2px #ffcf7e);
+}
+.login-card__character-preview {
+  width: min(168px, 56vw);
+  margin: 12px auto 18px;
+  padding: 9px 10px 8px;
+  border: 1px solid #a78246;
+  background: radial-gradient(circle at 50% 58%, #2e5360, #0b1a29 68%);
+  box-shadow: inset 0 0 0 2px #263847, 0 7px 24px #0008;
+}
+.login-card__character-preview .character-composite { width: min(120px,100%); margin: auto; }
+.login-card__character-preview small {
+  display: block;
+  margin-top: 6px;
+  font: 700 .51rem/1.4 var(--display);
+  color: #d9bb83;
+  letter-spacing: .03em;
+}
+.character-access-portrait .character-composite { width: 128px; height: 128px; z-index: 1; }
+.nexus-identity .character-composite { width: 128px; height: 128px; }
+.character-sheet-identity .character-composite { width: 128px; height: 128px; }
+.terran-character-hud__portrait .character-composite { width: 52px; height: 52px; }
+.nexus-identity .character-composite .equipped-character__layer,
+.character-sheet-identity .character-composite .equipped-character__layer,
+.character-access-portrait .character-composite .equipped-character__layer {
+  border: 0; background: transparent; aspect-ratio: auto; border-radius: 0;
+}
+.prologue-hero-preview__actor > .character-composite {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  z-index: 2;
+}
+.prologue-hero-preview__actor > .character-composite .equipped-character__body {
+  width: 100%; height: 100%;
+}
+/* Canvas scenes use native 32px anchors; battle scales the entire composite as one actor. */
+.pixel-battle__hero .character-composite { width: 100%; height: 100%; }
+.pixel-battle__hero .character-composite > .equipped-character__body { transform: none; }
+.pixel-battle__death-character .character-composite { width: 100%; height: 100%; }
+@media(max-width:650px) {
+  .character-access-portrait .character-composite {width:112px;height:112px;}
+  .nexus-identity .character-composite {width:70px;height:70px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .character-composite > .equipped-character__layer {transition:none;}
+}
