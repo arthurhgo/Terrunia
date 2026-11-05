@@ -1,4 +1,6 @@
 import { drawActorImage, getWorldSprite } from './worldSprites'
+import { drawEquipmentLayer } from '../characters/equipmentCanvas'
+import type { VisualItem } from '../characters/equipmentVisuals'
 import { getPresencePortrait } from '../../content/npcVisuals'
 import { PLAYER_HOME_INTERIOR_ID, roomFurniture, type TerranInteriorId } from './roomContent'
 import { getRoomPlan } from './roomGeometry'
@@ -29,6 +31,7 @@ export function drawTerranInterior(
   walking: boolean,
   portraitId: string,
   residents: readonly InteriorResident[],
+  equipped: readonly VisualItem[] = [],
 ) {
   const plan = getRoomPlan(locationId)
   const theme = palettes[plan.tile]
@@ -163,9 +166,11 @@ export function drawTerranInterior(
 
   const drawPlayer = () => {
     drawPlayerAura(ctx, player.x, player.y, frame)
+    drawEquipmentLayer(ctx, equipped, 'back', facing, player.x, player.y)
     if (!drawActorImage(ctx, sheet, player.x, player.y, facing, walking ? Math.floor(frame / 8) % 3 : 0)) {
       drawPixelActor(ctx, player.x, player.y, facing, 0, ACTOR_PALETTES[portraitId.includes('sigil') ? 'sigil' : 'terririan'], 1)
     }
+    drawEquipmentLayer(ctx, equipped, 'front', facing, player.x, player.y)
   }
 
   const ordered = [...residents].sort((a, b) => a.position.y - b.position.y)
