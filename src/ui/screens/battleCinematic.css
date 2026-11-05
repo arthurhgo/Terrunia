@@ -163,3 +163,6 @@
   .pixel-battle__strike-fx,.pixel-battle__enemy.is-strike-target,
   .pixel-battle__hero.is-strike-target{animation:none!important;}
 }
+
+/* Header no longer repeats the entire turn state beside the face timeline. */
+.pixel-battle__header > small { visibility:hidden; }
