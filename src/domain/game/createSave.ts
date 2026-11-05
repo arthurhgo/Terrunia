@@ -1,5 +1,6 @@
 import type { ContentCatalog } from '../../content/catalog'
 import { BALANCE } from '../../content/balance'
+import { normalizeAppearance, type CharacterAppearance } from '../character/appearance'
 import { createBoundItem, canBindSlot } from '../bond/boundItems'
 import type { AttributeId, AttributeValue, GameSave, QuestProgress } from './types'
 import { createQuestProgress } from '../quests/questEngine'
@@ -30,6 +31,7 @@ export const createNewSave = (
     campaignId: ids.saveId,
     campaignGeneration: 0,
   },
+  appearance?: CharacterAppearance,
 ): GameSave => {
   const quests = Object.values(catalog.quests).reduce<Record<string, QuestProgress>>(
     (result, definition) => {
@@ -54,6 +56,7 @@ export const createNewSave = (
       name: characterName.trim(),
       raceId: 'terririan',
       portraitAssetId,
+      ...(appearance ? { appearance: normalizeAppearance(appearance) } : {}),
       titleIds: [],
       level: 1,
       xp: 0,
