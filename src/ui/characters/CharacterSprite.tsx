@@ -67,7 +67,7 @@ export function appearanceSpriteSvg(raw: CharacterAppearance): string {
     const fill = palette[glyph]
     if (fill) rects.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${fill}"/>`)
   }))
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">${rects.join('')}</svg>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges">${rects.join('')}</svg>`
 }
 
 export const appearanceSpriteUri = (appearance: CharacterAppearance): string =>
