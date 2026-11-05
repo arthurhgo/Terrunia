@@ -8,7 +8,7 @@
 .character-creator__preview-orbit { position: absolute; bottom: 53px; width: 138px; height: 36px;
   border: 2px solid #d9b66b99; border-radius: 50%; box-shadow: 0 0 22px #edc17f60; }
 .character-creator__preview .character-creator__sprite { position: relative; z-index: 2; display: block;
-  width: 145px; height: 145px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 8px 7px #000c); }
+  width: 128px; height: 128px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 8px 7px #000c); }
 .character-creator__preview strong { color: #ebd4a1; font: 700 .9rem var(--display); }
 .character-creator__preview small { color: #a2c7c9; font-size: .7rem; }
 .character-creator__quick { display: flex; justify-content: center; gap: 9px; }
@@ -30,5 +30,23 @@
 @media (max-width: 720px) {
   .character-creator__fields { grid-template-columns: 1fr; }
   .character-creator__preview { min-height: 205px; }
-  .character-creator__preview .character-creator__sprite { width: 116px; height: 116px; }
+  .character-creator__preview .character-creator__sprite { width: 112px; height: 112px; }
 }
+
+/* Native 32px sprite matches NPC footprint; preview scales by integer multiples. */
+.character-creator__preview .character-creator__sprite { object-fit: contain; image-rendering: pixelated; }
+
+/* NPC-proportion character paper doll and direction controls. */
+.character-creator__preview { overflow: visible; }
+.character-creator__face-preview {
+  position:absolute; right:12px; top:13px;
+  display:grid; place-items:center; width:68px; height:68px; padding:5px;
+  border:2px ridge #c4a16c; background:#0e2232;
+  box-shadow:0 3px 13px #0009; box-sizing:border-box;
+}
+.character-creator__face-preview img { width:100%; height:100%; object-fit:contain; image-rendering:pixelated; }
+.character-creator__directions {display:grid; grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:8px auto 7px;max-width:320px;}
+.character-creator__directions button {cursor:pointer; padding:6px 2px; color:#e6d4af;
+  border:1px solid #866d4a; background:#132a3a; font:700 .62rem var(--display);}
+.character-creator__directions button.is-selected {background:#345344; border-color:#dfc185; box-shadow:inset 0 0 0 1px #79b8ab;}
+@media(max-width:720px){.character-creator__face-preview{width:57px;height:57px;right:7px;top:7px;}}

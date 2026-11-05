@@ -3,6 +3,7 @@ import { NpcMarker } from './NpcMarker'
 import { NpcNameplate } from './NpcNameplate'
 import { CITY_NPC_SIZE } from './cityWorld'
 import { resolveAsset } from '../../assets/assetRegistry'
+import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
 import { getRoomName, roomFurniture, type RoomFurniture, type TerranInteriorId, PLAYER_HOME_INTERIOR_ID } from './roomContent'
 import type { TerranNpcPresence } from '../../content/types'
 import { findInteriorPath, getInteriorResidents, isInteriorWalkable, type InteriorResident } from './interiorLayout'
@@ -114,11 +115,13 @@ export function PixelInteriorCanvas({
     if (!enabled) { keysRef.current.clear(); destinationRef.current = null }
   }, [enabled])
 
+  const appearanceSource = save.character.appearance ? appearanceSpriteSheetUri(save.character.appearance) : null
+
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d')
     if (!ctx) return
     const sprite = new Image()
-    sprite.src = resolveAsset(save.character.portraitAssetId).path
+    sprite.src = appearanceSource ?? resolveAsset(save.character.portraitAssetId).path
     sprite.onerror = () => { sprite.onerror = null; sprite.src = resolveAsset(save.character.portraitAssetId).fallback }
     let frame = 0, raf = 0, last = 0
     const keydown = (event: KeyboardEvent) => {
@@ -205,7 +208,7 @@ export function PixelInteriorCanvas({
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', clearKeys)
     }
-  }, [locationId, save.character.portraitAssetId])
+  }, [locationId, save.character.portraitAssetId, appearanceSource])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return

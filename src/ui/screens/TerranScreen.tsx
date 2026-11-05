@@ -368,7 +368,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
           </div>
         </div>
         <NpcDialog open={eldamarOpen} onClose={() => setEldamarOpen(false)} save={save} />
-        {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId}
+        {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance}
           reducedMotion={save.settings.reducedMotion} onComplete={() => recordCutsceneViewed(scene.id)} />}
     </div>
   )

@@ -3,7 +3,7 @@ import { NpcMarker } from './NpcMarker'
 import { NpcNameplate } from './NpcNameplate'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { CharacterAppearance } from '../../domain/character/appearance'
-import { appearanceSpriteUri } from '../characters/CharacterSprite'
+import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { TerranNpcPresence } from '../../content/types'
@@ -78,7 +78,7 @@ const nearestNpc = (point: WorldPoint, actors: readonly CityActor[], radius: num
 }
 
 export function PixelCityCanvas({ portraitAssetId, appearance, reducedMotion, currentLocationId, enabled, objectiveId, actors, homeUnlocked, spawnPoint, onEnterHome, onEnter, onTalk, onInspectLandmark, landmarkFlags, questRoutes = [], showQuestRoutes = false, showTrackedQuestRoute = false, trackedQuestRoute = null, onHideQuestRoutes }: Props) {
-  const appearanceSource = appearance ? appearanceSpriteUri(appearance) : null
+  const appearanceSource = appearance ? appearanceSpriteSheetUri(appearance) : null
   const [rosettaHovered, setRosettaHovered] = useState(false)
   const [rosettaFocused, setRosettaFocused] = useState(false)
   // Rosetta's hovered/pinned white preview takes precedence; accepted paths remain separate.

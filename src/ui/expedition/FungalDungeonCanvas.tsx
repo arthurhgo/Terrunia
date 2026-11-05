@@ -1,7 +1,7 @@
 import { useEffect, useRef, type PointerEvent } from 'react'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { CharacterAppearance } from '../../domain/character/appearance'
-import { appearanceSpriteUri } from '../characters/CharacterSprite'
+import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
 import type { DungeonDefinition, DungeonRoomDefinition } from '../../content/types'
 import type { ActorFacing } from '../terran/pixelActorArt'
 import type { WorldPoint } from '../terran/pixelCityArt'
@@ -38,7 +38,7 @@ function nearbyRoom(point: WorldPoint, dungeon: DungeonDefinition, radius: numbe
 }
 
 export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, portraitAssetId, appearance, reducedMotion, enabled, onDiscover, onInspect, onTravelStart }: Props) {
-  const appearanceSource = appearance ? appearanceSpriteUri(appearance) : null
+  const appearanceSource = appearance ? appearanceSpriteSheetUri(appearance) : null
   const discovered = new Set(dungeon.rooms.filter((room) => discoveredFlags.includes(dungeonRoomFlag(room.id))).map((room) => room.id))
   const startingRoom = [...dungeon.rooms].reverse().find((room) => discovered.has(room.id)) ?? dungeon.rooms[0]
   const canvasRef = useRef<HTMLCanvasElement>(null)

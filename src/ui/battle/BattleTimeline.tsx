@@ -1,44 +1,42 @@
-import { useState } from 'react'
+import { content } from '../../content/catalog'
+import type { CharacterAppearance } from '../../domain/character/appearance'
 import type { BattleState } from '../../domain/combat/types'
+import { CharacterPortrait } from '../characters/CharacterSprite'
+import { AssetImage } from '../components/AssetImage'
 
-/** Uses battle initiative and persisted log: never invents actions or turn numbers. */
-export function BattleTimeline({ battle }: { battle: BattleState }) {
-  const [expanded, setExpanded] = useState(false)
-  const history = battle.log.filter((entry) => entry.roll || entry.tone === 'damage' || entry.tone === 'reward'
-    || entry.message.startsWith('Turno de '))
-  const visible = history.slice(-7)
-  return <section className="combat-timeline" aria-label="Linha do tempo do combate">
-    <div className="combat-timeline__header">
-      <strong>TURNO {battle.round}</strong>
-      <small>{battle.phase === 'AwaitingInitiative' ? 'INICIATIVA PENDENTE' : 'ORDEM DE INICIATIVA'}</small>
-      <button type="button" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}
-        aria-controls="combat-timeline-history">{expanded ? 'Recolher histórico' : 'Ver histórico'}</button>
-    </div>
+/**
+ * Silent visual initiative rail: ONLY faces and the rolled initiative value.
+ * Accessible names and title tooltips preserve exact numeric results and order.
+ * Actor cursor, alive state and initiative are read from the battle engine.
+ */
+export function BattleTimeline({ battle, playerAppearance, playerPortraitAssetId }: {
+  battle: BattleState
+  playerAppearance?: CharacterAppearance
+  playerPortraitAssetId?: string
+}) {
+  const rolled = battle.phase !== 'AwaitingInitiative'
+  return <nav className="combat-timeline combat-timeline--portraits" aria-label="Linha do tempo do combate">
     <ol className="combat-timeline__actors" aria-label="Ordem de turnos">
       {battle.initiativeOrder.map((id, index) => {
         const actor = battle.combatants[id]
         if (!actor) return null
-        return <li key={id} className={`${actor.side === 'player' ? 'is-player' : 'is-enemy'} ${battle.actorId === id ? 'is-current' : ''} ${!actor.alive ? 'is-defeated' : ''}`}
-          title={`${actor.name} · iniciativa ${actor.initiative}`} aria-label={`${index + 1}º: ${actor.name}, iniciativa ${actor.initiative}`}>
-          <span className="combat-timeline__number">{index + 1}</span>
-          <span className="combat-timeline__actor">{actor.side === 'player' ? '◆ ' : '◇ '}{actor.name}</span>
-          <b>{battle.phase === 'AwaitingInitiative' ? '?' : actor.initiative}</b>
+        const active = rolled && actor.alive && battle.actorId === id
+        const acted = rolled && index < battle.actorCursor
+        const enemyAsset = content.enemies[actor.definitionId]?.assetId ?? 'enemy.fungorro-crawler'
+        return <li key={id} className={[
+          'combat-timeline__portrait', actor.side === 'player' ? 'is-player' : 'is-enemy',
+          active ? 'is-current' : '', acted ? 'is-acted' : '', !actor.alive ? 'is-defeated' : '',
+        ].filter(Boolean).join(' ')}
+          title={`${actor.name} · ${rolled ? 'Iniciativa ' + actor.initiative : 'Aguardando iniciativa'}`}
+          aria-label={`${index + 1}º: ${actor.name}, ${rolled ? 'iniciativa ' + actor.initiative : 'iniciativa pendente'}`}>
+          <span className="combat-timeline__face" aria-hidden="true">
+            {actor.side === 'player'
+              ? <CharacterPortrait appearance={playerAppearance} portraitAssetId={playerPortraitAssetId} alt="" />
+              : <AssetImage assetId={enemyAsset} alt="" />}
+          </span>
+          {rolled && <span className="combat-timeline__initiative" aria-hidden="true">{actor.initiative}</span>}
         </li>
       })}
     </ol>
-    <ol className="combat-timeline__events" aria-label="Últimos eventos da batalha">
-      {visible.length ? visible.map((entry) => {
-        const actor = entry.roll ? battle.combatants[entry.roll.actorId] : null
-        return <li key={entry.id} className={`${actor?.side === 'player' ? 'is-player' : actor?.side === 'enemy' ? 'is-enemy' : 'is-neutral'} ${entry.tone === 'damage' ? 'is-damage' : ''}`}
-          title={entry.message}>
-          <small>T{entry.round}</small>
-          <span>{entry.roll ? `d${entry.roll.sides}: ${entry.roll.face} · ${entry.roll.action}` : entry.message}</span>
-        </li>
-      }) : <li className="is-neutral">A batalha aguarda sua primeira ação.</li>}
-    </ol>
-    {expanded && <div id="combat-timeline-history" className="combat-timeline__history">
-      {battle.log.slice(-32).map((entry) =>
-        <p key={entry.id}><b>T{entry.round}</b> {entry.message}</p>)}
-    </div>}
-  </section>
+  </nav>
 }
