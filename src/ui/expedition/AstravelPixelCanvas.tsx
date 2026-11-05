@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'rea
 import { content } from '../../content/catalog'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { CharacterAppearance } from '../../domain/character/appearance'
-import { appearanceSpriteUri } from '../characters/CharacterSprite'
+import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
 import type { TrailDefinition, TrailNodeDefinition } from '../../content/types'
 import type { TrailNodeStatus } from '../../domain/game/types'
 import type { ActorFacing } from '../terran/pixelActorArt'
@@ -42,7 +42,7 @@ function nearestReachableNode(point: WorldPoint, radius: number, trail: TrailDef
 }
 
 export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portraitAssetId, appearance, reducedMotion, enabled, onInspect, onEngage, onTravelStart }: Props) {
-  const appearanceSource = appearance ? appearanceSpriteUri(appearance) : null
+  const appearanceSource = appearance ? appearanceSpriteSheetUri(appearance) : null
   const start = trail.nodes.find((node) => node.id === currentLocationId)
     ?? [...trail.nodes].reverse().find((node) => statuses[node.id] === 'completed')
     ?? trail.nodes[0]
