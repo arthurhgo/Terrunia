@@ -61,7 +61,7 @@ export function DungeonScene({ unified = false }: { unified?: boolean }) {
       <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
         <section className="terran-game__stage" aria-label="Cenário contínuo do interior das Câmaras Fúngicas">
           <FungalDungeonCanvas dungeon={dungeon} discoveredFlags={discoveredFlags} bossDefeated={bossDefeated}
-            portraitAssetId={save.character.portraitAssetId} reducedMotion={save.settings.reducedMotion}
+            portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} reducedMotion={save.settings.reducedMotion}
             enabled={!scene} onDiscover={discoverFungalRoom} onInspect={inspect}
             onTravelStart={() => { if (drawer === 'room') { setDrawer(null); setSelectedId(null) } }} />
           <div className="terran-game__hud" aria-label="Ações na dungeon">
