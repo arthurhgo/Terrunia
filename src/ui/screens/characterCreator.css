@@ -35,3 +35,18 @@
 
 /* Native 32px sprite matches NPC footprint; preview scales by integer multiples. */
 .character-creator__preview .character-creator__sprite { object-fit: contain; image-rendering: pixelated; }
+
+/* NPC-proportion character paper doll and direction controls. */
+.character-creator__preview { overflow: visible; }
+.character-creator__face-preview {
+  position:absolute; right:12px; top:13px;
+  display:grid; place-items:center; width:68px; height:68px; padding:5px;
+  border:2px ridge #c4a16c; background:#0e2232;
+  box-shadow:0 3px 13px #0009; box-sizing:border-box;
+}
+.character-creator__face-preview img { width:100%; height:100%; object-fit:contain; image-rendering:pixelated; }
+.character-creator__directions {display:grid; grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:8px auto 7px;max-width:320px;}
+.character-creator__directions button {cursor:pointer; padding:6px 2px; color:#e6d4af;
+  border:1px solid #866d4a; background:#132a3a; font:700 .62rem var(--display);}
+.character-creator__directions button.is-selected {background:#345344; border-color:#dfc185; box-shadow:inset 0 0 0 1px #79b8ab;}
+@media(max-width:720px){.character-creator__face-preview{width:57px;height:57px;right:7px;top:7px;}}
