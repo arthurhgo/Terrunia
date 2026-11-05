@@ -1,6 +1,5 @@
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
-import type { BoundSlot } from '../../domain/shared/types'
 import type { ActorFacing } from '../terran/pixelActorArt'
 import { getWeaponGripProfile } from '../prologue/weaponGripProfiles'
 
