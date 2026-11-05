@@ -22,14 +22,16 @@ describe('Evolução de dados — dois Pontos por avanço', () => {
 
   it('cobra 2 pontos por avanço e não permite gastar só 1 ponto', () => {
     const initial = fresh()
-    expect(initial.character.unspentAttributePoints).toBe(3)
+    expect(initial.character.unspentAttributePoints).toBe(6)
     const first = adjustCharacterAttribute(initial, 'strength', 1, now)
     expect(first.ok).toBe(true)
     if (!first.ok) return
     expect(first.value.character.attributes.strength.die).toBe(6)
-    expect(first.value.character.unspentAttributePoints).toBe(1)
+    expect(first.value.character.unspentAttributePoints).toBe(4)
     expect(initial.character.attributes.strength.die).toBe(4)
-    expect(adjustCharacterAttribute(first.value, 'strength', 1, now))
+    const lowPoints = structuredClone(first.value)
+    lowPoints.character.unspentAttributePoints = 1
+    expect(adjustCharacterAttribute(lowPoints, 'strength', 1, now))
       .toMatchObject({ ok: false, code: 'ATTRIBUTE_POINTS_REQUIRED' })
 
     const nextSave = structuredClone(first.value)
@@ -75,6 +77,6 @@ describe('Evolução de dados — dois Pontos por avanço', () => {
     const result = adjustCharacterAttribute(bonded.value, 'strength', -1, now)
     expect(result).toMatchObject({ ok: false, code: 'ATTRIBUTE_REFUND_LOCKED' })
     expect(bonded.value.character.attributes.strength.die).toBe(6)
-    expect(bonded.value.character.unspentAttributePoints).toBe(1)
+    expect(bonded.value.character.unspentAttributePoints).toBe(4)
   })
 })
