@@ -23,8 +23,10 @@ import {
 } from '../domain/exploration/trailEngine'
 import { discoverDungeonRoom, dungeonRoomFlag, enterDungeon, exitDungeon, FUNGAL_DUNGEON_ID } from '../domain/exploration/dungeonEngine'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
+import { prepareStarterWeapon } from '../domain/bond/starterWeaponPlan'
 import { requestCampaignReset } from '../domain/game/campaignReset'
 import type { AttributeId, GameSave } from '../domain/game/types'
+import type { CharacterAppearance } from '../domain/character/appearance'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
 import { addBattleLootToInventory } from '../domain/inventory/battleLoot'
 import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
@@ -85,8 +87,9 @@ type GameState = {
   notification: GameNotification | null
   boot: (ownerId: string) => Promise<void>
   continueCharacter: () => void
-  createGame: (name: string, portraitAssetId: string) => Promise<boolean>
+  createGame: (name: string, portraitAssetId: string, appearance?: CharacterAppearance) => Promise<boolean>
   bindPrologueWeapon: (baseItemId?: string) => boolean
+  prepareStarterWeapon: (baseItemId: string) => boolean
   adjustAttribute: (attributeId: AttributeId, direction: 1 | -1) => void
   discoverEldamar: () => void
   discoverClan: (clanId: string) => void
@@ -234,7 +237,7 @@ export const useGameStore = create<GameState>((set, get) => {
       set({ characterAccess: 'granted' })
     },
 
-    createGame: async (name, portraitAssetId) => {
+    createGame: async (name, portraitAssetId, appearance) => {
       const ownerId = get().ownerId
       const campaignSeed = get().campaignSeed
       const preservedSettings = get().preservedSettings
@@ -259,11 +262,23 @@ export const useGameStore = create<GameState>((set, get) => {
         nowIso(),
         undefined,
         campaignSeed ?? { campaignId: createRandomId(), campaignGeneration: 0 },
+        appearance,
       )
       if (preservedSettings) save.settings = preservedSettings
       await commit(save)
       set({ characterAccess: 'granted' })
       show('Terrírian criado', 'Você começa sem Clã, sem Classe e sem build pronta.', 'success')
+      return true
+    },
+
+    prepareStarterWeapon: (baseItemId) => {
+      const save = get().save
+      const weapon = content.boundItemBases[baseItemId]
+      if (!save || !weapon) { failAction('Arma inicial não encontrada.'); return false }
+      const result = prepareStarterWeapon(save, weapon, nowIso())
+      if (!result.ok) { failAction(result.message); return false }
+      commit(result.value)
+      show('Atributos preparados', `Requisitos de ${weapon.name} atendidos. Você ainda pode personalizar os dados antes do Vínculo.`, 'success')
       return true
     },
 

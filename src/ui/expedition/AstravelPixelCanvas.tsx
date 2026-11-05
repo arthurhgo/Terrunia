@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
 import { content } from '../../content/catalog'
 import { resolveAsset } from '../../assets/assetRegistry'
+import type { CharacterAppearance } from '../../domain/character/appearance'
+import { appearanceSpriteUri } from '../characters/CharacterSprite'
 import type { TrailDefinition, TrailNodeDefinition } from '../../content/types'
 import type { TrailNodeStatus } from '../../domain/game/types'
 import type { ActorFacing } from '../terran/pixelActorArt'
@@ -14,6 +16,7 @@ type Props = {
   statuses: Record<string, TrailNodeStatus>
   currentLocationId: string
   portraitAssetId: string
+  appearance?: CharacterAppearance
   reducedMotion: boolean
   enabled: boolean
   onInspect: (nodeId: string) => void
@@ -38,7 +41,8 @@ function nearestReachableNode(point: WorldPoint, radius: number, trail: TrailDef
   return closest
 }
 
-export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portraitAssetId, reducedMotion, enabled, onInspect, onEngage, onTravelStart }: Props) {
+export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portraitAssetId, appearance, reducedMotion, enabled, onInspect, onEngage, onTravelStart }: Props) {
+  const appearanceSource = appearance ? appearanceSpriteUri(appearance) : null
   const start = trail.nodes.find((node) => node.id === currentLocationId)
     ?? [...trail.nodes].reverse().find((node) => statuses[node.id] === 'completed')
     ?? trail.nodes[0]
@@ -105,7 +109,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
     if (!ctx) return
     let raf = 0, frame = 0, previous = 0
     const sheet = new Image()
-    sheet.src = resolveAsset(portraitAssetId).path
+    sheet.src = appearanceSource ?? resolveAsset(portraitAssetId).path
     sheet.onerror = () => { sheet.onerror = null; sheet.src = resolveAsset(portraitAssetId).fallback }
     const enemySprites: Record<string, HTMLImageElement> = {}
     for (const node of trail.nodes) {
@@ -210,7 +214,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', blur)
     }
-  }, [trail, portraitAssetId, reducedMotion, activateNode])
+  }, [trail, portraitAssetId, appearanceSource, reducedMotion, activateNode])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return

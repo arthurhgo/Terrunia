@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { NpcMarker } from './NpcMarker'
 import { NpcNameplate } from './NpcNameplate'
 import { resolveAsset } from '../../assets/assetRegistry'
+import type { CharacterAppearance } from '../../domain/character/appearance'
+import { appearanceSpriteUri } from '../characters/CharacterSprite'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { TerranNpcPresence } from '../../content/types'
@@ -28,6 +30,7 @@ type Destination = {
 }
 type Props = {
   portraitAssetId: string
+  appearance?: CharacterAppearance
   reducedMotion: boolean
   currentLocationId: string
   enabled: boolean
@@ -74,7 +77,8 @@ const nearestNpc = (point: WorldPoint, actors: readonly CityActor[], radius: num
   return nearest
 }
 
-export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocationId, enabled, objectiveId, actors, homeUnlocked, spawnPoint, onEnterHome, onEnter, onTalk, onInspectLandmark, landmarkFlags, questRoutes = [], showQuestRoutes = false, showTrackedQuestRoute = false, trackedQuestRoute = null, onHideQuestRoutes }: Props) {
+export function PixelCityCanvas({ portraitAssetId, appearance, reducedMotion, currentLocationId, enabled, objectiveId, actors, homeUnlocked, spawnPoint, onEnterHome, onEnter, onTalk, onInspectLandmark, landmarkFlags, questRoutes = [], showQuestRoutes = false, showTrackedQuestRoute = false, trackedQuestRoute = null, onHideQuestRoutes }: Props) {
+  const appearanceSource = appearance ? appearanceSpriteUri(appearance) : null
   const [rosettaHovered, setRosettaHovered] = useState(false)
   const [rosettaFocused, setRosettaFocused] = useState(false)
   // Rosetta's hovered/pinned white preview takes precedence; accepted paths remain separate.
@@ -171,7 +175,7 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
     if (!ctx) return
     let frame = 0, raf = 0, previous = 0, elapsed = 0
     const sheet = new Image()
-    sheet.src = resolveAsset(portraitAssetId).path
+    sheet.src = appearanceSource ?? resolveAsset(portraitAssetId).path
     sheet.onerror = () => { sheet.onerror = null; sheet.src = resolveAsset(portraitAssetId).fallback }
     const keydown = (event: KeyboardEvent) => {
       if (!enabledRef.current || event.altKey || event.ctrlKey || event.metaKey) return
@@ -315,7 +319,7 @@ export function PixelCityCanvas({ portraitAssetId, reducedMotion, currentLocatio
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', blur)
     }
-  }, [portraitAssetId])
+  }, [portraitAssetId, appearanceSource])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return

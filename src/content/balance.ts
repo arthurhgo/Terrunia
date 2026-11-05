@@ -3,7 +3,8 @@ export const BALANCE = {
   essenceThresholds: [100, 125, 150, 180, 215, 255, 300, 350, 405, 465],
   essenceFallbackGrowth: 1.15,
   initialGold: 0,
-  characterCreationAttributePoints: 3,
+  /** Owner-approved v0.5.4: six points; all seven initial weapons reachable. */
+  characterCreationAttributePoints: 6,
   attributePointsPerLevel: 1,
   defaultAttributeDie: 4,
   attributeDieOrder: [4, 6, 8, 10, 12] as const,

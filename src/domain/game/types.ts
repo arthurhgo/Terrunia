@@ -1,4 +1,5 @@
 import type { BattleState } from '../combat/types'
+import type { CharacterAppearance } from '../character/appearance'
 import type { BoundSlot, Rarity } from '../shared/types'
 
 export const ATTRIBUTE_IDS = ['cunning', 'agility', 'strength', 'vigor', 'spirit'] as const
@@ -15,6 +16,8 @@ export type Character = {
   name: string
   raceId: 'terririan'
   portraitAssetId: string
+  /** Optional: old saves keep their assetRegistry portrait. */
+  appearance?: CharacterAppearance
   titleIds: string[]
   level: number
   xp: number

@@ -12,9 +12,12 @@ import { BattleArenaBackdrop } from '../battle/BattleArenaBackdrop'
 import { BattleEquipmentHud } from '../battle/BattleEquipmentHud'
 import { BattleDicePlatform, type BattleDiceEvent } from '../battle/BattleDicePlatform'
 import { DraggableBattleDie } from '../battle/DraggableBattleDie'
+import { BattleTimeline } from '../battle/BattleTimeline'
+import { BATTLE_PRESENTATION } from '../battle/presentationTiming'
 import { groupBattleLoot } from '../../domain/inventory/battleLoot'
 import './battlePixel.css'
 import './battleRemake.css'
+import './battleTimeline.css'
 
 type Menu = 'combat' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
@@ -38,6 +41,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const [hit, setHit] = useState<'player' | 'enemy' | null>(null)
   const [turnCue, setTurnCue] = useState(false)
   const [turnAnnouncement, setTurnAnnouncement] = useState<string | null>(null)
+  const [roundCurtain, setRoundCurtain] = useState<string | null>(null)
+  const announcedRound = useRef<{ battleId: string; round: number } | null>(null)
   const [showLog, setShowLog] = useState(false)
   const [activeDice, setActiveDice] = useState<BattleDiceEvent | null>(null)
   const [diceQueue, setDiceQueue] = useState<BattleDiceEvent[]>([])
@@ -70,6 +75,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     setResolvingRolls(false)
     setDiceAwaitingClick(false)
     setInitiativeReady(false)
+    setRoundCurtain(null)
+    announcedRound.current = null
     setHoveredEnemyId(null)
     pendingRollsRef.current = null
     if (previewTimer.current !== null) window.clearTimeout(previewTimer.current)
@@ -124,9 +131,22 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
 
   useEffect(() => {
     if (!activeDice || resolvingRolls) return
-    const timer = window.setTimeout(() => setActiveDice(null), reducedMotion ? 800 : 1250)
+    const timer = window.setTimeout(() => setActiveDice(null), reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs : BATTLE_PRESENTATION.queuedDieMs)
     return () => window.clearTimeout(timer)
   }, [activeDice, reducedMotion, resolvingRolls])
+
+  // Round separators belong to the presentation layer. One banner per real round
+  // even when several enemies are resolved inside the same domain command.
+  useEffect(() => {
+    if (!battle || battle.phase === 'Victory' || battle.phase === 'Defeat') return
+    const last = announcedRound.current
+    if (last?.battleId === battle.id && last.round === battle.round) return
+    announcedRound.current = { battleId: battle.id, round: battle.round }
+    setRoundCurtain('TURNO ' + battle.round)
+    const timer = window.setTimeout(() => setRoundCurtain(null),
+      reducedMotion ? BATTLE_PRESENTATION.reducedMotionBannerMs : BATTLE_PRESENTATION.roundBannerMs)
+    return () => window.clearTimeout(timer)
+  }, [battle?.id, battle?.round, reducedMotion])
 
   // Announces the initiative-owned turn without changing the battle state machine.
   useEffect(() => {
@@ -134,7 +154,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     const actor = battle.combatants[battle.actorId]
     if (!actor) return
     setTurnAnnouncement(`RODADA ${battle.round} · TURNO DE ${actor.side === 'player' ? 'TERRÍRIAN' : actor.name.toUpperCase()} · INICIATIVA ${actor.initiative}`)
-    const timer = window.setTimeout(() => setTurnAnnouncement(null), reducedMotion ? 700 : 1400)
+    const timer = window.setTimeout(() => setTurnAnnouncement(null), reducedMotion ? BATTLE_PRESENTATION.reducedMotionBannerMs : BATTLE_PRESENTATION.normalTurnCueMs)
     return () => window.clearTimeout(timer)
   }, [battle?.id, battle?.round, battle?.actorId, battle?.phase, reducedMotion])
 
@@ -187,7 +207,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     (effect.type === 'restoreMp' && player.mp < player.maxMp) ||
     (effect.type === 'cleanseHarmful' && player.statusEffects.some((status) =>
       content.statusEffects[status.definitionId]?.tone === 'harmful'))))
-  const isPlayerTurn = battle.phase === 'AwaitingAction' && !turnCue && !activeDice && !diceQueue.length && !resolvingRolls
+  const isPlayerTurn = battle.phase === 'AwaitingAction' && !roundCurtain && !turnCue && !activeDice && !diceQueue.length && !resolvingRolls
   const drops = battle.rewards.lootDefinitionIds
   const lootGroups = groupBattleLoot(drops)
 
@@ -211,7 +231,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       const playerMustClick = next.actorSide === 'player' && next.kind !== 'initiative'
       setDiceAwaitingClick(playerMustClick)
       if (!playerMustClick) scheduleRollStep()
-    }, reducedMotion ? 850 : 1350)
+    }, reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs : BATTLE_PRESENTATION.queuedDieMs)
   }
   const releasePlayerDie = () => {
     if (!diceAwaitingClick || !pendingRollsRef.current) return
@@ -220,7 +240,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }
   const send = (command: Parameters<typeof submit>[0]) => {
     const initiative = command.type === 'rollInitiative'
-    if (initiative ? battle.phase !== 'AwaitingInitiative' || !initiativeReady : !isPlayerTurn) return
+    if (initiative ? battle.phase !== 'AwaitingInitiative' || !initiativeReady || Boolean(roundCurtain) : !isPlayerTurn) return
     setMenu(null)
     setTurnAnnouncement(null)
     const preview = previewBattleCommand(battle, command, content, save.inventory)
@@ -283,6 +303,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       <div className="pixel-battle__encounter-label"><span>{battle.waveIndex ? 'PORTAL · ONDAS DA RUÍNA' : encounter?.locationLabel ?? 'ASTRAVÉL'}</span><h1>{encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}</h1></div>
       <small>{battle.waveIndex ? 'ONDA ' + battle.waveIndex + ' · ' : ''}RODADA {battle.round} · {turnCue ? 'TURNO DOS INIMIGOS' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : battle.phase === 'AwaitingInitiative' ? 'INICIATIVA PENDENTE' : 'TURNO DO JOGADOR'}</small>
     </header>
+    <BattleTimeline battle={battle} />
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
       <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} />
       <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''}`}>
@@ -312,19 +333,13 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           </span>}
         </button>)}
       </div>
-      {battle.phase !== 'AwaitingInitiative' && <div className="pixel-battle__turn-order" aria-label="Ordem de turnos">
-        {battle.initiativeOrder.map((id) => {
-          const actor = battle.combatants[id]
-          return <span key={id} className={`${id === battle.actorId ? 'is-current' : ''} ${!actor.alive ? 'is-dead' : ''}`}
-            title={`${actor.name} · iniciativa ${actor.initiative}`}
-            aria-label={`${actor.name}: iniciativa ${actor.initiative}`}>
-            {actor.side === 'player' ? '★' : '✦'}<b>{actor.initiative}</b>
-          </span>
-        })}
+      {roundCurtain && !activeDice && <div className="pixel-battle__round-curtain" role="status" aria-label="Separador de turno">
+        <span>✧</span><strong>{roundCurtain}</strong>
+        <small>{battle.phase === 'AwaitingInitiative' ? 'PREPARE A INICIATIVA' : 'A BATALHA CONTINUA'}</small>
       </div>}
       {activeDice && <BattleDicePlatform key={activeDice.id} roll={activeDice} reducedMotion={reducedMotion}
           awaitingClick={diceAwaitingClick} onRoll={releasePlayerDie} />}
-      {(turnCue || turnAnnouncement) && !defeated && !activeDice && <div className="pixel-battle__turn-cue" role="status">
+      {(turnCue || turnAnnouncement) && !roundCurtain && !defeated && !activeDice && <div className="pixel-battle__turn-cue" role="status">
         {turnCue ? 'TURNO DOS INIMIGOS' : turnAnnouncement}
       </div>}
       {defeated && <div className="pixel-battle__death" role="status" aria-label="Terrírian derrotado">
@@ -366,7 +381,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         {battle.phase === 'AwaitingInitiative' ? <div className="pixel-battle__initiative" aria-label="Preparar rolagem de iniciativa">
           <strong>{initiativeReady ? 'ROLAGEM DE INICIATIVA' : 'TURNO ' + battle.round}</strong>
           <DraggableBattleDie sides={player.initiativeDie ?? 4}
-            disabled={!initiativeReady || resolvingRolls} ariaLabel={`Arrastar dado de iniciativa d${player.initiativeDie ?? 4} para cima para rolar`}
+            disabled={!initiativeReady || resolvingRolls || Boolean(roundCurtain)} ariaLabel={`Arrastar dado de iniciativa d${player.initiativeDie ?? 4} para cima para rolar`}
             onThrow={() => send({ type: 'rollInitiative' })} />
           <small>Seu dado de Agilidade define a ordem junto à iniciativa-base. Monstros rolam automaticamente.</small>
         </div> : battle.phase === 'AwaitingAction' ? <>

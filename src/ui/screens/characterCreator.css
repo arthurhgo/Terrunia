@@ -1,0 +1,34 @@
+/* Character creation v0.5.4: readable, responsive pixel-editor layout. */
+.character-creator { align-items: start; }
+.character-creator__preview { position: relative; margin: 24px auto 8px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px; width: min(100%, 300px);
+  min-height: 245px; border: 2px ridge #bc924f; background:
+  radial-gradient(ellipse at center, #324b56 0%, #0a1929 65%, #070e1e 100%);
+  box-shadow: inset 0 0 0 3px #493d31, 0 8px 32px #0006; overflow: hidden; }
+.character-creator__preview-orbit { position: absolute; bottom: 53px; width: 138px; height: 36px;
+  border: 2px solid #d9b66b99; border-radius: 50%; box-shadow: 0 0 22px #edc17f60; }
+.character-creator__preview .character-creator__sprite { position: relative; z-index: 2; display: block;
+  width: 145px; height: 145px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 8px 7px #000c); }
+.character-creator__preview strong { color: #ebd4a1; font: 700 .9rem var(--display); }
+.character-creator__preview small { color: #a2c7c9; font-size: .7rem; }
+.character-creator__quick { display: flex; justify-content: center; gap: 9px; }
+.character-creator__quick button { display: flex; align-items: center; gap: 4px; cursor: pointer;
+  background: #112538; border: 1px solid #c6a36e; color: #ead4aa; padding: 8px 11px; font: 700 .72rem var(--display); }
+.character-creator__group { min-width: 0; margin: 0; padding: 12px; border: 1px solid #957747; background: #091a28b8; }
+.character-creator__group legend { padding: 0 8px; color: #e8c488; font: 700 .83rem var(--display); }
+.character-creator__fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px 15px; }
+.character-creator__field { display: grid; min-width: 0; gap: 5px; color: #d2d8ce; font-size: .75rem; }
+.character-creator__field > span { color: #d3bd91; font-weight: 700; }
+.character-creator__field select { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box;
+  padding: 7px 6px; border: 1px solid #836942; color: #f2e4c4; background: #11283a; cursor: pointer; }
+.character-creator__field select option { background: #11283a; color: #fff1cf; }
+.character-creator__color > div { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.character-creator__color input[type=color] { width: 39px; height: 34px; padding: 2px; border: 1px solid #b08b55; background: #132736; cursor: pointer; flex: none; }
+.character-creator__color select { flex: 1; }
+.character-creator .creation-form { gap: 12px; }
+.character-creator .creation-form-panel { min-width: 0; }
+@media (max-width: 720px) {
+  .character-creator__fields { grid-template-columns: 1fr; }
+  .character-creator__preview { min-height: 205px; }
+  .character-creator__preview .character-creator__sprite { width: 116px; height: 116px; }
+}

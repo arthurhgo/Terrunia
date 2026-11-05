@@ -38,7 +38,7 @@ describe('save versionado', () => {
     expect(migrated.eventLog).toContain('SaveMigrated:5->6')
     expect(migrated.eventLog).toContain('SaveMigrated:6->7')
     expect(migrated.eventLog).toContain('SaveMigrated:7->8')
-    expect(migrated.character.unspentAttributePoints).toBe(3)
+    expect(migrated.character.unspentAttributePoints).toBe(6)
   })
 
   it('migra v12, cadastra o novo elenco e preserva missões acima do antigo limite sem conceder recompensas', () => {

@@ -290,7 +290,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 }}
                 onFurniture={inspectFurniture}
                 onExit={exitInterior} />
-              : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} reducedMotion={save.settings.reducedMotion}
+              : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} reducedMotion={save.settings.reducedMotion}
                   currentLocationId={save.world.currentLocationId} spawnPoint={streetSpawn}
                   homeUnlocked={isPlayerHomeDoorOpen(save)} onEnterHome={enterHome}
                   enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}

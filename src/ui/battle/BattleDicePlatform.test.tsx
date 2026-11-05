@@ -12,7 +12,7 @@ describe('Plataforma de dados em combate', () => {
     render(<BattleDicePlatform roll={roll} reducedMotion={false} />)
     expect(screen.getByRole('img', { name: 'Dado d8' })).toBeInTheDocument()
     expect(screen.getByText('Rolando…')).toBeInTheDocument()
-    act(() => { vi.advanceTimersByTime(800) })
+    act(() => { vi.advanceTimersByTime(1450) })
     expect(screen.getByText('9 de dano')).toBeInTheDocument()
     expect(screen.getByText(/Face registrada pelo motor de combate/)).toBeInTheDocument()
   })
@@ -33,7 +33,7 @@ describe('Plataforma de dados em combate', () => {
     fireEvent.pointerUp(trigger, { pointerId: 1, pointerType: 'mouse', isPrimary: true, clientY: 70 })
     expect(onRoll).toHaveBeenCalledOnce()
     rerender(<BattleDicePlatform roll={roll} reducedMotion={false} awaitingClick={false} onRoll={onRoll} />)
-    act(() => { vi.advanceTimersByTime(800) })
+    act(() => { vi.advanceTimersByTime(1450) })
     expect(screen.getByText('9 de dano')).toBeInTheDocument()
   })
 

@@ -182,3 +182,13 @@
   .prologue-screen--enhanced .weapon-gallery__sprite,
   .prologue-screen--enhanced .prologue-hero-preview__equipped-weapon { animation: none !important; transition: none !important; }
 }
+
+/* v0.5.4 — transparent weapon prerequisites and reversible one-click allocation. */
+.prologue-choice-cost { display: flex; flex-direction: column; align-items: start; gap: 6px;
+  padding: 10px 12px; margin-top: 7px; border: 1px solid #997e4c; background: #142837;
+  color: #ebd8ae; font: .72rem/1.4 Georgia,serif; }
+.prologue-choice-cost strong { font: 700 .75rem var(--display); color: #f4cc83; }
+.prologue-choice-cost span { color: #aac7c5; }
+.prologue-choice-cost button { cursor: pointer; display: inline-flex; padding: 7px 10px;
+  border: 1px solid #d7af66; background: #294737; color: #e7dfb9; font: 700 .68rem var(--display); }
+.prologue-choice-cost button:hover, .prologue-choice-cost button:focus-visible { background: #3a634d; outline: 1px solid #cbedba; }

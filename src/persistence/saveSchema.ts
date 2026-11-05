@@ -37,11 +37,27 @@ const essenceSchema = z.object({
   cycle: nonnegativeInteger,
 })
 
+const appearanceColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/)
+const appearanceSchema = z.object({
+  presentation: z.enum(['masculino', 'feminino', 'neutro']),
+  frame: z.enum(['leve', 'medio', 'robusto']),
+  skinTone: appearanceColorSchema,
+  face: z.enum(['suave', 'angular', 'redondo']),
+  hairStyle: z.enum(['curto', 'longo', 'trancas', 'cacheado', 'raspado']),
+  hairColor: appearanceColorSchema,
+  eyeColor: appearanceColorSchema,
+  beard: z.enum(['nenhuma', 'curta', 'cheia']),
+  outfit: z.enum(['tunica', 'manto', 'aventureiro']),
+  outfitPrimary: appearanceColorSchema,
+  outfitSecondary: appearanceColorSchema,
+})
+
 const characterSchema = z.object({
   id: idSchema,
   name: z.string().trim().min(2).max(28),
   raceId: z.literal('terririan'),
   portraitAssetId: idSchema,
+  appearance: appearanceSchema.optional(),
   titleIds: z.array(idSchema),
   level: positiveInteger,
   xp: nonnegativeNumber,
