@@ -153,18 +153,18 @@ function spriteDataUrl(key: string, makeSvg: () => string): string {
   spriteCache.set(key, uri)
   return uri
 }
-export const appearanceSpriteUri = (a: CharacterAppearance) =>
-  spriteDataUrl('body:' + JSON.stringify(a), () => appearanceSpriteSvg(a))
+export const appearanceSpriteUri = (a: CharacterAppearance, facing: ActorFacing = 'down') =>
+  spriteDataUrl('body:' + facing + JSON.stringify(a), () => appearanceSpriteSvg(a, facing))
 export const appearanceSpriteSheetUri = (a: CharacterAppearance) =>
   spriteDataUrl('sheet:' + JSON.stringify(a), () => appearanceSheetSvg(a))
 export const appearanceHeadUri = (a: CharacterAppearance) =>
   spriteDataUrl('head:' + JSON.stringify(a), () => appearanceHeadSvg(a))
 
 /** Legacy saves continue using the assetRegistry portrait. */
-export function CharacterSprite({ appearance, portraitAssetId, alt = '', className = '' }: {
-  appearance?: CharacterAppearance; portraitAssetId?: string; alt?: string; className?: string
+export function CharacterSprite({ appearance, portraitAssetId, alt = '', className = '', facing = 'down' }: {
+  appearance?: CharacterAppearance; portraitAssetId?: string; alt?: string; className?: string; facing?: ActorFacing
 }) {
-  const sprite = useMemo(() => appearanceSpriteUri(appearance ?? DEFAULT_CHARACTER_APPEARANCE), [appearance])
+  const sprite = useMemo(() => appearanceSpriteUri(appearance ?? DEFAULT_CHARACTER_APPEARANCE, facing), [appearance, facing])
   return appearance
     ? <img src={sprite} alt={alt} className={`character-sprite ${className}`.trim()}
         draggable={false} style={{ imageRendering: 'pixelated' }} />
