@@ -6,7 +6,7 @@ import { submitBattleCommand as previewBattleCommand } from '../../domain/combat
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { useGameStore } from '../../state/gameStore'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
-import { CharacterPortrait, CharacterSprite } from '../characters/CharacterSprite'
+import { CharacterPortrait } from '../characters/CharacterSprite'
 import { AssetImage } from '../components/AssetImage'
 import { GameShell } from '../components/GameShell'
 import { BattleArenaBackdrop } from '../battle/BattleArenaBackdrop'
