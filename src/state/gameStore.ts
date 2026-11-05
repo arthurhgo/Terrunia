@@ -25,6 +25,7 @@ import { discoverDungeonRoom, dungeonRoomFlag, enterDungeon, exitDungeon, FUNGAL
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { requestCampaignReset } from '../domain/game/campaignReset'
 import type { AttributeId, GameSave } from '../domain/game/types'
+import type { CharacterAppearance } from '../domain/character/appearance'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
 import { addBattleLootToInventory } from '../domain/inventory/battleLoot'
 import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
@@ -85,7 +86,7 @@ type GameState = {
   notification: GameNotification | null
   boot: (ownerId: string) => Promise<void>
   continueCharacter: () => void
-  createGame: (name: string, portraitAssetId: string) => Promise<boolean>
+  createGame: (name: string, portraitAssetId: string, appearance?: CharacterAppearance) => Promise<boolean>
   bindPrologueWeapon: (baseItemId?: string) => boolean
   adjustAttribute: (attributeId: AttributeId, direction: 1 | -1) => void
   discoverEldamar: () => void
@@ -234,7 +235,7 @@ export const useGameStore = create<GameState>((set, get) => {
       set({ characterAccess: 'granted' })
     },
 
-    createGame: async (name, portraitAssetId) => {
+    createGame: async (name, portraitAssetId, appearance) => {
       const ownerId = get().ownerId
       const campaignSeed = get().campaignSeed
       const preservedSettings = get().preservedSettings
@@ -259,6 +260,7 @@ export const useGameStore = create<GameState>((set, get) => {
         nowIso(),
         undefined,
         campaignSeed ?? { campaignId: createRandomId(), campaignGeneration: 0 },
+        appearance,
       )
       if (preservedSettings) save.settings = preservedSettings
       await commit(save)
