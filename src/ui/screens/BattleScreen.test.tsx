@@ -30,8 +30,8 @@ describe('combate visual v0.17', () => {
     vi.useFakeTimers()
     createBattleSave()
     render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
-    expect(screen.getAllByRole('status').some((element) => element.textContent?.includes('TURNO DE TERRÍRIAN'))).toBe(true)
-    act(() => { vi.advanceTimersByTime(1600) })
+    expect(screen.getByRole('status', { name: 'Separador de turno' })).toHaveTextContent('TURNO 1')
+    act(() => { vi.advanceTimersByTime(1950) })
     const combat = screen.getByRole('button', { name: 'ATAQUE · MAGIAS · HABILIDADES' })
     expect(combat).toBeEnabled()
     expect(screen.getByRole('button', { name: 'ARREMESSÁVEIS' })).toBeDisabled()
@@ -54,7 +54,7 @@ describe('combate visual v0.17', () => {
     const initialLogCount = save.battle!.log.length
     const initialHp = save.battle!.combatants.combatant_player.hp
     render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
-    act(() => { vi.advanceTimersByTime(1600) })
+    act(() => { vi.advanceTimersByTime(1950) })
     fireEvent.click(screen.getByRole('button', { name: 'ATAQUE · MAGIAS · HABILIDADES' }))
     fireEvent.click(screen.getByRole('button', { name: /ATAQUE BÁSICO/ }))
     expect(screen.getByRole('status', { name: /Lançamento visual de d/ })).toBeInTheDocument()
@@ -67,7 +67,7 @@ describe('combate visual v0.17', () => {
     fireEvent.pointerDown(attackDie, { pointerId: 2, pointerType: 'mouse', isPrimary: true, button: 0, clientY: 160 })
     fireEvent.pointerMove(attackDie, { pointerId: 2, pointerType: 'mouse', isPrimary: true, clientY: 78 })
     fireEvent.pointerUp(attackDie, { pointerId: 2, pointerType: 'mouse', isPrimary: true, clientY: 78 })
-    act(() => { vi.advanceTimersByTime(4500) })
+    act(() => { vi.advanceTimersByTime(8000) })
     expect(useGameStore.getState().save?.battle?.log.length).toBeGreaterThan(initialLogCount)
   })
 
@@ -79,11 +79,11 @@ describe('combate visual v0.17', () => {
     useGameStore.setState({ save })
     const initialLog = save.battle.log.length
     render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
-    expect(screen.getByText('TURNO 1', { selector: '.pixel-battle__turn-cue' })).toBeInTheDocument()
+    expect(screen.getByText('TURNO 1', { selector: '.pixel-battle__round-curtain strong' })).toBeInTheDocument()
     const button = screen.getByRole('button', { name: 'Arrastar dado de iniciativa d4 para cima para rolar' })
     expect(button).toBeDisabled()
     expect(useGameStore.getState().save?.battle?.phase).toBe('AwaitingInitiative')
-    act(() => { vi.advanceTimersByTime(950) })
+    act(() => { vi.advanceTimersByTime(1850) })
     expect(button).toBeEnabled()
     fireEvent.click(button)
     expect(useGameStore.getState().save?.battle?.log).toHaveLength(initialLog)
@@ -92,7 +92,7 @@ describe('combate visual v0.17', () => {
     fireEvent.pointerUp(button, { pointerId: 2, pointerType: 'touch', isPrimary: true, clientY: 80 })
     expect(screen.getByRole('status', { name: /Lançamento visual de d4 para iniciativa/ })).toBeInTheDocument()
     expect(useGameStore.getState().save?.battle?.log).toHaveLength(initialLog)
-    act(() => { vi.advanceTimersByTime(5500) })
+    act(() => { vi.advanceTimersByTime(13000) })
     const committed = useGameStore.getState().save?.battle
     expect(committed?.phase).not.toBe('AwaitingInitiative')
     expect(committed?.log.some((entry) => entry.roll?.action === 'Iniciativa')).toBe(true)
