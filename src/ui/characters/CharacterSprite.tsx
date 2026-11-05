@@ -70,8 +70,17 @@ export function appearanceSpriteSvg(raw: CharacterAppearance): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges">${rects.join('')}</svg>`
 }
 
-export const appearanceSpriteUri = (appearance: CharacterAppearance): string =>
-  'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(appearanceSpriteSvg(appearance))
+// Canvas redraws often; cache the deterministic sprite URI across React renders.
+const spriteCache = new Map<string, string>()
+export function appearanceSpriteUri(appearance: CharacterAppearance): string {
+  const key = JSON.stringify(appearance)
+  const cached = spriteCache.get(key)
+  if (cached) return cached
+  const uri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(appearanceSpriteSvg(appearance))
+  if (spriteCache.size >= 128) spriteCache.clear()
+  spriteCache.set(key, uri)
+  return uri
+}
 
 /** Legacy players still use their registered sprite, with no migration required. */
 export function CharacterSprite({ appearance, portraitAssetId, alt = '', className = '' }: {
