@@ -1,5 +1,7 @@
 import { getPresencePortrait } from '../../content/npcVisuals'
 import { drawActorImage, getWorldSprite } from './worldSprites'
+import { drawEquipmentLayer } from '../characters/equipmentCanvas'
+import type { VisualItem } from '../characters/equipmentVisuals'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { CityActor } from './cityCast'
@@ -148,6 +150,7 @@ export const drawPixelCity = (
   cityCast: readonly (CityActor | MovingCityActor)[],
   homeUnlocked = false,
   camera: WorldPoint = getCityCamera(player),
+  equipped: readonly VisualItem[] = [],
 ) => {
   ctx.imageSmoothingEnabled = false
   ctx.clearRect(0, 0, CITY_VIEW_WIDTH, CITY_VIEW_HEIGHT)
@@ -203,9 +206,11 @@ export const drawPixelCity = (
   const renderPlayer = () => {
     drawPlayerAura(ctx, player.x, player.y, frame)
     ctx.fillStyle = '#162728'; ctx.fillRect(Math.round(player.x - 5), Math.round(player.y - 2), 10, 3)
+    drawEquipmentLayer(ctx, equipped, 'back', facing, player.x, player.y)
     if (!drawActorImage(ctx, playerSprite, player.x, player.y, facing, stride)) {
       drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[playerPalette] ?? ACTOR_PALETTES.terririan, WORLD_ACTOR_SCALE)
     }
+    drawEquipmentLayer(ctx, equipped, 'front', facing, player.x, player.y)
   }
   const layers = [
     ...TERRAN_LOCATION_IDS.map((id) => ({ depth: getCityPoint(id).y + 30, draw: () => drawBuilding(ctx, id, frame) })),

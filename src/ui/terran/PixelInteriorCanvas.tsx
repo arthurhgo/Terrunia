@@ -4,6 +4,7 @@ import { NpcNameplate } from './NpcNameplate'
 import { CITY_NPC_SIZE } from './cityWorld'
 import { resolveAsset } from '../../assets/assetRegistry'
 import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
+import { getVisualEquipment, equipmentVisualIds } from '../characters/equipmentVisuals'
 import { getRoomName, roomFurniture, type RoomFurniture, type TerranInteriorId, PLAYER_HOME_INTERIOR_ID } from './roomContent'
 import type { TerranNpcPresence } from '../../content/types'
 import { findInteriorPath, getInteriorResidents, isInteriorWalkable, type InteriorResident } from './interiorLayout'
@@ -47,6 +48,8 @@ export function PixelInteriorCanvas({
   showTrackedQuestRoute?: boolean
   trackedQuestRoute?: TrackedQuestRoute | null
 }) {
+  const equipmentKey = equipmentVisualIds(save)
+  const equipped = getVisualEquipment(save)
   const residents = getInteriorResidents(save, locationId)
   const furniture = roomFurniture[locationId]
   const plan = getRoomPlan(locationId)
@@ -195,7 +198,7 @@ export function PixelInteriorCanvas({
       }
       drawTerranInterior(ctx, locationId, playerRef.current, sprite,
         reducedRef.current ? 0 : frame, faceRef.current, walking && !reducedRef.current,
-        save.character.portraitAssetId, residentsRef.current)
+        save.character.portraitAssetId, residentsRef.current, equipped)
       raf = requestAnimationFrame(tick)
     }
     window.addEventListener('keydown', keydown)
@@ -208,7 +211,7 @@ export function PixelInteriorCanvas({
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', clearKeys)
     }
-  }, [locationId, save.character.portraitAssetId, appearanceSource])
+  }, [locationId, save.character.portraitAssetId, appearanceSource, equipmentKey])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return
@@ -247,6 +250,7 @@ export function PixelInteriorCanvas({
       {residents.map((resident) =>
         <button type="button" key={resident.presence.id} disabled={!enabled}
           className="pixel-interior__npc"
+          data-interaction-glow={resident.marker && resident.markerPhase === 'turn-in' ? 'turn-in' : resident.marker && resident.markerPhase === 'available' ? 'available' : undefined}
           title={resident.presence.label}
           aria-label={`Falar com ${resident.presence.label} dentro do local`}
           style={{ left: resident.position.x / 384 * 100 + '%', top: (resident.position.y - CITY_NPC_SIZE / 2) / 256 * 100 + '%', width: `${CITY_NPC_SIZE / 384 * 100}%`, height: `${CITY_NPC_SIZE / 256 * 100}%` }}
@@ -258,6 +262,7 @@ export function PixelInteriorCanvas({
         .map((item) => <button type="button" key={item.id}
         className={`pixel-interior__furniture ${item.behavior === 'quest' ? 'pixel-interior__furniture--quest' : ''}`}
         disabled={!enabled} data-quest-object={item.questId}
+        data-interaction-glow={item.questId && ['active','available','offered','ready_to_turn_in'].includes(save.quests[item.questId]?.status ?? 'locked') ? 'quest' : item.behavior === 'archive' ? 'inspect' : undefined}
         aria-label={`Interagir com ${item.name}`} title={item.description}
         style={{ left: item.point.x / 384 * 100 + '%', top: (item.point.y - 9) / 256 * 100 + '%' }}
         onClick={() => walkTo(item.point, item.id)}>
@@ -265,7 +270,7 @@ export function PixelInteriorCanvas({
         {item.behavior === 'quest' && <small className="pixel-interior__furniture-caption">{item.name}</small>}
       </button>)}
       <button type="button" disabled={!enabled}
-        className="pixel-interior__service"
+        className="pixel-interior__service" data-interaction-glow="service"
         style={{ left: `${plan.service.x / 384 * 100}%`, top: `${plan.service.y / 256 * 100}%` }}
         aria-label={locationId === PLAYER_HOME_INTERIOR_ID ? 'Cama · descansar e recuperar' : 'Abrir serviços do local'}
         onClick={() => {

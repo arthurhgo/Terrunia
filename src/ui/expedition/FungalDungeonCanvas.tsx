@@ -2,6 +2,7 @@ import { useEffect, useRef, type PointerEvent } from 'react'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { CharacterAppearance } from '../../domain/character/appearance'
 import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
+import type { VisualItem } from '../characters/equipmentVisuals'
 import type { DungeonDefinition, DungeonRoomDefinition } from '../../content/types'
 import type { ActorFacing } from '../terran/pixelActorArt'
 import type { WorldPoint } from '../terran/pixelCityArt'
@@ -16,6 +17,7 @@ type Props = {
   bossDefeated: boolean
   portraitAssetId: string
   appearance?: CharacterAppearance
+  equipment?: readonly VisualItem[]
   reducedMotion: boolean
   enabled: boolean
   onDiscover: (roomId: string) => void
@@ -37,8 +39,11 @@ function nearbyRoom(point: WorldPoint, dungeon: DungeonDefinition, radius: numbe
   return closest
 }
 
-export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, portraitAssetId, appearance, reducedMotion, enabled, onDiscover, onInspect, onTravelStart }: Props) {
+export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, portraitAssetId, appearance, equipment = [], reducedMotion, enabled, onDiscover, onInspect, onTravelStart }: Props) {
   const appearanceSource = appearance ? appearanceSpriteSheetUri(appearance) : null
+  const equipmentKey = equipment.map((item) => item.assetId).join('|')
+  const equipmentRef = useRef(equipment)
+  equipmentRef.current = equipment
   const discovered = new Set(dungeon.rooms.filter((room) => discoveredFlags.includes(dungeonRoomFlag(room.id))).map((room) => room.id))
   const startingRoom = [...dungeon.rooms].reverse().find((room) => discovered.has(room.id)) ?? dungeon.rooms[0]
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -142,7 +147,7 @@ export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, po
       }
       drawFungalDungeon(ctx, dungeon, playerRef.current, sheet, reducedMotion ? 0 : frame,
         walking && !reducedMotion, facingRef.current, portraitAssetId.includes('sigil') ? 'sigil' : 'terririan',
-        { discovered: discoveredRef.current, defeated: defeatedRef.current })
+        { discovered: discoveredRef.current, defeated: defeatedRef.current }, equipmentRef.current)
       raf = requestAnimationFrame(tick)
     }
     window.addEventListener('keydown', keydown)
@@ -155,7 +160,7 @@ export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, po
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', blur)
     }
-  }, [dungeon, reducedMotion, portraitAssetId, appearanceSource])
+  }, [dungeon, reducedMotion, portraitAssetId, appearanceSource, equipmentKey])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return

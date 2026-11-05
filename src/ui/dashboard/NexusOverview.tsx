@@ -4,7 +4,7 @@ import { deriveCharacterStats, type DerivedStat } from '../../domain/character/d
 import { ATTRIBUTE_IDS, type GameSave } from '../../domain/game/types'
 import { AttributeAllocator } from '../character/AttributeAllocator'
 import { ArcanePanel } from '../components/ArcanePanel'
-import { AssetImage } from '../components/AssetImage'
+import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { ProgressBar } from '../components/ProgressBar'
 
 const attributeLabels = { cunning: 'Astúcia', agility: 'Agilidade', strength: 'Força', vigor: 'Vigor', spirit: 'Espírito' }
@@ -27,7 +27,7 @@ export function NexusOverview({ save }: { save: GameSave }) {
     <div className="nexus-layout">
       <ArcanePanel title="Status do personagem" eyebrow="RESULTADO ATUAL DA BUILD" className="nexus-status-panel">
         <div className="nexus-identity">
-          <AssetImage assetId={character.portraitAssetId} />
+          <EquippedCharacter save={save} alt={`Visual equipado de ${character.name}`} />
           <div><p className="eyebrow">TERRÍRIAN</p><h2>{character.name}</h2><strong>Nível {character.level}</strong><span>{character.clan.clanId ?? 'Sem Clã'} · Rank {character.clan.rank}</span><span>{character.classProgression.classId ?? 'Sem Classe'} · Mestria {character.classProgression.masteryLevel}</span></div>
         </div>
         <ProgressBar value={character.xp} max={character.xpRequired} label="Experiência" />

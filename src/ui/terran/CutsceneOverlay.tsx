@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { SkipForward, ArrowRight } from 'lucide-react'
 import type { Cutscene } from '../../domain/terran/cutscenes'
 import type { CharacterAppearance } from '../../domain/character/appearance'
+import type { VisualItem } from '../characters/equipmentVisuals'
 import { PixelCinematicCanvas } from './PixelCinematicCanvas'
 
-export function CutsceneOverlay({ scene, portraitAssetId, appearance, reducedMotion, onComplete }: {
+export function CutsceneOverlay({ scene, portraitAssetId, appearance, equipment, reducedMotion, onComplete }: {
   scene: Cutscene
   portraitAssetId: string
   appearance?: CharacterAppearance
+  equipment?: readonly VisualItem[]
   reducedMotion: boolean
   onComplete: () => void
 }) {
@@ -20,7 +22,7 @@ export function CutsceneOverlay({ scene, portraitAssetId, appearance, reducedMot
   return (
     <div className={`terran-cutscene terran-cutscene--${scene.tone}`} role="dialog" aria-modal="true" aria-label={scene.title}>
       <div className="terran-cutscene__scene" aria-hidden="true">
-        <PixelCinematicCanvas tone={scene.tone} step={step} portraitAssetId={portraitAssetId} appearance={appearance} reducedMotion={reducedMotion} />
+        <PixelCinematicCanvas tone={scene.tone} step={step} portraitAssetId={portraitAssetId} appearance={appearance} equipment={equipment} reducedMotion={reducedMotion} />
       </div>
       <div className="terran-cutscene__script">
         <span className="eyebrow">CRÔNICA DO NEXO · {step + 1}/{scene.lines.length}</span>

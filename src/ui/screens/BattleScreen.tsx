@@ -6,7 +6,7 @@ import { submitBattleCommand as previewBattleCommand } from '../../domain/combat
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { useGameStore } from '../../state/gameStore'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
-import { CharacterPortrait, CharacterSprite } from '../characters/CharacterSprite'
+import { CharacterPortrait } from '../characters/CharacterSprite'
 import { AssetImage } from '../components/AssetImage'
 import { GameShell } from '../components/GameShell'
 import { BattleArenaBackdrop } from '../battle/BattleArenaBackdrop'
@@ -316,7 +316,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
       <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} />
       <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''} ${strikeFx?.actorId === player.id ? 'is-striking' : ''} ${strikeFx?.targetId === player.id ? 'is-strike-target' : ''}`}>
-        <EquippedCharacter save={save} alt={player.alive ? 'Terrírian voltado para os inimigos' : 'Terrírian derrotado'} />
+        <EquippedCharacter save={save} facing="right" alt={player.alive ? 'Terrírian voltado para os inimigos' : 'Terrírian derrotado'} />
       </div>
       <div className={`pixel-battle__enemies pixel-battle__enemies--${enemies.length}`}>
         {enemies.map((enemy, i) => <button type="button" key={enemy.id}
@@ -355,7 +355,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       {defeated && <div className="pixel-battle__death" role="status" aria-label="Terrírian derrotado">
         <div className="pixel-battle__death-aura" aria-hidden="true" />
         <div className="pixel-battle__death-character">
-          <CharacterSprite appearance={save.character.appearance} portraitAssetId={save.character.portraitAssetId} alt="Personagem caindo ao perder toda a Vida" />
+          <EquippedCharacter save={save} alt="Personagem caindo ao perder toda a Vida" />
         </div>
         <strong>O TERRÍRIAN CAIU</strong>
         <small>Seu Nexo desperta na Base de Terran...</small>

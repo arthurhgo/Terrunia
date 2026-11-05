@@ -21,6 +21,7 @@ describe('NPC — janela única, missão primeiro', () => {
     const dialog = screen.getByRole('dialog', { name: presence.label })
     expect(within(dialog).getByRole('navigation', { name: 'Assuntos do NPC ' + presence.label })).toBeInTheDocument()
     expect(within(dialog).getByRole('button', { name: /O Livro das Criaturas/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(within(dialog).getByRole('button', { name: /O Livro das Criaturas/ })).toHaveAttribute('data-quest-status', 'available')
     expect(within(dialog).getByRole('button', { name: /Conversar com Vorren/ })).toBeInTheDocument()
     expect(within(dialog).queryByRole('group', { name: 'Respostas para Vorren' })).not.toBeInTheDocument()
     expect(within(dialog).getByRole('group', { name: 'Confirmar missão: O Livro das Criaturas' })).toBeInTheDocument()

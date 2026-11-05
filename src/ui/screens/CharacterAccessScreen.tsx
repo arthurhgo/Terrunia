@@ -1,5 +1,5 @@
 import { AlertTriangle, ArrowRight, Cloud, RefreshCcw, ShieldCheck, UserRound } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
@@ -7,7 +7,8 @@ import { BASE_LOCATION_ID } from '../../domain/terran/base'
 import { useAuthStore } from '../../state/authStore'
 import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
-import { AssetImage } from '../components/AssetImage'
+import { EquippedCharacter } from '../characters/EquippedCharacter'
+import { rememberCosmeticAvatar } from '../characters/deviceAvatar'
 import { GameButton } from '../components/GameButton'
 import { Modal } from '../components/Modal'
 
@@ -32,6 +33,7 @@ export function CharacterAccessScreen() {
   const [resetStep, setResetStep] = useState<0 | 1 | 2>(0)
   const [confirmation, setConfirmation] = useState('')
   const [resetting, setResetting] = useState(false)
+  useEffect(() => { if (save) rememberCosmeticAvatar(save) }, [save])
 
   if (!save) return <Navigate to="/character/create" replace />
   if (characterAccess !== 'required') return <Navigate to="/" replace />
@@ -80,7 +82,7 @@ export function CharacterAccessScreen() {
       <ArcanePanel title={save.character.name} eyebrow="TERRÍRIAN SALVO" className="character-access-panel">
         <div className="character-access-identity">
           <div className="character-access-portrait">
-            <AssetImage assetId={save.character.portraitAssetId} />
+            <EquippedCharacter save={save} alt={`Terrírian ${save.character.name} com seus equipamentos`} />
             <span>NÍVEL {save.character.level}</span>
           </div>
           <div className="character-access-summary">

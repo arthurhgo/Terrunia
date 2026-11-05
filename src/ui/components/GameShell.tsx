@@ -1,10 +1,11 @@
 import { BookOpen, CircleUserRound, Grid2X2, Landmark, LogOut, Map, MapPin, Settings, Sparkles } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../state/authStore'
 import { useGameStore } from '../../state/gameStore'
 import { QuestTracker } from './QuestTracker'
 import { WorldJourneyBar } from '../world/WorldJourneyBar'
+import { rememberCosmeticAvatar } from '../characters/deviceAvatar'
 
 type GameShellProps = {
   children: ReactNode
@@ -30,6 +31,7 @@ export function GameShell({ children, fluid = false, immersive = false }: GameSh
   const resetSession = useGameStore((state) => state.resetSession)
   const logout = useAuthStore((state) => state.logout)
   const navigate = useNavigate()
+  useEffect(() => { if (save) rememberCosmeticAvatar(save) }, [save])
 
   const handleLogout = async () => {
     resetSession()

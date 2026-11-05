@@ -1,9 +1,7 @@
 import { Sparkles } from 'lucide-react'
-import type { CSSProperties } from 'react'
 import type { GameSave } from '../../domain/game/types'
-import { AssetImage } from '../components/AssetImage'
-import { CharacterSprite } from '../characters/CharacterSprite'
-import { getWeaponGripProfile } from './weaponGripProfiles'
+import { CharacterComposite } from '../characters/EquippedCharacter'
+import { getVisualEquipment, type VisualItem } from '../characters/equipmentVisuals'
 
 type Props = {
   save: GameSave
@@ -16,27 +14,16 @@ type Props = {
  * Asset and hand positions are data-driven; no game state changes until binding.
  */
 export function BoundWeaponCharacterPreview({ save, weapon }: Props) {
-  const grip = weapon ? getWeaponGripProfile(weapon.id) : null
-  const gripStyle = grip ? {
-    '--grip-x': `${grip.x}%`,
-    '--grip-y': `${grip.y}%`,
-    '--weapon-size': `${grip.size}%`,
-    '--handle-x': `${grip.handleX}%`,
-    '--handle-y': `${grip.handleY}%`,
-    '--handle-offset-x': `-${grip.handleX}%`,
-    '--handle-offset-y': `-${grip.handleY}%`,
-    '--weapon-rotation': `${grip.rotation}deg`,
-  } as CSSProperties : undefined
-
+  const visuals: VisualItem[] = weapon
+    ? [{ slot: 'weapon', assetId: weapon.assetId, itemId: weapon.id, itemName: weapon.name, forged: false }]
+    : getVisualEquipment(save)
   return <section className="prologue-hero-preview" aria-label="Prévia do personagem com arma selecionada">
     <div className={`prologue-hero-preview__stage ${weapon ? 'is-armed' : 'is-unarmed'}`}>
       <div className="prologue-hero-preview__actor" data-weapon-id={weapon?.id}>
         <span className="prologue-hero-preview__circle" aria-hidden="true" />
-        <CharacterSprite portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance}
-          className="prologue-hero-preview__character" alt={`Terrírian ${save.character.name}`} />
-        {weapon && <AssetImage key={weapon.assetId} assetId={weapon.assetId}
-          style={gripStyle} className="prologue-hero-preview__equipped-weapon"
-          alt={`${weapon.name} na mão do personagem (prévia)`} />}
+        <CharacterComposite portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance}
+          visuals={visuals} facing="right" className="prologue-hero-preview__character"
+          alt={`Terrírian ${save.character.name} com a arma na mão`} />
       </div>
     </div>
     <div className="prologue-hero-preview__caption">

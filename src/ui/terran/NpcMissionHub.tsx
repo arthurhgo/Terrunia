@@ -53,7 +53,7 @@ export function NpcMissionHub({ save, presence, initialQuestId, onClose, onServi
           <Wrench size={15} aria-hidden="true"/><span><strong>Serviços</strong><small>Comércio e treinamento</small></span>
         </button>}
       </nav>
-      {!talking && selected && <div className="npc-mission-hub__detail">
+      {!talking && selected && <div className="npc-mission-hub__detail" data-quest-status={progress?.status}>
         <div className="npc-mission-hub__quote">
           <AssetImage assetId={portrait} alt={presence.label}/>
           <p>{message}</p>

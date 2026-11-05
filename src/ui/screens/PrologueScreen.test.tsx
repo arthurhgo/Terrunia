@@ -52,10 +52,11 @@ describe('Layout da escolha da Arma Vinculada', () => {
 
     fireEvent.click(axe)
     expect(within(bindingPanel as HTMLElement).queryByRole('heading', { name: 'Sem arma vinculada' })).not.toBeInTheDocument()
-    expect(within(heroPreview).getByRole('img', { name: 'Machado de Guerra na mão do personagem (prévia)' })).toHaveClass('prologue-hero-preview__equipped-weapon')
+    expect(heroPreview.querySelector('[data-slot="weapon"]')).toHaveAttribute('data-item-id', 'bound_weapon_war_axe')
     expect(heroPreview.querySelector('.prologue-hero-preview__actor')).toHaveAttribute('data-weapon-id', 'bound_weapon_war_axe')
     expect(heroPreview.querySelector('.prologue-hero-preview__stage')).toHaveClass('is-armed')
-    expect(within(heroPreview).getByRole('img', { name: 'Terrírian Lysa' })).toHaveClass('prologue-hero-preview__character')
+    expect(within(heroPreview).getByRole('img', { name: 'Terrírian Lysa com a arma na mão' })).toHaveClass('equipped-character__body')
+    expect(heroPreview.querySelector('.prologue-hero-preview__character')).toHaveClass('character-composite')
     expect(screen.getByRole('region', { name: 'Sinergias de Clã para Machado de Guerra' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Sinergias e caminhos de Clã' })).toBeInTheDocument()
     expect(screen.getByText('+4 Vida')).toBeInTheDocument()

@@ -39,6 +39,20 @@ describe('interação física com a Cama da Base', () => {
     expect(onFurniture).not.toHaveBeenCalled()
   })
 
+  it('sinaliza somente objetos de missão acionáveis, não missões concluídas', () => {
+    const save = fresh()
+    save.quests.main_terran_first_home.status = 'available'
+    const props = { locationId: 'location_terran_daeryn_house' as const, enabled: true,
+      onTalk: vi.fn(), onServices: vi.fn(), onExit: vi.fn(), onFurniture: vi.fn() }
+    const { rerender } = render(<PixelInteriorCanvas save={save} {...props} />)
+    const shelf = screen.getByRole('button', { name: 'Interagir com Estante de Cura' })
+    expect(shelf).toHaveAttribute('data-interaction-glow', 'quest')
+    const completed = structuredClone(save)
+    completed.quests.main_terran_first_home.status = 'completed'
+    rerender(<PixelInteriorCanvas save={completed} {...props} />)
+    expect(shelf).not.toHaveAttribute('data-interaction-glow')
+  })
+
   it('mantém os serviços existentes acessíveis nas outras instituições', () => {
     const save = fresh()
     save.world.currentLocationId = 'location_terran_daeryn_house'

@@ -4,6 +4,7 @@ import { NpcNameplate } from './NpcNameplate'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { CharacterAppearance } from '../../domain/character/appearance'
 import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
+import type { VisualItem } from '../characters/equipmentVisuals'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { TerranNpcPresence } from '../../content/types'
@@ -31,6 +32,8 @@ type Destination = {
 type Props = {
   portraitAssetId: string
   appearance?: CharacterAppearance
+  equipment?: readonly VisualItem[]
+  guideHasOffers?: boolean
   reducedMotion: boolean
   currentLocationId: string
   enabled: boolean
@@ -77,8 +80,12 @@ const nearestNpc = (point: WorldPoint, actors: readonly CityActor[], radius: num
   return nearest
 }
 
-export function PixelCityCanvas({ portraitAssetId, appearance, reducedMotion, currentLocationId, enabled, objectiveId, actors, homeUnlocked, spawnPoint, onEnterHome, onEnter, onTalk, onInspectLandmark, landmarkFlags, questRoutes = [], showQuestRoutes = false, showTrackedQuestRoute = false, trackedQuestRoute = null, onHideQuestRoutes }: Props) {
+export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], guideHasOffers = false, reducedMotion, currentLocationId, enabled, objectiveId, actors, homeUnlocked, spawnPoint, onEnterHome, onEnter, onTalk, onInspectLandmark, landmarkFlags, questRoutes = [], showQuestRoutes = false, showTrackedQuestRoute = false, trackedQuestRoute = null, onHideQuestRoutes }: Props) {
   const appearanceSource = appearance ? appearanceSpriteSheetUri(appearance) : null
+  const equipmentKey = equipment.map((item) => item.assetId).join('|')
+  const equipmentRef = useRef(equipment)
+  equipmentRef.current = equipment
+  const missionLocations = new Set(actors.filter((actor) => actor.marker && ['available','turn-in'].includes(actor.markerPhase ?? '')).map((actor) => actor.locationId))
   const [rosettaHovered, setRosettaHovered] = useState(false)
   const [rosettaFocused, setRosettaFocused] = useState(false)
   // Rosetta's hovered/pinned white preview takes precedence; accepted paths remain separate.
@@ -300,7 +307,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, reducedMotion, cu
         canvas.dataset.playerX = String(Math.round(playerRef.current.x)); canvas.dataset.playerY = String(Math.round(playerRef.current.y))
       }
       drawPixelCity(ctx, playerRef.current, sheet, reducedMotionRef.current ? 0 : frame, walking && !reducedMotionRef.current, facingRef.current,
-        portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', liveCast, homeUnlockedRef.current, camera)
+        portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', liveCast, homeUnlockedRef.current, camera, equipmentRef.current)
       const goal = destinationRef.current?.goal
       if (goal) {
         ctx.fillStyle = '#edc87e'
@@ -319,7 +326,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, reducedMotion, cu
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', blur)
     }
-  }, [portraitAssetId, appearanceSource])
+  }, [portraitAssetId, appearanceSource, equipmentKey])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return
@@ -353,6 +360,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, reducedMotion, cu
         {TERRAN_LOCATION_IDS.map((id) => {
           const { x, y } = getCityPoint(id)
           return <button key={id} type="button" className={`pixel-city__site ${objectiveId === id ? 'is-objective' : ''}`}
+             data-interaction-glow={missionLocations.has(id) ? 'available' : undefined}
             ref={(button) => { if (button) siteButtonsRef.current.set(id, button); else siteButtonsRef.current.delete(id) }}
             style={{ left: `${x / CITY_WIDTH * 100}%`, top: `${(y - 45) / CITY_HEIGHT * 100}%` }}
             aria-label={`Entrar em ${content.terranLocations[id].name}`}
@@ -385,6 +393,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, reducedMotion, cu
           aria-label="Entrar em Base do Terrírian" title="Base do Terrírian · entrar"
           onClick={walkToHome} disabled={!enabled}>Base</button>
         {actors.map((actor) => <button key={actor.id} type="button" className={`pixel-city__npc ${actor.marker === '?' ? 'pixel-city__npc--guide' : ''}`}
+          data-interaction-glow={actor.marker && actor.markerPhase === 'turn-in' ? 'turn-in' : actor.marker && actor.markerPhase === 'available' || (actor.marker === '?' && guideHasOffers) ? 'available' : undefined}
           ref={(button) => { if (button) npcButtonsRef.current.set(actor.id, button); else npcButtonsRef.current.delete(actor.id) }}
           style={{ left: `${actor.point.x / CITY_WIDTH * 100}%`, top: `${(actor.point.y - CITY_NPC_SIZE / 2) / CITY_HEIGHT * 100}%`, width: `${CITY_NPC_SIZE / CITY_WIDTH * 100}%`, height: `${CITY_NPC_SIZE / CITY_HEIGHT * 100}%` }}
           aria-label={`Conversar com ${actor.presence.label}`} title={actor.presence.label}
@@ -397,6 +406,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, reducedMotion, cu
           <NpcMarker state={actor.marker} phase={actor.markerPhase} />
         </button>)}
         {terranLandmarks.map((landmark) => <button key={landmark.id} type="button" className="pixel-city__landmark"
+          data-interaction-glow={!landmarkFlags.includes(cityLandmarkFlag(landmark.id)) ? 'inspect' : undefined}
           ref={(button) => { if (button) landmarkButtonsRef.current.set(landmark.id, button); else landmarkButtonsRef.current.delete(landmark.id) }}
           style={{ left: `${landmark.point.x / CITY_WIDTH * 100}%`, top: `${(landmark.point.y - landmark.top - 8) / CITY_HEIGHT * 100}%` }}
           disabled={!enabled} aria-label={`Explorar ${landmark.name}`} title={landmark.name} onClick={() => walkToLandmark(landmark)}>✦</button>)}

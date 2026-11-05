@@ -1,4 +1,6 @@
 import { drawActorImage, getWorldSprite } from './worldSprites'
+import { drawEquipmentLayer } from '../characters/equipmentCanvas'
+import type { VisualItem } from '../characters/equipmentVisuals'
 import type { Cutscene } from '../../domain/terran/cutscenes'
 import { ACTOR_PALETTES, drawPixelActor } from './pixelActorArt'
 
@@ -70,7 +72,7 @@ function riteHall(ctx: CanvasRenderingContext2D, frame: number, classRite: boole
 /** VISUAL_DRAFT cinematic plates, frame-driven and independent from the quest engine. */
 export function drawCinematicFrame(
   ctx: CanvasRenderingContext2D, tone: Tone, step: number, frame: number, variant: 'terririan' | 'sigil',
-  playerSheet?: HTMLImageElement | null, customPlayer = false,
+  playerSheet?: HTMLImageElement | null, customPlayer = false, equipped: readonly VisualItem[] = [],
 ) {
   const ruins = tone === 'ruins', victory = tone === 'victory', ritual = tone === 'clan' || tone === 'class'
   const night = ruins || tone === 'portal' || ritual
@@ -118,9 +120,11 @@ export function drawCinematicFrame(
   const playerFacing = ritual || victory ? 'down' : 'right'
   const stride = Math.floor(frame / 12) % 3
   const image = customPlayer ? playerSheet : getWorldSprite(variant === 'sigil' ? 'character.terririan.sigil' : 'character.terririan.default')
+  drawEquipmentLayer(ctx, equipped, 'back', playerFacing, playerX, 137)
   if (!drawActorImage(ctx, image ?? null, playerX, 137, playerFacing, stride) && !customPlayer) {
     drawPixelActor(ctx, playerX, 137, playerFacing, stride, ACTOR_PALETTES[variant], 2)
   }
+  drawEquipmentLayer(ctx, equipped, 'front', playerFacing, playerX, 137)
   if (tone === 'portal') {
     rect(ctx, '#bfe8e4', 180, 18 + pulse % 17, 5, 12)
     rect(ctx, '#98cfd8', 200, 31 + pulse % 12, 5, 16)
