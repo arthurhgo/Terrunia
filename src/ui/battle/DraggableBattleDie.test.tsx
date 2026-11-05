@@ -55,15 +55,14 @@ describe('arremesso vertical de dado', () => {
     const { button, onThrow } = setup()
     fireEvent.keyDown(button, { key: 'Enter', code: 'Enter' })
     expect(onThrow).toHaveBeenCalledOnce()
-    const { button: disabled } = (() => {
-      const onDisabledThrow = vi.fn()
-      const { unmount } = render(<DraggableBattleDie sides={6} disabled
-        ariaLabel="Arrastar dado d6 para cima para rolar" onThrow={onDisabledThrow} />)
-      return { button: screen.getByRole('button', { name: /Arrastar dado d6/ }), unmount }
-    })()
+    const onDisabledThrow = vi.fn()
+    render(<DraggableBattleDie sides={6} disabled
+      ariaLabel="Arrastar dado d6 para cima para rolar" onThrow={onDisabledThrow} />)
+    const disabled = screen.getByRole('button', { name: /Arrastar dado d6/ })
     expect(disabled).toBeDisabled()
     fireEvent.keyDown(disabled, { key: ' ', code: 'Space' })
     fireEvent.pointerDown(disabled, { pointerId: 4, pointerType: 'touch', isPrimary: true, clientY: 140 })
     fireEvent.pointerUp(disabled, { pointerId: 4, clientY: 40 })
+    expect(onDisabledThrow).not.toHaveBeenCalled()
   })
 })
