@@ -11,7 +11,7 @@ import { GameShell } from '../components/GameShell'
 import { BattleArenaBackdrop } from '../battle/BattleArenaBackdrop'
 import { BattleEquipmentHud } from '../battle/BattleEquipmentHud'
 import { BattleDicePlatform, type BattleDiceEvent } from '../battle/BattleDicePlatform'
-import { DieIcon } from '../components/DieIcon'
+import { DraggableBattleDie } from '../battle/DraggableBattleDie'
 import { groupBattleLoot } from '../../domain/inventory/battleLoot'
 import './battlePixel.css'
 import './battleRemake.css'
@@ -213,7 +213,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       if (!playerMustClick) scheduleRollStep()
     }, reducedMotion ? 850 : 1350)
   }
-  const clickPlayerDie = () => {
+  const releasePlayerDie = () => {
     if (!diceAwaitingClick || !pendingRollsRef.current) return
     setDiceAwaitingClick(false)
     scheduleRollStep()
@@ -323,7 +323,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         })}
       </div>}
       {activeDice && <BattleDicePlatform key={activeDice.id} roll={activeDice} reducedMotion={reducedMotion}
-          awaitingClick={diceAwaitingClick} onRoll={clickPlayerDie} />}
+          awaitingClick={diceAwaitingClick} onRoll={releasePlayerDie} />}
       {(turnCue || turnAnnouncement) && !defeated && !activeDice && <div className="pixel-battle__turn-cue" role="status">
         {turnCue ? 'TURNO DOS INIMIGOS' : turnAnnouncement}
       </div>}
@@ -365,11 +365,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         <h2>{battle.phase === 'AwaitingInitiative' ? 'ROLAGEM DE INICIATIVA' : battle.phase === 'AwaitingAction' ? 'ESCOLHA SUA AÇÃO' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'COMBATE'}</h2>
         {battle.phase === 'AwaitingInitiative' ? <div className="pixel-battle__initiative" aria-label="Preparar rolagem de iniciativa">
           <strong>{initiativeReady ? 'ROLAGEM DE INICIATIVA' : 'TURNO ' + battle.round}</strong>
-          <button type="button" disabled={!initiativeReady || resolvingRolls} aria-label={'Rolar dado de iniciativa d' + (player.initiativeDie ?? 4)}
-            onClick={() => send({ type: 'rollInitiative' })}>
-            <DieIcon sides={player.initiativeDie ?? 4} />
-            <span>{resolvingRolls ? 'Resolvendo iniciativa…' : initiativeReady ? 'CLIQUE NO DADO PARA ROLAR' : 'PREPARANDO O TURNO…'}</span>
-          </button>
+          <DraggableBattleDie sides={player.initiativeDie ?? 4}
+            disabled={!initiativeReady || resolvingRolls} ariaLabel={`Arrastar dado de iniciativa d${player.initiativeDie ?? 4} para cima para rolar`}
+            onThrow={() => send({ type: 'rollInitiative' })} />
           <small>Seu dado de Agilidade define a ordem junto à iniciativa-base. Monstros rolam automaticamente.</small>
         </div> : battle.phase === 'AwaitingAction' ? <>
           <div className="pixel-battle__commands">
