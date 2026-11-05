@@ -69,7 +69,7 @@ describe('arsenal livre e progressão de atributos', () => {
     expect(raised.ok && raised.value.character.attributes.strength.die).toBe(6)
     if (!raised.ok) return
     const refunded = adjustCharacterAttribute(raised.value, 'strength', -1, '2026-10-29T12:00:01.000Z')
-    expect(refunded.ok && refunded.value.character.unspentAttributePoints).toBe(3)
+    expect(refunded.ok && refunded.value.character.unspentAttributePoints).toBe(6)
     const prepared = allocateFor(raised.value, content.boundItemBases.bound_weapon_long_sword)
     const bound = bindPrologueWeapon(prepared, content, '2026-10-29T12:01:00.000Z', 'sword_1', 'bound_weapon_long_sword')
     if (!bound.ok) throw new Error(bound.message)
@@ -105,7 +105,7 @@ describe('arsenal livre e progressão de atributos', () => {
     const progression = gainCharacterXp(save.character, 250)
     expect(progression.levelsGained).toBe(1)
     expect(progression.character.level).toBe(2)
-    expect(progression.character.unspentAttributePoints).toBe(4)
+    expect(progression.character.unspentAttributePoints).toBe(7)
     expect(progression.character.xpRequired).toBe(750)
   })
 })
