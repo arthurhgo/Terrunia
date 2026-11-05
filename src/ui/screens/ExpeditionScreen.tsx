@@ -14,6 +14,7 @@ import { GameShell } from '../components/GameShell'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { AstravelPixelCanvas } from '../expedition/AstravelPixelCanvas'
+import { getVisualEquipment } from '../characters/equipmentVisuals'
 
 type Drawer = 'trail' | 'node' | 'inventory' | 'quests' | null
 const trail = content.trails.trail_astravel_entry
@@ -113,7 +114,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
       <div className={`terran-game__layout expedition-game__layout ${drawer ? 'has-drawer' : ''}`}>
         <section className="terran-game__stage" aria-label="Cena contínua de Astravél">
           <AstravelPixelCanvas key={save.world.currentLocationId} trail={trail} statuses={save.world.trailNodeStates}
-            currentLocationId={save.world.currentLocationId} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance}
+            currentLocationId={save.world.currentLocationId} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save)}
             reducedMotion={save.settings.reducedMotion} enabled={!scene} onInspect={inspect} onEngage={engage}
             onTravelStart={() => { if (drawer === 'node') { setDrawer(null); setSelectedId(null) } }} />
           <div className="terran-game__hud" aria-label="Ações de exploração">
@@ -169,7 +170,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
           </aside>
         </>}
       </div>
-      {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance}
+      {scene && <CutsceneOverlay key={scene.id} scene={scene} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save)}
         reducedMotion={save.settings.reducedMotion} onComplete={() => recordCutsceneViewed(scene.id)} />}
     </div>
 
