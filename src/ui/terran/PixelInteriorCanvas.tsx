@@ -250,7 +250,7 @@ export function PixelInteriorCanvas({
       {residents.map((resident) =>
         <button type="button" key={resident.presence.id} disabled={!enabled}
           className="pixel-interior__npc"
-          data-interaction-glow={resident.markerPhase === 'turn-in' ? 'turn-in' : resident.markerPhase === 'available' ? 'available' : undefined}
+          data-interaction-glow={resident.marker && resident.markerPhase === 'turn-in' ? 'turn-in' : resident.marker && resident.markerPhase === 'available' ? 'available' : undefined}
           title={resident.presence.label}
           aria-label={`Falar com ${resident.presence.label} dentro do local`}
           style={{ left: resident.position.x / 384 * 100 + '%', top: (resident.position.y - CITY_NPC_SIZE / 2) / 256 * 100 + '%', width: `${CITY_NPC_SIZE / 384 * 100}%`, height: `${CITY_NPC_SIZE / 256 * 100}%` }}
