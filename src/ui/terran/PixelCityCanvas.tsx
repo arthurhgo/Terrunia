@@ -4,6 +4,7 @@ import { NpcNameplate } from './NpcNameplate'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { CharacterAppearance } from '../../domain/character/appearance'
 import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
+import type { VisualItem } from '../characters/equipmentVisuals'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { TerranNpcPresence } from '../../content/types'
@@ -31,6 +32,7 @@ type Destination = {
 type Props = {
   portraitAssetId: string
   appearance?: CharacterAppearance
+  equipment?: readonly VisualItem[]
   reducedMotion: boolean
   currentLocationId: string
   enabled: boolean
@@ -77,7 +79,7 @@ const nearestNpc = (point: WorldPoint, actors: readonly CityActor[], radius: num
   return nearest
 }
 
-export function PixelCityCanvas({ portraitAssetId, appearance, reducedMotion, currentLocationId, enabled, objectiveId, actors, homeUnlocked, spawnPoint, onEnterHome, onEnter, onTalk, onInspectLandmark, landmarkFlags, questRoutes = [], showQuestRoutes = false, showTrackedQuestRoute = false, trackedQuestRoute = null, onHideQuestRoutes }: Props) {
+export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], reducedMotion, currentLocationId, enabled, objectiveId, actors, homeUnlocked, spawnPoint, onEnterHome, onEnter, onTalk, onInspectLandmark, landmarkFlags, questRoutes = [], showQuestRoutes = false, showTrackedQuestRoute = false, trackedQuestRoute = null, onHideQuestRoutes }: Props) {
   const appearanceSource = appearance ? appearanceSpriteSheetUri(appearance) : null
   const [rosettaHovered, setRosettaHovered] = useState(false)
   const [rosettaFocused, setRosettaFocused] = useState(false)
@@ -300,7 +302,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, reducedMotion, cu
         canvas.dataset.playerX = String(Math.round(playerRef.current.x)); canvas.dataset.playerY = String(Math.round(playerRef.current.y))
       }
       drawPixelCity(ctx, playerRef.current, sheet, reducedMotionRef.current ? 0 : frame, walking && !reducedMotionRef.current, facingRef.current,
-        portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', liveCast, homeUnlockedRef.current, camera)
+        portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', liveCast, homeUnlockedRef.current, camera, equipment)
       const goal = destinationRef.current?.goal
       if (goal) {
         ctx.fillStyle = '#edc87e'
@@ -319,7 +321,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, reducedMotion, cu
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', blur)
     }
-  }, [portraitAssetId, appearanceSource])
+  }, [portraitAssetId, appearanceSource, equipment])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return
