@@ -5,6 +5,7 @@ import type { ActorFacing } from '../terran/pixelActorArt'
 import { AssetImage } from '../components/AssetImage'
 import { CharacterSprite } from './CharacterSprite'
 import { getEquipmentAnchor, getVisualEquipment, type VisualItem } from './equipmentVisuals'
+import './equipmentComposite.css'
 
 const placedStyle = (item: VisualItem, facing: ActorFacing): CSSProperties => {
   const anchor = getEquipmentAnchor(item, facing)
