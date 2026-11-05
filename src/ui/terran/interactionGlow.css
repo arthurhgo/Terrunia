@@ -1,0 +1,105 @@
+/* Terrúnia v0.5.6 — state-driven hints. Available = gold, turn-in = emerald.
+   Active/locked/completed missions MUST NOT glimmer like new quests. */
+.pixel-city__npc[data-interaction-glow],
+.pixel-interior__npc[data-interaction-glow],
+.pixel-city__site[data-interaction-glow],
+.pixel-city__landmark[data-interaction-glow] { isolation: isolate; }
+.pixel-city__npc[data-interaction-glow]::after,
+.pixel-interior__npc[data-interaction-glow]::after {
+  content: ''; position:absolute; inset: 1px -1px -1px; z-index: 1; border-radius: 5px;
+  border:1px solid #f2d18e99; box-shadow:0 0 4px 2px #ecc96d55,0 0 13px #eed58a88;
+  pointer-events:none; animation:terrunia-offer-shimmer 2.6s ease-in-out infinite;
+}
+.pixel-city__npc[data-interaction-glow="turn-in"]::after,
+.pixel-interior__npc[data-interaction-glow="turn-in"]::after {
+  border-color:#9afbc5; box-shadow:0 0 5px 2px #8afeac99,0 0 16px #6affa288;
+  animation:terrunia-ready-shimmer 1.9s ease-in-out infinite;
+}
+.pixel-city__npc[data-interaction-glow]::before,
+.pixel-interior__npc[data-interaction-glow]::before {
+  content:'✧'; position:absolute; top:-16px; right:-12px; z-index:5;
+  color:#fff0bc; font:700 12px/1 Georgia,serif; text-shadow:0 0 6px #fbdc8a;
+  pointer-events:none; animation:terrunia-sparkle-flicker 2.3s steps(3,end) infinite;
+}
+.pixel-city__npc[data-interaction-glow="turn-in"]::before,
+.pixel-interior__npc[data-interaction-glow="turn-in"]::before {
+  color:#baffdc; text-shadow:0 0 8px #74ffb2;
+}
+.pixel-city__site[data-interaction-glow="available"],
+.pixel-city__landmark[data-interaction-glow="inspect"] {
+  border-color:#d5ac72; box-shadow:0 0 7px #ffd48388;
+  animation:terrunia-interaction-ring 3.4s ease-in-out infinite;
+}
+.pixel-city__site[data-interaction-glow="available"]::after {
+  content:'✦'; position:absolute; top:-10px; right:-10px;
+  color:#f9de97; text-shadow:0 0 8px #f4c27d; pointer-events:none;
+}
+.pixel-interior__furniture[data-interaction-glow="quest"] {
+  border-color:#dfc16f; box-shadow:0 0 8px #f8c77099;
+  animation:terrunia-interaction-ring 2.8s ease-in-out infinite;
+}
+.pixel-interior__furniture[data-interaction-glow="inspect"],
+.pixel-interior__service[data-interaction-glow="service"] {
+  box-shadow:0 0 4px #92d5c873;
+  transition:filter .2s,box-shadow .2s;
+}
+.pixel-interior__furniture:is(:hover,:focus-visible),
+.pixel-interior__service:is(:hover,:focus-visible),
+.pixel-city__landmark:is(:hover,:focus-visible) {
+  box-shadow:0 0 15px #b5f9d9aa;filter:brightness(1.18);
+}
+.npc-mission-hub__topics button[data-quest-status="available"],
+.npc-mission-hub__topics button[data-quest-status="offered"] {
+  border-color:#d9b971; box-shadow:inset 0 0 0 1px #c69f566b,0 0 8px #edcf7952;
+  animation:terrunia-offer-shimmer 2.8s ease-in-out infinite;
+}
+.npc-mission-hub__topics button[data-quest-status="ready_to_turn_in"] {
+  border-color:#72eab1; box-shadow:0 0 11px #75ffb570;
+  animation:terrunia-ready-shimmer 2s ease-in-out infinite;
+}
+.npc-mission-hub__detail[data-quest-status="available"] .quest-offer-actions button:not(:disabled),
+.npc-mission-hub__detail[data-quest-status="offered"] .quest-offer-actions button:not(:disabled) {
+  box-shadow:0 0 11px #facb7584;
+}
+.terran-quick-journal__intro {
+  animation:terrunia-interaction-ring 3s ease-in-out infinite;
+}
+.terran-quick-journal__line--ready_to_turn_in,
+.terran-quick-journal__line--ready_to_turn_in > button {
+  animation:terrunia-ready-shimmer 2.3s ease-in-out infinite;
+}
+.pixel-battle__loot-stack {
+  box-shadow:0 0 7px #e9c68588;
+  animation:terrunia-offer-shimmer 2.9s ease-in-out infinite;
+}
+.inventory-slot:is(:hover,:focus-visible) .asset-image,
+.inventory-slot:focus-within .asset-image {
+  filter:drop-shadow(0 0 4px #f6c875); transition:filter .2s;
+}
+@keyframes terrunia-offer-shimmer {
+  0%,100%{filter:brightness(.94);box-shadow:0 0 3px #eec67b70}
+  50%{filter:brightness(1.2);box-shadow:0 0 11px #f7d98aa1}
+}
+@keyframes terrunia-ready-shimmer {
+  0%,100%{filter:brightness(1);box-shadow:0 0 3px #92f5b077}
+  50%{filter:brightness(1.25);box-shadow:0 0 14px #76f9b3bb}
+}
+@keyframes terrunia-interaction-ring {
+  0%,100%{box-shadow:0 0 3px #d1ad6570}
+  50%{box-shadow:0 0 12px #e7ca848f}
+}
+@keyframes terrunia-sparkle-flicker {
+  0%,100%{opacity:.28;transform:translateY(2px)}
+  40%,70%{opacity:1;transform:translateY(-2px)}
+}
+@media (prefers-reduced-motion:reduce) {
+  .pixel-city__npc[data-interaction-glow]::after,
+  .pixel-city__npc[data-interaction-glow]::before,
+  .pixel-interior__npc[data-interaction-glow]::after,
+  .pixel-interior__npc[data-interaction-glow]::before,
+  [data-interaction-glow],
+  .npc-mission-hub__topics button[data-quest-status],
+  .terran-quick-journal__intro,
+  .terran-quick-journal__line--ready_to_turn_in,
+  .pixel-battle__loot-stack {animation:none!important;filter:none;}
+}
