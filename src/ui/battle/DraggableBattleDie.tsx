@@ -31,7 +31,7 @@ export function DraggableBattleDie({ sides, onThrow, disabled = false, ariaLabel
     onThrow()
   }
   const pointerDown = (event: PointerEvent<HTMLButtonElement>) => {
-    if (disabled || thrown.current || activePointer.current || !event.isPrimary) return
+    if (disabled || thrown.current || activePointer.current || event.isPrimary === false) return
     if (event.pointerType === 'mouse' && event.button !== 0) return
     activePointer.current = { pointerId: event.pointerId, startY: event.clientY }
     setDragging(true)
