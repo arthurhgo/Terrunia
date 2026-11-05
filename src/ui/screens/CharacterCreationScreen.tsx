@@ -9,7 +9,8 @@ import {
   DEFAULT_CHARACTER_APPEARANCE, FACE_STYLES, HAIR_STYLES, OUTFIT_STYLES,
   type CharacterAppearance,
 } from '../../domain/character/appearance'
-import { CharacterSprite } from '../characters/CharacterSprite'
+import { CharacterSprite, CharacterPortrait } from '../characters/CharacterSprite'
+import type { ActorFacing } from '../terran/pixelActorArt'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { GameButton } from '../components/GameButton'
 import './characterCreator.css'
@@ -33,6 +34,7 @@ export function CharacterCreationScreen() {
   const [name, setName] = useState('')
   const [appearance, setAppearance] = useState<CharacterAppearance>({ ...DEFAULT_CHARACTER_APPEARANCE })
   const [submitting, setSubmitting] = useState(false)
+  const [facing, setFacing] = useState<ActorFacing>('down')
 
   if (save) return <Navigate to="/character/access" replace />
 
@@ -85,9 +87,21 @@ export function CharacterCreationScreen() {
       <p>Crie sua aparência antes de iniciar a jornada. Clã e Classe só serão conquistados dentro de Terrúnia.</p>
       <div className="character-creator__preview" aria-label="Prévia do sprite do Terrírian" aria-live="polite">
         <span className="character-creator__preview-orbit" aria-hidden="true" />
-        <CharacterSprite appearance={appearance} className="character-creator__sprite" alt="Prévia da aparência escolhida" />
+        <CharacterSprite appearance={appearance} facing={facing} className="character-creator__sprite" alt="Prévia da aparência escolhida" />
+        <span className="character-creator__face-preview" aria-label="Detalhes do rosto">
+          <CharacterPortrait appearance={appearance} alt="Rosto personalizado" />
+        </span>
         <strong>{name.trim() || 'Seu Terrírian'}</strong>
         <small>Pixel art modular · prévia imediata</small>
+      </div>
+      <div className="character-creator__directions" aria-label="Visualizar personagem por direção">
+        {([
+          { id: 'down', title: 'Frente' }, { id: 'left', title: 'Esquerda' },
+          { id: 'right', title: 'Direita' }, { id: 'up', title: 'Costas' },
+        ] as { id: ActorFacing; title: string }[]).map(({ id, title }) =>
+          <button key={id} type="button" aria-pressed={facing === id}
+            className={facing === id ? 'is-selected' : ''}
+            onClick={() => setFacing(id)}>{title}</button>)}
       </div>
       <div className="character-creator__quick">
         <button type="button" onClick={randomize}>Surpreender</button>
