@@ -5,6 +5,7 @@ import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import { BOUND_SLOTS, BOUND_SLOT_LABELS } from '../../domain/shared/types'
 import type { GameSave } from '../../domain/game/types'
 import { AssetImage } from '../components/AssetImage'
+import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { ProgressBar } from '../components/ProgressBar'
 import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
 
@@ -43,7 +44,7 @@ export function TerranCharacterHud({ save }: { save: GameSave }) {
       <h2>PERSONAGEM</h2>
       <div className="terran-character-hud__identity">
         <div className="terran-character-hud__portrait">
-          <AssetImage assetId={character.portraitAssetId} alt={`Retrato de ${character.name}`} />
+          <EquippedCharacter save={save} alt={`Personagem equipado: ${character.name}`} />
           <span>LV {character.level}</span>
         </div>
         <div>
