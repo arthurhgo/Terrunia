@@ -41,6 +41,9 @@ function nearbyRoom(point: WorldPoint, dungeon: DungeonDefinition, radius: numbe
 
 export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, portraitAssetId, appearance, equipment = [], reducedMotion, enabled, onDiscover, onInspect, onTravelStart }: Props) {
   const appearanceSource = appearance ? appearanceSpriteSheetUri(appearance) : null
+  const equipmentKey = equipment.map((item) => item.assetId).join('|')
+  const equipmentRef = useRef(equipment)
+  equipmentRef.current = equipment
   const discovered = new Set(dungeon.rooms.filter((room) => discoveredFlags.includes(dungeonRoomFlag(room.id))).map((room) => room.id))
   const startingRoom = [...dungeon.rooms].reverse().find((room) => discovered.has(room.id)) ?? dungeon.rooms[0]
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -144,7 +147,7 @@ export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, po
       }
       drawFungalDungeon(ctx, dungeon, playerRef.current, sheet, reducedMotion ? 0 : frame,
         walking && !reducedMotion, facingRef.current, portraitAssetId.includes('sigil') ? 'sigil' : 'terririan',
-        { discovered: discoveredRef.current, defeated: defeatedRef.current }, equipment)
+        { discovered: discoveredRef.current, defeated: defeatedRef.current }, equipmentRef.current)
       raf = requestAnimationFrame(tick)
     }
     window.addEventListener('keydown', keydown)
@@ -157,7 +160,7 @@ export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, po
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', blur)
     }
-  }, [dungeon, reducedMotion, portraitAssetId, appearanceSource, equipment])
+  }, [dungeon, reducedMotion, portraitAssetId, appearanceSource, equipmentKey])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return
