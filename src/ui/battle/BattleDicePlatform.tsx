@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { AttributeDie } from '../../domain/game/types'
 import { DieIcon } from '../components/DieIcon'
 import { DraggableBattleDie } from './DraggableBattleDie'
+import { BATTLE_PRESENTATION } from './presentationTiming'
 
 export type BattleDiceEvent = {
   id: string
@@ -30,7 +31,7 @@ export function BattleDicePlatform({ roll, reducedMotion, awaitingClick = false,
     if (awaitingClick) { setSettled(false); return }
     const begin = window.setTimeout(() => setSettled(reducedMotion), 0)
     if (reducedMotion) return () => window.clearTimeout(begin)
-    const timer = window.setTimeout(() => setSettled(true), 780)
+    const timer = window.setTimeout(() => setSettled(true), BATTLE_PRESENTATION.dieSpinMs)
     return () => { window.clearTimeout(begin); window.clearTimeout(timer) }
   }, [roll, reducedMotion, awaitingClick])
 
