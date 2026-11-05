@@ -81,6 +81,9 @@ const nearestNpc = (point: WorldPoint, actors: readonly CityActor[], radius: num
 
 export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], reducedMotion, currentLocationId, enabled, objectiveId, actors, homeUnlocked, spawnPoint, onEnterHome, onEnter, onTalk, onInspectLandmark, landmarkFlags, questRoutes = [], showQuestRoutes = false, showTrackedQuestRoute = false, trackedQuestRoute = null, onHideQuestRoutes }: Props) {
   const appearanceSource = appearance ? appearanceSpriteSheetUri(appearance) : null
+  const equipmentKey = equipment.map((item) => item.assetId).join('|')
+  const equipmentRef = useRef(equipment)
+  equipmentRef.current = equipment
   const [rosettaHovered, setRosettaHovered] = useState(false)
   const [rosettaFocused, setRosettaFocused] = useState(false)
   // Rosetta's hovered/pinned white preview takes precedence; accepted paths remain separate.
@@ -302,7 +305,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], r
         canvas.dataset.playerX = String(Math.round(playerRef.current.x)); canvas.dataset.playerY = String(Math.round(playerRef.current.y))
       }
       drawPixelCity(ctx, playerRef.current, sheet, reducedMotionRef.current ? 0 : frame, walking && !reducedMotionRef.current, facingRef.current,
-        portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', liveCast, homeUnlockedRef.current, camera, equipment)
+        portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', liveCast, homeUnlockedRef.current, camera, equipmentRef.current)
       const goal = destinationRef.current?.goal
       if (goal) {
         ctx.fillStyle = '#edc87e'
@@ -321,7 +324,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], r
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', blur)
     }
-  }, [portraitAssetId, appearanceSource, equipment])
+  }, [portraitAssetId, appearanceSource, equipmentKey])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return
