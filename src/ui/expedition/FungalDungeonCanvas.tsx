@@ -1,5 +1,7 @@
 import { useEffect, useRef, type PointerEvent } from 'react'
 import { resolveAsset } from '../../assets/assetRegistry'
+import type { CharacterAppearance } from '../../domain/character/appearance'
+import { appearanceSpriteUri } from '../characters/CharacterSprite'
 import type { DungeonDefinition, DungeonRoomDefinition } from '../../content/types'
 import type { ActorFacing } from '../terran/pixelActorArt'
 import type { WorldPoint } from '../terran/pixelCityArt'
@@ -13,6 +15,7 @@ type Props = {
   discoveredFlags: string[]
   bossDefeated: boolean
   portraitAssetId: string
+  appearance?: CharacterAppearance
   reducedMotion: boolean
   enabled: boolean
   onDiscover: (roomId: string) => void
@@ -34,7 +37,8 @@ function nearbyRoom(point: WorldPoint, dungeon: DungeonDefinition, radius: numbe
   return closest
 }
 
-export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, portraitAssetId, reducedMotion, enabled, onDiscover, onInspect, onTravelStart }: Props) {
+export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, portraitAssetId, appearance, reducedMotion, enabled, onDiscover, onInspect, onTravelStart }: Props) {
+  const appearanceSource = appearance ? appearanceSpriteUri(appearance) : null
   const discovered = new Set(dungeon.rooms.filter((room) => discoveredFlags.includes(dungeonRoomFlag(room.id))).map((room) => room.id))
   const startingRoom = [...dungeon.rooms].reverse().find((room) => discovered.has(room.id)) ?? dungeon.rooms[0]
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -73,7 +77,7 @@ export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, po
     const ctx = canvasRef.current?.getContext('2d')
     if (!ctx) return
     const sheet = new Image()
-    sheet.src = resolveAsset(portraitAssetId).path
+    sheet.src = appearanceSource ?? resolveAsset(portraitAssetId).path
     sheet.onerror = () => { sheet.onerror = null; sheet.src = resolveAsset(portraitAssetId).fallback }
     let raf = 0, frame = 0, previous = 0
     const keydown = (event: KeyboardEvent) => {
@@ -151,7 +155,7 @@ export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, po
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', blur)
     }
-  }, [dungeon, reducedMotion, portraitAssetId])
+  }, [dungeon, reducedMotion, portraitAssetId, appearanceSource])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return
