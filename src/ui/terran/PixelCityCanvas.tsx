@@ -85,7 +85,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
   const equipmentKey = equipment.map((item) => item.assetId).join('|')
   const equipmentRef = useRef(equipment)
   equipmentRef.current = equipment
-  const missionLocations = new Set(actors.filter((actor) => ['available','turn-in'].includes(actor.markerPhase ?? '')).map((actor) => actor.locationId))
+  const missionLocations = new Set(actors.filter((actor) => actor.marker && ['available','turn-in'].includes(actor.markerPhase ?? '')).map((actor) => actor.locationId))
   const [rosettaHovered, setRosettaHovered] = useState(false)
   const [rosettaFocused, setRosettaFocused] = useState(false)
   // Rosetta's hovered/pinned white preview takes precedence; accepted paths remain separate.
@@ -393,7 +393,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
           aria-label="Entrar em Base do Terrírian" title="Base do Terrírian · entrar"
           onClick={walkToHome} disabled={!enabled}>Base</button>
         {actors.map((actor) => <button key={actor.id} type="button" className={`pixel-city__npc ${actor.marker === '?' ? 'pixel-city__npc--guide' : ''}`}
-          data-interaction-glow={actor.markerPhase === 'turn-in' ? 'turn-in' : actor.markerPhase === 'available' || (actor.marker === '?' && guideHasOffers) ? 'available' : undefined}
+          data-interaction-glow={actor.marker && actor.markerPhase === 'turn-in' ? 'turn-in' : actor.marker && actor.markerPhase === 'available' || (actor.marker === '?' && guideHasOffers) ? 'available' : undefined}
           ref={(button) => { if (button) npcButtonsRef.current.set(actor.id, button); else npcButtonsRef.current.delete(actor.id) }}
           style={{ left: `${actor.point.x / CITY_WIDTH * 100}%`, top: `${(actor.point.y - CITY_NPC_SIZE / 2) / CITY_HEIGHT * 100}%`, width: `${CITY_NPC_SIZE / CITY_WIDTH * 100}%`, height: `${CITY_NPC_SIZE / CITY_HEIGHT * 100}%` }}
           aria-label={`Conversar com ${actor.presence.label}`} title={actor.presence.label}
