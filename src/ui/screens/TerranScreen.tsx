@@ -142,7 +142,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const trackedRoute = getTrackedQuestRoute(save, content) ?? getReadyDeliveryQuestRoute(save, content)
   const discovered = getDiscoveredTerranLocationIds(save).length
   const location = content.terranLocations[locationId]
-  const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !dialogue && !inspected && !cityLandmark && !baseDoorPrompt && !activeQuestObjectId && !missionNpc && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
+  const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !dialogue && !inspected && !cityLandmark && !baseDoorPrompt && !homeMenuOpen && !activeQuestObjectId && !missionNpc && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
 
   const openLocation = (id: TerranLocationId) => {
     setStreetSpawn(null)
