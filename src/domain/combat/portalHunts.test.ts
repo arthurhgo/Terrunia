@@ -8,8 +8,8 @@ const fresh = () => createNewSave('owner', 'Arlen', 'character.terririan.default
   '2026-10-29T22:00:00Z', { saveId: 'save-portal', characterId: 'character-portal' })
 
 describe('Caçadas individuais do Portal (CONTENT_DRAFT)', () => {
-  it('registra as três caçadas com adversários e materiais reais', () => {
-    expect(PORTAL_HUNT_IDS).toHaveLength(3)
+  it('registra as cinco caçadas com adversários e materiais reais', () => {
+    expect(PORTAL_HUNT_IDS).toHaveLength(5)
     for (const id of PORTAL_HUNT_IDS) {
       const encounter = content.encounters[id]
       expect(encounter).toBeDefined()
@@ -29,6 +29,24 @@ describe('Caçadas individuais do Portal (CONTENT_DRAFT)', () => {
     save.world.currentLocationId = 'location_terran_daeryn_house'
     expect(canStartPortalHunt(save, PORTAL_HUNT_IDS[0], content).ok).toBe(false)
   })
+  it('libera caçadas avançadas apenas após as entregas da campanha, sem bloquear as três originais', () => {
+    const save = fresh()
+    save.world.currentLocationId = 'location_terran_portal_plaza'
+    save.world.trailNodeStates.astravel_fungorro_01 = 'completed'
+    for (const id of PORTAL_HUNT_IDS.slice(0, 3)) {
+      expect(canStartPortalHunt(save, id, content).ok).toBe(true)
+    }
+    expect(canStartPortalHunt(save, 'encounter_portal_mycelial_track', content)).toMatchObject({
+      ok: false, code: 'HUNT_STORY_LOCKED',
+    })
+    expect(canStartPortalHunt(save, 'encounter_portal_ruin_guard', content).ok).toBe(false)
+    save.quests.main_astravel_lost_hunters.status = 'completed'
+    expect(canStartPortalHunt(save, 'encounter_portal_mycelial_track', content).ok).toBe(true)
+    expect(canStartPortalHunt(save, 'encounter_portal_ruin_guard', content).ok).toBe(false)
+    save.quests.main_astravel_corruption.status = 'completed'
+    expect(canStartPortalHunt(save, 'encounter_portal_ruin_guard', content).ok).toBe(true)
+  })
+
   it('mantém recorde de ondas por save e migra versões atuais sem zerar progresso', () => {
     const a = fresh(), b = fresh()
     a.world.portalWaveBest = 15
