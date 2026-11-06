@@ -36,6 +36,7 @@ import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 import {
   acceptQuest as acceptQuestDomain,
   applyQuestEvent,
+  refreshQuestAvailability,
   declineQuest as declineQuestDomain,
   offerQuest as offerQuestDomain,
   setQuestTracked as setQuestTrackedDomain,
@@ -930,6 +931,8 @@ export const useGameStore = create<GameState>((set, get) => {
           acquiredAt,
         )
       }
+      // Level-gated optional missions must be re-evaluated after battle XP.
+      next = refreshQuestAvailability(next, content, acquiredAt)
       commit(next)
       show(
         'Vitória',
