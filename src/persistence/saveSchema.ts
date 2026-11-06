@@ -950,5 +950,21 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   // Reconcile quest gates without resetting progress or rewards.
   const validated = gameSaveSchema.parse(candidate) as GameSave
   const withHomeAccess = reconcileLegacyHomeKey(validated)
-  return normalizeTrackedQuests(refreshQuestAvailability(withHomeAccess, content, withHomeAccess.updatedAt))
+  // Safe, schema-17-compatible additive quest migration. A previously used
+  // Daeryn key is proof of completion; never require re-opening a legacy home.
+  let withDoorQuest = withHomeAccess
+  const doorQuest = content.quests.main_terran_open_base_door
+  if (doorQuest && !withHomeAccess.quests[doorQuest.id]) {
+    withDoorQuest = structuredClone(withHomeAccess)
+    const progress = createQuestProgress(doorQuest)
+    if (withHomeAccess.eventLog.includes('DaerynKeyUsedOnHomeDoor')) {
+      progress.status = 'completed'
+      progress.objectives.unlock_door = 1
+      progress.completedAt = withHomeAccess.updatedAt
+    }
+    withDoorQuest.quests[doorQuest.id] = progress
+    withDoorQuest.eventLog.push('DoorQuestReconciled:' + progress.status)
+    withDoorQuest.revision += 1
+  }
+  return normalizeTrackedQuests(refreshQuestAvailability(withDoorQuest, content, withDoorQuest.updatedAt))
 }
