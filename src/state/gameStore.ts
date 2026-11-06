@@ -123,7 +123,7 @@ type GameState = {
   discoverFungalRoom: (roomId: string) => void
   exitFungalChambers: () => void
   resolveCurrentTrailNode: () => void
-  useFieldConsumable: (instanceId: string) => void
+  consumeFieldItem: (instanceId: string) => void
   startBattle: (nodeId?: string) => void
   startPortalWaves: () => void
   startPortalHunt: (encounterId: string) => void
@@ -775,7 +775,7 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(next)
     },
 
-    useFieldConsumable: (instanceId) => {
+    consumeFieldItem: (instanceId) => {
       const save = get().save
       if (!save) return failAction('Nenhum personagem ativo.')
       const result = applyFieldConsumable(save, instanceId, content, nowIso())
