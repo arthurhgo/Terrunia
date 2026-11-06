@@ -99,7 +99,7 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
   const actor = page.locator('.pixel-battle__hero .equipped-character')
   await expect(actor).toHaveAttribute('data-facing', 'right')
   await expect(actor).toHaveAttribute('data-weapon-id', 'bound_weapon_long_sword')
-  await expect(actor.locator('.equipped-character__weapon')).toHaveAttribute('src', /weapon_long_sword/)
+  await expect(actor.locator('.equipped-character__layer--weapon')).toHaveAttribute('src', /weapon_long_sword/)
   await expect(page.locator('.world-scene-transition')).toHaveCount(0)
   await page.screenshot({ path: '/tmp/terrunia-armed-player.png' })
   expect(errors).toEqual([])
