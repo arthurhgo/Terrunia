@@ -25,7 +25,7 @@ export function getVisualEquipment(save: GameSave, sheathed = false): VisualItem
     const base = instance?.slot === slot ? content.boundItemBases[instance.baseItemId] : null
     if (base && instance) {
       const assetId = base.assetIdByGrade[instance.grade] ?? base.assetIdByGrade[1]
-      if (assetId) items.push({ slot, assetId, itemId: base.id, itemName: base.name, forged: Boolean(instance.forging?.upgradeIds.length), rarity: base.rarity, sheathed: slot === 'weapon' && sheathed, visualTier: instance.grade })
+      if (assetId) items.push({ slot, assetId, itemId: base.id, itemName: base.name, forged: Boolean(instance.forging?.upgradeIds.length), sheathed: slot === 'weapon' && sheathed, visualTier: instance.grade })
     } else if (slot === 'armor' && save.equippedBasicArmor) {
       const definition = content.items[save.equippedBasicArmor.definitionId]
       if (definition?.basicArmor && definition.iconAssetId) items.push({
