@@ -6,6 +6,7 @@ import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { getBackpackCapacity } from '../../domain/inventory/backpacks'
+import { effectiveConversionEssence } from '../../domain/inventory/inventory'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
@@ -61,7 +62,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
       selectedItems.reduce(
         (sum, instance) => {
           const definition = content.items[instance.definitionId]
-          sum.essence += (definition?.essenceValue ?? 0) * instance.quantity
+          sum.essence += effectiveConversionEssence((definition?.essenceValue ?? 0) * instance.quantity)
           sum.gold += (definition?.sellValue ?? 0) * instance.quantity
           return sum
         },

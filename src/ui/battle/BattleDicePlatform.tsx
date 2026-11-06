@@ -18,6 +18,7 @@ export type BattleDiceEvent = {
   actorSide?: 'player' | 'enemy'
   kind?: 'initiative' | 'damage'
   initiativeTotal?: number
+  damageBreakdown?: { attack: number; skillBonus: number; armor: number; guard: number; result: number }
 }
 
 /** Full-arena VFX, not a dialog. Die visibly travels from actions into the world.
@@ -66,6 +67,9 @@ export function BattleDicePlatform({ roll, reducedMotion, awaitingClick = false,
       {settled && <div className="battle-dice-platform__result">
         <strong>{initiative ? `Iniciativa ${roll.initiativeTotal ?? roll.face}` : `d${roll.sides}: ${roll.face}`}</strong>
         {!initiative && <small>{roll.damage} de dano</small>}
+        {!initiative && roll.damageBreakdown && <small className="battle-dice-platform__formula" aria-label="Cálculo completo do dano">
+          {roll.face} (d{roll.sides}) + {roll.damageBreakdown.attack} Poder + {roll.damageBreakdown.skillBonus} Skill − {roll.damageBreakdown.armor} Armadura − {roll.damageBreakdown.guard} Defesa = {roll.damageBreakdown.result}
+        </small>}
       </div>}
     </div>}
   </div>

@@ -5,6 +5,7 @@ import type { ActorFacing } from '../terran/pixelActorArt'
 import { AssetImage } from '../components/AssetImage'
 import { CharacterSprite } from './CharacterSprite'
 import { getEquipmentAnchor, getVisualEquipment, type VisualItem } from './equipmentVisuals'
+import { useWearableAppearance } from './wearablePalette'
 import './equipmentComposite.css'
 
 const placedStyle = (item: VisualItem, facing: ActorFacing): CSSProperties => {
@@ -29,7 +30,8 @@ export function CharacterComposite({ appearance, portraitAssetId, visuals, facin
   className?: string
   alt?: string
 }) {
-  const layer = (depth: 'front' | 'back') => visuals.filter((item) => getEquipmentAnchor(item, facing).layer === depth)
+  const wearableAppearance = useWearableAppearance(appearance, visuals)
+  const layer = (depth: 'front' | 'back') => visuals.filter((item) => item.slot !== 'armor' && getEquipmentAnchor(item, facing).layer === depth)
     .map((item) => <AssetImage key={item.slot} assetId={item.assetId}
       className={`equipped-character__layer equipped-character__layer--${item.slot} equipped-character__layer--${depth}`}
       style={placedStyle(item, facing)} alt="" aria-hidden="true"
@@ -37,7 +39,7 @@ export function CharacterComposite({ appearance, portraitAssetId, visuals, facin
   return <div className={`equipped-character character-composite ${className}`.trim()} data-facing={facing}
     data-equipped-count={visuals.length} data-weapon-id={visuals.find((item) => item.slot === 'weapon')?.itemId ?? ''}>
     {layer('back')}
-    <CharacterSprite appearance={appearance} portraitAssetId={portraitAssetId}
+    <CharacterSprite appearance={wearableAppearance} portraitAssetId={portraitAssetId}
       facing={facing} className="equipped-character__body" alt={alt} />
     {layer('front')}
   </div>

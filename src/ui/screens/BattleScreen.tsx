@@ -5,6 +5,8 @@ import { content } from '../../content/catalog'
 import { submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { useGameStore } from '../../state/gameStore'
+import { effectiveCharacterXpReward } from '../../domain/character/attributeProgression'
+import { BALANCE } from '../../content/balance'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { CharacterPortrait } from '../characters/CharacterSprite'
 import { AssetImage } from '../components/AssetImage'
@@ -120,7 +122,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       return [{
         id: entry.id, sides: entry.roll.sides, face: entry.roll.face,
         actorId: entry.roll.actorId, targetId: actor?.side === 'enemy' ? 'combatant_player' : targetId,
-        damage: Number(damage[1]), action: entry.roll.action,
+        damage: Number(damage[1]), action: entry.roll.action, damageBreakdown: entry.roll.damageBreakdown,
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy',
       }]
     })
@@ -195,6 +197,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   })
   const categoryItems = (kind: 'throwable' | 'rune' | 'essence') =>
     save.inventory.filter((instance) => content.items[instance.definitionId]?.combatKind === kind)
+  const previewSkillDie = (die: number) => BALANCE.attributeDieOrder[
+    Math.min(BALANCE.attributeDieOrder.length - 1,
+      Math.max(0, BALANCE.attributeDieOrder.indexOf(die as typeof BALANCE.attributeDieOrder[number]) + BALANCE.skillDieStepsBonus))]
   const isMagicSkill = (id: string) => /scepter|grimoire|staff|spore|arcane|magic|spell/i.test(id)
   const hasUsefulSupplies = (kind: 'throwable' | 'rune' | 'essence') =>
     categoryItems(kind).some((instance) => content.items[instance.definitionId].combatEffects.some((effect) =>
@@ -241,6 +246,17 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       if (!playerMustClick) scheduleRollStep()
     }, reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs : BATTLE_PRESENTATION.queuedDieMs)
   }
+  const cancelPlayerDie = () => {
+    if (!diceAwaitingClick || !pendingRollsRef.current) return
+    if (previewTimer.current !== null) window.clearTimeout(previewTimer.current)
+    pendingRollsRef.current = null
+    previewTimer.current = null
+    setActiveDice(null)
+    setDiceQueue([])
+    setDiceAwaitingClick(false)
+    setResolvingRolls(false)
+    setMenu('combat')
+  }
   const releasePlayerDie = () => {
     if (!diceAwaitingClick || !pendingRollsRef.current) return
     setDiceAwaitingClick(false)
@@ -270,7 +286,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       const match = entry.message.match(/ causa (\d+) de dano /)
       if (!match) return []
       return [{
-        id: entry.id, sides: roll.sides, face: roll.face, damage: Number(match[1]),
+        id: entry.id, sides: roll.sides, face: roll.face, damage: Number(match[1]), damageBreakdown: roll.damageBreakdown,
         actorId: roll.actorId, targetId: actor?.side === 'enemy' ? player.id : target.id,
         action: roll.action, kind: 'damage' as const,
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy' as const,
@@ -388,8 +404,11 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       </section>
       <section className="pixel-battle__panel pixel-battle__actions" aria-label="Ações de combate">
         <h2>{diceAwaitingClick ? 'LANCE SEU DADO' : battle.phase === 'AwaitingInitiative' ? 'ROLAGEM DE INICIATIVA' : battle.phase === 'AwaitingAction' ? 'ESCOLHA SUA AÇÃO' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'COMBATE'}</h2>
-        {diceAwaitingClick && activeDice && <DraggableBattleDie key={activeDice.id} sides={activeDice.sides}
-          onThrow={releasePlayerDie} ariaLabel={`Arrastar dado d${activeDice.sides} para cima para rolar`} />}
+        {diceAwaitingClick && activeDice && <div className="pixel-battle__throw-choice">
+          <DraggableBattleDie key={activeDice.id} sides={activeDice.sides}
+            onThrow={releasePlayerDie} ariaLabel={`Arrastar dado d${activeDice.sides} para cima para rolar`} />
+          <button type="button" className="pixel-battle__cancel-action" onClick={cancelPlayerDie}>VOLTAR · ALTERAR GOLPE</button>
+        </div>}
         {battle.phase === 'AwaitingInitiative' ? <div className="pixel-battle__initiative" aria-label="Preparar rolagem de iniciativa">
           <strong>{initiativeReady ? 'ROLAGEM DE INICIATIVA' : 'TURNO ' + battle.round}</strong>
           <DraggableBattleDie sides={player.initiativeDie ?? 4}
@@ -408,7 +427,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               !isPlayerTurn || !hasUsefulSupplies('essence'), menu === 'essences')}
             {button('ITENS / POÇÕES', <Backpack />, () => setMenu(menu === 'items' ? null : 'items'),
               !isPlayerTurn || !hasUsableConsumable, menu === 'items')}
-            {button('DEFENDER', <Shield />, () => send({ type: 'defend' }), !isPlayerTurn)}
+            {button('DEFENDER · BLOQUEIA ATÉ ' + BALANCE.defendMitigation, <Shield />, () => send({ type: 'defend' }), !isPlayerTurn)}
             {/* The domain explicitly returns FLEE_NOT_IMPLEMENTED; never display it as actionable. */}
             {button('FUGIR', <Footprints />, () => {}, true)}
           </div>
@@ -417,10 +436,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             {menu === 'combat' && <>
               <strong className="pixel-battle__submenu-heading">ATAQUE · MAGIAS · HABILIDADES</strong>
               <button type="button" disabled={!isPlayerTurn || !target.alive}
-                onClick={() => send({ type: 'attack', targetId: target.id })}><Swords size={17} /> ATAQUE BÁSICO · 0 MP</button>
-              {skills.map((skill) => <button key={skill.id} disabled={!isPlayerTurn || player.mp < skill.mpCost || (skill.target === 'enemy' && !target.alive)}
+                onClick={() => send({ type: 'attack', targetId: target.id })}><Swords size={17} /> ATAQUE BÁSICO · d{player.attackDie ?? 4} · 0 MP</button>
+              {skills.map((skill) => <button key={skill.id} disabled={!isPlayerTurn || player.mp < skill.mpCost || (player.skillReadyRound?.[skill.id] ?? 0) > battle.round || (skill.target === 'enemy' && !target.alive)}
                 onClick={() => send({ type: 'skill', skillId: skill.id, targetId: skill.target === 'self' ? player.id : target.id })}>
-                {isMagicSkill(skill.id) ? 'MAGIA' : 'HABILIDADE'} · {skill.name} · {skill.mpCost} MP
+                {isMagicSkill(skill.id) ? 'MAGIA' : 'HABILIDADE'} · {skill.name} · d{previewSkillDie(player.attackDie ?? 4)} · +{skill.effects.filter((effect) => effect.type === 'damage').reduce((sum, effect) => sum + (effect.type === 'damage' ? effect.powerBonus : 0), 0)} Poder · {skill.mpCost} MP · {(player.skillReadyRound?.[skill.id] ?? 0) > battle.round ? 'RECARGA ' + ((player.skillReadyRound?.[skill.id] ?? 0) - battle.round) + 'T' : 'CD ' + (skill.cooldownRounds ?? BALANCE.skillCooldownRounds) + 'T'}
               </button>)}
               {skills.length === 0 && <small>Habilidades e magias serão liberadas pela progressão e pelo Vínculo.</small>}
             </>}
@@ -447,7 +466,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
 
           </div>}
         </> : battle.phase === 'Victory' ? <div className="pixel-battle__result">
-          <p>+{battle.rewards.characterXp} XP · +{battle.rewards.gold} Ouro · {drops.length} drops</p>
+          <p> +{effectiveCharacterXpReward(battle.rewards.characterXp)} XP · +{battle.rewards.gold} Ouro · {drops.length} drops</p>
           {!battle.claimed ? <button type="button" onClick={claim}>RECOLHER TODOS OS ESPÓLIOS</button> : <>
             {battle.waveIndex ? <button onClick={nextWave}>PRÓXIMA ONDA · {battle.waveIndex + 1}</button> :
               battle.portalHuntId ? null : <button onClick={() => end(false)}>CONTINUAR EXPEDIÇÃO</button>}

@@ -1,0 +1,46 @@
+/* v0.5.7 — the world owns its viewport. Location metadata lives in Menu. */
+.terran-game { grid-template-rows:minmax(0,1fr); min-height:0; }
+.terran-game__layout { height:100%; min-height:0; }
+.world-scene__content, .world-scene__content > .terran-game { min-height:0; }
+.menu-world-location { margin:0 0 12px; padding:10px 13px; border:1px solid #8f723f;
+  background:linear-gradient(145deg,#142734,#081722); color:#e2c58d; }
+.menu-world-location summary { cursor:pointer; font:700 .81rem var(--display); }
+.menu-world-location > div { display:flex; justify-content:space-between; gap:12px; padding:7px 0;
+  border-top:1px solid #39444a; font:.72rem/1.4 Georgia,serif; }
+.menu-world-location > div:first-of-type { margin-top:8px; }
+.menu-world-location strong { color:#e9cca0; }
+.menu-world-location span { color:#9dc6c5; text-align:right; }
+.expedition-field-potions { display:grid; align-content:start; gap:9px; color:#d5ccb4; }
+.expedition-field-potions p {margin:0 0 6px; font:.76rem/1.5 Georgia,serif;}
+.expedition-field-potions button { display:flex; align-items:center; gap:10px; width:100%;
+  border:1px solid #b19657; background:#132733; color:#efddb6; padding:8px; text-align:left; cursor:pointer; }
+.expedition-field-potions button:hover,.expedition-field-potions button:focus-visible {border-color:#b5e6d0;box-shadow:0 0 8px #87c3ac66;}
+.expedition-field-potions button img {width:42px;height:42px;object-fit:contain;image-rendering:pixelated;}
+.expedition-field-potions button span {display:grid;gap:5px;flex:1;min-width:0;}
+.expedition-field-potions button small {color:#97c6bf;}
+.expedition-field-potions button b {font:700 .61rem var(--display);}
+.expedition-character-sheet .nexus-overview {min-width:0;}
+@media(min-width:961px) {
+  /* Fit the 3-column HUD, side journal and 384:256 game stage together. */
+  .world-scene--terran .terran-game__frame {
+    --terran-canvas-width:min(900px,calc((100dvh - 84px)*1.5),calc(100vw - 332px - 300px - 42px));
+    max-width:var(--terran-canvas-width);
+  }
+  .world-scene--terran .terran-game__stage {min-width:0;max-width:100%;}
+  .world-scene--terran .terran-character-hud {max-height:100%;overflow-y:auto;overscroll-behavior:contain;}
+}
+.expedition-game .expedition-game__layout,
+.expedition-game .expedition-game__layout.has-drawer {
+  --expedition-stage-width:min(100%,calc((100dvh - 82px)*1.5));
+}
+@media(max-width:960px) {
+  .world-scene--terran {overflow-y:auto;overscroll-behavior:contain;}
+  .world-scene--terran .world-scene__content {min-height:100%;height:auto;}
+  .expedition-game .expedition-game__layout > .terran-game__stage {max-width:100%;}
+}
+@media(max-width:720px) {
+  .world-scene--terran .terran-game__frame {--terran-canvas-width:min(calc(100vw - 18px),calc((100dvh - 80px)*1.5));}
+  .expedition-game .terran-game__hud {width:auto;max-width:80vw;grid-template-columns:repeat(5, minmax(0,1fr));}
+  .expedition-game .terran-game__hud button {min-width:31px;justify-content:center;}
+  .expedition-game .terran-game__hud button span {display:none;}
+}

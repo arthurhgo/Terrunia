@@ -4,6 +4,7 @@ import { NpcNameplate } from './NpcNameplate'
 import { CITY_NPC_SIZE } from './cityWorld'
 import { resolveAsset } from '../../assets/assetRegistry'
 import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
+import { useWearableAppearance } from '../characters/wearablePalette'
 import { getVisualEquipment, equipmentVisualIds } from '../characters/equipmentVisuals'
 import { getRoomName, roomFurniture, type RoomFurniture, type TerranInteriorId, PLAYER_HOME_INTERIOR_ID } from './roomContent'
 import type { TerranNpcPresence } from '../../content/types'
@@ -118,7 +119,8 @@ export function PixelInteriorCanvas({
     if (!enabled) { keysRef.current.clear(); destinationRef.current = null }
   }, [enabled])
 
-  const appearanceSource = save.character.appearance ? appearanceSpriteSheetUri(save.character.appearance) : null
+  const wearableAppearance = useWearableAppearance(save.character.appearance, equipped)
+  const appearanceSource = wearableAppearance ? appearanceSpriteSheetUri(wearableAppearance) : null
 
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d')

@@ -19,6 +19,8 @@ const getEquipmentImage = (assetId: string): HTMLImageElement | null => {
 export function drawEquipmentLayer(ctx: CanvasRenderingContext2D, visuals: readonly VisualItem[],
   layer: 'front' | 'back', facing: ActorFacing, x: number, footY: number, size = 32) {
   for (const item of visuals) {
+    // Armor is baked into the underlying 32px character palette, not drawn as an icon.
+    if (item.slot === 'armor') continue
     const anchor = getEquipmentAnchor(item, facing)
     if (anchor.layer !== layer) continue
     const image = getEquipmentImage(item.assetId)

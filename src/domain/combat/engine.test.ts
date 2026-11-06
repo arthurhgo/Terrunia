@@ -22,9 +22,9 @@ const firstEncounter = content.encounters.encounter_fungorro_01
 const firstTargetId = 'combatant_enemy_fungorro_crawler_1'
 
 describe('máquina de estados de combate', () => {
-  it('calcula dano fora do React com mínimo 1', () => {
+  it('calcula dano fora do React com possibilidade de bloqueio total', () => {
     expect(calculateDamage(6, 1)).toBe(5)
-    expect(calculateDamage(2, 99)).toBe(1)
+    expect(calculateDamage(2, 99)).toBe(0)
   })
 
   it('não inclui IA indefinida no Fungorro Rastejante ao montar a batalha', () => {
@@ -66,7 +66,8 @@ describe('máquina de estados de combate', () => {
     const result = submitBattleCommand(battle, { type: 'defend' }, content)
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(playerBefore - result.value.combatants.combatant_player.hp).toBe(1)
+    expect(playerBefore - result.value.combatants.combatant_player.hp).toBeLessThanOrEqual(1)
+    expect(result.value.combatants.combatant_player.defending).toBe(true)
   })
 
   it('suporta encontro com três inimigos e alvos independentes', () => {
