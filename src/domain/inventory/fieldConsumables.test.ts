@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
-import { useFieldConsumable } from './fieldConsumables'
+import { applyFieldConsumable } from './fieldConsumables'
 import { deriveCharacterStats } from '../character/derivedStats'
 
 const createExpedition = () => {
