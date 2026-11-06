@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { inflateSync } from 'node:zlib'
 import { createHash } from 'node:crypto'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { resolveAsset } from '../../assets/assetRegistry'
 import { EnemyMotionSprite } from './EnemyMotionSprite'
@@ -55,7 +55,7 @@ describe('v0.5.9 — sprites animados individuais', () => {
   })
 
   it('anima o frame correto e respeita a preferência por movimento reduzido', () => {
-    const { rerender } = render(<EnemyMotionSprite assetId={assets[0]} motion="attack" />)
+    const { rerender, container } = render(<EnemyMotionSprite assetId={assets[0]} motion="attack" />)
     const sheet = document.querySelector('.enemy-motion-sprite')
     expect(sheet).toHaveAttribute('data-motion', 'attack')
     expect(sheet).toHaveAttribute('data-asset', assets[0])
@@ -63,13 +63,13 @@ describe('v0.5.9 — sprites animados individuais', () => {
     expect(document.querySelector('.enemy-motion-sprite')).toHaveAttribute('data-motion', 'defeat')
     rerender(<EnemyMotionSprite assetId={assets[0]} reducedMotion />)
     expect(document.querySelector('.enemy-motion-sprite')).not.toBeInTheDocument()
-    expect(screen.getByRole('img', { hidden: true })).toHaveAttribute('src', resolveAsset(assets[0]).path)
+    expect(container.querySelector('img')).toHaveAttribute('src', resolveAsset(assets[0]).path)
   })
 
   it('não quebra para inimigos antigos ou sprites indisponíveis', () => {
-    const { rerender } = render(<EnemyMotionSprite assetId="enemy.fungorro-crawler" />)
-    expect(screen.getByRole('img', { hidden: true })).toBeInTheDocument()
+    const { rerender, container } = render(<EnemyMotionSprite assetId="enemy.fungorro-crawler" />)
+    expect(container.querySelector('img')).toBeInTheDocument()
     rerender(<EnemyMotionSprite assetId="enemy.unknown-id" />)
-    expect(screen.getByRole('img', { hidden: true })).toHaveAttribute('src', '/assets/placeholders/generic.svg')
+    expect(container.querySelector('img')).toHaveAttribute('src', '/assets/placeholders/generic.svg')
   })
 })
