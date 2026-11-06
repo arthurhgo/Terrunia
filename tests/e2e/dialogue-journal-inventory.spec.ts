@@ -65,6 +65,7 @@ test('conversas interativas, aceite cinza, diário em linhas e mochila antes dos
   await expect(marker).toHaveAttribute('data-quest-state', 'available')
   await expect(page.locator('.notification--neutral')).toContainText('Missão aceita')
   await expect(page.locator('.notification--neutral')).toContainText('Missão aceita')
+  await page.keyboard.press('Escape')
   await page.getByRole('button', { name: 'Conversar com Arlen', exact: true }).click()
   await expect(arlen.locator('.npc-mission-hub__content')).toBeVisible()
   await page.screenshot({ path: '/tmp/terrunia-dialogue-interaction.png' })
