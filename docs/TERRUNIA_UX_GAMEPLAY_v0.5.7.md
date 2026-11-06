@@ -21,7 +21,7 @@ O log registra `dN=face`, ajuste, ATQ, bônus da skill, mitigação, proteção 
 
 ## 3. Confirmar/Voltar no combate
 
-Seleção de ataque, skill, item e alvo permanece em estado visual provisório; **CONFIRMAR AÇÃO** inicia prévia determinística, lançamento e commit. **VOLTAR** descarta a escolha sem mutar battle, HP, MP, item ou RNG. `Defender` continua comando imediato do motor e tem mitigação provisória +2, agora discriminada no registro quando bloqueia dano. Fuga permanece indisponível como antes.
+Seleção de ataque, skill, item e alvo permanece em estado visual provisório; **CONFIRMAR AÇÃO** inicia prévia determinística, lançamento e commit. **VOLTAR** descarta a escolha sem mutar battle, HP, MP, item ou RNG. `Defender` também é selecionado como rascunho de ação; somente após **CONFIRMAR AÇÃO** o motor aplica mitigação provisória +2, discriminada no registro quando bloqueia dano. **VOLTAR** antes da confirmação não consome o turno. Fuga permanece indisponível como antes.
 
 ## 4. XP e atributos (BALANCE_DRAFT / OWNER_DECISION)
 
