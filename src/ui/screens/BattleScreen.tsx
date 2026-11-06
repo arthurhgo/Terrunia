@@ -3,7 +3,7 @@ import { Backpack, Bomb, Crosshair, Footprints, Gem, ScrollText, Shield, Swords,
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
-import type { BattleCommand, BattleState } from '../../domain/combat/types'
+import type { BattleState } from '../../domain/combat/types'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { useGameStore } from '../../state/gameStore'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
