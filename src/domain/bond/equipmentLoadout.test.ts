@@ -105,7 +105,7 @@ describe('arsenal livre e progressão de atributos', () => {
     const progression = gainCharacterXp(save.character, 250)
     expect(progression.levelsGained).toBe(1)
     expect(progression.character.level).toBe(2)
-    expect(progression.character.unspentAttributePoints).toBe(7)
+    expect(progression.character.unspentAttributePoints).toBe(8)
     expect(progression.character.xpRequired).toBe(750)
   })
 })
