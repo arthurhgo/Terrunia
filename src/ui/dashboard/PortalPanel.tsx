@@ -12,18 +12,14 @@ import { ASTRAVEL_SECTORS } from '../../content/astravel'
 import { checkTrailQuestGate, getActiveTrailNode } from '../../domain/exploration/trailEngine'
 import { PORTAL_HUNT_IDS } from '../../domain/combat/portalHunts'
 import type { GameSave } from '../../domain/game/types'
-import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { GameButton } from '../components/GameButton'
 
-export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
+export function PortalPanel({ save, onGoToEldamar }: {
   save: GameSave
   onGoToEldamar: () => void
   navigateOnEnter?: boolean
 }) {
-  const enterAstravel = useGameStore((state) => state.enterAstravel)
-  const startPortalWaves = useGameStore((state) => state.startPortalWaves)
-  const startPortalHunt = useGameStore((state) => state.startPortalHunt)
   const navigate = useNavigate()
   const trail = content.trails.trail_astravel_entry
   const quest = save.quests.vs_astravel_first_contact
@@ -31,23 +27,20 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
   const gate = currentNode ? checkTrailQuestGate(save, currentNode, content) : null
   const cleared = trail.nodes.filter((node) => node.type !== 'entry' && save.world.trailNodeStates[node.id] === 'completed').length
 
-  const enter = () => {
-    enterAstravel()
-    if (navigateOnEnter) navigate('/expedition')
-  }
+  const enter = () => navigate('/portal-hub')
 
   const action = (() => {
     if (save.world.trailNodeStates.astravel_entry === 'completed' && currentNode) {
-      return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Retomar exploração em Astravél</GameButton>
+      return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Abrir mapa de instâncias · Astravél</GameButton>
     }
     if (['available', 'offered'].includes(quest.status)) {
       return <GameButton variant="secondary" full onClick={onGoToEldamar}><BookOpen size={17} /> Ir à Casa de Eldamar</GameButton>
     }
     if (quest.status === 'active' && currentNode?.type === 'entry') {
-      return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Entrar em Astravél</GameButton>
+      return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Abrir mapa de instâncias</GameButton>
     }
     if (save.world.trailNodeStates.astravel_boss_preview === 'completed') {
-      return <GameButton variant="secondary" full onClick={enter}><Skull size={17} /> Revisitar Astravél · ruína concluída</GameButton>
+      return <GameButton variant="secondary" full onClick={enter}><Skull size={17} /> Revisitar pelo mapa de instâncias</GameButton>
     }
     return <GameButton variant="ghost" full disabled><LockKeyhole size={17} /> Aceite a missão para partir</GameButton>
   })()
@@ -115,10 +108,7 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
           <p className="eyebrow">MODO ONDAS</p>
           <p>Encontros progressivos com até quatro criaturas, sentinela a cada cinco ondas e saída entre vitórias.</p>
           <p>Recorde pessoal: <strong>{save.world.portalWaveBest ?? 0} ondas</strong></p>
-          <GameButton variant="secondary" full onClick={() => {
-            startPortalWaves()
-            if (navigateOnEnter) navigate('/battle')
-          }}><Swords size={17} /> Entrar no Modo Ondas</GameButton>
+          <GameButton variant="secondary" full onClick={enter}><Swords size={17} /> Abrir altar de Ondas no mapa</GameButton>
         </div>
       )}
 
@@ -131,10 +121,7 @@ export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
             return <div className="portal-hunts__entry" key={id}>
               <strong>{encounter.name}</strong>
               <small>{encounter.enemyDefinitionIds.map((enemyId) => content.enemies[enemyId].name).join(' · ')}</small>
-              <GameButton variant="secondary" full onClick={() => {
-                startPortalHunt(id)
-                if (navigateOnEnter) navigate('/battle')
-              }}><Swords size={16} /> Enfrentar caçada</GameButton>
+              <GameButton variant="secondary" full onClick={enter}><Swords size={16} /> Escolher caçada no mapa</GameButton>
             </div>
           })}
         </section>
