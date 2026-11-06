@@ -47,6 +47,8 @@ export const gainCharacterXp = (
   let levelsGained = 0
   const maxLevel = BALANCE.xpThresholds.length
 
+  // Rebase legacy saves against the current balance thresholds without removing earned XP.
+  next.xpRequired = BALANCE.xpThresholds[Math.min(next.level, maxLevel - 1)]
   while (next.level < maxLevel && next.xp >= next.xpRequired) {
     next.level += 1
     levelsGained += 1
