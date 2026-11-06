@@ -34,6 +34,8 @@ export type Combatant = {
   initiative: number
   alive: boolean
   defending: boolean
+  /** Absolute round after which each skill is usable; optional for legacy saves. */
+  skillReadyRound?: Record<string, number>
   skillIds: string[]
   statusEffects: ActiveStatus[]
   aiSkillEveryRounds?: number
@@ -47,7 +49,8 @@ export type CombatRoll = {
   sides: CombatDie
   face: number
   action: string
-  /** VISUAL_DRAFT: the combat damage formula is unchanged until owner approval. */
+  /** Applied face is authoritative and always included in the damage equation. */
+  damageBreakdown?: { attack: number; skillBonus: number; armor: number; guard: number; result: number }
 }
 
 export type BattleLogEntry = {
