@@ -30,7 +30,7 @@ test('Terran conserva os atalhos laterais; somente MENU abre a tela de progressÃ
   await expect(page.locator('#terran-location-menu')).toBeVisible()
   await location.click()
   await expect(page.locator('#terran-location-menu')).toHaveCount(0)
-  const backpack = hud.getByRole('button', { name: /MOCHILA/i })
+  const backpack = hud.locator('.terran-character-hud__backpack > button')
   await backpack.click()
   await expect(hud.getByRole('heading', { name: 'Mochila' })).toBeVisible()
   await expect(stage).toBeVisible()
