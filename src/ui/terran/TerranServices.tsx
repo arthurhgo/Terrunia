@@ -3,6 +3,7 @@ import { BedDouble, Check, Coins, HeartPulse, ShoppingBasket, Archive, ArrowDown
 import { content } from '../../content/catalog'
 import { QuestContextNote } from '../quests/QuestContextNote'
 import { getQuestRewardPreview } from '../../domain/quests/questRewardPreview'
+import { getDiscoveredEnemyIds, getDiscoveredProgressiveFauna } from '../../content/progressiveFaunaLore'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import type { GameSave } from '../../domain/game/types'
 import { PLAYER_HOME_FLAG, SYLWEN_STOCK } from '../../domain/terran/services'
@@ -89,6 +90,7 @@ export function BaseRecords({ save }: { save: GameSave }) {
   const memories = Object.values(save.boundItems).flatMap((item) => item.memories.map((memory) => ({
     itemId: item.baseItemId, title: memory.title, description: memory.description,
   })))
+  const fauna = getDiscoveredProgressiveFauna(save, content)
   const chapters = [
     { id: 'main', title: 'Crônica principal', entries: completed.filter((quest) => quest.category === 'main') },
     { id: 'clan', title: 'Provas de Clã', entries: completed.filter((quest) => quest.category === 'clan') },
@@ -105,6 +107,12 @@ export function BaseRecords({ save }: { save: GameSave }) {
         <strong>{quest.title}</strong><small>{quest.summary}</small>
       </li>)}</ul> : <p>Nenhum relato registrado nesta parte da jornada.</p>}
     </details>)}
+    <details className="base-records__chapter" aria-label="Bestiário de campo descoberto">
+      <summary>Bestiário de campo · {fauna.length} relato(s) descoberto(s)</summary>
+      {fauna.length ? <ul>{fauna.map((entry) => <li key={entry.id}>
+        <strong>{entry.title}</strong><small>{entry.description}</small>
+      </li>)}</ul> : <p>Vença criaturas e recolha seus espólios para registrar observações.</p>}
+    </details>
     <h4>Memórias dos Vínculos</h4>
     {memories.length ? <ul>{memories.slice(-20).map((memory, i) => <li key={memory.itemId + ':' + i}>
       <strong>{memory.title}</strong><small>{memory.description}</small>
@@ -149,16 +157,16 @@ export function DaerynServices({ save }: { save: GameSave }) {
 
 export function VorrenBestiary({ save }: { save: GameSave }) {
   const unlocked = save.world.worldFlags.includes('bestiary_unlocked')
-  const identified = new Set(Object.values(content.encounters)
-    .filter((encounter) => save.world.completedEncounterIds.includes(encounter.id))
-    .flatMap((encounter) => encounter.enemyDefinitionIds))
+  const identified = getDiscoveredEnemyIds(save, content)
+  const studied = new Map(getDiscoveredProgressiveFauna(save, content).map((entry) => [entry.enemyId, entry]))
   return <section className="terran-shop" aria-label="Bestiário de Vorren">
     <h3>Bestiário</h3>
     {!unlocked ? <p>Livro de campo fechado. Conclua “O Livro das Criaturas” com Vorren.</p>
       : <div className="terran-shop__stock">
         {Object.values(content.enemies).filter((enemy) => identified.has(enemy.id)).map((enemy) => <article key={enemy.id}>
           <AssetImage assetId={enemy.assetId} />
-          <div><strong>{enemy.name}</strong><small>Nível {enemy.level} · Suscetível a: {enemy.weaknessTags.join(', ') || 'Não catalogado'}</small></div>
+          <div><strong>{enemy.name}</strong><small>Nível {enemy.level} · Suscetível a: {enemy.weaknessTags.join(', ') || 'Não catalogado'}</small>
+            {studied.has(enemy.id) && <small>{studied.get(enemy.id)?.description}</small>}</div>
         </article>)}
         {identified.size === 0 && <p>Nenhuma criatura registrada em combate. Continue explorando Astravél.</p>}
       </div>}
