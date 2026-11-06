@@ -966,5 +966,15 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
     withDoorQuest.eventLog.push('DoorQuestReconciled:' + progress.status)
     withDoorQuest.revision += 1
   }
+  // Additive content reconciliation for current-schema saves: new optional quests
+  // appear locked/available from their prerequisites without resetting any prior status.
+  const missingDefinitions = Object.values(content.quests).filter((definition) => !withDoorQuest.quests[definition.id])
+  if (missingDefinitions.length > 0) {
+    const reconciled = structuredClone(withDoorQuest)
+    for (const definition of missingDefinitions) reconciled.quests[definition.id] = createQuestProgress(definition)
+    reconciled.eventLog.push('QuestCatalogReconciled:' + missingDefinitions.length)
+    reconciled.revision += 1
+    return normalizeTrackedQuests(refreshQuestAvailability(reconciled, content, reconciled.updatedAt))
+  }
   return normalizeTrackedQuests(refreshQuestAvailability(withDoorQuest, content, withDoorQuest.updatedAt))
 }
