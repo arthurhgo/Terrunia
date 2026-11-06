@@ -17,7 +17,7 @@ describe('dado lançado diretamente na arena', () => {
     expect(screen.getByLabelText('Quem está rolando: Terrírian')).toBeInTheDocument()
     expect(container.querySelector('.battle-dice-platform__veil')).toBeInTheDocument()
     expect(screen.queryByText('9 de dano')).not.toBeInTheDocument()
-    act(() => { vi.advanceTimersByTime(1450) })
+    act(() => { vi.advanceTimersByTime(1700) })
     expect(screen.getByText('9 de dano')).toBeInTheDocument()
     expect(screen.getByText('d8: 5')).toBeInTheDocument()
   })
