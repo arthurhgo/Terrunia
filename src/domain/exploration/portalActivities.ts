@@ -1,6 +1,6 @@
 import type { ContentCatalog } from '../../content/catalog'
 import type { GameSave } from '../game/types'
-import { canStartPortalHunt, PORTAL_HUNT_IDS, PORTAL_HUNT_STORY_GATES } from '../combat/portalHunts'
+import { canStartPortalHunt, PORTAL_HUNT_IDS } from '../combat/portalHunts'
 
 export type PortalActivity = {
   id: string
@@ -50,9 +50,7 @@ export function getPortalActivities(save: GameSave, catalog: ContentCatalog): Po
         detail: `+${encounter.rewards.characterXp} XP · +${encounter.rewards.gold} Ouro`,
         unlocked: gate.ok,
         requirement: gate.ok ? 'Caçada repetível disponível.' :
-          PORTAL_HUNT_STORY_GATES[id]?.description && firstCompleted
-            ? PORTAL_HUNT_STORY_GATES[id]!.description
-            : gate.message,
+          gate.message,
       }
     }),
   ]
