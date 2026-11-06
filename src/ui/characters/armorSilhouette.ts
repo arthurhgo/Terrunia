@@ -1,5 +1,6 @@
 import type { ActorFacing } from '../terran/pixelActorArt'
 import type { VisualItem } from './equipmentVisuals'
+import { BASIC_ARMOR_MATERIAL_PALETTES } from '../../content/visualEquipment'
 
 export type ArmorTone = 'shade' | 'base' | 'light' | 'rune'
 export type ArmorPixel = { x: number; y: number; w: number; h: number; tone: ArmorTone }
@@ -29,6 +30,9 @@ export const armorPixels = (facing: ActorFacing): ArmorPixel[] => {
 }
 
 export const armorPalette = (visual: VisualItem) => {
+  // Color follows the exact worn piece; quality/rarity remain separate data.
+  const material = BASIC_ARMOR_MATERIAL_PALETTES[visual.itemId]
+  if (material) return material
   const tier = visual.visualTier ?? 1
   return tier >= 5
     ? { shade: '#253d4e', base: '#4f779c', light: '#91d5db', rune: '#e5db90' }
