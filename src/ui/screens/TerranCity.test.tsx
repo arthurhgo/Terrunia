@@ -160,28 +160,26 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('img', { name: /Interior pixelado de Casa de Daeryn/ })).toBeInTheDocument()
   })
 
-  it('mantém somente o diário à esquerda e a mochila recolhível sobre o cenário', () => {
+  it('mantém diário à esquerda e mochila recolhível no painel direito de Personagem', () => {
     loadSave()
     render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
-    const stage = screen.getByRole('region', { name: 'Cenário contínuo de Terran' })
     const dock = screen.getByRole('complementary', { name: 'Diário de missões' })
     const missions = within(dock).getByRole('region', { name: 'Missões fixas' })
     expect(dock.children).toHaveLength(1)
     expect(dock.children[0]).toBe(missions)
-    expect(within(dock).queryByRole('region', { name: 'Inventário fixo' })).not.toBeInTheDocument()
-    const toggle = within(stage).getByRole('button', { name: /Mochila/ })
+    const hud = screen.getByRole('complementary', { name: 'Status permanente do personagem' })
+    const toggle = within(hud).getByRole('button', { name: /MOCHILA/i })
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
     fireEvent.click(toggle)
     expect(toggle).toHaveAttribute('aria-expanded', 'true')
-    const backpack = screen.getByRole('complementary', { name: 'Mochila expandida' })
+    const backpack = hud.querySelector('#terran-backpack-panel')!
     expect(backpack.querySelectorAll('.inventory-slot')).toHaveLength(12)
     expect(backpack).toHaveTextContent('Mochila: 0/12 espaços')
     fireEvent.click(toggle)
-    expect(screen.queryByRole('complementary', { name: 'Mochila expandida' })).not.toBeInTheDocument()
-    expect(screen.getByRole('complementary', { name: 'Status permanente do personagem' })).toBeInTheDocument()
+    expect(backpack.querySelectorAll('.inventory-slot')).toHaveLength(0)
   })
 
-  it('pagina a mochila expansível e preserva itens de saves legados com mais de doze pilhas', () => {
+  it('pagina a mochila do personagem e preserva itens de saves legados com mais de doze pilhas', () => {
     loadSave()
     const save = useGameStore.getState().save!
     save.inventory = Array.from({ length: 14 }, (_, i) => ({
@@ -190,14 +188,15 @@ describe('interfaces de Terran', () => {
     }))
     useGameStore.setState({ save })
     const { container } = render(<MemoryRouter><TerranScreen /></MemoryRouter>)
-    fireEvent.click(screen.getByRole('button', { name: /Mochila/ }))
-    const backpack = screen.getByRole('complementary', { name: 'Mochila expandida' })
-    expect(within(backpack).getByText('1/2 · 14 itens')).toBeInTheDocument()
+    const hud = screen.getByRole('complementary', { name: 'Status permanente do personagem' })
+    fireEvent.click(within(hud).getByRole('button', { name: /MOCHILA/i }))
+    const backpack = hud.querySelector('#terran-backpack-panel')!
+    expect(within(backpack as HTMLElement).getByText('1/2 · 14 itens')).toBeInTheDocument()
     expect(container.querySelectorAll('.inventory-slot')).toHaveLength(12)
-    fireEvent.click(within(backpack).getByRole('button', { name: 'Próxima página da mochila' }))
-    expect(within(backpack).getByText('2/2 · 14 itens')).toBeInTheDocument()
+    fireEvent.click(within(backpack as HTMLElement).getByRole('button', { name: 'Próxima página da mochila' }))
+    expect(within(backpack as HTMLElement).getByText('2/2 · 14 itens')).toBeInTheDocument()
     expect(container.querySelectorAll('.inventory-slot')).toHaveLength(12)
-    expect(within(backpack).getByRole('button', { name: 'Próxima página da mochila' })).toBeDisabled()
+    expect(within(backpack as HTMLElement).getByRole('button', { name: 'Próxima página da mochila' })).toBeDisabled()
   })
 
   it('mantém a biblioteca visual exclusivamente nos Registros de Eldamar', () => {
