@@ -9,6 +9,7 @@ import { useGameStore } from '../../state/gameStore'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { CharacterPortrait } from '../characters/CharacterSprite'
 import { AssetImage } from '../components/AssetImage'
+import { EnemyMotionSprite } from '../battle/EnemyMotionSprite'
 import { GameShell } from '../components/GameShell'
 import { BattleArenaBackdrop } from '../battle/BattleArenaBackdrop'
 import { BattleEquipmentHud } from '../battle/BattleEquipmentHud'
@@ -365,7 +366,12 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           aria-pressed={enemy.id === target.id}>
           {enemy.alive && enemy.id === target.id && <span className="pixel-battle__target-arrow" aria-hidden="true">◆</span>}
           <span className="pixel-battle__enemy-bar"><i style={{ width: clampPercent(visualHp(enemy.id), enemy.maxHp) + '%' }} /></span>
-          <AssetImage assetId={content.enemies[enemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} alt="" />
+          <EnemyMotionSprite
+            assetId={content.enemies[enemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'}
+            reducedMotion={reducedMotion}
+            motion={visualHp(enemy.id) <= 0 ? 'defeat'
+              : strikeFx?.actorId === enemy.id ? 'attack'
+                : strikeFx?.targetId === enemy.id || receivingId === enemy.id ? 'hit' : 'idle'} />
           {damageRevealed && receivingId === enemy.id && <b className="pixel-battle__damage-number" role="status">−{activeDice?.damage}</b>}
            <small>{enemy.name}</small>
           {hoveredEnemyId === enemy.id && <span className="pixel-battle__enemy-tooltip" role="tooltip"
