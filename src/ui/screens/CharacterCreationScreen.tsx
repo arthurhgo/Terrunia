@@ -148,7 +148,7 @@ export function CharacterCreationScreen() {
         <div className="attribute-draft">
           <Sparkles size={18} />
           <div><strong>Fundação neutra · {BALANCE.characterCreationAttributePoints} Pontos de Atributo</strong>
-            <p>No prólogo você distribuirá {BALANCE.characterCreationAttributePoints} pontos (2 por evolução de dado) e escolherá entre as sete armas vinculadas. Nenhum Clã ou Classe é escolhido aqui.</p>
+            <p>No prólogo você distribuirá {BALANCE.characterCreationAttributePoints} pontos individualmente (2 no mesmo atributo evoluem o dado) e escolherá entre as sete armas vinculadas. Nenhum Clã ou Classe é escolhido aqui.</p>
           </div>
         </div>
         <small className="creation-visual-note">A aparência é independente do gameplay. Os sprites podem ser substituídos via assetRegistry em atualizações futuras.</small>
