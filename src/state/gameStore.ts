@@ -512,10 +512,20 @@ export const useGameStore = create<GameState>((set, get) => {
     unlockBaseWithKey: () => {
       const save = get().save
       if (!save) return false
-      const result = unlockPlayerBaseWithDaerynKey(save, nowIso())
+      const now = nowIso()
+      const result = unlockPlayerBaseWithDaerynKey(save, now)
       if (!result.ok) { failAction(result.message); return false }
-      commit(result.value)
-      show('Base destrancada', 'A Chave de Daeryn foi usada na porta e retirada da mochila. Agora você pode entrar livremente.', 'success')
+      let next = result.value
+      // ACCESS is the reward. Mark this single objective and hand it in
+      // in the same transaction as consuming the key; no XP/Gold granted.
+      if (next.quests.main_terran_open_base_door?.status === 'active') {
+        next = applyQuestEvent(next, { type: 'interact', targetId: 'unlock_player_home_door' }, content, now)
+        const done = turnInQuestDomain(next, 'main_terran_open_base_door', 'npc_daeryn', content, now)
+        if (!done.ok) { failAction(done.message); return false }
+        next = done.value
+      }
+      commit(next)
+      show('Base destrancada · missão concluída', 'Chave usada uma vez. O acesso à sua Base e às três funções foi liberado.', 'success')
       return true
     },
 
