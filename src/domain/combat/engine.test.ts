@@ -159,15 +159,22 @@ describe('máquina de estados de combate', () => {
       content,
       'battle_status',
     )
+    // Avoid ending the tactical AI regression prematurely because dice now determine real damage.
+    for (const enemy of Object.values(battle.combatants).filter((actor) => actor.side === 'enemy')) {
+      enemy.hp = 120
+      enemy.maxHp = 120
+    }
+    battle.combatants.combatant_player.hp = 120
+    battle.combatants.combatant_player.maxHp = 120
     const crawler = 'combatant_enemy_fungorro_crawler_1'
-    const first = submitBattleCommand(battle, { type: 'attack', targetId: crawler }, content)
-    expect(first.ok).toBe(true)
-    if (!first.ok) return
-    battle = first.value
-    const second = submitBattleCommand(battle, { type: 'attack', targetId: crawler }, content)
-    expect(second.ok).toBe(true)
-    if (!second.ok) return
-    expect(second.value.combatants.combatant_player.statusEffects).toEqual(
+    for (let round = 0; round < 7 && !battle.combatants.combatant_player.statusEffects
+      .some((status) => status.definitionId === 'status_spore_poison'); round += 1) {
+      const step = submitBattleCommand(battle, { type: 'attack', targetId: crawler }, content)
+      expect(step.ok).toBe(true)
+      if (!step.ok) return
+      battle = step.value
+    }
+    expect(battle.combatants.combatant_player.statusEffects).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ definitionId: 'status_spore_poison' }),
       ]),
