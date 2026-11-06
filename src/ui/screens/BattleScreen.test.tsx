@@ -65,6 +65,11 @@ describe('combate visual v0.17', () => {
     expect(screen.queryByRole('button', { name: 'CONFIRMAR AÇÃO' })).not.toBeInTheDocument()
     expect(useGameStore.getState().save!.battle).toEqual(before)
     expect(screen.getByRole('button', { name: 'DEFENDER' })).toBeEnabled()
+    fireEvent.click(screen.getByRole('button', { name: 'DEFENDER' }))
+    expect(screen.getByText(/Defender: prepara a mitigação/)).toBeInTheDocument()
+    expect(useGameStore.getState().save!.battle).toEqual(before)
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar sem executar a ação' }))
+    expect(useGameStore.getState().save!.battle).toEqual(before)
   })
   it('aguarda a sequência de dados antes de aplicar dano e avançar turnos no save', () => {
     vi.useFakeTimers()
