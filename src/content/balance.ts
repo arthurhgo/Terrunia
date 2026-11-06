@@ -5,7 +5,8 @@ export const BALANCE = {
   initialGold: 0,
   /** Owner-approved v0.5.4: six points; all seven initial weapons reachable. */
   characterCreationAttributePoints: 6,
-  attributePointsPerLevel: 1,
+  /** BALANCE_DRAFT: each level grants one complete d4→d6 upgrade (2 attribute points). */
+  attributePointsPerLevel: 2,
   defaultAttributeDie: 4,
   attributeDieOrder: [4, 6, 8, 10, 12] as const,
   // One rank advances exactly two die faces: d4 -> d6 -> d8 -> d10 -> d12.
