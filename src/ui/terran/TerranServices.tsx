@@ -158,7 +158,7 @@ export function DaerynServices({ save }: { save: GameSave }) {
 export function VorrenBestiary({ save }: { save: GameSave }) {
   const unlocked = save.world.worldFlags.includes('bestiary_unlocked')
   const identified = getDiscoveredEnemyIds(save, content)
-  const studied = new Map(getDiscoveredProgressiveFauna(save, content).map((entry) => [entry.enemyId, entry]))
+  const studied = new Map<string, { description: string }>(getDiscoveredProgressiveFauna(save, content).map((entry) => [entry.enemyId, entry]))
   return <section className="terran-shop" aria-label="Bestiário de Vorren">
     <h3>Bestiário</h3>
     {!unlocked ? <p>Livro de campo fechado. Conclua “O Livro das Criaturas” com Vorren.</p>
