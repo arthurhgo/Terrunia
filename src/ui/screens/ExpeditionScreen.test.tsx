@@ -33,7 +33,7 @@ describe('expedição pixelada de Astravél', () => {
     expect(screen.getByRole('img', { name: /Astravél em pixels, vista superior 3\/4/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Aproximar-se de Clareira Luminescente' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Aproximar-se de Presença Fungorra' })).not.toBeDisabled()
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Trilha' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Trilha / 0 Entrada' }))
     const stage = screen.getByRole('region', { name: 'Cena contínua de Astravél' })
     const routeWindow = screen.getByRole('complementary', { name: 'Painel lateral: Rota de Astravél' })
     const gameLayout = stage.parentElement
@@ -58,20 +58,29 @@ describe('expedição pixelada de Astravél', () => {
       <Route path="/expedition" element={<ExpeditionScreen />} /><Route path="/battle" element={<div>Combate do acampamento</div>} />
     </Routes></MemoryRouter>)
     fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Acampamento Abandonado' }))
+    expect(useGameStore.getState().save?.battle).toBeNull()
+    const details = screen.getByRole('complementary', { name: 'Painel lateral: Acampamento Abandonado' })
+    const fight = details.querySelector('.expedition-node-detail__action') as HTMLButtonElement
+    expect(fight).toBeInTheDocument()
+    fireEvent.click(fight)
     expect(screen.getByText('Combate do acampamento')).toBeVisible()
     expect(useGameStore.getState().save?.battle?.encounterId).toBe('encounter_astravel_camp_03')
     expect(useGameStore.getState().save?.inventory).toHaveLength(0)
   })
 
-  it('entra no combate ao alcançar a Presença Fungorra sem exigir segundo clique no painel', () => {
+  it('ao chegar à Presença Fungorra permite voltar antes de enfrentar', () => {
     seedExpedition('astravel_fungorro_01')
     render(<MemoryRouter initialEntries={['/expedition']}>
       <Routes><Route path="/expedition" element={<ExpeditionScreen />} /><Route path="/battle" element={<div>Combate ativo</div>} /></Routes>
     </MemoryRouter>)
     expect(useGameStore.getState().save?.battle).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Presença Fungorra' }))
+    expect(useGameStore.getState().save?.battle).toBeNull()
+    const detail = screen.getByRole('complementary', { name: 'Painel lateral: Presença Fungorra' })
+    const fight = detail.querySelector('.expedition-node-detail__action') as HTMLButtonElement
+    expect(fight).toBeInTheDocument()
+    fireEvent.click(fight)
     expect(screen.getByText('Combate ativo')).toBeInTheDocument()
-    expect(screen.queryByRole('complementary', { name: 'Painel lateral: Presença Fungorra' })).not.toBeInTheDocument()
     expect(useGameStore.getState().save?.battle?.encounterId).toBe('encounter_fungorro_01')
     expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_fungorro_01')
   })
