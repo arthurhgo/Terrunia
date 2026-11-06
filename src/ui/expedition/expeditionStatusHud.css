@@ -26,3 +26,9 @@
 @media(max-width:720px){.expedition-status-hud{width:min(240px,70vw);left:4px;top:4px;padding:5px}
  .expedition-status-hud__actions button{font-size:8px}.expedition-status-hud__actions button svg{width:12px;height:12px}
  .expedition-status-hud__portrait{width:39px;height:39px;flex-basis:39px}}
+
+.expedition-game__route-open{position:absolute;z-index:15;left:10px;top:128px;
+ display:flex;gap:6px;align-items:center;padding:5px 9px;
+ border:1px solid #8e744b;background:#152c33e9;color:#e9d2a4;
+ font:700 9px var(--display);cursor:pointer}
+@media(max-width:720px){.expedition-game__route-open{top:112px;left:4px;font-size:8px}}
