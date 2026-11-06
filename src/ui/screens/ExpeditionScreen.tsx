@@ -1,4 +1,4 @@
-import { ArrowLeft, Backpack, BookOpen, Compass, HeartPulse, CircleUserRound, MapPin, Swords, Trees, X } from 'lucide-react'
+import { ArrowLeft, Backpack, BookOpen, Compass, HeartPulse, CircleUserRound, Swords, Trees, X } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -72,9 +72,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const activeNode = getActiveTrailNode(save, trail)
   const scene = getNextCutscene(save)
   const selectedNode = trail.nodes.find((node) => node.id === selectedId) ?? null
-  const completed = trail.nodes.filter((node) => node.type !== 'entry' && save.world.trailNodeStates[node.id] === 'completed').length
   const quests = getQuestJournalEntries(save, content).filter(({ progress }) => progress.status !== 'completed')
-  const sector = getAstravelSector(activeNode?.index ?? 15)
   const activeGate = activeNode ? checkTrailQuestGate(save, activeNode, content) : null
 
   const leave = () => {
@@ -110,10 +108,6 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const title = drawer === 'node' ? selectedNode?.label ?? 'Trilha' : drawer === 'inventory' ? 'Mochila' : drawer === 'quests' ? 'Missões' : drawer === 'character' ? 'Ficha do personagem' : drawer === 'potions' ? 'Poções e recuperação' : 'Rota de Astravél'
 
   const sceneContent = <div className="terran-game expedition-game">
-      <header className="terran-game__topbar">
-        <div><span className="eyebrow">EXPEDIÇÃO · INSTÂNCIA EXTERNA</span><h1>Astravél</h1></div>
-        <div className="terran-game__readout"><MapPin size={16} /> FLORESTA &gt; {activeNode?.label.toUpperCase() ?? 'CÂMARAS FÚNGICAS'}<span>{completed}/15 combates · {sector.name}</span></div>
-      </header>
       <div className={`terran-game__layout expedition-game__layout ${drawer ? 'has-drawer' : ''}`}>
         <section className="terran-game__stage" aria-label="Cena contínua de Astravél">
           <AstravelPixelCanvas key={save.world.currentLocationId} trail={trail} statuses={save.world.trailNodeStates}
