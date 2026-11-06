@@ -17,7 +17,7 @@ describe('poções na exploração', () => {
     save.vitals.hp = maximum - 7
     save.inventory.push({ instanceId: 'tonic_field', definitionId: 'consumable_minor_tonic',
       quantity: 2, rarity: 'common', locked: false, favorite: false, acquiredAt: save.updatedAt })
-    const r = useFieldConsumable(save, 'tonic_field', save.updatedAt)
+    const r = applyFieldConsumable(save, 'tonic_field', save.updatedAt)
     expect(r.ok).toBe(true)
     if (!r.ok) return
     expect(r.value.vitals.hp).toBeGreaterThan(save.vitals.hp)
@@ -28,8 +28,8 @@ describe('poções na exploração', () => {
     const save = createExpedition()
     const instance = { quantity: 1, rarity: 'common' as const, locked: false, favorite: false, acquiredAt: save.updatedAt }
     save.inventory.push({ ...instance, instanceId: 'tonic', definitionId: 'consumable_minor_tonic' })
-    expect(useFieldConsumable(save, 'tonic', save.updatedAt)).toMatchObject({ ok: false, code: 'ALREADY_FULL' })
+    expect(applyFieldConsumable(save, 'tonic', save.updatedAt)).toMatchObject({ ok: false, code: 'ALREADY_FULL' })
     save.inventory.push({ ...instance, instanceId: 'bomb', definitionId: 'consumable_resonance_flask' })
-    expect(useFieldConsumable(save, 'bomb', save.updatedAt).ok).toBe(false)
+    expect(applyFieldConsumable(save, 'bomb', save.updatedAt).ok).toBe(false)
   })
 })
