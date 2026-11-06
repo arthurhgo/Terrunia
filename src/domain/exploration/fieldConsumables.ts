@@ -36,8 +36,8 @@ export const useFieldConsumable = (
   let hp = save.vitals.hp
   let mp = save.vitals.mp
   for (const effect of definition.combatEffects) {
-    if (effect.type === 'restoreHp') hp = Math.min(maxHp, hp + effect.value)
-    if (effect.type === 'restoreMp') mp = Math.min(maxMp, mp + effect.value)
+    if (effect.type === 'restoreHp' && hp < maxHp) hp = Math.min(maxHp, hp + effect.value)
+    if (effect.type === 'restoreMp' && mp < maxMp) mp = Math.min(maxMp, mp + effect.value)
   }
   if (hp === save.vitals.hp && mp === save.vitals.mp) {
     return fail('FIELD_RESOURCES_FULL', 'Vida e Mana já estão completas.')
