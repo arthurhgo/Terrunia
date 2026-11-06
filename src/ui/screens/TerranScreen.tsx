@@ -1,4 +1,4 @@
-import { MapPin, X } from 'lucide-react'
+import { Archive, BedDouble, MapPin, ScrollText, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -34,7 +34,7 @@ import { getRoomName, PLAYER_HOME_DOOR, PLAYER_HOME_INTERIOR_ID, roomFurniture, 
 import { streetNpcPlacements } from '../../content/streetNpcs'
 import type { WorldPoint } from '../terran/pixelCityArt'
 import { getCityCast } from '../terran/cityCast'
-import { BaseChest, DaerynServices, HomeDrawer, QuestNpcPanel, VorrenBestiary } from '../terran/TerranServices'
+import { BaseChest, BaseRecords, DaerynServices, HomeDrawer, QuestNpcPanel, VorrenBestiary } from '../terran/TerranServices'
 import { MarketNpcPanel } from '../terran/MarketServices'
 import { isMarketNpc } from '../../domain/terran/market'
 import { BASE_LOCATION_ID, hasPlayerHomeKey, isPlayerHomeDoorOpen } from '../../domain/terran/base'
@@ -46,7 +46,7 @@ import { getReadyDeliveryQuestRoute, getRosettaQuestRoutes, getTrackedQuestRoute
 
 import './gameplayV057.css'
 
-type Drawer = 'location' | 'market' | 'home' | 'chest' | 'records' | 'forge' | null
+type Drawer = 'location' | 'market' | 'home' | 'homeRecords' | 'chest' | 'records' | 'forge' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
 
 function DialogueBox({ save, presence, onClose }: { save: GameSave; presence: Presence; onClose: () => void }) {
@@ -94,6 +94,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const restAtHome = useGameStore((state) => state.restAtHome)
   const enterBase = useGameStore((state) => state.enterBase)
   const unlockBaseWithKey = useGameStore((state) => state.unlockBaseWithKey)
+  const acceptQuest = useGameStore((state) => state.acceptQuest)
   const leaveBase = useGameStore((state) => state.leaveBase)
   const [drawer, setDrawer] = useState<Drawer>(null)
   const [showLocationDetails, setShowLocationDetails] = useState(false)
@@ -114,6 +115,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [marketNpc, setMarketNpc] = useState<Presence | null>(null)
   const [cityLandmark, setCityLandmark] = useState<TerranLandmark | null>(null)
   const [baseDoorPrompt, setBaseDoorPrompt] = useState(false)
+  const [homeMenuOpen, setHomeMenuOpen] = useState(false)
   const [activeQuestObjectId, setActiveQuestObjectId] = useState<string | null>(null)
   const [missionNpc, setMissionNpc] = useState<{ presence: Presence; questId: string; sourceId: TerranLocationId } | null>(null)
 
@@ -164,6 +166,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const showHomeInterior = () => {
     setStreetSpawn({ ...PLAYER_HOME_DOOR })
     setInteriorId(PLAYER_HOME_INTERIOR_ID)
+    setHomeMenuOpen(true)
     setLocationId('location_terran_portal_plaza')
     setDrawer(null)
     setInspected(null)
@@ -184,6 +187,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const inspectFurniture = (furniture: RoomFurniture) => {
     if (furniture.behavior === 'quest' && furniture.questId) {
       setActiveQuestObjectId(furniture.questId)
+    } else if (furniture.id === 'home_memories' && interiorId === PLAYER_HOME_INTERIOR_ID) {
+      setDrawer('homeRecords')
     } else if (furniture.behavior === 'archive' && interiorId === 'location_terran_eldamar_house') {
       setDrawer('records')
     } else if (furniture.behavior === 'storage') {
@@ -199,6 +204,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   }
   const exitInterior = () => {
     if (interiorId === PLAYER_HOME_INTERIOR_ID) leaveBase()
+    setHomeMenuOpen(false)
     setInteriorId(null)
     setDrawer(null)
     setDialogue(null)
@@ -259,7 +265,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const forgeQuest = getNpcActionableQuests(save, 'npc_durnan', content)[0]
   const activeTitle = drawer === 'forge' ? 'Casa do Ferreiro' : drawer === 'location' ? (
     localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
-  ) : drawer === 'market' ? `Mercado · ${marketNpc?.label ?? 'Serviços'}` : drawer === 'home' ? 'Minha Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
+  ) : drawer === 'market' ? `Mercado · ${marketNpc?.label ?? 'Serviços'}` : drawer === 'home' ? 'Minha Base' : drawer === 'homeRecords' ? 'Registros da Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
 
   const sceneContent = (
     <div className="terran-game">
@@ -305,17 +311,40 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                     setCityLandmark(landmark)
                   }} />}
             {cityLandmark && <CityLandmarkDialog landmark={cityLandmark} save={save} onClose={() => setCityLandmark(null)} />}
-            <Modal open={baseDoorPrompt} title="Porta da Base do Terrírian" eyebrow="TERRAN · ACESSO À CASA"
+            <Modal open={baseDoorPrompt} title="Porta da Base do Terrírian" eyebrow="MISSÃO · ABRIR A BASE"
               className="terran-base-key-modal" onClose={() => setBaseDoorPrompt(false)}
-              footer={hasPlayerHomeKey(save)
+              footer={['available','offered'].includes(save.quests.main_terran_open_base_door?.status ?? '')
                 ? <div className="terran-base-key-modal__actions">
                     <button type="button" onClick={() => setBaseDoorPrompt(false)}>Agora não</button>
-                    <button type="button" onClick={confirmHomeKey}>Usar chave na porta</button>
+                    <button type="button" onClick={() => acceptQuest('main_terran_open_base_door')}>Aceitar missão · Abrir a Base</button>
                   </div>
-                : <button type="button" className="terran-service-action" onClick={() => setBaseDoorPrompt(false)}>Voltar à cidade</button>}>
-              {hasPlayerHomeKey(save)
-                ? <p>Você possui a <strong>Chave de Daeryn</strong> na mochila. Usá-la destranca esta porta permanentemente e consome a chave.</p>
-                : <p>A porta está trancada. Conclua a missão <strong>Um Lugar em Terran</strong> com Daeryn para receber a chave e usá-la aqui.</p>}
+                : hasPlayerHomeKey(save)
+                  ? <div className="terran-base-key-modal__actions">
+                      <button type="button" onClick={() => setBaseDoorPrompt(false)}>Agora não</button>
+                      <button type="button" onClick={confirmHomeKey}>Usar chave na porta</button>
+                    </div>
+                  : <button type="button" className="terran-service-action" onClick={() => setBaseDoorPrompt(false)}>Voltar à cidade</button>}>
+              {['available','offered'].includes(save.quests.main_terran_open_base_door?.status ?? '')
+                ? <p><strong>Abrir a Base</strong> · missão de Daeryn. Aceite para usar a Chave de Daeryn nesta porta. A recompensa é o acesso à sua casa.</p>
+                : hasPlayerHomeKey(save)
+                ? <p>Missão em andamento. Você possui a <strong>Chave de Daeryn</strong>. Usá-la conclui a missão, destranca a Base e consome a chave uma única vez.</p>
+                : <p>A porta está trancada. Conclua <strong>Um Lugar em Terran</strong> com Daeryn para receber a chave.</p>}
+            </Modal>
+            <Modal open={homeMenuOpen && interiorId === PLAYER_HOME_INTERIOR_ID}
+              title="Base do Terrírian" eyebrow="SUA CASA · SERVIÇOS" onClose={() => setHomeMenuOpen(false)}
+              className="terran-base-functions">
+              <p>O acesso à Base foi liberado. Escolha uma função ou feche esta janela para explorar o cômodo.</p>
+              <div className="terran-base-functions__actions">
+                <button type="button" onClick={() => { restAtHome(); setDrawer('home'); setHomeMenuOpen(false) }}>
+                  <BedDouble size={18} /> Descansar na Cama
+                </button>
+                <button type="button" onClick={() => { setDrawer('chest'); setHomeMenuOpen(false) }}>
+                  <Archive size={18} /> Abrir Baú
+                </button>
+                <button type="button" onClick={() => { setDrawer('homeRecords'); setHomeMenuOpen(false) }}>
+                  <ScrollText size={18} /> Consultar Registros
+                </button>
+              </div>
             </Modal>
             {waking && interiorId === PLAYER_HOME_INTERIOR_ID && <div className="terran-base__waking" role="status">Você acorda na Base. Descanse para recuperar Vida e Mana.</div>}
             {inspected && <div className="pixel-interior__inspection" role="dialog" aria-label={`Inspecionar ${inspected.name}`}>
@@ -365,6 +394,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               {drawer === 'records' && interiorId === 'location_terran_eldamar_house' && <EldamarRecords save={save} />}
               {drawer === 'home' && <HomeDrawer save={save} canRest={interiorId === PLAYER_HOME_INTERIOR_ID} />}
               {drawer === 'chest' && <BaseChest save={save} />}
+              {drawer === 'homeRecords' && <BaseRecords save={save} />}
             </div>
           </aside>}
           </div>
