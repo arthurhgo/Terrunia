@@ -30,6 +30,7 @@ describe('lore descoberto por vitórias reais', () => {
     expect(completed).toBeDefined()
     save.world.completedEncounterIds.push(completed.id)
     expect(getDiscoveredProgressiveFauna(save, content).some((entry) => entry.enemyId === 'enemy_fungorro_thornback')).toBe(true)
-    expect(before.eventLog).toEqual([])
+    expect(save.eventLog).toEqual(before.eventLog)
+    expect(before.eventLog).toContain('CharacterCreated')
   })
 })
