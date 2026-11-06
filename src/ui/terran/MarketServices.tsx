@@ -24,7 +24,7 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
   const currentInitiative = equippedArmor?.armor.initiative ?? 0
   const stock = MARKET_STOCK.filter((offer) => offer.npcId === npcId)
   return <section className="terran-shop" aria-label="Comprar itens no Mercado">
-    <h3><ShoppingBasket size={18} /> Itens à venda</h3>
+    <h3><Backpack size={18} /> Mochila do vendedor · itens à venda</h3>
     <p className="terran-shop__wallet"><Coins size={16} /> {save.wallet.gold} Ouro</p>
     <div className="terran-shop__stock">
       {stock.map((offer) => {
