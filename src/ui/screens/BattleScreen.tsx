@@ -3,7 +3,7 @@ import { Backpack, Bomb, Crosshair, Footprints, Gem, ScrollText, Shield, Swords,
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
-import type { BattleCommand } from '../../domain/combat/types'
+import type { BattleCommand, BattleState } from '../../domain/combat/types'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { useGameStore } from '../../state/gameStore'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
@@ -49,6 +49,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const announcedRound = useRef<{ battleId: string; round: number } | null>(null)
   const [showLog, setShowLog] = useState(false)
   const [activeDice, setActiveDice] = useState<BattleDiceEvent | null>(null)
+  const [stagedHp, setStagedHp] = useState<Record<string, number> | null>(null)
+  const [initiativePreview, setInitiativePreview] = useState<BattleState | null>(null)
+  const [impactEventId, setImpactEventId] = useState<string | null>(null)
   const [diceQueue, setDiceQueue] = useState<BattleDiceEvent[]>([])
   const [resolvingRolls, setResolvingRolls] = useState(false)
   const [diceAwaitingClick, setDiceAwaitingClick] = useState(false)
@@ -77,6 +80,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     setMenu(null)
     setPendingCommand(null)
     setActiveDice(null)
+    setStagedHp(null)
+    setInitiativePreview(null)
+    setImpactEventId(null)
     setDiceQueue([])
     setResolvingRolls(false)
     setDiceAwaitingClick(false)
@@ -123,7 +129,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       const actor = battle.combatants[entry.roll.actorId]
       return [{
         id: entry.id, sides: entry.roll.sides, face: entry.roll.face,
-        actorId: entry.roll.actorId, targetId: actor?.side === 'enemy' ? 'combatant_player' : targetId,
+        actorId: entry.roll.actorId, targetId: entry.roll.targetId ?? (actor?.side === 'enemy' ? 'combatant_player' : targetId),
         damage: Number(damage[1]), action: entry.roll.action,
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy',
       }]
@@ -142,6 +148,21 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     const timer = window.setTimeout(() => setActiveDice(null), reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs : BATTLE_PRESENTATION.queuedDieMs)
     return () => window.clearTimeout(timer)
   }, [activeDice, reducedMotion, resolvingRolls])
+
+  // Reveal each impact and defeat before the next actor animates.
+  useEffect(() => {
+    if (!resolvingRolls || !activeDice || activeDice.kind !== 'damage' ||
+        diceAwaitingClick || !activeDice.targetId) return
+    const event = activeDice
+    const timer = window.setTimeout(() => {
+      setStagedHp((current) => current ? {
+        ...current,
+        [event.targetId!]: Math.max(0, (current[event.targetId!] ?? 0) - event.damage),
+      } : current)
+      setImpactEventId(event.id)
+    }, reducedMotion ? 100 : BATTLE_PRESENTATION.dieSpinMs + 180)
+    return () => window.clearTimeout(timer)
+  }, [activeDice, diceAwaitingClick, reducedMotion, resolvingRolls])
 
   // Round separators belong to the presentation layer. One banner per real round
   // even when several enemies are resolved inside the same domain command.
@@ -235,6 +256,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         setActiveDice(null)
         setDiceAwaitingClick(false)
         setResolvingRolls(false)
+        setStagedHp(null)
+        setInitiativePreview(null)
+        setImpactEventId(null)
         sequence.commit()
         return
       }
@@ -276,12 +300,15 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       if (!match) return []
       return [{
         id: entry.id, sides: roll.sides, face: roll.face, damage: Number(match[1]),
-        actorId: roll.actorId, targetId: actor?.side === 'enemy' ? player.id : target.id,
+        actorId: roll.actorId, targetId: roll.targetId ?? (actor?.side === 'enemy' ? player.id : target.id),
         action: roll.action, kind: 'damage' as const,
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy' as const,
       }]
     })
     if (!rolls.length) { submit(command); return }
+    setStagedHp(Object.fromEntries(Object.values(battle.combatants).map((actor) => [actor.id, actor.hp])))
+    setInitiativePreview(initiative ? preview.value : null)
+    setImpactEventId(null)
     setResolvingRolls(true)
     setActiveDice(rolls[0])
     const requireClick = !initiative && rolls[0].actorSide === 'player'
