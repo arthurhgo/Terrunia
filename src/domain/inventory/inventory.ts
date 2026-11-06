@@ -1,5 +1,8 @@
 import type { ContentCatalog } from '../../content/catalog'
 import { addRawEssence } from '../essence/essence'
+import { BALANCE } from '../../content/balance'
+
+export const effectiveConversionEssence = (raw: number) => Math.max(0, Math.round(raw * BALANCE.essenceConversionMultiplier))
 import type { EssenceProgress, InventoryItemInstance } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
 
@@ -32,7 +35,7 @@ export const convertInventoryItems = (
     if (instance.locked || instance.favorite || definition.questLocked || !definition.convertToEssence) {
       return fail('ITEM_PROTECTED', `${definition.name} está protegido e não pode ser convertido.`)
     }
-    rawEssence += definition.essenceValue * instance.quantity
+    rawEssence += effectiveConversionEssence(definition.essenceValue * instance.quantity)
     removedInstanceIds.push(instance.instanceId)
   }
 
