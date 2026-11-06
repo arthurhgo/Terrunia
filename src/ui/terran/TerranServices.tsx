@@ -81,6 +81,27 @@ export function BaseChest({ save }: { save: GameSave }) {
   </section>
 }
 
+/** Personal archive from real save data; no invented quests or manual save slot. */
+export function BaseRecords({ save }: { save: GameSave }) {
+  const completed = Object.values(save.quests).filter((quest) => quest.status === 'completed')
+    .map((quest) => content.quests[quest.questId]).filter(Boolean)
+  const memories = Object.values(save.boundItems).flatMap((item) => item.memories.map((memory) => ({
+    itemId: item.baseItemId, title: memory.title, description: memory.description,
+  })))
+  return <section className="base-records" aria-label="Registros do Terrírian">
+    <h3>Registros · Memórias e Crônica</h3>
+    <p>{save.character.name} · Nível {save.character.level} · {completed.length} missões concluídas</p>
+    <h4>Missões concluídas</h4>
+    {completed.length ? <ul>{completed.slice(-20).map((quest) => <li key={quest.id}>{quest.title}</li>)}</ul>
+      : <p>Suas próximas conquistas serão registradas aqui.</p>}
+    <h4>Memórias dos Vínculos</h4>
+    {memories.length ? <ul>{memories.slice(-20).map((memory, i) => <li key={memory.itemId + ':' + i}>
+      <strong>{memory.title}</strong><small>{memory.description}</small>
+    </li>)}</ul> : <p>Nenhuma memória de equipamento registrada.</p>}
+    <small>O progresso é salvo automaticamente no Nexo. Registros não criam um segundo sistema de salvamento.</small>
+  </section>
+}
+
 export function SylwenShop({ save }: { save: GameSave }) {
   const buy = useGameStore((state) => state.buyFromSylwen)
   return <section className="terran-shop" aria-label="Balcão de Sylwen">
