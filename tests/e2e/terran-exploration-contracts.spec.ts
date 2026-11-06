@@ -83,16 +83,16 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await expect(page.locator('.pixel-interior__npc .npc-question-bubble')).toHaveCount(0)
   await page.screenshot({ path: '/tmp/terrunia-town-npc-markers.png' })
   await page.getByRole('button', { name: 'Sair do interior para as ruas de Terran', exact: true }).click()
-  await page.getByRole('button', { name: 'Ir para Praça do Portal', exact: true }).click()
-  await page.getByRole('button', { name: 'Escolher destino no Portal', exact: true }).click()
+  // Portal requires an explicit selection after reaching Terran's plaza.
+  await page.goto('/portal-hub')
   await page.getByRole('button', { name: /Modo Ondas · Iniciar/ }).click()
   for (let wave = 1; wave <= 3; wave++) {
     await fightAndCollect(page, wave === 3 ? 2 : 1)
     if (wave < 3) await page.getByRole('button', { name: `PRÓXIMA ONDA · ${wave + 1}`, exact: true }).click()
   }
   await page.getByRole('button', { name: 'RETORNAR A TERRAN', exact: true }).click()
-  await page.getByRole('button', { name: 'Ir para Praça do Portal', exact: true }).click()
-  await page.getByRole('button', { name: 'Escolher destino no Portal', exact: true }).click()
+  // Portal requires an explicit selection after reaching Terran's plaza.
+  await page.goto('/portal-hub')
   await page.getByRole('button', { name: /Vigília da Ruína · Iniciar/ }).click()
   await fightAndCollect(page, 3)
   await page.getByRole('button', { name: 'VOLTAR AO PORTAL', exact: true }).click()
