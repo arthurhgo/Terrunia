@@ -63,7 +63,7 @@ const stages: Stage[] = [
     description: 'Runas antigas absorvem a corrupção da floresta. Lithwynn orienta a leitura das marcas da sentinela.',
     tacticalHint: 'Habilidades que causam Fratura ajudam a vencer a defesa da Sentinela.' },
   { id: 'astravel_mycelial_12', label: 'Galeria de Micélio', x: 68, y: 59,
-    enemies: ['enemy_fungal_horror', 'enemy_spore_sower', 'enemy_mycelial_stalker'], supplies: ['consumable_antidote', 'consumable_minor_tonic'],
+    enemies: ['enemy_fungal_horror', 'enemy_spore_sower', 'enemy_fungal_slime'], supplies: ['consumable_antidote', 'consumable_minor_tonic'],
     description: 'Filamentos conectam árvores e ruínas a um único núcleo. A amostra precisa ser preservada para a investigação.',
     tacticalHint: 'Entre com Vida e Mana preparadas. Use a Runa de Guarda para resistir à pressão do grupo.' },
   { id: 'astravel_blackroot_13', label: 'Guardião Raiz-Negra', x: 84, y: 68,
