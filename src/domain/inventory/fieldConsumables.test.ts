@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
 import { deriveCharacterStats } from '../character/derivedStats'
-import { useFieldConsumable } from './fieldConsumables'
+import { applyFieldConsumable } from './fieldConsumables'
 
 const make = () => {
   const save = createNewSave('owner','Teri','character.terririan.default',content)
