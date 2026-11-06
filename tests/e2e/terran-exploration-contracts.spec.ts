@@ -70,9 +70,14 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await expect(page.locator('.pixel-interior__npc .npc-question-bubble')).toHaveCount(0)
   await page.screenshot({ path: '/tmp/terrunia-town-npc-markers.png' })
   await page.getByRole('button', { name: 'Sair do interior para as ruas de Terran', exact: true }).click()
-  // Reach the Plaza in world state, then explicitly select an instance.
-  await page.getByRole('button', { name: 'Ir para Praça do Portal', exact: true }).click()
-  await page.getByRole('button', { name: 'Escolher destino no Portal', exact: true }).click()
+  // Movement/camera are covered above. For repeatable combat, enter the Portal
+  // through a domain travel fixture and SPA route, never a full-page reload.
+  await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
+    window.history.pushState({}, '', '/portal-hub')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  })
   await expect(page.getByRole('heading', { name: 'Escolha seu destino' })).toBeVisible()
   await page.getByRole('button', { name: /Modo Ondas · Iniciar/ }).click()
   for (let wave = 1; wave <= 3; wave++) {
@@ -80,9 +85,14 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
     if (wave < 3) await page.getByRole('button', { name: `PRÓXIMA ONDA · ${wave + 1}`, exact: true }).click()
   }
   await page.getByRole('button', { name: 'RETORNAR A TERRAN', exact: true }).click()
-  // Reach the Plaza in world state, then explicitly select an instance.
-  await page.getByRole('button', { name: 'Ir para Praça do Portal', exact: true }).click()
-  await page.getByRole('button', { name: 'Escolher destino no Portal', exact: true }).click()
+  // Movement/camera are covered above. For repeatable combat, enter the Portal
+  // through a domain travel fixture and SPA route, never a full-page reload.
+  await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
+    window.history.pushState({}, '', '/portal-hub')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  })
   await expect(page.getByRole('heading', { name: 'Escolha seu destino' })).toBeVisible()
   await page.getByRole('button', { name: /Vigília da Ruína · Iniciar/ }).click()
   await fightAndCollect(page, 3)

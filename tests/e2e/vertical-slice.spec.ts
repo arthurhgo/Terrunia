@@ -48,7 +48,10 @@ test('Astravél: câmera, dois combates, coleta manual de drops e retomada do sa
   await page.getByRole('button', { name: 'CONTINUAR EXPEDIÇÃO', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Astravél', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Seguir objetivo' }).click()
-  await page.getByRole('button', { name: 'Enfrentar Fungorro próximo' }).click({ timeout: 20_000 })
+  // The encounter detail drawer opens on approach and is the foreground action.
+  const encounterPanel = page.getByRole('complementary', { name: 'Painel lateral: Clareira Luminescente' })
+  await expect(encounterPanel).toBeVisible({ timeout: 20_000 })
+  await encounterPanel.getByRole('button', { name: 'Enfrentar Clareira Luminescente', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Clareira Luminescente', exact: true })).toBeVisible({ timeout: 20_000 })
   await fightAndCollect(page, 3)
   await page.getByRole('button', { name: 'CONTINUAR EXPEDIÇÃO', exact: true }).click()

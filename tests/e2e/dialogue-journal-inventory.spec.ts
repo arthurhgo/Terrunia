@@ -105,7 +105,7 @@ test('conversas interativas, aceite cinza, diário em linhas e mochila antes dos
   await expect(page.getByRole('complementary', { name: 'Status permanente do personagem', exact: true })).toBeVisible()
   await page.screenshot({ path: '/tmp/terrunia-backpack-first.png' })
   await page.getByRole('link', { name: 'Abrir Menu', exact: true }).click()
-  await page.getByRole('link', { name: 'Nexo', exact: true }).click()
+  await page.getByRole('link', { name: 'Personagem', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Nexo do personagem', exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Status do personagem', exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Terran', exact: true }).click()
