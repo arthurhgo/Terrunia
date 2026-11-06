@@ -44,12 +44,12 @@ O posicionamento usa os **mesmos 15 nós** de Astravél: Espinhal no marco 3, Ca
 ### Sprites provisórios
 
 Sprites únicos, separados e substituíveis no `assetRegistry`:
-- `/assets/enemies/progression/enemy_fungorro_thornback_idle.svg`
-- `/assets/enemies/progression/enemy_spore_bulwark_idle.svg`
-- `/assets/enemies/progression/enemy_mycelial_stalker_idle.svg`
-- `/assets/enemies/progression/enemy_ruin_warden_idle.svg`
+- `/assets/enemies/progression/enemy_fungorro_thornback_idle.png`
+- `/assets/enemies/progression/enemy_spore_bulwark_idle.png`
+- `/assets/enemies/progression/enemy_mycelial_stalker_idle.png`
+- `/assets/enemies/progression/enemy_ruin_warden_idle.png`
 
-São desenhos modulares de pixel art em SVG (apenas pose idle), não sprites finais com frames de ataque, dano ou morte. O fallback central de inimigos continua válido. A lógica do combate usa enemy IDs e não caminhos de arte.
+São sprites nativos RGBA PNG 32×32, derivados de fontes SVG editáveis de pixel art (apenas pose idle), não sprites finais com frames de ataque, dano ou morte. O fallback central de inimigos continua válido. A lógica do combate usa enemy IDs e não caminhos de arte.
 
 ## 4. Portal por botões — substitui seleção por caminhada
 
