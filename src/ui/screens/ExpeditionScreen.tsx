@@ -1,4 +1,4 @@
-import { ArrowLeft, Backpack, BookOpen, Compass, MapPin, Swords, Trees, UserRound, X } from 'lucide-react'
+import { ArrowLeft, Compass, MapPin, Swords, Trees, X } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -14,6 +14,7 @@ import { GameShell } from '../components/GameShell'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { AstravelPixelCanvas } from '../expedition/AstravelPixelCanvas'
+import { ExpeditionStatusHud } from '../expedition/ExpeditionStatusHud'
 import { getVisualEquipment } from '../characters/equipmentVisuals'
 import './gameplayV057.css'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
@@ -125,16 +126,12 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
             currentLocationId={save.world.currentLocationId} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save)}
             reducedMotion={save.settings.reducedMotion} enabled={!scene} onInspect={inspect} onEngage={engage}
             onTravelStart={() => { if (drawer === 'node') { setDrawer(null); setSelectedId(null) } }} />
-          <div className="terran-game__hud" aria-label="Ações de exploração">
-            {([
-              { id: 'trail' as const, label: 'Trilha', icon: Compass },
-              { id: 'inventory' as const, label: 'Mochila', icon: Backpack },
-              { id: 'character' as const, label: 'Personagem', icon: UserRound },
-              { id: 'quests' as const, label: 'Missões', icon: BookOpen },
-            ]).map(({ id, label, icon: Icon }) => <button key={id} type="button"
-              className={drawer === id ? 'active' : ''} aria-label={`Abrir ${label}`} aria-pressed={drawer === id}
-              onClick={() => { setDrawer(drawer === id ? null : id); setSelectedId(null); setPendingFieldItemId(null) }}><Icon size={19} /><span>{label}</span></button>)}
-          </div>
+          <ExpeditionStatusHud save={save} selected={drawer}
+            onOpen={(tab) => { setDrawer(drawer === tab ? null : tab); setSelectedId(null); setPendingFieldItemId(null) }} />
+          <button type="button" className="expedition-game__route-open"
+            onClick={() => { setDrawer(drawer === 'trail' ? null : 'trail'); setSelectedId(null) }}>
+            <Compass size={14}/> Trilha / 0 Entrada
+          </button>
           <button type="button" className="expedition-game__retreat" onClick={leave} aria-label="Retornar a Terran pelo Portal">
             <ArrowLeft size={15} /> Terran
           </button>
