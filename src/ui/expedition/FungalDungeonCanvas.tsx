@@ -2,6 +2,7 @@ import { useEffect, useRef, type PointerEvent } from 'react'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { CharacterAppearance } from '../../domain/character/appearance'
 import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
+import { useWearableAppearance } from '../characters/wearablePalette'
 import type { VisualItem } from '../characters/equipmentVisuals'
 import type { DungeonDefinition, DungeonRoomDefinition } from '../../content/types'
 import type { ActorFacing } from '../terran/pixelActorArt'
@@ -40,7 +41,8 @@ function nearbyRoom(point: WorldPoint, dungeon: DungeonDefinition, radius: numbe
 }
 
 export function FungalDungeonCanvas({ dungeon, discoveredFlags, bossDefeated, portraitAssetId, appearance, equipment = [], reducedMotion, enabled, onDiscover, onInspect, onTravelStart }: Props) {
-  const appearanceSource = appearance ? appearanceSpriteSheetUri(appearance) : null
+  const dressedAppearance = useWearableAppearance(appearance, equipment)
+  const appearanceSource = dressedAppearance ? appearanceSpriteSheetUri(dressedAppearance) : null
   const equipmentKey = equipment.map((item) => item.assetId).join('|')
   const equipmentRef = useRef(equipment)
   equipmentRef.current = equipment
