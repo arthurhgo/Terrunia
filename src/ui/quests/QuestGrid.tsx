@@ -7,6 +7,7 @@ import { getQuestJournalEntries, getQuestJournalGroups, getQuestStatusLabel, get
 import { useGameStore } from '../../state/gameStore'
 import { getRosettaGuidance, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 import { QuestContextNote } from './QuestContextNote'
+import { getQuestRewardPreview } from '../../domain/quests/questRewardPreview'
 import './questRemake.css'
 
 type Category = 'all' | QuestCategory | 'completed'
@@ -15,12 +16,10 @@ const filters: Array<{ id: Category; label: string }> = [
   { id: 'clan', label: 'Clã' }, { id: 'class', label: 'Classe' }, { id: 'bounty', label: 'Caçadas' }, { id: 'completed', label: 'Concluídas' },
 ]
 const categoryLabel: Record<QuestCategory, string> = { main: 'Principal', secondary: 'Secundária', clan: 'Clã', class: 'Classe', bounty: 'Caçada' }
-const rewardLabel = (reward: { type: string; value: number }) =>
-  reward.value + ' ' + (reward.type === 'gold' ? 'Ouro' : reward.type === 'characterXp' ? 'XP' : 'Essência')
-
 function QuestDetails({ entry, onTrack, save }: { entry: QuestJournalEntry; onTrack: () => void; save: GameSave }) {
   const { definition, progress } = entry
   const route = getTrackedQuestRoute(save, content)
+  const rewardPreview = getQuestRewardPreview(definition, content)
   return <div className="quest-board__details" role="region" aria-label={'Detalhes: ' + definition.title}>
     <p>{definition.summary}</p>
     <h4><BookOpen size={15} /> Objetivos</h4>
@@ -40,11 +39,8 @@ function QuestDetails({ entry, onTrack, save }: { entry: QuestJournalEntry; onTr
       })}
     </div>}
     <h4><Gem size={15} /> Recompensas</h4>
-    <div className="quest-board__rewards">{definition.rewards.map((reward, index) =>
-      <span key={index}>{reward.type === 'gold' ? <Coins size={15} /> : reward.type === 'characterXp' ? <Swords size={15} /> : <Gem size={15} />}{rewardLabel(reward)}</span>)}
-      {definition.itemRewards?.map((reward) => <span key={reward.itemId}>
-        <Gem size={15} /> {content.items[reward.itemId]?.name ?? reward.itemId} ×{reward.quantity}
-      </span>)}</div>
+    <div className="quest-board__rewards">{rewardPreview.map((reward) =>
+      <span key={reward.id}>{reward.kind === 'milestone' ? <BookOpen size={15} /> : reward.label.includes('Ouro') ? <Coins size={15} /> : reward.kind === 'resource' && reward.label.includes('XP') ? <Swords size={15} /> : <Gem size={15} />}{reward.label}</span>)}</div>
     <p className="quest-board__npc"><MapPin size={15} /> Entrega: {content.npcs[definition.turnInNpcId]?.name ?? definition.turnInNpcId}</p>
     {progress.status !== 'completed' && <button type="button" className="quest-board__track" onClick={onTrack}>
       {progress.tracked ? <RadioTower size={16} /> : <Radio size={16} />}
@@ -145,7 +141,7 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
                 <span className="quest-tile__status">{getQuestStatusLabel(progress.status)}</span>
                 <span className="quest-tile__progress"><span style={{ width: (total ? done / total * 100 : 100) + '%' }} /></span>
               </span>
-              <span className="quest-row__meta"><strong>{done}/{total}</strong>{!compact && <small>{definition.rewards.map(rewardLabel).join(' · ')}</small>}<ChevronDown size={16} /></span>
+              <span className="quest-row__meta"><strong>{done}/{total}</strong>{!compact && <small>{getQuestRewardPreview(definition, content).map((reward) => reward.label).join(' · ')}</small>}<ChevronDown size={16} /></span>
             </button>
             {selected && <QuestDetails entry={entry} save={save} onTrack={() => setTracked(progress.questId, !progress.tracked)} />}
           </div>
