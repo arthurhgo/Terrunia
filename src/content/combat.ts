@@ -163,9 +163,9 @@ export const encounterDefinitions = [
     victoryTitle: 'A colônia foi dispersada',
     victorySummary: 'A ameaça repetível foi contida; novas assinaturas continuam surgindo no Portal.',
     trailNodeId: 'portal_hunt_spore',
-    enemyDefinitionIds: ['enemy_spore_mantis', 'enemy_void_moth'],
+    enemyDefinitionIds: ['enemy_spore_mantis', 'enemy_void_moth', 'enemy_spore_bulwark'],
     canFlee: false,
-    rewards: { characterXp: 48, gold: 25, boundResonance: 30, lootDefinitionIds: ['drop_spore_chitin', 'drop_void_dust'] },
+    rewards: { characterXp: 82, gold: 40, boundResonance: 49, lootDefinitionIds: ['drop_spore_chitin', 'drop_void_dust', 'drop_spore_chitin'] },
     status: 'CONTENT_DRAFT',
   },
   {
