@@ -6,7 +6,7 @@ import { fail, ok, type Result } from '../shared/types'
 /** Field-use potion, restricted to the safe exploration state.
  * No damage, status attack or projectile effect may run without a combat turn.
  */
-export function useFieldConsumable(save: GameSave, instanceId: string, now: string): Result<GameSave> {
+export function applyFieldConsumable(save: GameSave, instanceId: string, now: string): Result<GameSave> {
   if (save.battle) return fail('IN_BATTLE', 'Em combate, use poções pela barra de ações.')
   if (!content.trails.trail_astravel_entry.nodes.some((n) => n.id === save.world.currentLocationId)) {
     return fail('NOT_IN_EXPEDITION', 'Uso de campo disponível durante a exploração de Astravél.')
