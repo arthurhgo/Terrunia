@@ -27,5 +27,10 @@ export const BALANCE = {
     6: 2200,
     7: 3500,
   },
-  defendMitigation: 2,
+  /** BALANCE_DRAFT v0.5.7 — Guard applies to all hits until the next player action. */
+  defendMitigation: 4,
+  /** BALANCE_DRAFT — consecutive own rounds that a skill remains unavailable. */
+  skillCooldownRounds: 2,
+  /** BALANCE_DRAFT — faster XP from one-time battles and mission payouts. */
+  characterXpRewardMultiplier: 1.5,
 } as const
