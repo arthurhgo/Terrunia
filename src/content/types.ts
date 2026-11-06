@@ -115,6 +115,8 @@ export type CombatSkillDefinition = {
   description: string
   target: 'enemy' | 'self'
   mpCost: number
+  /** Optional cooldown; defaults to BALANCE.skillCooldownRounds. */
+  cooldownRounds?: number
   effects: CombatEffectDefinition[]
   status: DraftStatus
 }
