@@ -12,7 +12,14 @@ export const BALANCE = {
   attributeDieFaceStep: 2,
   /** BALANCE_DRAFT v0.5.2: each d4→d6→d8→d10→d12 rank costs TWO attribute points. */
   attributePointsPerDieUpgrade: 2,
-  xpThresholds: [0, 250, 750, 1500, 2500, 4000, 6000, 8500, 11500, 15000, 19000, 24000, 30000, 37000] as const,
+  /** BALANCE_DRAFT: early levels arrive sooner so three to four combat wins provide a rank. */
+  xpThresholds: [0, 100, 260, 480, 760, 1100, 1550, 2100, 2800, 3650, 4700, 6000, 7550, 9350] as const,
+  /** BALANCE_DRAFT: multiply encounter XP only on reward claim; never Essence Points. */
+  combatXpMultiplier: 1.5,
+  /** BALANCE_DRAFT: two player turn starts before the next skill cast. */
+  defaultPlayerSkillCooldownTurns: 2,
+  /** BALANCE_DRAFT: defending blocks exactly the first incoming damaging hit. */
+  defendBlocksFirstHit: true,
   // Rebased with d4 defaults so the vertical slice keeps its previous survivability.
   baseHp: 12,
   vigorHpMultiplier: 2,
