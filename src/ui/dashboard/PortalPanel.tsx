@@ -4,13 +4,12 @@ import {
   MapPinned,
   Skull,
   Trees,
-  Swords,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { ASTRAVEL_SECTORS } from '../../content/astravel'
 import { checkTrailQuestGate, getActiveTrailNode } from '../../domain/exploration/trailEngine'
-import { PORTAL_HUNT_IDS } from '../../domain/combat/portalHunts'
+import { canStartPortalHunt, PORTAL_HUNT_IDS } from '../../domain/combat/portalHunts'
 import type { GameSave } from '../../domain/game/types'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { GameButton } from '../components/GameButton'
@@ -31,16 +30,16 @@ export function PortalPanel({ save, onGoToEldamar }: {
 
   const action = (() => {
     if (save.world.trailNodeStates.astravel_entry === 'completed' && currentNode) {
-      return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Abrir mapa de instâncias · Astravél</GameButton>
+      return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Escolher destino no Portal</GameButton>
     }
     if (['available', 'offered'].includes(quest.status)) {
       return <GameButton variant="secondary" full onClick={onGoToEldamar}><BookOpen size={17} /> Ir à Casa de Eldamar</GameButton>
     }
     if (quest.status === 'active' && currentNode?.type === 'entry') {
-      return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Abrir mapa de instâncias</GameButton>
+      return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Escolher destino no Portal</GameButton>
     }
     if (save.world.trailNodeStates.astravel_boss_preview === 'completed') {
-      return <GameButton variant="secondary" full onClick={enter}><Skull size={17} /> Revisitar pelo mapa de instâncias</GameButton>
+      return <GameButton variant="secondary" full onClick={enter}><Skull size={17} /> Selecionar retorno a Astravél</GameButton>
     }
     return <GameButton variant="ghost" full disabled><LockKeyhole size={17} /> Aceite a missão para partir</GameButton>
   })()
@@ -104,26 +103,11 @@ export function PortalPanel({ save, onGoToEldamar }: {
       </div>
       {action}
       {save.world.trailNodeStates.astravel_fungorro_01 === 'completed' && !save.battle && (
-        <div className="portal-wave-mode">
-          <p className="eyebrow">MODO ONDAS</p>
-          <p>Encontros progressivos com até quatro criaturas, sentinela a cada cinco ondas e saída entre vitórias.</p>
-          <p>Recorde pessoal: <strong>{save.world.portalWaveBest ?? 0} ondas</strong></p>
-          <GameButton variant="secondary" full onClick={enter}><Swords size={17} /> Abrir altar de Ondas no mapa</GameButton>
-        </div>
-      )}
-
-      {save.world.trailNodeStates.astravel_fungorro_01 === 'completed' && !save.battle && (
-        <section className="portal-hunts" aria-label="Caçadas repetíveis do Portal">
-          <p className="eyebrow">CAÇADAS DO PORTAL</p>
-          <p>Três encontros de combate independentes da trilha principal. Os materiais encontrados podem ser vendidos ou convertidos em Essência.</p>
-          {PORTAL_HUNT_IDS.map((id) => {
-            const encounter = content.encounters[id]
-            return <div className="portal-hunts__entry" key={id}>
-              <strong>{encounter.name}</strong>
-              <small>{encounter.enemyDefinitionIds.map((enemyId) => content.enemies[enemyId].name).join(' · ')}</small>
-              <GameButton variant="secondary" full onClick={enter}><Swords size={16} /> Escolher caçada no mapa</GameButton>
-            </div>
-          })}
+        <section className="portal-wave-mode" aria-label="Atividades opcionais do Portal">
+          <p className="eyebrow">ONDAS E CAÇADAS</p>
+          <p>Recorde de Ondas: <strong>{save.world.portalWaveBest ?? 0}</strong>.</p>
+          <p>Caçadas disponíveis: <strong>{PORTAL_HUNT_IDS.filter((id) => canStartPortalHunt(save, id, content).ok).length}/{PORTAL_HUNT_IDS.length}</strong>.</p>
+          <small>Abra a seleção do Portal para escolher diretamente a campanha, as ondas ou uma caçada. Requisitos e recompensas aparecem nos botões.</small>
         </section>
       )}
     </ArcanePanel>
