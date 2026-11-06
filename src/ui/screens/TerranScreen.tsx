@@ -1,13 +1,13 @@
-import { Backpack, MapPin, X } from 'lucide-react'
+import { Backpack, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { TerranLocationDefinition } from '../../content/types'
-import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
+import { type TerranLocationId } from '../../content/terran'
 import { getNextCutscene } from '../../domain/terran/cutscenes'
 import { getTerranDialogue } from '../../domain/terran/cityDialogue'
 import { getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
-import { getDiscoveredTerranLocationIds, getTerranQuestDestination } from '../../domain/terran/cityEngine'
+import { getTerranQuestDestination } from '../../domain/terran/cityEngine'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { ClanHallPanel } from '../dashboard/ClanHallPanel'
@@ -136,7 +136,6 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const cityCast = getCityCast(save)
   const guidance = getTerranQuestDestination(save, content)
   const trackedRoute = getTrackedQuestRoute(save, content) ?? getReadyDeliveryQuestRoute(save, content)
-  const discovered = getDiscoveredTerranLocationIds(save).length
   const location = content.terranLocations[locationId]
   const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !dialogue && !inspected && !cityLandmark && !baseDoorPrompt && !activeQuestObjectId && !missionNpc && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
 
@@ -253,7 +252,6 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     else setDrawer('location')
     setDialogue(presence)
   }
-  const currentLabel = interiorId ? getRoomName(interiorId) : content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
   const forgeQuest = getNpcActionableQuests(save, 'npc_durnan', content)[0]
   const activeTitle = drawer === 'forge' ? 'Casa do Ferreiro' : drawer === 'location' ? (
     localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
@@ -261,10 +259,6 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
 
   const sceneContent = (
     <div className="terran-game">
-        <header className="terran-game__topbar">
-          <div><span className="eyebrow">HOME · CIDADE-BASE DO JOGADOR</span><h1>Terran</h1></div>
-          <div className="terran-game__readout"><MapPin size={16} /> TERRAN &gt; {currentLabel.toUpperCase()}<span>{discovered}/{TERRAN_LOCATION_IDS.length} descobertos</span></div>
-        </header>
         <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
           <div className="terran-game__frame" data-testid="terran-centered-gameplay">
           <aside className="terran-game__fixed-left" aria-label="Diário de missões">
