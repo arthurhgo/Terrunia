@@ -99,6 +99,11 @@ const entries: AssetEntry[] = [
   { id: 'enemy.void-moth', path: '/assets/enemies/portal/enemy_void_moth_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'enemy.void-moth', pixelArt: true },
   { id: 'enemy.spore-mantis', path: '/assets/enemies/portal/enemy_spore_mantis_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'enemy.spore-mantis', pixelArt: true },
   { id: 'enemy.ruin-sentinel', path: '/assets/enemies/portal/enemy_ruin_sentinel_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'enemy.ruin-sentinel', pixelArt: true },
+  // VISUAL_DRAFT: standalone pixel SVGs are replaceable with PNG sprite sheets later.
+  { id: 'enemy.fungorro-thornback', path: '/assets/enemies/progression/enemy_fungorro_thornback_idle.svg', fallback: '/assets/placeholders/enemy.svg', alt: 'Fungorro Espinhal', pixelArt: true },
+  { id: 'enemy.spore-bulwark', path: '/assets/enemies/progression/enemy_spore_bulwark_idle.svg', fallback: '/assets/placeholders/enemy.svg', alt: 'Casco de Esporos', pixelArt: true },
+  { id: 'enemy.mycelial-stalker', path: '/assets/enemies/progression/enemy_mycelial_stalker_idle.svg', fallback: '/assets/placeholders/enemy.svg', alt: 'Rastreador Micelial', pixelArt: true },
+  { id: 'enemy.ruin-warden', path: '/assets/enemies/progression/enemy_ruin_warden_idle.svg', fallback: '/assets/placeholders/enemy.svg', alt: 'Vigia do Limiar', pixelArt: true },
   { id: 'item.resonance-flask', path: '/assets/items/item_resonance_flask.png', fallback: '/assets/placeholders/item.svg', alt: 'item.resonance-flask', pixelArt: true },
   { id: 'item.field-rune', path: '/assets/items/item_field_rune.png', fallback: '/assets/placeholders/item.svg', alt: 'item.field-rune', pixelArt: true },
   { id: 'item.vital-essence', path: '/assets/items/item_vital_essence.png', fallback: '/assets/placeholders/item.svg', alt: 'item.vital-essence', pixelArt: true },
