@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import type { InventoryItemInstance } from '../game/types'
 import { bindPrologueWeapon, createNewSave } from '../game/createSave'
-import { calculateDamage, calculateRolledDamage, createBattle, submitBattleCommand } from './engine'
+import { calculateDamage, calculateRolledDamage, createBattle, seedFromBattleId, submitBattleCommand } from './engine'
 
 const makeSave = () => {
   const save = createNewSave(
@@ -217,6 +217,7 @@ describe('máquina de estados de combate', () => {
     const results = rolled.value.log.filter((entry) => entry.roll?.action === 'Iniciativa')
     expect(results).toHaveLength(Object.keys(battle.combatants).length)
     expect(results.some((entry) => entry.roll?.actorId === 'combatant_player')).toBe(true)
+    expect(results[0].roll?.actorId).toBe('combatant_player')
     for (const entry of results) {
       const roll = entry.roll!
       expect(roll.face).toBeGreaterThanOrEqual(1)
@@ -318,6 +319,24 @@ describe('máquina de estados de combate', () => {
     if (!two.ok) return
     expect(two.value.combatants.combatant_player.skillCooldowns?.[skill.skillId] ?? 0).toBe(0)
     expect(submitBattleCommand(two.value, skill, content).ok).toBe(true)
+  })
+
+  it('cada batalha recebe semente própria, estável no save e diferente entre IDs', () => {
+    expect(seedFromBattleId('roll-A')).not.toBe(seedFromBattleId('roll-B'))
+    const first = createBattle(makeSave(), firstEncounter, content, 'roll-A', { manualInitiative: true })
+    const second = createBattle(makeSave(), firstEncounter, content, 'roll-B', { manualInitiative: true })
+    expect(first.rngSeed).not.toBe(second.rngSeed)
+    const a = submitBattleCommand(first, { type: 'rollInitiative' }, content)
+    const replay = submitBattleCommand(structuredClone(first), { type: 'rollInitiative' }, content)
+    expect(a).toEqual(replay)
+  })
+
+  it('o registro do dano identifica o alvo real da rolagem', () => {
+    const battle = createBattle(makeSave(), firstEncounter, content, 'target-roll')
+    const result = submitBattleCommand(battle, { type: 'attack', targetId: firstTargetId }, content)
+    if (!result.ok) throw Error(result.message)
+    const hit = result.value.log.find((entry) => entry.roll?.targetId === firstTargetId)
+    expect(hit?.roll?.damageBreakdown?.finalDamage).toBeGreaterThan(0)
   })
 
 })
