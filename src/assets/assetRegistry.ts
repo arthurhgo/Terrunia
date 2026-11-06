@@ -9,6 +9,15 @@ export type AssetEntry = {
   fallback: string
   alt: string
   pixelArt?: boolean
+  /** Optional 4×4 native pixel-animation sheet, 32px per frame (UI only). */
+  motionSheet?: {
+    path: string
+    rhythm: 'thorn' | 'bulwark' | 'stalker' | 'warden'
+    idleMs: number
+    attackMs: number
+    hitMs: number
+    defeatMs: number
+  }
 }
 
 const FALLBACK = '/assets/placeholders/generic.svg'
@@ -99,11 +108,11 @@ const entries: AssetEntry[] = [
   { id: 'enemy.void-moth', path: '/assets/enemies/portal/enemy_void_moth_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'enemy.void-moth', pixelArt: true },
   { id: 'enemy.spore-mantis', path: '/assets/enemies/portal/enemy_spore_mantis_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'enemy.spore-mantis', pixelArt: true },
   { id: 'enemy.ruin-sentinel', path: '/assets/enemies/portal/enemy_ruin_sentinel_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'enemy.ruin-sentinel', pixelArt: true },
-  // VISUAL_DRAFT: standalone pixel SVGs are replaceable with PNG sprite sheets later.
-  { id: 'enemy.fungorro-thornback', path: '/assets/enemies/progression/enemy_fungorro_thornback_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'Fungorro Espinhal', pixelArt: true },
-  { id: 'enemy.spore-bulwark', path: '/assets/enemies/progression/enemy_spore_bulwark_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'Casco de Esporos', pixelArt: true },
-  { id: 'enemy.mycelial-stalker', path: '/assets/enemies/progression/enemy_mycelial_stalker_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'Rastreador Micelial', pixelArt: true },
-  { id: 'enemy.ruin-warden', path: '/assets/enemies/progression/enemy_ruin_warden_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'Vigia do Limiar', pixelArt: true },
+  // VISUAL_DRAFT: native PNG frame sheets are presentation-only, replaceable by asset ID.
+  { id: 'enemy.fungorro-thornback', path: '/assets/enemies/progression/enemy_fungorro_thornback_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'Fungorro Espinhal', pixelArt: true, motionSheet: { path: '/assets/enemies/progression/enemy_fungorro_thornback_motion.png', rhythm: 'thorn', idleMs: 1050, attackMs: 620, hitMs: 420, defeatMs: 850 } },
+  { id: 'enemy.spore-bulwark', path: '/assets/enemies/progression/enemy_spore_bulwark_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'Casco de Esporos', pixelArt: true, motionSheet: { path: '/assets/enemies/progression/enemy_spore_bulwark_motion.png', rhythm: 'bulwark', idleMs: 1480, attackMs: 750, hitMs: 520, defeatMs: 1150 } },
+  { id: 'enemy.mycelial-stalker', path: '/assets/enemies/progression/enemy_mycelial_stalker_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'Rastreador Micelial', pixelArt: true, motionSheet: { path: '/assets/enemies/progression/enemy_mycelial_stalker_motion.png', rhythm: 'stalker', idleMs: 730, attackMs: 480, hitMs: 350, defeatMs: 690 } },
+  { id: 'enemy.ruin-warden', path: '/assets/enemies/progression/enemy_ruin_warden_idle.png', fallback: '/assets/placeholders/enemy.svg', alt: 'Vigia do Limiar', pixelArt: true, motionSheet: { path: '/assets/enemies/progression/enemy_ruin_warden_motion.png', rhythm: 'warden', idleMs: 1750, attackMs: 880, hitMs: 600, defeatMs: 1200 } },
   { id: 'item.resonance-flask', path: '/assets/items/item_resonance_flask.png', fallback: '/assets/placeholders/item.svg', alt: 'item.resonance-flask', pixelArt: true },
   { id: 'item.field-rune', path: '/assets/items/item_field_rune.png', fallback: '/assets/placeholders/item.svg', alt: 'item.field-rune', pixelArt: true },
   { id: 'item.vital-essence', path: '/assets/items/item_vital_essence.png', fallback: '/assets/placeholders/item.svg', alt: 'item.vital-essence', pixelArt: true },
