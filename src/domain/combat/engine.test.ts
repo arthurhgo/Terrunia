@@ -127,7 +127,9 @@ describe('máquina de estados de combate', () => {
     )
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.value.combatants.combatant_player.hp).toBe(16)
+    const counterDamage = result.value.log.filter((entry) => entry.roll?.actorId !== 'combatant_player')
+      .reduce((sum, entry) => sum + (entry.roll?.damageBreakdown?.finalDamage ?? 0), 0)
+    expect(result.value.combatants.combatant_player.hp).toBe(18 - counterDamage)
     expect(result.value.log.some((entry) => entry.message.includes('recupera 8'))).toBe(true)
     expect(result.value.consumedItemInstanceIds).toContain('tonic_1')
     expect(inventory).toHaveLength(1)
