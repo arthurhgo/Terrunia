@@ -9,6 +9,8 @@ import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
 import { GameButton } from '../components/GameButton'
 import { GameShell } from '../components/GameShell'
+import { getDiscoveredTerranLocationIds } from '../../domain/terran/cityEngine'
+import { TERRAN_LOCATION_IDS } from '../../content/terran'
 import { ProgressBar } from '../components/ProgressBar'
 
 type TreeContext = 'nexus' | 'clan' | 'class' | BoundSlot
@@ -140,6 +142,13 @@ export function SkillTreeScreen() {
   return (
     <GameShell fluid>
       <div className="skill-tree-screen">
+        <details className="menu-world-location" aria-label="Localização e descobertas">
+          <summary>Mundo · Localização e descobertas</summary>
+          <div><strong>Local atual</strong><span>{content.terranLocations[save.world.currentLocationId]?.name ??
+            content.trails.trail_astravel_entry.nodes.find((node) => node.id === save.world.currentLocationId)?.label ?? 'Câmaras / Instância'}</span></div>
+          <div><strong>Região</strong><span>{content.trails.trail_astravel_entry.nodes.some((node) => node.id === save.world.currentLocationId) ? 'Floresta de Astravél' : 'Terran — Cidade-base'}</span></div>
+          <div><strong>Descobertas de Terran</strong><span>{getDiscoveredTerranLocationIds(save).length}/{TERRAN_LOCATION_IDS.length}</span></div>
+        </details>
         <ArcanePanel className="skill-tree-header" title="Menu" eyebrow="IDENTIDADE DA BUILD">
           <div className="skill-tree-header__stats">
             <div><Gem size={18} /><span>Pontos de Essência<strong>{save.essence.essencePoints}</strong></span></div>
