@@ -60,12 +60,11 @@ export function PortalHubScreen() {
   // Presentation movement only. Domain transitions happen solely on intentional interaction.
   useEffect(() => {
     if (!goal) return
+    setFacing(Math.abs(goal.x - player.x) > Math.abs(goal.y - player.y) ? (goal.x > player.x ? 'right' : 'left') : (goal.y > player.y ? 'down' : 'up'))
     const tick = window.setInterval(() => setPlayer((old) => {
       const gap = distance(old, goal)
       if (gap <= 1.1) return old
       const step = Math.min(gap, 1.8)
-      setFacing(Math.abs(goal.x - old.x) > Math.abs(goal.y - old.y)
-        ? goal.x > old.x ? 'right' : 'left' : goal.y > old.y ? 'down' : 'up')
       return { x: clamp(old.x + (goal.x - old.x) / gap * step), y: clamp(old.y + (goal.y - old.y) / gap * step) }
     }), 38)
     return () => window.clearInterval(tick)
