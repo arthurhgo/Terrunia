@@ -3,6 +3,7 @@ import { content } from '../../content/catalog'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { CharacterAppearance } from '../../domain/character/appearance'
 import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
+import { useWearableAppearance } from '../characters/wearablePalette'
 import type { VisualItem } from '../characters/equipmentVisuals'
 import type { TrailDefinition, TrailNodeDefinition } from '../../content/types'
 import type { TrailNodeStatus } from '../../domain/game/types'
@@ -44,7 +45,8 @@ function nearestReachableNode(point: WorldPoint, radius: number, trail: TrailDef
 }
 
 export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portraitAssetId, appearance, equipment = [], reducedMotion, enabled, onInspect, onEngage, onTravelStart }: Props) {
-  const appearanceSource = appearance ? appearanceSpriteSheetUri(appearance) : null
+  const dressedAppearance = useWearableAppearance(appearance, equipment)
+  const appearanceSource = dressedAppearance ? appearanceSpriteSheetUri(dressedAppearance) : null
   const equipmentKey = equipment.map((item) => item.assetId).join('|')
   const equipmentRef = useRef(equipment)
   equipmentRef.current = equipment
