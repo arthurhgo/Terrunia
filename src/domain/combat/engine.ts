@@ -41,6 +41,19 @@ const addLog = (
   })
 }
 
+/** Different encounters receive different deterministic rolls; saves keep RNG state.
+ * Same battle ID reproduces the same dice, but distinct encounters cannot share
+ * an identical forced opening sequence (the old seed 104729 bug).
+ */
+export const seedBattleRng = (battleId: string) => {
+  let hash = 2166136261
+  for (let i = 0; i < battleId.length; i += 1) {
+    hash ^= battleId.charCodeAt(i)
+    hash = Math.imul(hash, 16777619)
+  }
+  return (hash >>> 0) % 2147483646 + 1
+}
+
 /** Deterministic, actual dice samples; never derive a fake face from log IDs. */
 const rollCombatDie = (state: BattleState, sides: 4 | 6 | 8 | 10 | 12) => {
   state.rngSeed = (state.rngSeed * 48271) % 2147483647
@@ -427,7 +440,7 @@ export const createBattle = (
     claimed: false,
     canFlee: encounter.canFlee,
     consumedItemInstanceIds: [],
-    rngSeed: 104729,
+    rngSeed: seedBattleRng(id),
   }
 
   addLog(state, `${encounter.name} bloqueia o avanço em Astravél.`, 'system')
