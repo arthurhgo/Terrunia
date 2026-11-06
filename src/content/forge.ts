@@ -11,6 +11,28 @@ export const forgeUpgradeDefinitions = [
   { id: 'forge_mycelial_finish', name: 'Acabamento Micelial', attackPower: 1, maxHp: 4,
     description: 'Integra fibra tratada à arma e revela uma nova sinergia na Skill Tree.', requiredUpgradeId: 'forge_tempered_weapon' },
 ] as const
+
+/** BALANCE_DRAFT: premium Gold-only improvements enhance permanent equipment,
+ * not a new item. One service per slot, with bounded non-stacking gains.
+ */
+export const goldForgeOffers = [
+  { id: 'forge_gold_weapon', slot: 'weapon', name: 'Têmpera Magistral da Arma', gold: 450,
+    attackPower: 2, maxHp: 0, maxMp: 0, mitigation: 0 },
+  { id: 'forge_gold_shield', slot: 'shield', name: 'Bastião do Protetor', gold: 520,
+    attackPower: 0, maxHp: 0, maxMp: 0, mitigation: 2 },
+  { id: 'forge_gold_armor', slot: 'armor', name: 'Reforço Magistral da Armadura', gold: 620,
+    attackPower: 0, maxHp: 0, maxMp: 0, mitigation: 2 },
+  { id: 'forge_gold_necklace', slot: 'necklace', name: 'Gravação do Colar', gold: 480,
+    attackPower: 0, maxHp: 6, maxMp: 0, mitigation: 0 },
+  { id: 'forge_gold_bracelet', slot: 'bracelet', name: 'Gravação da Pulseira', gold: 480,
+    attackPower: 0, maxHp: 0, maxMp: 4, mitigation: 0 },
+] as const
+
+export const goldForgeUpgradeDefinitions = goldForgeOffers.map((offer) => ({
+  ...offer, description: `Aprimoramento permanente de ${offer.name}, sem trocar o Vínculo.`,
+  requiredUpgradeId: null,
+}))
+
 export const forgeRecipes: readonly ForgeRecipe[] = [
   { id: 'forge_alloy', name: 'Liga Rúnica', description: 'Fundir lascas da Ruína e cerne orgânico em uma liga de têmpera.', gold: 20,
     inputs: [{ itemId: 'drop_ruin_shard', quantity: 2 }, { itemId: 'drop_blackroot_core', quantity: 1 }], outputItemId: 'material_runic_alloy' },
