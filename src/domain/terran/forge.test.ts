@@ -4,7 +4,7 @@ import { bindPrologueWeapon, createNewSave } from '../game/createSave'
 import { deriveCharacterStats } from '../character/derivedStats'
 import { getSkillNodeState, unlockSkillNode } from '../skillTree/skillTree'
 import { migrateAndValidateSave } from '../../persistence/saveSchema'
-import { executeForgeRecipe, FORGE_LOCATION_ID } from './forge'
+import { executeForgeRecipe, executeGoldForgeUpgrade, checkGoldForgeUpgrade, FORGE_LOCATION_ID } from './forge'
 import { buyMarketItem, MARKET_LOCATION_ID } from './market'
 
 const ready = () => {
@@ -105,4 +105,28 @@ describe('Casa do Ferreiro e materiais vinculados', () => {
     expect(purchase.value.inventory.at(-1)?.quantity).toBe(2)
     expect(buyMarketItem({ ...save, world: { ...save.world, currentLocationId: FORGE_LOCATION_ID } }, 'presence_neris', 'drop_ruin_shard', 1, content, save.updatedAt).ok).toBe(false)
   })
+  it('forja ouro alto sem criar outra arma, preserva Grau e bloqueia compra duplicada', () => {
+    const save = ready()
+    save.wallet.gold = 800
+    const before = deriveCharacterStats(save, content)
+    const result = executeGoldForgeUpgrade(save, 'weapon', content, save.updatedAt)
+    if (!result.ok) throw Error(result.message)
+    expect(result.value.wallet.gold).toBe(350)
+    expect(result.value.character.bondedEquipment.weapon).toBe('permanent-weapon')
+    expect(result.value.boundItems['permanent-weapon'].grade).toBe(1)
+    expect(result.value.boundItems['permanent-weapon'].forging?.upgradeIds).toContain('forge_gold_weapon')
+    expect(deriveCharacterStats(result.value, content).primaryAttack.value).toBe(before.primaryAttack.value + 2)
+    expect(checkGoldForgeUpgrade(result.value, 'weapon'))
+      .toMatchObject({ ok: false, code: 'FORGE_ALREADY_APPLIED' })
+    expect(save.wallet.gold).toBe(800)
+    expect(migrateAndValidateSave(result.value).boundItems['permanent-weapon'].forging?.upgradeIds).toContain('forge_gold_weapon')
+  })
+
+  it('outros Vínculos exigem equipamento existente e Ouro suficiente', () => {
+    const save = ready()
+    expect(checkGoldForgeUpgrade(save, 'armor')).toMatchObject({ ok:false, code:'FORGE_BOND' })
+    save.wallet.gold = 20
+    expect(checkGoldForgeUpgrade(save, 'weapon')).toMatchObject({ ok:false, code:'FORGE_GOLD' })
+  })
+
 })
