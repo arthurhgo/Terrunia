@@ -23,6 +23,21 @@ describe('lore descoberto por vitórias reais', () => {
     expect(known.some((entry) => entry.enemyId === 'enemy_ruin_warden')).toBe(false)
   })
 
+  it('descobre espécies do Modo Ondas pelos IDs realmente derrotados, sem spoilers', () => {
+    const save = createNewSave('field-wave', 'Lysa', 'character.terririan.default', content)
+    save.eventLog.push('BattleWon:encounter_astravel_wave')
+    expect(getDiscoveredProgressiveFauna(save, content)).toEqual([])
+    save.eventLog.push('EnemyStudied:enemy_mycelial_stalker')
+    save.eventLog.push('EnemyStudied:enemy_ruin_warden')
+    const discovered = getDiscoveredProgressiveFauna(save, content)
+    expect(discovered.map((entry) => entry.enemyId)).toEqual([
+      'enemy_mycelial_stalker', 'enemy_ruin_warden',
+    ])
+    expect(getDiscoveredEnemyIds(save, content).has('enemy_spore_bulwark')).toBe(false)
+    save.eventLog.push('EnemyStudied:enemy_not_in_catalog')
+    expect(getDiscoveredEnemyIds(save, content).has('enemy_not_in_catalog')).toBe(false)
+  })
+
   it('usa registros da rota concluída sem gerar novos campos de save', () => {
     const save = createNewSave('field-lore', 'Lysa', 'character.terririan.default', content)
     const before = structuredClone(save)
