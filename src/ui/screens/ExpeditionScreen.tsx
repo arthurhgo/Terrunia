@@ -59,7 +59,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const enterFungalChambers = useGameStore((state) => state.enterFungalChambers)
   const returnToTerran = useGameStore((state) => state.returnToTerran)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
-  const useFieldPotion = useGameStore((state) => state.useFieldPotion)
+  const consumeFieldPotion = useGameStore((state) => state.consumeFieldPotion)
   const [drawer, setDrawer] = useState<Drawer>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const navigate = useNavigate()
@@ -179,7 +179,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
                   const mp = item.combatEffects.filter((effect) => effect.type === 'restoreMp').reduce((n, effect) => n + (effect.type === 'restoreMp' ? effect.value : 0), 0)
                   const useful = hp > 0 && save.vitals.hp < stats.life.value || mp > 0 && save.vitals.mp < stats.mana.value
                   return <button key={instance.instanceId} type="button" disabled={!useful}
-                    onClick={() => useFieldPotion(instance.instanceId)}
+                    onClick={() => consumeFieldPotion(instance.instanceId)}
                     aria-label={`Usar ${item.name} em Astravél`}>
                     {item.name} ×{instance.quantity} · {hp ? `+${hp} Vida ` : ''}{mp ? `+${mp} Mana` : ''}
                   </button>
