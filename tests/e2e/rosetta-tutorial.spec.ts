@@ -125,11 +125,13 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
   const persisted = await page.evaluate(async () => {
     const { useGameStore } = await import('/src/state/gameStore.ts')
     const save = useGameStore.getState().save!
-    return { schema: save.schemaVersion, gold: save.wallet.gold, armor: save.inventory.find((item) => item.instanceId === save.character.basicArmorInstanceId),
+    return { schema: save.schemaVersion, gold: save.wallet.gold,
+      armor: save.equippedBasicArmor, equippedId: save.character.basicArmorInstanceId,
       lessons: Object.values(save.quests).filter((quest) => quest.questId.startsWith('rosetta_tutorial_')).map((quest) => quest.status),
-      supplies: save.inventory.filter((item) => item.definitionId.includes('tunic')).length }
+      spareTunics: save.inventory.filter((item) => item.definitionId.includes('tunic')).length }
   })
-  expect(persisted).toMatchObject({ schema: 17, gold: 11, armor: { definitionId: 'equipment_worn_linen_tunic', refinementLevel: 1 }, lessons: ['completed','completed','available','completed'], supplies: 1 })
+  expect(persisted).toMatchObject({ schema: 17, gold: 11, armor: { definitionId: 'equipment_worn_linen_tunic', refinementLevel: 1 }, lessons: ['completed','completed','available','completed'], spareTunics: 0 })
+  expect(persisted.equippedId).toBe(persisted.armor?.instanceId)
 
   // Only this extra offer is a visual fixture, to check a secondary route without replaying the story.
   await page.evaluate(async () => {

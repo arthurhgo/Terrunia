@@ -56,7 +56,17 @@ test('Astravél: câmera, dois combates, coleta manual de drops e retomada do sa
   await fightAndCollect(page, 3)
   await page.getByRole('button', { name: 'CONTINUAR EXPEDIÇÃO', exact: true }).click()
   await page.getByRole('button', { name: 'Abrir Mochila', exact: true }).click()
-  await expect(page.locator('.inventory-slot').filter({ hasText: 'Gel Luminescente' })).toHaveCount(2)
+  // Loot stacks with the same definitionId occupy one slot but retain quantity.
+  const gelSlot = page.locator('.inventory-slot').filter({ hasText: 'Gel Luminescente' })
+  await expect(gelSlot).toHaveCount(1)
+  await expect(gelSlot).toContainText('2')
+  const gelQuantity = await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    return useGameStore.getState().save!.inventory
+      .filter((item) => item.definitionId === 'drop_luminous_gel')
+      .reduce((total, item) => total + item.quantity, 0)
+  })
+  expect(gelQuantity).toBe(2)
   await expect(page.locator('.inventory-slot').filter({ hasText: 'Tônico de Campo' })).toHaveCount(1)
   await page.getByRole('button', { name: 'Fechar painel', exact: true }).click()
   // Both desktop and narrow layouts retain a visible viewport and reachable HUD.
