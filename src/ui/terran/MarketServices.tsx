@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
+import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
 import { getTerranDialogue } from '../../domain/terran/cityDialogue'
 import { DialogueWindow } from './DialogueWindow'
 import { getPresencePortrait } from '../../content/npcVisuals'
@@ -15,6 +18,10 @@ import { BACKPACK_UPGRADES, backpackFlag, getBackpackCapacity } from '../../doma
 
 function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
   const buy = useGameStore((state) => state.buyFromMarket)
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+  const equippedArmor = getEquippedBasicArmor(save, content)
+  const currentMitigation = equippedArmor ? equippedArmor.armor.mitigation + (equippedArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel : 0
+  const currentInitiative = equippedArmor?.armor.initiative ?? 0
   const stock = MARKET_STOCK.filter((offer) => offer.npcId === npcId)
   return <section className="terran-shop" aria-label="Comprar itens no Mercado">
     <h3><ShoppingBasket size={18} /> Itens à venda</h3>
@@ -26,14 +33,34 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
         if (!item) return null
         const gate = 'requiresQuestId' in offer ? content.quests[offer.requiresQuestId] : null
         const locked = Boolean(gate && save.quests[gate.id]?.status !== 'completed')
-        return <article key={itemId}>
+        const armor = item.basicArmor
+        const gainDefense = armor ? armor.mitigation - currentMitigation : 0
+        const gainInitiative = armor ? armor.initiative - currentInitiative : 0
+        return <article key={itemId} className="terran-shop__offer" onMouseEnter={() => setHoveredItem(itemId)}
+          onMouseLeave={() => setHoveredItem(null)} onFocus={() => setHoveredItem(itemId)} onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) setHoveredItem(null)
+          }}>
           <AssetImage assetId={item.iconAssetId} />
           <div><strong>{item.name}{item.basicArmor ? ` · Tier ${item.basicArmor.tier}` : ''}</strong><small>{item.description}</small>
-            {locked && gate && <small>Bloqueado: conclua “{gate.title}”.</small>}</div>
+            {locked && gate && <small>Bloqueado: conclua “{gate.title}”.</small>}
+            {armor && <small>Defesa +{armor.mitigation} · Iniciativa {armor.initiative >= 0 ? '+' : ''}{armor.initiative}</small>}
+            </div>
           <button type="button" aria-label={locked ? `Bloqueado: ${item.name}` : `Comprar ${item.name} por ${price} ouro`}
             disabled={locked || save.wallet.gold < price} onClick={() => buy(npcId, itemId)}>
             {price} <Coins size={13} />
           </button>
+          {hoveredItem === itemId && <aside className="terran-shop__tooltip" role="tooltip" aria-label={`Comparação: ${item.name}`}>
+            <strong>{item.name}</strong>
+            <small>PREÇO · {price} OURO</small>
+            <p>{item.description}</p>
+            {armor ? <>
+              <span>Atual: {equippedArmor?.definition.name ?? (save.character.bondedEquipment.armor ? 'Armadura vinculada' : 'Sem proteção simples')}</span>
+              <span>Defesa {armor.mitigation} ({gainDefense >= 0 ? '+' : ''}{gainDefense} em relação à proteção simples atual)</span>
+              <span>Iniciativa {armor.initiative} ({gainInitiative >= 0 ? '+' : ''}{gainInitiative})</span>
+              {save.character.bondedEquipment.armor && <small>Vínculo permanente: esta peça não o substitui.</small>}
+            </> : <small>{item.category} · {item.rarity} · {item.sellable ? `Revenda ${item.sellValue ?? 0} Ouro` : 'Sem revenda'}</small>}
+            {locked && <small>Requer missão de progressão.</small>}
+          </aside>}
         </article>
       })}
     </div>
