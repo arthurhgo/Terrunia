@@ -29,6 +29,7 @@ import { requestCampaignReset } from '../domain/game/campaignReset'
 import type { AttributeId, GameSave } from '../domain/game/types'
 import type { CharacterAppearance } from '../domain/character/appearance'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
+import { useFieldConsumable } from '../domain/inventory/fieldConsumables'
 import { addBattleLootToInventory } from '../domain/inventory/battleLoot'
 import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 import {
@@ -123,6 +124,7 @@ type GameState = {
   discoverFungalRoom: (roomId: string) => void
   exitFungalChambers: () => void
   resolveCurrentTrailNode: () => void
+  useFieldPotion: (itemInstanceId: string) => boolean
   startBattle: (nodeId?: string) => void
   startPortalWaves: () => void
   startPortalHunt: (encounterId: string) => void
@@ -664,6 +666,16 @@ export const useGameStore = create<GameState>((set, get) => {
       const result = exitDungeon(save, content.dungeons.dungeon_fungal_chambers, nowIso())
       if (!result.ok) return failAction(result.message)
       commit(result.save)
+    },
+
+    useFieldPotion: (itemInstanceId) => {
+      const save = get().save
+      if (!save) { failAction('Nenhum personagem disponível.'); return false }
+      const result = useFieldConsumable(save, itemInstanceId, nowIso())
+      if (!result.ok) { failAction(result.message); return false }
+      commit(result.value)
+      show('Poção utilizada', 'Vida ou Mana recuperada na exploração de Astravél.', 'success')
+      return true
     },
 
     resolveCurrentTrailNode: () => {
