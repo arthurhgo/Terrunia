@@ -1,5 +1,4 @@
 import { Minus, Plus } from 'lucide-react'
-import { BALANCE } from '../../content/balance'
 import { ATTRIBUTE_IDS, type AttributeId, type GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { nextAttributeDie } from '../../domain/character/attributeProgression'
