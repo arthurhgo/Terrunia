@@ -31,6 +31,20 @@ describe('NPCs do Mercado', () => {
     expect(useGameStore.getState().save?.inventory.some((item) => item.definitionId === 'fragment_mycelial_essence')).toBe(true)
   })
 
+  it('abre a mochila do vendedor, informa preço e compara armadura no hover', () => {
+    setup('presence_neris')
+    expect(screen.getByRole('heading', { name: /Mochila do vendedor/ })).toBeInTheDocument()
+    const buy = screen.getByRole('button', { name: 'Comprar Túnica de Linho Gasta por 22 ouro' })
+    const card = buy.closest('article')!
+    fireEvent.mouseEnter(card)
+    const tooltip = screen.getByRole('tooltip', { name: 'Comparação: Túnica de Linho Gasta' })
+    expect(tooltip).toHaveTextContent('22 OURO')
+    expect(tooltip).toHaveTextContent('Defesa')
+    expect(tooltip).toHaveTextContent('Atual:')
+    fireEvent.mouseLeave(card)
+    expect(screen.queryByRole('tooltip', { name: 'Comparação: Túnica de Linho Gasta' })).not.toBeInTheDocument()
+  })
+
   it('Feril troca drops por Ouro e Lorian por Essência com regras existentes', () => {
     const save = makeSave()
     save.inventory.push({
