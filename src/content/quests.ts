@@ -131,6 +131,7 @@ export const questDefinitions = [
     id: 'main_terran_open_base_door',
     title: 'Abrir a Base',
     summary: 'A Chave de Daeryn é sua. Vá até a porta da Base, aceite esta tarefa e use a chave para desbloquear seu refúgio. A recompensa é o próprio acesso.',
+    rewardNote: 'Acesso à Base do Terrírian após usar a chave',
     giverNpcId: 'npc_daeryn', turnInNpcId: 'npc_daeryn', category: 'main',
     objectives: [{ id: 'unlock_door', type: 'interact', targetId: 'unlock_player_home_door', required: 1,
       label: 'Use a Chave de Daeryn na porta da Base' }],
