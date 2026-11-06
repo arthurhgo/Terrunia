@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import type { Cutscene } from '../../domain/terran/cutscenes'
 import type { CharacterAppearance } from '../../domain/character/appearance'
 import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
+import { useWearableAppearance } from '../characters/wearablePalette'
 import type { VisualItem } from '../characters/equipmentVisuals'
 import { CINEMATIC_HEIGHT, CINEMATIC_WIDTH, drawCinematicFrame } from './cinematicArt'
 
@@ -9,7 +10,8 @@ export function PixelCinematicCanvas({ tone, step, portraitAssetId, appearance, 
   tone: Cutscene['tone']; step: number; portraitAssetId: string; appearance?: CharacterAppearance; equipment?: readonly VisualItem[]; reducedMotion: boolean
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const spriteSource = appearance ? appearanceSpriteSheetUri(appearance) : null
+  const dressedAppearance = useWearableAppearance(appearance, equipment)
+  const spriteSource = dressedAppearance ? appearanceSpriteSheetUri(dressedAppearance) : null
   const equipmentKey = equipment.map((item) => item.assetId).join('|')
   const equipmentRef = useRef(equipment)
   equipmentRef.current = equipment
