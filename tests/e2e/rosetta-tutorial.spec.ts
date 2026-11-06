@@ -80,7 +80,7 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
   await inventory.getByRole('button', { name: 'Equipar Túnica de Linho Gasta', exact: true }).click()
   await expect(page.locator('.terran-character-hud__slot.is-starter')).toHaveAttribute('title', /Túnica de Linho Gasta/)
   await expect(page.locator('.terran-character-hud__slot.is-starter img')).toHaveAttribute('src', /item_worn_linen_tunic/)
-  await page.getByRole('button', { name: 'Fechar painel', exact: true }).click()
+  await inventory.locator('.terran-character-hud__backpack > button').click()
   await page.getByRole('button', { name: 'Ir para Mercado', exact: true }).click()
   await page.getByRole('button', { name: 'Falar com Neris dentro do local', exact: true }).click()
   let shop = page.getByRole('dialog', { name: 'Neris', exact: true })
