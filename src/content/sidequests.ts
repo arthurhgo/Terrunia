@@ -3,6 +3,7 @@ import { npcDefinitions } from './npcs'
 import { clanDefinitions, classDefinitions } from './progression'
 import { streetQuestDefinitions } from './streetNpcs'
 import { collectionContractDefinitions } from './collectionContracts'
+import { astravelProgressionQuests } from './astraProgressionQuests'
 
 /**
  * CONTENT_DRAFT / BALANCE_DRAFT: secondary NPC contracts.
@@ -81,4 +82,5 @@ export const sideQuestDefinitions: QuestDefinition[] = [
   ...baseSideQuestDefinitions,
   ...streetQuestDefinitions,
   ...collectionContractDefinitions,
+  ...astravelProgressionQuests,
 ]
