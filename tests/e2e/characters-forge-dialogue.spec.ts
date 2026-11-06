@@ -40,7 +40,7 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
   const guide = page.getByRole('dialog', { name: 'Orientações de Rosetta' })
   await expect(guide).toBeVisible()
   await expect(guide.locator('.vn-cast__npc img')).toHaveAttribute('src', /npc_rosetta_portrait/)
-  await expect(guide.locator('.vn-cast__player .equipped-character__body')).toHaveAttribute('src', /player_default/)
+  await expect(guide.locator('.vn-cast__player .equipped-character__body')).toHaveAttribute('src', /^data:image\/svg\+xml/)
   await expect(guide.getByText(/4 missões em andamento · sem limite/)).toBeVisible()
   await page.screenshot({ path: '/tmp/terrunia-dialogue-cast.png' })
   await page.setViewportSize({ width: 390, height: 844 })

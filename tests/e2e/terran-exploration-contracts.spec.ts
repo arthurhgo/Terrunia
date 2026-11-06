@@ -62,7 +62,6 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await expect(arlen).toBeVisible({ timeout: 20_000 })
   expect(Number(await field.getAttribute('data-camera-x'))).toBeLessThan(originCamera)
   await expect(arlen.getByRole('heading', { name: '◇ Matéria para as Entregas', exact: true })).toBeVisible()
-  await arlen.getByRole('button', { name: 'Ouvir a oferta', exact: true }).click()
   await arlen.getByRole('button', { name: 'Aceitar missão', exact: true }).click()
   await expect(page.locator('[aria-label="Conversar com Arlen"] .npc-quest-marker')).toHaveText('◇')
   await page.getByRole('combobox', { name: 'Destino em Terran' }).selectOption('landmark:city_contract_board')
@@ -84,14 +83,16 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await page.screenshot({ path: '/tmp/terrunia-town-npc-markers.png' })
   await page.getByRole('button', { name: 'Sair do interior para as ruas de Terran', exact: true }).click()
   await page.getByRole('button', { name: 'Ir para Praça do Portal', exact: true }).click()
-  await page.getByRole('button', { name: 'Entrar no Modo Ondas', exact: true }).click()
+  await page.getByRole('button', { name: 'Escolher destino no Portal', exact: true }).click()
+  await page.getByRole('button', { name: /Modo Ondas · Iniciar/ }).click()
   for (let wave = 1; wave <= 3; wave++) {
     await fightAndCollect(page, wave === 3 ? 2 : 1)
     if (wave < 3) await page.getByRole('button', { name: `PRÓXIMA ONDA · ${wave + 1}`, exact: true }).click()
   }
   await page.getByRole('button', { name: 'RETORNAR A TERRAN', exact: true }).click()
   await page.getByRole('button', { name: 'Ir para Praça do Portal', exact: true }).click()
-  await page.locator('.portal-hunts__entry').filter({ hasText: 'Vigília da Ruína' }).getByRole('button', { name: 'Enfrentar caçada', exact: true }).click()
+  await page.getByRole('button', { name: 'Escolher destino no Portal', exact: true }).click()
+  await page.getByRole('button', { name: /Vigília da Ruína · Iniciar/ }).click()
   await fightAndCollect(page, 3)
   await page.getByRole('button', { name: 'VOLTAR AO PORTAL', exact: true }).click()
   const before = await page.evaluate(async () => {

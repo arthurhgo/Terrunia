@@ -45,7 +45,7 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
   expect(mobile.rightTop).toBeGreaterThan(mobile.leftBottom)
 
   // Selecting a weapon anchors a proportional, motionless sprite at the actor's hand.
-  await page.getByRole('button', { name: 'Escolher Machado de Guerra' }).click()
+  await page.getByRole('button', { name: 'Escolher Machado de Guerra' }).press('Enter')
   const characterPreview = page.getByRole('region', { name: 'Prévia do personagem com arma selecionada' })
   const heroSprite = characterPreview.getByRole('img', { name: 'Terrírian Lysa' })
   const weaponSprite = characterPreview.getByRole('img', { name: 'Machado de Guerra na mão do personagem (prévia)' })
@@ -79,7 +79,7 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
 
   // The Long Sword has its own smaller silhouette and must be rendered IN FRONT
   // of the character, with its handle positioned at the right-hand anchor.
-  await page.getByRole('button', { name: 'Escolher Espada Longa' }).click()
+  await page.getByRole('button', { name: 'Escolher Espada Longa' }).press('Enter')
   const sword = characterPreview.getByRole('img', { name: 'Espada Longa na mão do personagem (prévia)' })
   await expect(sword).toBeVisible()
   const handRig = await characterPreview.evaluate((root) => {
