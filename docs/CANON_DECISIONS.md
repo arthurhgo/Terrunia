@@ -117,3 +117,15 @@ Quatro novos ícones nativos 16×16 e textos de lição são `VISUAL_DRAFT`/`CON
 - Política de resolução e recuperação de conflitos entre saves local e nuvem.
 - Liberação ou não de modo convidado local no build público; o corte atual exige Google Login.
 - Artes finais, tipografia licenciada, áudio e identidade dos retratos.
+
+
+## Direção posterior do criador — 2026-11-06, v0.5.9 · seleção do Portal
+
+| Tema | Conflito encontrado | Decisão aplicada |
+|---|---|---|
+| Entrada das instâncias | A implementação anterior exigia caminhar no mapa do Portal e pressionar E, apesar de representar apenas seleção de atividade. | O pedido posterior do criador estabelece **botões diretos** para escolher Floresta de Astravél, Ondas e Caçadas. Caminhada no hub não é necessária. A entrada deve continuar sendo uma ação consciente, e abrir a seleção não inicia combate. O marco **0 · Entrada** continua na trilha, sem criar região canônica ou save de localização adicional. |
+| Escalonamento de caçadas | Três caçadas pré-existentes eram liberadas após o primeiro combate. | Preservar os três desbloqueios originais em saves antigos. Acrescentar duas atividades `CONTENT_DRAFT`: Rastro Micelial depois da entrega de `main_astravel_lost_hunters` e Guardiões do Limiar depois da entrega de `main_astravel_corruption`. Nenhuma delas repete a recompensa única do Colosso. |
+| Sincronização das missões | Secundárias antigas usam alvos repetidos e coexistem com etapas narrativas distantes. | Não reescrever IDs, objetivos e recompensas de missões já aceitas. Acrescentar uma sequência **opcional** de três estudos em etapas, com novos IDs e aceitação/entrega explícitas. Os capítulos 1–5, 6–10 e 11–15 são mostrados a partir do estado real do save; não há aceite automático nem bloqueio da história principal. |
+| Fauna progressiva | A lista inicial não apresentava escalonamento suficiente de silhuetas entre os 15 encontros. | Adicionar quatro inimigos `CONTENT_DRAFT`/ `BALANCE_DRAFT` de níveis 2–5 e sprites `VISUAL_DRAFT` substituíveis. Reutilizar famílias de materiais já existentes; não criar drops de equipamento que substituam os cinco Vínculos. |
+
+Balanceamento, nomes finais, lore dos novos monstros e arte final continuam `OWNER_DECISION`; os números e sprites deste incremento são provisórios.
