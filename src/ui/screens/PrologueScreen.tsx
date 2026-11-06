@@ -37,7 +37,7 @@ export function PrologueScreen() {
     <section className="prologue-copy">
       <p className="eyebrow">PRÓLOGO · TERRÚNIA</p>
       <h1>O primeiro Vínculo</h1>
-      <p>Distribua 6 Pontos de Atributo (2 por evolução de dado), ou prepare automaticamente os requisitos de uma arma. A distribuição pode ser revista até realizar o Vínculo.</p>
+      <p>Distribua 6 Pontos de Atributo (1 por clique; 2 para elevar o dado), ou prepare automaticamente os requisitos de uma arma. A distribuição pode ser revista até realizar o Vínculo.</p>
       <AttributeAllocator save={save} compact layout="vertical" />
     </section>
 
