@@ -242,6 +242,8 @@ export type QuestDefinition = {
   summary: string
   /** Optional player-facing guidance, rendered only in mission UI (not item cards). */
   contextNote?: string
+  /** Explicit narrative benefit when a quest grants access but no material reward. */
+  rewardNote?: string
   giverNpcId: string
   turnInNpcId: string
   category: QuestCategory
