@@ -21,6 +21,8 @@ export const BALANCE = {
   defaultPlayerSkillCooldownTurns: 2,
   /** BALANCE_DRAFT: defending blocks exactly the first incoming damaging hit. */
   defendBlocksFirstHit: true,
+  /** BALANCE_DRAFT: normalize enemy sheet attack before adding rolled d4 damage. */
+  enemyAttackPowerOffset: 2,
   // Rebased with d4 defaults so the vertical slice keeps its previous survivability.
   baseHp: 12,
   vigorHpMultiplier: 2,
