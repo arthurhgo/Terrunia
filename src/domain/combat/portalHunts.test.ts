@@ -41,9 +41,13 @@ describe('Caçadas individuais do Portal (CONTENT_DRAFT)', () => {
     })
     expect(canStartPortalHunt(save, 'encounter_portal_ruin_guard', content).ok).toBe(false)
     save.quests.main_astravel_lost_hunters.status = 'completed'
+    expect(canStartPortalHunt(save, 'encounter_portal_mycelial_track', content)).toMatchObject({ ok: false, code: 'HUNT_LEVEL_LOCKED' })
+    save.character.level = 4
     expect(canStartPortalHunt(save, 'encounter_portal_mycelial_track', content).ok).toBe(true)
     expect(canStartPortalHunt(save, 'encounter_portal_ruin_guard', content).ok).toBe(false)
     save.quests.main_astravel_corruption.status = 'completed'
+    expect(canStartPortalHunt(save, 'encounter_portal_ruin_guard', content)).toMatchObject({ ok: false, code: 'HUNT_LEVEL_LOCKED' })
+    save.character.level = 5
     expect(canStartPortalHunt(save, 'encounter_portal_ruin_guard', content).ok).toBe(true)
   })
 
