@@ -25,7 +25,7 @@ export const astravelProgressionQuests: QuestDefinition[] = [
     id: 'side_astravel_mycelial_tracking',
     title: 'Rastros sob o Micélio',
     summary: 'Daeryn quer compreender os perigos da trilha recuperada. Contenha dois Rastreadores Miceliais antes da próxima descida.',
-    contextNote: 'Onde encontrar: Brejo Esporulante (marco 9), Galeria de Micélio (marco 12) ou Rastro Micelial no Portal, liberado após o relato a Vorren.',
+    contextNote: 'Onde encontrar: Brejo Esporulante (marco 9) ou Rastro Micelial no Portal, liberado após o relato a Vorren.',
     giverNpcId: 'npc_daeryn', turnInNpcId: 'npc_daeryn', category: 'secondary',
     objectives: [{ id: 'mycelial_tracking', type: 'kill', targetId: 'enemy_mycelial_stalker', required: 2,
       label: 'Derrote 2 Rastreadores Miceliais em Astravél ou no Portal' }],
