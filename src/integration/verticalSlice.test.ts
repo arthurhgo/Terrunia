@@ -170,7 +170,7 @@ describe('vertical slice integrada', () => {
         const player = battle.combatants.combatant_player
         const target = Object.values(battle.combatants).filter((actor) => actor.side === 'enemy' && actor.alive)
           .sort((a, b) => a.hp - b.hp)[0]
-        const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((entry) => entry.mpCost <= player.mp)
+        const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((entry) => entry.mpCost <= player.mp && !(player.skillCooldowns?.[entry.id]))
         const skill = skills.find((entry) => entry.id === 'skill_resonant_strike') ?? skills[0]
         store().submitBattleCommand(skill ? { type: 'skill', skillId: skill.id, targetId: target.id } : { type: 'attack', targetId: target.id })
       }
