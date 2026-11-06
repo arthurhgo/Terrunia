@@ -221,6 +221,7 @@ const combatantSchema = z.object({
   initiative: z.number().finite(),
   alive: z.boolean(),
   defending: z.boolean(),
+  skillReadyRound: z.record(z.string(), z.number().int().nonnegative()).optional(),
   skillIds: z.array(idSchema),
   statusEffects: z.array(z.object({
     definitionId: idSchema,
