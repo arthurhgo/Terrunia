@@ -94,7 +94,7 @@
 .battle-dice-platform--in-arena .battle-dice-platform__result small { color:#cce6d7; font:700 11px var(--display); }
 .battle-dice-platform--in-arena.is-awaiting-click .battle-dice-platform__veil { background:#07172677; }
 .battle-dice-platform--in-arena.is-rolling .battle-dice-platform__die {
-  animation:combat-die-from-actions 1.35s cubic-bezier(.2,.72,.22,1) both;
+  animation:combat-die-from-actions 1.55s cubic-bezier(.2,.72,.22,1) both;
 }
 .battle-dice-platform--in-arena.is-rolling .die-icon__number { opacity:0; }
 .battle-dice-platform--in-arena.is-settled .battle-dice-platform__die {
@@ -166,3 +166,10 @@
 
 /* Header no longer repeats the entire turn state beside the face timeline. */
 .pixel-battle__header > small { visibility:hidden; }
+
+/* v0.5.8 initiative pointer. */
+.combat-timeline--portraits .combat-timeline__turn-arrow{position:absolute;z-index:8;left:50%;top:-13px;transform:translateX(-50%);color:#ff5151;font:bold 15px var(--display);text-shadow:0 0 6px #f34;}
+.combat-timeline--portraits .combat-timeline__turn-label{position:absolute;z-index:8;bottom:-12px;left:50%;transform:translateX(-50%);font:bold 8px var(--display);color:#ffe6ac;background:#531b22;padding:2px 4px;border-radius:3px;}
+.pixel-battle__hero.is-acting,.pixel-battle__enemy.is-acting{z-index:7;filter:drop-shadow(0 0 12px #f6bc61);}
+.pixel-battle__hero.is-receiving .equipped-character,.pixel-battle__enemy.is-receiving img{filter:brightness(1.4) sepia(1) saturate(6) hue-rotate(-35deg);}
+.pixel-battle__damage-number{position:absolute;z-index:15;left:50%;top:1%;transform:translateX(-50%);font:bold 30px var(--display);color:#ff5656;text-shadow:2px 2px 0 #300,0 0 7px #f66;pointer-events:none;}
