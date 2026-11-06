@@ -237,7 +237,7 @@ export function PixelInteriorCanvas({
       className="pixel-interior__canvas" onPointerDown={pointerWalk}
       aria-label={`Interior pixelado de ${getRoomName(locationId)}; caminhe, aproxime-se dos NPCs e pressione E`} />
     {activeRoutes.length > 0 && <svg className="pixel-interior__quest-paths" viewBox="0 0 384 256"
-      preserveAspectRatio="none" role="img" aria-label={showingTracked ? 'Caminho pontilhado da missão no interior' : 'Caminhos brancos de Rosetta dentro da casa'}
+      preserveAspectRatio="none" role="img" aria-label={showingTracked ? 'Caminho pontilhado da missão no interior' : 'Caminhos dourados de Rosetta dentro da casa'}
       data-route-mode={showingTracked ? 'tracked' : 'rosetta'} data-reduced-motion={save.settings.reducedMotion}>
       {getInteriorQuestPaths(locationId, playerRef.current, residents, activeRoutes).map((route) =>
         <path key={route.id} ref={(element) => { if (element) routeElementsRef.current.set(route.id, element); else routeElementsRef.current.delete(route.id) }}
