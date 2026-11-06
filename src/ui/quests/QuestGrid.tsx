@@ -8,6 +8,7 @@ import { useGameStore } from '../../state/gameStore'
 import { getRosettaGuidance, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 import { QuestContextNote } from './QuestContextNote'
 import { getQuestRewardPreview } from '../../domain/quests/questRewardPreview'
+import { getAstravelChapterProgress } from '../../domain/quests/astravelJourney'
 import './questRemake.css'
 
 type Category = 'all' | QuestCategory | 'completed'
@@ -60,6 +61,7 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
   const [completedExpanded, setCompletedExpanded] = useState(false)
   const historyId = useId()
   const entries = getQuestJournalEntries(save, content)
+  const chapters = getAstravelChapterProgress(save, content)
   const ready = entries.filter(({ progress }) => progress.status === 'ready_to_turn_in')
   const filtered = entries.filter(({ definition, progress }) =>
     category === 'all' || (category === 'completed' ? progress.status === 'completed' :
@@ -100,6 +102,12 @@ export function QuestGrid({ save, compact = false }: { save: GameSave; compact?:
         : 'Sem caminho disponível para este objetivo.'}</small>}
       {suggestedInJournal && <button type="button" onClick={openSuggested}>Ver esta missão <ArrowRight size={14} /></button>}
     </aside>}
+    {!compact && <section className="quest-board__journey" aria-label="Etapas da campanha de Astravél">
+      <h3>Progressão da campanha</h3>
+      <div>{chapters.map((chapter) => <article key={chapter.id} className={'quest-board__chapter quest-board__chapter--' + chapter.questStatus}>
+        <strong>{chapter.title}</strong><span>{chapter.cleared}/{chapter.total} encontros</span><small>{chapter.label}</small>
+      </article>)}</div>
+    </section>}
     {ready.length > 0 && <section className="quest-board__deliveries" aria-label="Prontas para entrega">
       <h3>PRONTAS PARA ENTREGA <small>{ready.length}</small></h3>
       {ready.map(({ definition, progress }) => <div key={progress.questId} className="quest-board__delivery">
