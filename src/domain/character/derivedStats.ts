@@ -1,5 +1,5 @@
 import type { ContentCatalog } from '../../content/catalog'
-import { forgeUpgradeDefinitions } from '../../content/forge'
+import { forgeUpgradeDefinitions, goldForgeUpgradeDefinitions } from '../../content/forge'
 import { BALANCE } from '../../content/balance'
 import type { GameSave } from '../game/types'
 import { getFlatStatBonus } from '../skillTree/skillTree'
@@ -35,9 +35,11 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
   const equipmentBonus = (stat: 'maxHp' | 'maxMp' | 'mitigation' | 'initiative') =>
     boundDefinitions.reduce((total, definition) => total + (definition.statBonuses[stat] ?? 0), 0)
   const forging = Object.values(save.boundItems).filter((item) => bondedEquipment[item.slot] === item.id)
-    .flatMap((item) => item.forging?.upgradeIds ?? []).flatMap((id) => forgeUpgradeDefinitions.filter((upgrade) => upgrade.id === id))
+    .flatMap((item) => item.forging?.upgradeIds ?? []).flatMap((id) => [...forgeUpgradeDefinitions, ...goldForgeUpgradeDefinitions].filter((upgrade) => upgrade.id === id))
   const forgeAttack = forging.reduce((sum, upgrade) => sum + upgrade.attackPower, 0)
   const forgeLife = forging.reduce((sum, upgrade) => sum + upgrade.maxHp, 0)
+  const forgeMana = forging.reduce((sum, upgrade) => sum + ('maxMp' in upgrade ? upgrade.maxMp : 0), 0)
+  const forgeDefense = forging.reduce((sum, upgrade) => sum + ('mitigation' in upgrade ? upgrade.mitigation : 0), 0)
   const maxHpBonus = getFlatStatBonus(save, catalog, 'maxHp')
   const attackBonus = getFlatStatBonus(save, catalog, 'attackPower')
   const defenseBonus = getFlatStatBonus(save, catalog, 'mitigation')
@@ -70,6 +72,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: 'Base do personagem', value: BALANCE.baseMana },
       { label: 'Espírito', value: getAttributeScore(attributes.spirit) * BALANCE.spiritManaMultiplier },
       { label: 'Equipamentos', value: equipmentBonus('maxMp') },
+      { label: 'Forja de Durnan', value: forgeMana },
       { label: 'Clã', value: clanBonuses.mana ?? 0 },
     ]),
     defense: sum([
@@ -77,6 +80,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: 'Equipamentos', value: equipmentBonus('mitigation') },
       { label: basicArmor?.definition.name ?? 'Proteção simples', value: basicArmor ? basicArmor.armor.mitigation + (basicArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel : 0 },
       { label: 'Vínculos e Skills', value: defenseBonus },
+      { label: 'Forja de Durnan', value: forgeDefense },
       { label: 'Clã', value: clanBonuses.mitigation ?? 0 },
     ]),
     physicalAttack: sum([
