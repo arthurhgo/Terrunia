@@ -21,7 +21,8 @@ export function EnemyMotionSprite({ assetId, motion = 'idle', reducedMotion = fa
     backgroundImage: `url("${sheet.path}")`,
     animationDuration: `${duration}ms`,
   } satisfies CSSProperties
-  return <span className={`enemy-motion-sprite enemy-motion-sprite--${sheet.rhythm}`}
+  // Remount on state change so one-shot attack/hit/defeat frames restart reliably.
+  return <span key={`${assetId}:${motion}`} className={`enemy-motion-sprite enemy-motion-sprite--${sheet.rhythm}`}
     data-motion={motion}
     data-asset={assetId}
     style={style} aria-hidden="true" />
