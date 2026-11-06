@@ -72,7 +72,7 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
   await expect(guide.getByRole('heading', { name: 'Comprar para se Preparar', exact: true })).toBeVisible()
   await guide.getByRole('button', { name: 'Aceitar missão', exact: true }).click()
   await guide.getByRole('button', { name: 'Abrir mochila', exact: true }).click()
-  const inventory = page.getByRole('complementary', { name: 'Painel lateral: Inventário' })
+  const inventory = page.getByRole('region', { name: 'Mochila do personagem' })
   const tunicButton = inventory.getByRole('button', { name: /Túnica de Linho Gasta/ })
   await tunicButton.hover()
   await expect(page.getByRole('tooltip', { name: 'Status de Túnica de Linho Gasta' })).toContainText('Tier 1')

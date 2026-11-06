@@ -30,17 +30,36 @@ async function createExpedition(page: Page) {
 }
 
 async function fightAndCollect(page: Page, expectedDropCount: number) {
-  for (let turn = 0; turn < 12; turn++) {
-    const attack = page.getByRole('button', { name: 'ATACAR', exact: true })
-    if (await page.getByRole('heading', { name: 'VITÓRIA', exact: true }).isVisible()) break
-    await expect(attack).toBeEnabled()
-    await attack.click()
+  for (let step = 0; step < 35; step++) {
+    const phase = await page.evaluate(async () => {
+      const { useGameStore } = await import('/src/state/gameStore.ts')
+      return useGameStore.getState().save?.battle?.phase
+    })
+    if (phase === 'Victory') break
+    expect(phase).not.toBe('Defeat')
+    if (phase === 'AwaitingInitiative') {
+      const initiative = page.getByRole('button', { name: /Arrastar dado de iniciativa d\d+ para cima para rolar/ })
+      await expect(initiative).toBeEnabled({ timeout: 10_000 })
+      await initiative.press('Enter')
+    } else if (phase === 'AwaitingAction') {
+      const menu = page.getByRole('button', { name: 'ATAQUE · MAGIAS · HABILIDADES', exact: true })
+      await expect(menu).toBeEnabled({ timeout: 10_000 })
+      await menu.click()
+      await page.getByRole('button', { name: /ATAQUE BÁSICO · 0 MP/ }).click()
+      const die = page.getByRole('button', { name: /Arrastar dado d\d+ para cima para rolar/ })
+      await expect(die).toBeVisible({ timeout: 10_000 })
+      await die.press('Enter')
+    } else {
+      await page.waitForTimeout(100)
+    }
   }
-  await expect(page.getByRole('heading', { name: 'VITÓRIA', exact: true })).toBeVisible()
-  const drops = page.locator('.pixel-battle__drops button')
-  await expect(drops).toHaveCount(expectedDropCount)
-  for (let i = 0; i < expectedDropCount; i++) await drops.nth(i).click()
-  await page.getByRole('button', { name: 'CONFIRMAR RECOMPENSAS', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'VITÓRIA', exact: true })).toBeVisible({ timeout: 12_000 })
+  const dropCount = await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    return useGameStore.getState().save?.battle?.rewards.lootDefinitionIds.length
+  })
+  expect(dropCount).toBe(expectedDropCount)
+  await page.getByRole('button', { name: 'RECOLHER TODOS OS ESPÓLIOS', exact: true }).click()
 }
 
 test('Astravél: câmera, dois combates, coleta manual de drops e retomada do save', async ({ page }) => {
@@ -108,7 +127,7 @@ test('o próximo setor exige missão aceita e permite retornar sem iniciar comba
   await trailPanel.locator('.expedition-route-list__item').filter({ hasText: /Rastros dos Caçadores/ }).click()
   await expect(page.getByRole('complementary', { name: 'Painel lateral: Rastros dos Caçadores' })).toBeVisible({ timeout: 20_000 })
   await expect(page.getByText(/aceite “Caçadores Perdidos” com Vorren/).first()).toBeVisible()
-  await expect(page.getByRole('button', { name: 'ATACAR', exact: true })).toHaveCount(0)
-  await page.getByRole('button', { name: 'Retornar a Terran', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Terran', exact: true })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Viewport unificada de combate' })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Retornar a Terran pelo Portal', exact: true }).click()
+  await expect(page.getByRole('region', { name: 'Cenário contínuo de Terran' })).toBeVisible()
 })

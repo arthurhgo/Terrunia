@@ -94,6 +94,7 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
     store().travelInTerran('location_terran_portal_plaza'); store().enterAstravel()
   })
   await page.getByRole('button', { name: 'Seguir objetivo' }).click()
+  await page.getByRole('button', { name: 'Enfrentar Fungorro próximo' }).click({ timeout: 20_000 })
   await expect(page.getByRole('heading', { name: 'Primeira Presença Fungorra', exact: true })).toBeVisible({ timeout: 20_000 })
   const actor = page.locator('.pixel-battle__hero .equipped-character')
   await expect(actor).toHaveAttribute('data-facing', 'right')

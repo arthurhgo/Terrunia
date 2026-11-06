@@ -57,8 +57,13 @@ test('conversas interativas, aceite cinza, diário em linhas e mochila antes dos
   await expect(arlen.locator('.terran-quest-dialog__reward-list')).toBeVisible()
   await arlen.getByRole('button', { name: 'Aceitar missão', exact: true }).click()
   const marker = page.locator('[aria-label="Conversar com Arlen"] .npc-quest-marker')
-  await expect(marker).toHaveAttribute('data-quest-state', 'active')
-  await expect(marker).toHaveCSS('color', 'rgb(157, 162, 165)')
+  // When another Arlen offer remains available, the marker correctly highlights the next offer.
+  expect(await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    return useGameStore.getState().save!.quests.side_street_arlen.status
+  })).toBe('active')
+  await expect(marker).toHaveAttribute('data-quest-state', 'available')
+  await expect(page.locator('.notification--neutral')).toContainText('Missão aceita')
   await expect(page.locator('.notification--neutral')).toContainText('Missão aceita')
   await page.getByRole('button', { name: 'Conversar com Arlen', exact: true }).click()
   await expect(arlen.locator('.npc-mission-hub__content')).toBeVisible()

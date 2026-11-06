@@ -64,6 +64,7 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await expect(arlen.getByRole('heading', { name: '◇ Matéria para as Entregas', exact: true })).toBeVisible()
   await arlen.getByRole('button', { name: 'Aceitar missão', exact: true }).click()
   await expect(page.locator('[aria-label="Conversar com Arlen"] .npc-quest-marker')).toHaveText('◇')
+  await page.keyboard.press('Escape')
   await page.getByRole('combobox', { name: 'Destino em Terran' }).selectOption('landmark:city_contract_board')
   const board = page.getByRole('dialog', { name: 'Quadro de Encomendas', exact: true })
   await expect(board).toBeVisible({ timeout: 20_000 })
