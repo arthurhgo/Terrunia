@@ -66,7 +66,7 @@ describe('arsenal livre e progressão de atributos', () => {
   it('permite redistribuir antes do primeiro Vínculo e bloqueia o reembolso depois', () => {
     const base = createNewSave('owner', 'Nira', 'character.terririan.default', content)
     const raised = adjustCharacterAttribute(base, 'strength', 1, '2026-10-29T12:00:00.000Z')
-    expect(raised.ok && raised.value.character.attributes.strength.die).toBe(6)
+    expect(raised.ok && raised.value.character.attributes.strength).toEqual({ die: 4, bonus: 1 })
     if (!raised.ok) return
     const refunded = adjustCharacterAttribute(raised.value, 'strength', -1, '2026-10-29T12:00:01.000Z')
     expect(refunded.ok && refunded.value.character.unspentAttributePoints).toBe(6)
@@ -100,12 +100,12 @@ describe('arsenal livre e progressão de atributos', () => {
     })
   })
 
-  it('concede dois Pontos de Atributo no novo balanceamento provisório', () => {
+  it('concede um Ponto de Atributo por nível', () => {
     const save = createNewSave('owner', 'Nira', 'character.terririan.default', content)
     const progression = gainCharacterXp(save.character, 250)
     expect(progression.levelsGained).toBe(1)
     expect(progression.character.level).toBe(2)
-    expect(progression.character.unspentAttributePoints).toBe(8)
+    expect(progression.character.unspentAttributePoints).toBe(7)
     expect(progression.character.xpRequired).toBe(540)
   })
 })
