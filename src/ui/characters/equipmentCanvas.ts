@@ -48,6 +48,8 @@ export function drawEquipmentLayer(ctx: CanvasRenderingContext2D, visuals: reado
     ctx.imageSmoothingEnabled = false
     ctx.translate(Math.round(x - size / 2 + anchor.x * scale), Math.round(footY - size + anchor.y * scale))
     ctx.rotate(anchor.angle * Math.PI / 180)
+    // Mirror the image as well as the grip pivot on left-facing frames.
+    if (facing === 'left' && item.slot === 'weapon' && !item.sheathed) ctx.scale(-1, 1)
     ctx.drawImage(image, -targetSize * anchor.handleX, -targetSize * anchor.handleY, targetSize, targetSize)
     ctx.restore()
   }
