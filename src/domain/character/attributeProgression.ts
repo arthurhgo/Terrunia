@@ -38,12 +38,15 @@ export const adjustCharacterAttribute = (
   return ok(next)
 }
 
+/** Multiplier is applied only when rewards are actually claimed/delivered. */
+export const effectiveCharacterXpReward = (amount: number) => Math.max(0, Math.round(amount * BALANCE.characterXpRewardMultiplier))
+
 export const gainCharacterXp = (
   character: Character,
   amount: number,
 ): { character: Character; levelsGained: number } => {
   const next = structuredClone(character)
-  next.xp += Math.max(0, amount)
+  next.xp += effectiveCharacterXpReward(amount)
   let levelsGained = 0
   const maxLevel = BALANCE.xpThresholds.length
 
