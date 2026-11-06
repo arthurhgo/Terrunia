@@ -3,6 +3,7 @@ import { ArrowLeft, BookOpen, Compass, LockKeyhole, Swords, Trees } from 'lucide
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { getPortalActivities, type PortalActivity } from '../../domain/exploration/portalActivities'
+import { getAstravelChapterProgress } from '../../domain/quests/astravelJourney'
 import { useGameStore } from '../../state/gameStore'
 import { GameShell } from '../components/GameShell'
 import './portalHub.css'
@@ -17,6 +18,7 @@ export function PortalHubScreen() {
   const navigate = useNavigate()
   const [message, setMessage] = useState('Selecione uma atividade. A entrada na instância acontece somente após seu clique.')
   const activities = save ? getPortalActivities(save, content) : []
+  const chapters = save ? getAstravelChapterProgress(save, content) : []
 
   if (!save) return <Navigate to="/character/create" replace />
   if (save.battle || save.world.currentLocationId !== 'location_terran_portal_plaza') {
@@ -75,6 +77,13 @@ export function PortalHubScreen() {
       </div>
     </header>
     <div className="portal-hub__content">
+      <section className="portal-hub__chapters" aria-label="Progressão da campanha de Astravél">
+        {chapters.map((chapter) => <div key={chapter.id} className={'portal-hub__chapter portal-hub__chapter--' + chapter.questStatus}>
+          <strong>{chapter.title}</strong>
+          <span>{chapter.cleared}/{chapter.total} encontros · marcos {chapter.range}</span>
+          <small>{chapter.label}</small>
+        </div>)}
+      </section>
       <section className="portal-hub__primary" aria-label="Aventuras principais do Portal">
         <div className="portal-hub__section-title">
           <BookOpen size={18} aria-hidden="true" /><h2>Jornada e desafios</h2>
