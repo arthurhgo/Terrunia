@@ -34,6 +34,41 @@ export const enemyDefinitions = [
     assetId: 'enemy.spore-sower',
     status: 'BALANCE_DRAFT',
   },
+  // CONTENT_DRAFT / BALANCE_DRAFT: progressive Astravél fauna.
+  // Reuse existing material families and never drop bound equipment.
+  {
+    id: 'enemy_fungorro_thornback', name: 'Fungorro Espinhal',
+    level: 2, maxHp: 10, mitigation: 1, attackPower: 3,
+    xpReward: 22, goldReward: 10, boundResonanceReward: 13,
+    lootDefinitionIds: ['drop_fungal_nucleus'],
+    skillIds: [], weaknessTags: ['light', 'fire'],
+    assetId: 'enemy.fungorro-thornback', status: 'CONTENT_DRAFT',
+  },
+  {
+    id: 'enemy_spore_bulwark', name: 'Casco de Esporos',
+    level: 3, maxHp: 14, mitigation: 2, attackPower: 3,
+    xpReward: 34, goldReward: 15, boundResonanceReward: 19,
+    lootDefinitionIds: ['drop_spore_chitin'],
+    skillIds: [], weaknessTags: ['fire', 'blunt'],
+    assetId: 'enemy.spore-bulwark', status: 'CONTENT_DRAFT',
+  },
+  {
+    id: 'enemy_mycelial_stalker', name: 'Rastreador Micelial',
+    level: 4, maxHp: 16, mitigation: 1, attackPower: 5,
+    xpReward: 56, goldReward: 24, boundResonanceReward: 29,
+    lootDefinitionIds: ['drop_mycelial_fiber'],
+    skillIds: ['skill_spore_burst'], aiSkillEveryRounds: 3,
+    weaknessTags: ['light', 'fire'],
+    assetId: 'enemy.mycelial-stalker', status: 'CONTENT_DRAFT',
+  },
+  {
+    id: 'enemy_ruin_warden', name: 'Vigia do Limiar',
+    level: 5, maxHp: 21, mitigation: 3, attackPower: 5,
+    xpReward: 80, goldReward: 38, boundResonanceReward: 40,
+    lootDefinitionIds: ['drop_ruin_shard'],
+    skillIds: [], weaknessTags: ['resonance', 'blunt'],
+    assetId: 'enemy.ruin-warden', status: 'CONTENT_DRAFT',
+  },
   {
     id: 'enemy_colossus_mycelium',
     name: 'Colosso Micélio',
