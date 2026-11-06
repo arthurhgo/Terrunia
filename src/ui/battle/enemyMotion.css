@@ -1,0 +1,53 @@
+/* Native 128x128 PNG: 4 columns x 4 rows; 32x32 frames in idle/attack/hit/defeat order. */
+.pixel-battle__enemy > .enemy-motion-sprite {
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 155px;
+  max-height: 155px;
+  aspect-ratio: 1;
+  background-repeat: no-repeat;
+  background-size: 400% 400%;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  filter: drop-shadow(4px 7px #0009);
+  animation-name: terrunia-enemy-frames;
+  animation-timing-function: step-end;
+  animation-iteration-count: infinite;
+}
+.enemy-motion-sprite[data-motion="idle"] { background-position-y: 0%; }
+.enemy-motion-sprite[data-motion="attack"] {
+  background-position-y: 33.3333%;
+  animation-iteration-count: 1;
+  animation-fill-mode: both;
+}
+.enemy-motion-sprite[data-motion="hit"] {
+  background-position-y: 66.6667%;
+  animation-iteration-count: 1;
+  animation-fill-mode: both;
+}
+.enemy-motion-sprite[data-motion="defeat"] {
+  background-position-y: 100%;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+@keyframes terrunia-enemy-frames {
+  0%, 24.99% { background-position-x: 0%; }
+  25%, 49.99% { background-position-x: 33.3333%; }
+  50%, 74.99% { background-position-x: 66.6667%; }
+  75%, 100% { background-position-x: 100%; }
+}
+/* Creature-specific motion profiles: each uses its own drawn sprite frames. */
+.enemy-motion-sprite--thorn[data-motion="attack"] { filter: drop-shadow(0 0 6px #d6ce7d); }
+.enemy-motion-sprite--bulwark[data-motion="attack"] { filter: drop-shadow(0 0 9px #87d4ba); }
+.enemy-motion-sprite--stalker[data-motion="attack"] { filter: drop-shadow(0 0 9px #bf81d9); }
+.enemy-motion-sprite--warden[data-motion="attack"] { filter: drop-shadow(0 0 10px #75dee6); }
+.pixel-battle__enemy.is-receiving .enemy-motion-sprite {
+  filter: drop-shadow(0 0 9px #f75d5d);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pixel-battle__enemy > .enemy-motion-sprite {
+    animation: none !important;
+    background-position-x: 0%;
+  }
+}
