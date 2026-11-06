@@ -58,3 +58,15 @@
   .npc-mission-hub__topics { flex: 0 0 auto; max-height: 22dvh; }
   .npc-mission-hub__detail { flex: 1 1 auto; max-height: 44dvh; }
 }
+
+/* v0.5.9: accepted missions recede; fresh offers remain prominent. */
+.npc-mission-hub__topics button[data-quest-status="active"]{
+  background:#19252c;color:#99a6ab;border-color:#364850;border-left-color:#667780;opacity:.78;
+}
+.npc-mission-hub__topics button[data-quest-status="active"] strong,
+.npc-mission-hub__topics button[data-quest-status="active"] small{color:#9ca6ad}
+.npc-mission-hub__topics button[data-quest-status="active"][aria-pressed="true"]{
+  opacity:1;border-color:#87969b;background:#2a3740;
+}
+.npc-mission-hub__topics button[data-quest-status="available"],
+.npc-mission-hub__topics button[data-quest-status="offered"]{border-left-color:#d4ac64}
