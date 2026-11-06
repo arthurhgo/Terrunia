@@ -1,5 +1,5 @@
 import { BACKPACK_UPGRADES, routeNewItemOverflow } from '../domain/inventory/backpacks'
-import { executeForgeRecipe } from '../domain/terran/forge'
+import { executeForgeRecipe, executeGoldForgeUpgrade } from '../domain/terran/forge'
 import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmor'
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
 import { create } from 'zustand'
@@ -27,6 +27,7 @@ import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { prepareStarterWeapon } from '../domain/bond/starterWeaponPlan'
 import { requestCampaignReset } from '../domain/game/campaignReset'
 import type { AttributeId, GameSave } from '../domain/game/types'
+import type { BoundSlot } from '../domain/shared/types'
 import type { CharacterAppearance } from '../domain/character/appearance'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
 import { addBattleLootToInventory } from '../domain/inventory/battleLoot'
@@ -114,6 +115,7 @@ type GameState = {
   receiveDaerynAid: () => void
   buyFromSylwen: (itemId: string, quantity?: number) => void
   forge: (recipeId: string) => void
+  goldForge: (slot: BoundSlot) => void
   equipArmor: (instanceId: string | null) => void
   refineArmor: (instanceId: string) => void
   buyFromMarket: (npcId: string, itemId: string, quantity?: number) => void
@@ -564,6 +566,15 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!result.ok) return failAction(result.message)
       commit(result.value)
       show('Forja concluída', 'O trabalho de Durnan foi registrado. Consulte os novos caminhos da sua arma.', 'success')
+    },
+
+    goldForge: (slot) => {
+      const save = get().save
+      if (!save) return
+      const result = executeGoldForgeUpgrade(save, slot, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+      show('Forja Magistral', 'O Vínculo foi aprimorado permanentemente com Ouro.', 'success')
     },
 
     buyFromMarket: (npcId, itemId, quantity = 1) => {
