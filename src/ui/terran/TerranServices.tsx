@@ -2,6 +2,7 @@ import { DialogueWindow } from './DialogueWindow'
 import { BedDouble, Check, Coins, HeartPulse, ShoppingBasket, Archive, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react'
 import { content } from '../../content/catalog'
 import { QuestContextNote } from '../quests/QuestContextNote'
+import { getQuestRewardPreview } from '../../domain/quests/questRewardPreview'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import type { GameSave } from '../../domain/game/types'
 import { PLAYER_HOME_FLAG, SYLWEN_STOCK } from '../../domain/terran/services'
@@ -88,12 +89,22 @@ export function BaseRecords({ save }: { save: GameSave }) {
   const memories = Object.values(save.boundItems).flatMap((item) => item.memories.map((memory) => ({
     itemId: item.baseItemId, title: memory.title, description: memory.description,
   })))
+  const chapters = [
+    { id: 'main', title: 'Crônica principal', entries: completed.filter((quest) => quest.category === 'main') },
+    { id: 'clan', title: 'Provas de Clã', entries: completed.filter((quest) => quest.category === 'clan') },
+    { id: 'class', title: 'Caminho da Classe', entries: completed.filter((quest) => quest.category === 'class') },
+    { id: 'world', title: 'Relatos de Terran e Astravél', entries: completed.filter((quest) => quest.category === 'secondary' || quest.category === 'bounty') },
+  ]
   return <section className="base-records" aria-label="Registros do Terrírian">
     <h3>Registros · Memórias e Crônica</h3>
     <p>{save.character.name} · Nível {save.character.level} · {completed.length} missões concluídas</p>
-    <h4>Missões concluídas</h4>
-    {completed.length ? <ul>{completed.slice(-20).map((quest) => <li key={quest.id}>{quest.title}</li>)}</ul>
-      : <p>Suas próximas conquistas serão registradas aqui.</p>}
+    <p>A crônica reúne somente fatos vividos e missões entregues. Conhecimento ainda não descoberto permanece fora do registro.</p>
+    {chapters.map((chapter) => <details className="base-records__chapter" key={chapter.id} open={chapter.id === 'main'}>
+      <summary>{chapter.title} · {chapter.entries.length} registro(s)</summary>
+      {chapter.entries.length ? <ul>{chapter.entries.map((quest) => <li key={quest.id}>
+        <strong>{quest.title}</strong><small>{quest.summary}</small>
+      </li>)}</ul> : <p>Nenhum relato registrado nesta parte da jornada.</p>}
+    </details>)}
     <h4>Memórias dos Vínculos</h4>
     {memories.length ? <ul>{memories.slice(-20).map((memory, i) => <li key={memory.itemId + ':' + i}>
       <strong>{memory.title}</strong><small>{memory.description}</small>
@@ -162,6 +173,7 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded 
   const definition = content.quests[questId]
   const progress = save.quests[questId]
   if (!definition || !progress) return null
+  const rewardPreview = getQuestRewardPreview(definition, content)
   const npc = content.npcs[definition.giverNpcId]
   const conversations = getNpcActionableQuests(save, npc.id, content)
   const details = <section className="terran-drawer__section terran-quest-dialog" aria-label={`Missão de ${npc.name}`}>
@@ -181,12 +193,10 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded 
     {(!onSelectQuest || conversations.length < 2) && <h3>{definition.category === 'secondary' || definition.category === 'bounty' ? '◇ ' : ''}{definition.title}</h3>}
     {definition.objectives.map((objective) => <p key={objective.id}>{objective.label} · {progress.objectives[objective.id] ?? 0}/{objective.required}</p>)}
     <QuestContextNote note={definition.contextNote} />
-    <p>{definition.rewards.map((reward) => `${reward.type === 'gold' ? 'Ouro' : reward.type === 'characterXp' ? 'XP' : 'Essência'} +${reward.value}`).join(' · ')}</p>
-    {definition.itemRewards?.map((reward) => <p key={reward.itemId} className="terran-quest-dialog__item-reward">
-      <AssetImage assetId={content.items[reward.itemId].iconAssetId} alt="" />
-      <strong>Recompensa: {content.items[reward.itemId].name} ×{reward.quantity}</strong>
-      <small>Receba ao entregar a missão.</small>
-    </p>)}
+    {rewardPreview.length > 0 && <div className="terran-quest-dialog__reward-list" aria-label="Recompensas da missão">
+      <strong>Recompensas ao entregar</strong>
+      <ul>{rewardPreview.map((reward) => <li key={reward.id}>{reward.label}</li>)}</ul>
+    </div>}
     {definition.turnInItems && <div className="quest-delivery-items">
       {definition.turnInItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />
         {content.items[input.itemId].name}<strong>{getDeliverableCount(save, input.itemId, content)}/{input.quantity}</strong></span>)}
