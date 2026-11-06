@@ -31,6 +31,8 @@ export const BALANCE = {
   defendMitigation: 4,
   /** BALANCE_DRAFT — consecutive own rounds that a skill remains unavailable. */
   skillCooldownRounds: 2,
+  /** BALANCE_DRAFT: skills use the next die tier, cap d12. */
+  skillDieStepsBonus: 1,
   /** BALANCE_DRAFT — faster XP from one-time battles and mission payouts. */
   characterXpRewardMultiplier: 2,
 } as const
