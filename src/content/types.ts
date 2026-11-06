@@ -115,6 +115,8 @@ export type CombatSkillDefinition = {
   description: string
   target: 'enemy' | 'self'
   mpCost: number
+  /** Optional: falls back to configurable player cooldown. */
+  cooldownTurns?: number
   effects: CombatEffectDefinition[]
   status: DraftStatus
 }
