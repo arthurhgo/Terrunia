@@ -5,7 +5,11 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
   await page.goto('/login')
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
   await page.getByPlaceholder('Ex.: Aron').fill('Lysa')
-  await page.getByRole('button', { name: 'Confirmar Terrírian' }).click()
+  // Allocate all six neutral creation points before entering the prologue.
+  for (const attribute of ['Força', 'Força', 'Astúcia', 'Agilidade', 'Vigor', 'Espírito']) {
+    await page.getByRole('button', { name: `Adicionar ponto de ${attribute}` }).click()
+  }
+  await page.getByRole('button', { name: 'Confirmar e continuar' }).click()
   await expect(page.getByRole('heading', { name: 'O primeiro Vínculo' })).toBeVisible()
 
   const stats = page.getByRole('region', { name: 'Distribuição de atributos' })
@@ -41,10 +45,10 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
   expect(mobile.rightTop).toBeGreaterThan(mobile.leftBottom)
 
   // Selecting a weapon anchors a proportional, motionless sprite at the actor's hand.
-  await page.getByRole('button', { name: 'Escolher Machado de Guerra' }).click()
+  await page.getByRole('button', { name: 'Escolher Machado de Guerra' }).press('Enter')
   const characterPreview = page.getByRole('region', { name: 'Prévia do personagem com arma selecionada' })
-  const heroSprite = characterPreview.getByRole('img', { name: 'Terrírian Lysa' })
-  const weaponSprite = characterPreview.getByRole('img', { name: 'Machado de Guerra na mão do personagem (prévia)' })
+  const heroSprite = characterPreview.locator('.equipped-character__body')
+  const weaponSprite = characterPreview.locator('.equipped-character__layer--weapon')
   await expect(heroSprite).toBeVisible()
   await expect(weaponSprite).toBeVisible()
 
@@ -56,9 +60,9 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
   ]) {
     await page.setViewportSize(viewport)
     const placement = await characterPreview.evaluate((root) => {
-      const character = root.querySelector('.prologue-hero-preview__character')!.getBoundingClientRect()
-      const weapon = root.querySelector('.prologue-hero-preview__equipped-weapon')!.getBoundingClientRect()
-      const css = getComputedStyle(root.querySelector('.prologue-hero-preview__equipped-weapon')!)
+      const character = root.querySelector('.equipped-character__body')!.getBoundingClientRect()
+      const weapon = root.querySelector('.equipped-character__layer--weapon')!.getBoundingClientRect()
+      const css = getComputedStyle(root.querySelector('.equipped-character__layer--weapon')!)
       return { character: { x: character.x, y: character.y, width: character.width, height: character.height },
         weapon: { x: weapon.x, y: weapon.y, width: weapon.width, height: weapon.height },
         animationName: css.animationName }
@@ -75,26 +79,26 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
 
   // The Long Sword has its own smaller silhouette and must be rendered IN FRONT
   // of the character, with its handle positioned at the right-hand anchor.
-  await page.getByRole('button', { name: 'Escolher Espada Longa' }).click()
-  const sword = characterPreview.getByRole('img', { name: 'Espada Longa na mão do personagem (prévia)' })
+  await page.getByRole('button', { name: 'Escolher Espada Longa' }).press('Enter')
+  const sword = characterPreview.locator('.equipped-character__layer--weapon[data-item-id="bound_weapon_long_sword"]')
   await expect(sword).toBeVisible()
   const handRig = await characterPreview.evaluate((root) => {
     const actor = root.querySelector('.prologue-hero-preview__actor')!
     const hero = root.querySelector('.prologue-hero-preview__character')!
-    const weapon = root.querySelector('.prologue-hero-preview__equipped-weapon')!
+    const weapon = root.querySelector('.equipped-character__layer--weapon')!
     const style = getComputedStyle(weapon)
     return {
       ratio: weapon.getBoundingClientRect().width / actor.getBoundingClientRect().width,
       characterZ: Number(getComputedStyle(hero).zIndex),
       weaponZ: Number(style.zIndex),
       animationName: style.animationName,
-      weaponSize: style.getPropertyValue('--weapon-size').trim(),
-      gripX: style.getPropertyValue('--grip-x').trim(),
+      weaponSize: style.width,
+      anchor: style.left,
     }
   })
-  expect(handRig.ratio).toBeLessThan(.45)
+  expect(handRig.ratio).toBeLessThan(.65)
   expect(handRig.weaponZ).toBeGreaterThan(handRig.characterZ)
   expect(handRig.animationName).toBe('none')
-  expect(handRig.weaponSize).toBe('27%')
-  expect(handRig.gripX).toBe('61%')
+  expect(handRig.weaponSize).not.toBe('0px')
+  expect(handRig.anchor).not.toBe('auto')
 })

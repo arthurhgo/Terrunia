@@ -82,6 +82,7 @@ export function TerranCharacterHud({ save, backpackOpen = false, onToggleBackpac
             ? definition.assetIdByGrade[instance.grade] ?? definition.assetIdByGrade[1]
             : basic?.definition.iconAssetId
           return <div className={`terran-character-hud__slot ${equipped ? 'is-bound' : basic ? 'is-starter' : 'is-empty'}`} key={slot}
+            data-rarity={equipped ? undefined : basic?.definition.rarity} data-grade={equipped ? instance?.grade : undefined}
             title={`${BOUND_SLOT_LABELS[slot]} · ${equipped ? definition!.name : basic?.definition.name ?? 'Não vinculado'}`}>
             <span>{BOUND_SLOT_LABELS[slot]}</span>
             <div className="terran-character-hud__slot-art">

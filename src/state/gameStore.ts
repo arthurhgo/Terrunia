@@ -4,6 +4,7 @@ import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmo
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
 import { create } from 'zustand'
 import { content } from '../content/catalog'
+import { BALANCE } from '../content/balance'
 import {
   gainBoundResonance,
   performGradeThreeRite,
@@ -26,7 +27,7 @@ import { discoverDungeonRoom, dungeonRoomFlag, enterDungeon, exitDungeon, FUNGAL
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { prepareStarterWeapon } from '../domain/bond/starterWeaponPlan'
 import { requestCampaignReset } from '../domain/game/campaignReset'
-import type { AttributeId, GameSave } from '../domain/game/types'
+import { ATTRIBUTE_IDS, type AttributeId, type GameSave } from '../domain/game/types'
 import type { BoundSlot } from '../domain/shared/types'
 import type { CharacterAppearance } from '../domain/character/appearance'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
@@ -35,6 +36,7 @@ import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 import {
   acceptQuest as acceptQuestDomain,
   applyQuestEvent,
+  refreshQuestAvailability,
   declineQuest as declineQuestDomain,
   offerQuest as offerQuestDomain,
   setQuestTracked as setQuestTrackedDomain,
@@ -89,7 +91,7 @@ type GameState = {
   notification: GameNotification | null
   boot: (ownerId: string) => Promise<void>
   continueCharacter: () => void
-  createGame: (name: string, portraitAssetId: string, appearance?: CharacterAppearance) => Promise<boolean>
+  createGame: (name: string, portraitAssetId: string, appearance?: CharacterAppearance, investments?: Partial<Record<AttributeId, number>>) => Promise<boolean>
   bindPrologueWeapon: (baseItemId?: string) => boolean
   prepareStarterWeapon: (baseItemId: string) => boolean
   adjustAttribute: (attributeId: AttributeId, direction: 1 | -1) => void
@@ -241,7 +243,7 @@ export const useGameStore = create<GameState>((set, get) => {
       set({ characterAccess: 'granted' })
     },
 
-    createGame: async (name, portraitAssetId, appearance) => {
+    createGame: async (name, portraitAssetId, appearance, investments) => {
       const ownerId = get().ownerId
       const campaignSeed = get().campaignSeed
       const preservedSettings = get().preservedSettings
@@ -268,6 +270,27 @@ export const useGameStore = create<GameState>((set, get) => {
         campaignSeed ?? { campaignId: createRandomId(), campaignGeneration: 0 },
         appearance,
       )
+      // The initial six points are committed atomically with the new character.
+      // Existing callers without investments retain the legacy prologue allocation.
+      if (investments) {
+        const spent = ATTRIBUTE_IDS.reduce((sum, id) => sum + (investments[id] ?? 0), 0)
+        if (spent !== BALANCE.characterCreationAttributePoints ||
+            ATTRIBUTE_IDS.some((id) => !Number.isInteger(investments[id]) || (investments[id] ?? 0) < 0 || (investments[id] ?? 0) > 8)) {
+          failAction('Distribua exatamente seis pontos, um por clique, antes de criar o Terrírian.')
+          return false
+        }
+        let prepared = save
+        for (const id of ATTRIBUTE_IDS) for (let i = 0; i < (investments[id] ?? 0); i++) {
+          const result = adjustCharacterAttribute(prepared, id, 1, nowIso())
+          if (!result.ok) { failAction(result.message); return false }
+          prepared = result.value
+        }
+        save.character = prepared.character
+        save.eventLog = prepared.eventLog
+        save.revision = prepared.revision
+        const derived = deriveCharacterStats(save, content)
+        save.vitals = { hp: derived.life.value, mp: derived.mana.value }
+      }
       if (preservedSettings) save.settings = preservedSettings
       await commit(save)
       set({ characterAccess: 'granted' })
@@ -490,10 +513,20 @@ export const useGameStore = create<GameState>((set, get) => {
     unlockBaseWithKey: () => {
       const save = get().save
       if (!save) return false
-      const result = unlockPlayerBaseWithDaerynKey(save, nowIso())
+      const now = nowIso()
+      const result = unlockPlayerBaseWithDaerynKey(save, now)
       if (!result.ok) { failAction(result.message); return false }
-      commit(result.value)
-      show('Base destrancada', 'A Chave de Daeryn foi usada na porta e retirada da mochila. Agora você pode entrar livremente.', 'success')
+      let next = result.value
+      // ACCESS is the reward. Mark this single objective and hand it in
+      // in the same transaction as consuming the key; no XP/Gold granted.
+      if (next.quests.main_terran_open_base_door?.status === 'active') {
+        next = applyQuestEvent(next, { type: 'interact', targetId: 'unlock_player_home_door' }, content, now)
+        const done = turnInQuestDomain(next, 'main_terran_open_base_door', 'npc_daeryn', content, now)
+        if (!done.ok) { failAction(done.message); return false }
+        next = done.value
+      }
+      commit(next)
+      show('Base destrancada · missão concluída', 'Chave usada uma vez. O acesso à sua Base e às três funções foi liberado.', 'success')
       return true
     },
 
@@ -880,6 +913,13 @@ export const useGameStore = create<GameState>((set, get) => {
           next.world.completedEncounterIds.push(battle.encounterId)
         }
       }
+      // Persist precisely which species were defeated: dynamic Portal waves share
+      // an encounter ID and cannot be reconstructed from the static catalog.
+      const defeatedSpecies = [...new Set(Object.values(battle.combatants)
+        .filter((combatant) => combatant.side === 'enemy' && !combatant.alive)
+        .map((combatant) => combatant.definitionId))]
+      next.eventLog.push(...defeatedSpecies.filter((id) => !next.eventLog.includes(`EnemyStudied:${id}`))
+        .map((id) => `EnemyStudied:${id}`))
       next.eventLog.push(`BattleWon:${battle.encounterId}`, `DropReceived:${loot.length}`)
       next.updatedAt = acquiredAt
       if (!battle.waveIndex && !battle.portalHuntId) {
@@ -898,6 +938,8 @@ export const useGameStore = create<GameState>((set, get) => {
           acquiredAt,
         )
       }
+      // Level-gated optional missions must be re-evaluated after battle XP.
+      next = refreshQuestAvailability(next, content, acquiredAt)
       commit(next)
       show(
         'Vitória',

@@ -40,65 +40,69 @@ afterEach(() => {
 })
 
 describe('Entrada da Presença Fungorra na trilha pixelada', () => {
-  it('inicia o encontro com E quando está perto, sem depender do drawer', () => {
+  it('E inspeciona o inimigo, mas nunca inicia combate automaticamente', () => {
     const { onEngage, onInspect } = setup()
     fireEvent.keyDown(window, { key: 'e' })
-    expect(onEngage).toHaveBeenCalledOnce()
-    expect(onEngage).toHaveBeenCalledWith('astravel_fungorro_01')
-    expect(onInspect).not.toHaveBeenCalled()
+    expect(onInspect).toHaveBeenCalledWith('astravel_fungorro_01')
+    expect(onEngage).not.toHaveBeenCalled()
     fireEvent.keyDown(window, { key: 'Enter' })
-    expect(onEngage).toHaveBeenCalledOnce()
+    expect(onEngage).not.toHaveBeenCalled()
   })
 
-  it('ao clicar no marco atual, entra no encontro sem segundo clique', () => {
+  it('clicar no marco atual abre apenas o painel para escolher enfrentar', () => {
     const { onEngage, onInspect } = setup()
     fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Presença Fungorra' }))
-    expect(onEngage).toHaveBeenCalledWith('astravel_fungorro_01')
-    expect(onInspect).not.toHaveBeenCalled()
+    expect(onInspect).toHaveBeenCalledWith('astravel_fungorro_01')
+    expect(onEngage).not.toHaveBeenCalled()
   })
 
-  it('marcos concluídos abrem registro sem repetir combate', () => {
+  it('marcos concluídos abrem registro e não reiniciam combate', () => {
     const { onEngage, onInspect } = setup('completed')
     fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Presença Fungorra' }))
     expect(onInspect).toHaveBeenCalledWith('astravel_fungorro_01')
     expect(onEngage).not.toHaveBeenCalled()
   })
 
-  it('o botão E na tela também começa o encontro (não apenas o teclado)', () => {
+  it('interação E da interface também apenas inspeciona', () => {
     const { onEngage, onInspect } = setup()
     fireEvent.click(screen.getByRole('button', { name: 'Interagir com ponto próximo' }))
-    expect(onEngage).toHaveBeenCalledWith('astravel_fungorro_01')
-    expect(onInspect).not.toHaveBeenCalled()
+    expect(onInspect).toHaveBeenCalledWith('astravel_fungorro_01')
+    expect(onEngage).not.toHaveBeenCalled()
   })
 
-  it('quando o personagem já está parado no marco, a cena inicia o encontro no próximo frame', () => {
+  it('estar parado no marco não dispara combate; clique em Enfrentar inicia uma vez', () => {
     const { onEngage } = setup()
-    expect(frameCallback).not.toBeNull()
     act(() => { frameCallback?.(16) })
+    expect(onEngage).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: /Enfrentar Fungorro próximo/ }))
+    expect(onEngage).toHaveBeenCalledOnce()
     expect(onEngage).toHaveBeenCalledWith('astravel_fungorro_01')
   })
 
-  it('se o motor recusar o combate, E pode tentar de novo sem ficar travado', () => {
+  it('se o motor recusar a luta, a ação Enfrentar permanece disponível', () => {
     const { onEngage } = setup('current', 'astravel_fungorro_01', false)
-    fireEvent.keyDown(window, { key: 'e' })
-    fireEvent.keyDown(window, { key: 'e' })
+    act(() => { frameCallback?.(16) })
+    const fight = screen.getByRole('button', { name: /Enfrentar Fungorro próximo/ })
+    fireEvent.click(fight)
+    fireEvent.click(fight)
     expect(onEngage).toHaveBeenCalledTimes(2)
   })
 
-  it('ao clicar no marco de longe, o personagem percorre a trilha e o combate abre na chegada', () => {
-    const { onEngage } = setup('current', 'astravel_entry')
+  it('caminhar desde 0 Entrada não abre luta ao chegar ao objetivo', () => {
+    const { onEngage, onInspect } = setup('current', 'astravel_entry')
     fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Presença Fungorra' }))
     expect(onEngage).not.toHaveBeenCalled()
-    for (let step = 1; step <= 300 && onEngage.mock.calls.length === 0; step += 1) {
+    for (let step = 1; step <= 300 && onInspect.mock.calls.length === 0; step += 1)
       act(() => { frameCallback?.(step * 40) })
-    }
-    expect(onEngage).toHaveBeenCalledWith('astravel_fungorro_01')
+    expect(onInspect).toHaveBeenCalledWith('astravel_fungorro_01')
+    expect(onEngage).not.toHaveBeenCalled()
   })
 
-  it('marcos bloqueados não ficam acessíveis', () => {
-    const { onEngage } = setup('locked')
+  it('marcos bloqueados não podem ser inspecionados nem combatidos', () => {
+    const { onEngage, onInspect } = setup('locked')
     expect(screen.getByRole('button', { name: 'Aproximar-se de Presença Fungorra' })).toBeDisabled()
     fireEvent.keyDown(window, { key: 'e' })
+    expect(onInspect).not.toHaveBeenCalled()
     expect(onEngage).not.toHaveBeenCalled()
   })
 })

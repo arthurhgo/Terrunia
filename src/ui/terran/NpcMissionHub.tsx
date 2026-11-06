@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BookOpen, MessageCircle, Wrench } from 'lucide-react'
 import { content } from '../../content/catalog'
 import type { TerranLocationDefinition } from '../../content/types'
@@ -26,6 +26,17 @@ export function NpcMissionHub({ save, presence, initialQuestId, onClose, onServi
 }) {
   const quests = presence.npcId ? getNpcActionableQuests(save, presence.npcId, content) : []
   const [topic, setTopic] = useState<string>(initialQuestId)
+  const previousStatuses = useRef<Record<string, string>>({})
+  // Accepted missions move to the end; offer the next available quest in the same dialogue.
+  useEffect(() => {
+    const oldStatus = previousStatuses.current[topic]
+    const newStatus = save.quests[topic]?.status
+    if ((oldStatus === 'available' || oldStatus === 'offered') && newStatus === 'active') {
+      const next = quests.find((quest) => ['available', 'offered'].includes(save.quests[quest.id]?.status ?? ''))
+      if (next) setTopic(next.id)
+    }
+    previousStatuses.current = Object.fromEntries(quests.map((quest) => [quest.id, save.quests[quest.id]?.status ?? 'locked']))
+  }, [save.revision, topic, presence.npcId])
   const selected = quests.find((q) => q.id === topic) ?? quests[0]
   const talking = topic === 'talk'
   const portrait = getPresencePortrait(presence)

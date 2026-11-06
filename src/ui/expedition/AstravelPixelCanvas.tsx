@@ -64,8 +64,6 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
   const statusesRef = useRef(statuses)
   const inspectRef = useRef(onInspect)
   const engageRef = useRef(onEngage)
-  const engagingRef = useRef<string | null>(null)
-  const autoAttemptedRef = useRef<string | null>(null)
   const travelRef = useRef(onTravelStart)
   enabledRef.current = enabled
   statusesRef.current = statuses
@@ -77,23 +75,11 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
     if (!enabled) { directionsRef.current.clear(); destinationRef.current = null }
   }, [enabled])
 
-  /**
-   * Active combat landmarks are encounter triggers, not a two-click inspection
-   * drawer. Completed/locked landmarks cannot spawn another encounter.
-   */
+  /** Proximity and walking only inspect; combat requires explicit Enfrentar. */
   const activateNode = useCallback((nodeId: string) => {
-    if (!enabledRef.current || engagingRef.current) return
+    if (!enabledRef.current) return
     const node = trail.nodes.find((candidate) => candidate.id === nodeId)
-    if (!node || !reachable(statusesRef.current[nodeId])) return
-    if (node.type === 'battle' && statusesRef.current[nodeId] === 'current') {
-      // Lock only after the battle actually starts. Failed preconditions (HP,
-      // quest, encounter state) must never permanently disable interaction.
-      if (engageRef.current(nodeId)) {
-        engagingRef.current = nodeId
-        destinationRef.current = null
-        directionsRef.current.clear()
-      }
-    } else inspectRef.current(nodeId)
+    if (node && reachable(statusesRef.current[nodeId])) inspectRef.current(nodeId)
   }, [trail])
 
   const walkTo = (point: WorldPoint, nodeId: string | null) => {
@@ -180,21 +166,13 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
           else if (isAstravelWalkable({ x: playerRef.current.x, y: next.y }, trail)) { playerRef.current.y = next.y; walking = true }
           else destinationRef.current = null
         }
-        // Check proximity regardless of input mode. Previously arriving by
-        // mouse/touch or stopping a step short could leave the player stuck at
-        // the marker without entering the encounter.
-        if (!engagingRef.current) {
-          const nearest = nearestReachableNode(playerRef.current, 26, trail, statusesRef.current)
-          const battleId = nearest?.type === 'battle' && statusesRef.current[nearest.id] === 'current'
-            ? nearest.id : null
-          if (nearbyActiveBattleRef.current !== battleId) {
-            nearbyActiveBattleRef.current = battleId
-            setNearbyActiveBattleId(battleId)
-          }
-          if (battleId && autoAttemptedRef.current !== battleId) {
-            autoAttemptedRef.current = battleId
-            activateNode(battleId)
-          } else if (!battleId) autoAttemptedRef.current = null
+        // Nearby encounters provide a visible action, never an automatic battle.
+        const nearest = nearestReachableNode(playerRef.current, 26, trail, statusesRef.current)
+        const battleId = nearest?.type === 'battle' && statusesRef.current[nearest.id] === 'current'
+          ? nearest.id : null
+        if (nearbyActiveBattleRef.current !== battleId) {
+          nearbyActiveBattleRef.current = battleId
+          setNearbyActiveBattleId(battleId)
         }
       }
       const camera = getAstravelCamera(playerRef.current)
@@ -266,7 +244,12 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
     {nearbyActiveBattleId && enabled && <button type="button"
       className="astravel-field__fight-action"
       aria-label="Enfrentar Fungorro próximo"
-      onClick={() => activateNode(nearbyActiveBattleId)}>
+      onClick={() => {
+        if (engageRef.current(nearbyActiveBattleId)) {
+          destinationRef.current = null
+          directionsRef.current.clear()
+        }
+      }}>
       ⚔ Enfrentar {trail.nodes.find((node) => node.id === nearbyActiveBattleId)?.label ?? 'inimigo'}
     </button>}
     <div className="pixel-city__dpad" aria-label="Controle de movimento da trilha">

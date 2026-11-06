@@ -20,8 +20,11 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
   await page.goto('/login')
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
   await page.getByPlaceholder('Ex.: Aron').fill('Lysa')
-  await page.getByRole('button', { name: 'Confirmar Terrírian' }).click()
-  await page.getByRole('button', { name: 'Aumentar Força', exact: true }).click()
+  // Allocate all six neutral creation points before entering the prologue.
+  for (const attribute of ['Força', 'Força', 'Astúcia', 'Agilidade', 'Vigor', 'Espírito']) {
+    await page.getByRole('button', { name: `Adicionar ponto de ${attribute}` }).click()
+  }
+  await page.getByRole('button', { name: 'Confirmar e continuar' }).click()
   await page.getByRole('button', { name: 'Escolher Espada Longa', exact: true }).press('Enter')
   await page.getByRole('button', { name: 'Vincular Espada Longa — Grau I', exact: true }).click()
   await page.getByRole('button', { name: 'Pular cena' }).click()
@@ -33,7 +36,7 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
   await expect(paths.locator('path[data-quest-ids~="vs_astravel_first_contact"]')).toHaveAttribute('d', /L /)
   await expect(paths).toHaveCSS('pointer-events', 'none')
   await page.screenshot({ path: '/tmp/terrunia-rosetta-gold-paths.png' })
-  await page.getByRole('heading', { name: 'Terran', exact: true }).hover()
+  await page.getByRole('button', { name: 'MENU / LOCAL', exact: true }).hover()
   await expect(paths).toHaveCount(0)
   await rosetta.focus()
   await expect(paths).toBeVisible()
@@ -69,15 +72,15 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
   await expect(guide.getByRole('heading', { name: 'Comprar para se Preparar', exact: true })).toBeVisible()
   await guide.getByRole('button', { name: 'Aceitar missão', exact: true }).click()
   await guide.getByRole('button', { name: 'Abrir mochila', exact: true }).click()
-  const inventory = page.getByRole('complementary', { name: 'Painel lateral: Inventário' })
+  const inventory = page.getByRole('region', { name: 'Mochila do personagem' })
   const tunicButton = inventory.getByRole('button', { name: /Túnica de Linho Gasta/ })
   await tunicButton.hover()
   await expect(page.getByRole('tooltip', { name: 'Status de Túnica de Linho Gasta' })).toContainText('Tier 1')
   await tunicButton.click()
   await inventory.getByRole('button', { name: 'Equipar Túnica de Linho Gasta', exact: true }).click()
-  await expect(inventory.getByLabel('Proteção simples equipada')).toContainText('Túnica de Linho Gasta')
+  await expect(page.locator('.terran-character-hud__slot.is-starter')).toHaveAttribute('title', /Túnica de Linho Gasta/)
   await expect(page.locator('.terran-character-hud__slot.is-starter img')).toHaveAttribute('src', /item_worn_linen_tunic/)
-  await page.getByRole('button', { name: 'Fechar painel', exact: true }).click()
+  await page.locator('.terran-character-hud__backpack > button').click()
   await page.getByRole('button', { name: 'Ir para Mercado', exact: true }).click()
   await page.getByRole('button', { name: 'Falar com Neris dentro do local', exact: true }).click()
   let shop = page.getByRole('dialog', { name: 'Neris', exact: true })
@@ -105,15 +108,16 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
   await guide.getByRole('button', { name: 'Consultar diário de missões', exact: true }).click()
   const journal = page.getByRole('region', { name: 'Diário de missões', exact: true })
   const history = journal.getByRole('button', { name: 'Expandir missões concluídas (3)', exact: true })
+  const completedRows = journal.locator('.quest-journal-group--completed .quest-row')
   await expect(history).toHaveAttribute('aria-expanded', 'false')
-  await expect(journal.locator('.quest-row')).toHaveCount(0)
+  await expect(completedRows).toHaveCount(0)
   await page.screenshot({ path: '/tmp/terrunia-completed-collapsed.png' })
   await history.focus()
   await history.press('Enter')
-  await expect(journal.locator('.quest-row')).toHaveCount(3)
+  await expect(completedRows).toHaveCount(3)
   await journal.getByRole('button', { name: 'Recolher missões concluídas (3)', exact: true }).click()
-  await expect(journal.locator('.quest-row')).toHaveCount(0)
-  await page.getByRole('button', { name: 'Fechar painel', exact: true }).click()
+  await expect(completedRows).toHaveCount(0)
+  await page.getByRole('link', { name: 'Terran', exact: true }).click()
 
   await page.evaluate(async () => { const { flushPersistence } = await import('/src/state/gameStore.ts'); await flushPersistence() })
   await page.reload()
@@ -121,11 +125,13 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
   const persisted = await page.evaluate(async () => {
     const { useGameStore } = await import('/src/state/gameStore.ts')
     const save = useGameStore.getState().save!
-    return { schema: save.schemaVersion, gold: save.wallet.gold, armor: save.inventory.find((item) => item.instanceId === save.character.basicArmorInstanceId),
+    return { schema: save.schemaVersion, gold: save.wallet.gold,
+      armor: save.equippedBasicArmor, equippedId: save.character.basicArmorInstanceId,
       lessons: Object.values(save.quests).filter((quest) => quest.questId.startsWith('rosetta_tutorial_')).map((quest) => quest.status),
-      supplies: save.inventory.filter((item) => item.definitionId.includes('tunic')).length }
+      spareTunics: save.inventory.filter((item) => item.definitionId.includes('tunic')).length }
   })
-  expect(persisted).toMatchObject({ schema: 16, gold: 11, armor: { definitionId: 'equipment_worn_linen_tunic', refinementLevel: 1 }, lessons: ['completed','completed','available','completed'], supplies: 1 })
+  expect(persisted).toMatchObject({ schema: 17, gold: 11, armor: { definitionId: 'equipment_worn_linen_tunic', refinementLevel: 1 }, lessons: ['completed','completed','available','completed'], spareTunics: 0 })
+  expect(persisted.equippedId).toBe(persisted.armor?.instanceId)
 
   // Only this extra offer is a visual fixture, to check a secondary route without replaying the story.
   await page.evaluate(async () => {
@@ -139,7 +145,7 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
   await expect(paths.locator('path[data-quest-ids*="rosetta_tutorial_"]')).toHaveCount(0)
   await page.setViewportSize({ width: 390, height: 844 })
   guide = await meetRosetta(page)
-  await guide.getByRole('button', { name: 'Mostrar caminhos dourados no mapa', exact: true }).click()
+  await guide.getByRole('button', { name: 'Mostrar caminhos dourados para novas missões', exact: true }).click()
   await expect(paths).toBeVisible()
   await expect(paths).toHaveAttribute('viewBox', '0 0 768 512')
   await page.screenshot({ path: '/tmp/terrunia-rosetta-mobile-paths.png' })

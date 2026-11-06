@@ -213,7 +213,10 @@ describe('vertical slice integrada', () => {
         store().turnInQuest('main_terran_first_home', 'npc_daeryn')
         expect(store().save!.inventory.some((item) => item.definitionId === 'quest_daeryn_home_key')).toBe(true)
         visit('location_terran_portal_plaza')
+        store().acceptQuest('main_terran_open_base_door')
+        expect(store().save?.quests.main_terran_open_base_door?.status).toBe('active')
         expect(store().unlockBaseWithKey()).toBe(true)
+        expect(store().save?.quests.main_terran_open_base_door?.status).toBe('completed')
         expect(store().save!.inventory.some((item) => item.definitionId === 'quest_daeryn_home_key')).toBe(false)
       } else {
         expect(store().enterBase()).toBe(true)

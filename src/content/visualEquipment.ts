@@ -48,3 +48,17 @@ export const visualEquipmentCatalog: readonly VisualEquipmentEntry[] = [
   visual('bracelet_leather', 'Pulseira de Couro', 'bracelet', 'Estudo visual de bracelete leve.'),
   visual('bracelet_resonance', 'Pulseira de Ressonância', 'bracelet', 'Estudo visual de bracelete com núcleo de Essência.'),
 ]
+
+
+/** VISUAL_DRAFT. Distinct real starter armor sprites require distinct material hues.
+ * Pure display metadata keyed to their existing item IDs, never gameplay rarity.
+ */
+export const BASIC_ARMOR_MATERIAL_PALETTES: Record<string, {
+  shade: string; base: string; light: string; rune: string
+}> = {
+  equipment_worn_linen_tunic: { shade: '#50483f', base: '#8a806f', light: '#c6b9a0', rune: '#a9a08a' },
+  equipment_apprentice_tunic: { shade: '#263b50', base: '#50728d', light: '#94b2c5', rune: '#99c9d1' },
+  equipment_light_leather_vest: { shade: '#463328', base: '#885d3e', light: '#b88c61', rune: '#b39b70' },
+  equipment_terran_guard_armor: { shade: '#37414a', base: '#72808a', light: '#b9c8c8', rune: '#d3b977' },
+  equipment_simple_leather_armor: { shade: '#4d362a', base: '#966c48', light: '#c79c70', rune: '#bb965d' },
+}

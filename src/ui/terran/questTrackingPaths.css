@@ -81,3 +81,7 @@
 .rosetta-minimap-lines[data-route-mode="rosetta"] path { opacity: .4; }
 .rosetta-quest-lines[data-route-mode="tracked"][data-route-tone="blue"] path,
 .rosetta-minimap-lines[data-route-mode="tracked"][data-route-tone="blue"] path { opacity: .4; }
+
+/* v0.5.9: Rosetta guidance is thin gold, distinct from tracked routes. */
+.rosetta-quest-lines[data-route-mode="rosetta"] path{stroke:#dcb467!important;stroke-width:1.45!important;opacity:.82!important;stroke-dasharray:5 5}
+.rosetta-minimap-lines[data-route-mode="rosetta"] path{stroke:#dcb467!important;stroke-width:2.5!important;opacity:.8!important}

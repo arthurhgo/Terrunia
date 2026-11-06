@@ -250,6 +250,9 @@ for (const quest of Object.values(content.quests)) {
   }
   for (const requirement of quest.prerequisites ?? []) {
     if (requirement.type === 'questCompleted') assertReference(content.quests[requirement.questId], `${quest.id} → ${requirement.questId}`)
+    if (requirement.type === 'characterLevel' && (!Number.isSafeInteger(requirement.value) || requirement.value < 1)) {
+      throw new Error(`Nível mínimo inválido: ${quest.id} → ${requirement.value}`)
+    }
     if ('clanId' in requirement) assertReference(content.clans[requirement.clanId], `${quest.id} → ${requirement.clanId}`)
   }
 }

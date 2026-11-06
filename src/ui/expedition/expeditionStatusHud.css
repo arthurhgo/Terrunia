@@ -1,0 +1,34 @@
+/* v0.5.9: fixed compact RPG HUD, non-obstructive over walkable scene. */
+.expedition-status-hud{position:absolute;z-index:15;left:10px;top:9px;width:min(275px,39vw);
+ padding:8px 9px;background:linear-gradient(140deg,#071a24ef,#112b33ee);
+ border:2px solid #a08047;box-shadow:inset 0 0 0 2px #2d4239,0 5px 13px #000b;
+ color:#f2dcaa;pointer-events:auto}
+.expedition-status-hud__actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-bottom:8px}
+.expedition-status-hud__actions button{min-width:0;padding:5px 3px;display:flex;gap:4px;
+  align-items:center;justify-content:center;border:1px solid #826b41;background:#1c333b;
+  font:700 9px var(--display);color:#dcc79d;cursor:pointer}
+.expedition-status-hud__actions button.is-active{border-color:#f5ce7f;background:#425046;color:#fff0ca}
+.expedition-status-hud__actions button:focus-visible{outline:2px solid #ecca79}
+.expedition-status-hud__identity{display:flex;align-items:center;gap:8px}
+.expedition-status-hud__portrait{display:block;flex:0 0 49px;width:49px;height:49px;overflow:hidden;
+  border:2px solid #8c733f;background:#1b3133}
+.expedition-status-hud__portrait img{display:block;width:100%;height:100%;image-rendering:pixelated;object-fit:contain}
+.expedition-status-hud__vitals{flex:1;min-width:0}
+.expedition-status-hud__vitals>strong{display:flex;justify-content:space-between;gap:6px;
+  margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:700 10px var(--display)}
+.expedition-status-hud__vitals>strong small{color:#e7b56b;font-size:8px}
+.expedition-status-hud__vitals label{display:flex;justify-content:space-between;margin:3px 0 2px;
+  font:700 8px var(--display);color:#e2d5bd}
+.expedition-status-hud__bar{height:8px;border:1px solid #080f14;background:#26343c;overflow:hidden}
+.expedition-status-hud__bar i{display:block;height:100%;transition:width .2s steps(10,end)}
+.expedition-status-hud__bar.is-hp i{background:linear-gradient(#ff8a70,#ac342e)}
+.expedition-status-hud__bar.is-mp i{background:linear-gradient(#73bfff,#2769b5)}
+@media(max-width:720px){.expedition-status-hud{width:min(240px,70vw);left:4px;top:4px;padding:5px}
+ .expedition-status-hud__actions button{font-size:8px}.expedition-status-hud__actions button svg{width:12px;height:12px}
+ .expedition-status-hud__portrait{width:39px;height:39px;flex-basis:39px}}
+
+.expedition-game__route-open{position:absolute;z-index:15;left:10px;top:128px;
+ display:flex;gap:6px;align-items:center;padding:5px 9px;
+ border:1px solid #8e744b;background:#152c33e9;color:#e9d2a4;
+ font:700 9px var(--display);cursor:pointer}
+@media(max-width:720px){.expedition-game__route-open{top:112px;left:4px;font-size:8px}}

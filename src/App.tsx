@@ -20,6 +20,7 @@ const SkillTreeScreen = lazy(() => import('./ui/screens/SkillTreeScreen').then((
 const TerranLocationScreen = lazy(() => import('./ui/screens/TerranLocationScreen').then((module) => ({ default: module.TerranLocationScreen })))
 const WorldScreen = lazy(() => import('./ui/screens/WorldScreen').then((module) => ({ default: module.WorldScreen })))
 const UnifiedWorldScreen = lazy(() => import('./ui/screens/UnifiedWorldScreen').then((module) => ({ default: module.UnifiedWorldScreen })))
+const PortalHubScreen = lazy(() => import('./ui/screens/PortalHubScreen').then((module) => ({ default: module.PortalHubScreen })))
 
 function GameBoot({ children, allowCharacterAccess = false }: { children: ReactNode; allowCharacterAccess?: boolean }) {
   const authStatus = useAuthStore((state) => state.status)
@@ -73,6 +74,7 @@ export default function App() {
           <Route path="/character/create" element={<GameBoot><CharacterCreationScreen /></GameBoot>} />
           <Route path="/new-game" element={<GameBoot><PrologueScreen /></GameBoot>} />
           <Route path="/play" element={<GameBoot><UnifiedWorldScreen /></GameBoot>} />
+          <Route path="/portal-hub" element={<GameBoot><PortalHubScreen /></GameBoot>} />
           <Route path="/terran" element={<GameBoot><Navigate to="/play" replace /></GameBoot>} />
           <Route path="/terran/:locationId" element={<GameBoot><TerranLocationScreen /></GameBoot>} />
           <Route path="/nexus" element={<GameBoot><NexusScreen /></GameBoot>} />

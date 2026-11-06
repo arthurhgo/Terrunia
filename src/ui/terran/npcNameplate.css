@@ -115,3 +115,23 @@
 }
 .pixel-city__npc > .npc-nameplate,
 .pixel-interior__npc > .npc-nameplate { max-width: min(230px, 65vw); }
+
+/* v0.5.9: per-NPC quest counts beneath the existing title. */
+.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-counts),
+.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) {top:-63px}
+.npc-nameplate__quest-counts {
+ display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:3px;
+ max-width:200px;padding-top:2px;
+}
+.npc-nameplate .npc-nameplate__quest-count {
+ position:static;display:inline-block;width:auto;max-width:none;height:auto;
+ padding:2px 4px;border-radius:2px;white-space:nowrap;
+ font:700 7px/1.2 var(--display);letter-spacing:0;text-shadow:0 1px #071016;
+}
+.npc-nameplate__quest-count--available{border:1px solid #a88443;color:#ffe0a0;background:#52391a}
+.npc-nameplate__quest-count--active{border:1px solid #677d85;color:#d0dce0;background:#283840}
+.npc-nameplate__quest-count--ready{border:1px solid #679c78;color:#d9f9dc;background:#234937}
+.pixel-city__npc:has(.npc-nameplate__quest-counts) > .npc-quest-marker,
+.pixel-interior__npc:has(.npc-nameplate__quest-counts) > .npc-quest-marker {top:-103px}
+.pixel-city__npc:has(.npc-nameplate__quest-counts) > .npc-question-bubble,
+.pixel-interior__npc:has(.npc-nameplate__quest-counts) > .npc-question-bubble {top:-100px}

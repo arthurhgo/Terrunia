@@ -50,3 +50,16 @@
   border:1px solid #866d4a; background:#132a3a; font:700 .62rem var(--display);}
 .character-creator__directions button.is-selected {background:#345344; border-color:#dfc185; box-shadow:inset 0 0 0 1px #79b8ab;}
 @media(max-width:720px){.character-creator__face-preview{width:57px;height:57px;right:7px;top:7px;}}
+
+/* v0.5.9: manual one-point allocation during initial creation. */
+.character-creator__attributes legend{display:flex;align-items:center;gap:8px}
+.character-creator__attributes p{font-size:.83rem;line-height:1.45}
+.character-creator__attribute-rows{display:grid;gap:7px}
+.character-creator__attribute-row{
+ display:grid;grid-template-columns:minmax(110px,1fr) 36px 86px 36px;
+ align-items:center;gap:8px;border:1px solid #6d6046;background:#0d2027c7;padding:6px 9px;
+}
+.character-creator__attribute-row output{text-align:center;color:#f5dfab;font:bold 12px var(--display)}
+.character-creator__attribute-row button{min-height:32px;border:1px solid #b99655;background:#263c42;color:#f5e0b4;cursor:pointer}
+.character-creator__attribute-row button:disabled{opacity:.35;cursor:not-allowed}
+@media(max-width:520px){.character-creator__attribute-row{grid-template-columns:minmax(80px,1fr) 30px 65px 30px;gap:4px}}

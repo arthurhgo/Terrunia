@@ -1,5 +1,6 @@
 import { ArrowRight, RotateCcw, Sparkles } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { ATTRIBUTE_IDS, type AttributeId } from '../../domain/game/types'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useGameStore } from '../../state/gameStore'
 import { BALANCE } from '../../content/balance'
@@ -35,6 +36,20 @@ export function CharacterCreationScreen() {
   const [appearance, setAppearance] = useState<CharacterAppearance>({ ...DEFAULT_CHARACTER_APPEARANCE })
   const [submitting, setSubmitting] = useState(false)
   const [facing, setFacing] = useState<ActorFacing>('down')
+  const [invested, setInvested] = useState<Record<AttributeId, number>>({
+    cunning: 0, agility: 0, strength: 0, vigor: 0, spirit: 0,
+  })
+  const pointsLeft = BALANCE.characterCreationAttributePoints -
+    ATTRIBUTE_IDS.reduce((sum, id) => sum + invested[id], 0)
+  const attributeLabels: Record<AttributeId, string> = {
+    cunning: 'Astúcia', agility: 'Agilidade', strength: 'Força', vigor: 'Vigor', spirit: 'Espírito',
+  }
+  const investPoint = (id: AttributeId, change: 1 | -1) => setInvested((current) => {
+    const total = ATTRIBUTE_IDS.reduce((sum, key) => sum + current[key], 0)
+    const next = current[id] + change
+    if (next < 0 || next > 8 || (change === 1 && total >= BALANCE.characterCreationAttributePoints)) return current
+    return { ...current, [id]: next }
+  })
 
   if (save) return <Navigate to="/character/access" replace />
 
@@ -72,9 +87,9 @@ export function CharacterCreationScreen() {
   )
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    if (name.trim().length < 2 || submitting) return
+    if (name.trim().length < 2 || submitting || pointsLeft !== 0) return
     setSubmitting(true)
-    void createGame(name, 'character.terririan.default', appearance)
+    void createGame(name, 'character.terririan.default', appearance, invested)
       .then((created) => { if (created) navigate('/new-game') })
       .finally(() => setSubmitting(false))
   }
@@ -145,14 +160,24 @@ export function CharacterCreationScreen() {
             {colorField('outfitSecondary', 'Cor secundária', APPEARANCE_CLOTH_PALETTE)}
           </div>
         </fieldset>
-        <div className="attribute-draft">
-          <Sparkles size={18} />
-          <div><strong>Fundação neutra · {BALANCE.characterCreationAttributePoints} Pontos de Atributo</strong>
-            <p>No prólogo você distribuirá {BALANCE.characterCreationAttributePoints} pontos individualmente (2 no mesmo atributo evoluem o dado) e escolherá entre as sete armas vinculadas. Nenhum Clã ou Classe é escolhido aqui.</p>
+        <fieldset className="character-creator__group character-creator__attributes" aria-label="Distribuir atributos na criação">
+          <legend><Sparkles size={15} /> Fundação neutra · {pointsLeft} pontos restantes</legend>
+          <p>Adicione um ponto por clique. O primeiro dá d4 + 1; o segundo evolui para d6. Distribua todos os seis pontos para criar.</p>
+          <div className="character-creator__attribute-rows">
+            {ATTRIBUTE_IDS.map((id) => <div className="character-creator__attribute-row" key={id}>
+              <strong>{attributeLabels[id]}</strong>
+              <button type="button" aria-label={`Retirar ponto de ${attributeLabels[id]}`}
+                disabled={invested[id] === 0} onClick={() => investPoint(id, -1)}>−</button>
+              <output aria-label={`Dado de ${attributeLabels[id]}`}>
+                d{4 + 2 * Math.floor(invested[id] / 2)}{invested[id] % 2 ? ' + 1' : ''}
+              </output>
+              <button type="button" aria-label={`Adicionar ponto de ${attributeLabels[id]}`}
+                disabled={pointsLeft === 0 || invested[id] === 8} onClick={() => investPoint(id, 1)}>+</button>
+            </div>)}
           </div>
-        </div>
+        </fieldset>
         <small className="creation-visual-note">A aparência é independente do gameplay. Os sprites podem ser substituídos via assetRegistry em atualizações futuras.</small>
-        <GameButton type="submit" variant="primary" full disabled={name.trim().length < 2 || submitting}>
+        <GameButton type="submit" variant="primary" full disabled={name.trim().length < 2 || submitting || pointsLeft !== 0}>
           {submitting ? 'Salvando Terrírian…' : 'Confirmar e continuar'} <ArrowRight size={18} />
         </GameButton>
       </form>

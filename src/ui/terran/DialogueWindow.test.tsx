@@ -53,7 +53,10 @@ describe('janela única de conversa', () => {
     expect(within(dialog).getByRole('button', { name: 'Agora não' })).toBeEnabled()
     expect(within(dialog).queryByRole('button', { name: 'Ouvir a oferta' })).not.toBeInTheDocument()
     expect(dialog).toHaveTextContent('Derrote 2 Semeadores de Esporos')
-    expect(dialog).toHaveTextContent('XP +20 · Ouro +10 · Essência +15')
+    expect(dialog).toHaveTextContent('Recompensas ao entregar')
+    expect(dialog).toHaveTextContent('+20 XP')
+    expect(dialog).toHaveTextContent('+10 Ouro')
+    expect(dialog).toHaveTextContent('+15 Essência Bruta')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Aceitar missão' }))
     const next = useGameStore.getState().save!
     expect(next.quests.side_npc_eldamar).toMatchObject({ status: 'active', tracked: true })

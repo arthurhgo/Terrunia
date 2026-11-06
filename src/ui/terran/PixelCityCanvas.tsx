@@ -350,7 +350,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
         aria-label="Terran vista superior 3/4; caminhe por WASD, setas ou toque" />
       <div ref={worldRef} className="pixel-city__sites pixel-city__world" style={{ width: `${CITY_WIDTH / CITY_VIEW_WIDTH * 100}%`, height: `${CITY_HEIGHT / CITY_VIEW_HEIGHT * 100}%`, transform: `translate(${-cameraRef.current.x / CITY_WIDTH * 100}%, ${-cameraRef.current.y / CITY_HEIGHT * 100}%)` }}>
         {routesVisible && <svg className="rosetta-quest-lines" viewBox={`0 0 ${CITY_WIDTH} ${CITY_HEIGHT}`} role="img"
-          aria-label={showingTracked ? 'Caminho pontilhado da missão rastreada' : 'Caminhos brancos de Rosetta'}
+          aria-label={showingTracked ? 'Caminho pontilhado da missão rastreada' : 'Caminhos dourados de Rosetta'}
           data-route-mode={showingTracked ? 'tracked' : 'rosetta'}
           data-route-tone={showingTracked ? trackedQuestRoute?.tone : 'white'} data-reduced-motion={reducedMotion}>
           {visibleRoutes.map((route) => <path key={route.id} data-quest-ids={route.questIds.join(' ')}

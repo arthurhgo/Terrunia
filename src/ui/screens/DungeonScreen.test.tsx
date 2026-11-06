@@ -31,7 +31,7 @@ describe('Câmaras Fúngicas em quatro salas', () => {
     render(<MemoryRouter initialEntries={['/dungeon']}><DungeonScreen /></MemoryRouter>)
     expect(screen.getByRole('heading', { name: 'Câmaras Fúngicas' })).toBeInTheDocument()
     expect(screen.getByRole('img', { name: /Dungeon em pixels, quatro salas/ })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Salas' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mapa das Salas' }))
     expect(screen.getByRole('complementary', { name: 'Painel lateral: Mapa das Salas' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Abrir Mochila' }))
     expect(screen.getByRole('complementary', { name: 'Painel lateral: Mochila' })).toBeInTheDocument()

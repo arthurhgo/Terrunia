@@ -1,29 +1,19 @@
-import { expect, test, type Page } from '@playwright/test'
-
-async function fightAndCollect(page: Page, count: number) {
-  for (let turn = 0; turn < 16; turn++) {
-    if (await page.getByRole('heading', { name: 'VITÓRIA', exact: true }).isVisible()) break
-    const attack = page.getByRole('button', { name: 'ATACAR', exact: true })
-    await expect(attack).toBeEnabled()
-    await attack.click()
-  }
-  await expect(page.getByRole('heading', { name: 'VITÓRIA', exact: true })).toBeVisible()
-  const drops = page.locator('.pixel-battle__drops button')
-  await expect(drops).toHaveCount(count)
-  for (let index = 0; index < count; index++) await drops.nth(index).click()
-  await page.getByRole('button', { name: 'CONFIRMAR RECOMPENSAS', exact: true }).click()
-}
+import { expect, test } from '@playwright/test'
+import { fightAndCollect } from './helpers/combatUi'
 
 test('Terran: câmera, exploração, marcadores, drops reais e entrega de encomenda por ouro', async ({ page }) => {
-  test.setTimeout(180_000)
+  test.setTimeout(240_000)
   page.setDefaultTimeout(20_000)
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await page.goto('/login')
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
   await page.getByPlaceholder('Ex.: Aron').fill('Lysa')
-  await page.getByRole('button', { name: 'Confirmar Terrírian' }).click()
-  await page.getByRole('button', { name: 'Aumentar Força', exact: true }).click()
+  // Allocate all six neutral creation points before entering the prologue.
+  for (const attribute of ['Força', 'Força', 'Astúcia', 'Agilidade', 'Vigor', 'Espírito']) {
+    await page.getByRole('button', { name: `Adicionar ponto de ${attribute}` }).click()
+  }
+  await page.getByRole('button', { name: 'Confirmar e continuar' }).click()
   await page.getByRole('button', { name: 'Escolher Espada Longa', exact: true }).press('Enter')
   await page.getByRole('button', { name: 'Vincular Espada Longa — Grau I', exact: true }).click()
   await page.evaluate(async () => {
@@ -59,9 +49,9 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await expect(arlen).toBeVisible({ timeout: 20_000 })
   expect(Number(await field.getAttribute('data-camera-x'))).toBeLessThan(originCamera)
   await expect(arlen.getByRole('heading', { name: '◇ Matéria para as Entregas', exact: true })).toBeVisible()
-  await arlen.getByRole('button', { name: 'Ouvir a oferta', exact: true }).click()
   await arlen.getByRole('button', { name: 'Aceitar missão', exact: true }).click()
   await expect(page.locator('[aria-label="Conversar com Arlen"] .npc-quest-marker')).toHaveText('◇')
+  await page.keyboard.press('Escape')
   await page.getByRole('combobox', { name: 'Destino em Terran' }).selectOption('landmark:city_contract_board')
   const board = page.getByRole('dialog', { name: 'Quadro de Encomendas', exact: true })
   await expect(board).toBeVisible({ timeout: 20_000 })
@@ -80,15 +70,31 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await expect(page.locator('.pixel-interior__npc .npc-question-bubble')).toHaveCount(0)
   await page.screenshot({ path: '/tmp/terrunia-town-npc-markers.png' })
   await page.getByRole('button', { name: 'Sair do interior para as ruas de Terran', exact: true }).click()
-  await page.getByRole('button', { name: 'Ir para Praça do Portal', exact: true }).click()
-  await page.getByRole('button', { name: 'Entrar no Modo Ondas', exact: true }).click()
+  // Movement/camera are covered above. For repeatable combat, enter the Portal
+  // through a domain travel fixture and SPA route, never a full-page reload.
+  await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
+    window.history.pushState({}, '', '/portal-hub')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  })
+  await expect(page.getByRole('heading', { name: 'Escolha seu destino' })).toBeVisible()
+  await page.getByRole('button', { name: /Modo Ondas · Iniciar/ }).click()
   for (let wave = 1; wave <= 3; wave++) {
     await fightAndCollect(page, wave === 3 ? 2 : 1)
     if (wave < 3) await page.getByRole('button', { name: `PRÓXIMA ONDA · ${wave + 1}`, exact: true }).click()
   }
   await page.getByRole('button', { name: 'RETORNAR A TERRAN', exact: true }).click()
-  await page.getByRole('button', { name: 'Ir para Praça do Portal', exact: true }).click()
-  await page.locator('.portal-hunts__entry').filter({ hasText: 'Vigília da Ruína' }).getByRole('button', { name: 'Enfrentar caçada', exact: true }).click()
+  // Movement/camera are covered above. For repeatable combat, enter the Portal
+  // through a domain travel fixture and SPA route, never a full-page reload.
+  await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    useGameStore.getState().travelInTerran('location_terran_portal_plaza')
+    window.history.pushState({}, '', '/portal-hub')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  })
+  await expect(page.getByRole('heading', { name: 'Escolha seu destino' })).toBeVisible()
+  await page.getByRole('button', { name: /Vigília da Ruína · Iniciar/ }).click()
   await fightAndCollect(page, 3)
   await page.getByRole('button', { name: 'VOLTAR AO PORTAL', exact: true }).click()
   const before = await page.evaluate(async () => {

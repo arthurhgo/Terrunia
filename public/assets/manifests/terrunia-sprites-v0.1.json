@@ -2218,6 +2218,50 @@
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
       "atlas": null
+    },
+    {
+      "assetId": "enemy.fungorro-thornback",
+      "path": "/assets/enemies/progression/enemy_fungorro_thornback_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "enemy.spore-bulwark",
+      "path": "/assets/enemies/progression/enemy_spore_bulwark_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "enemy.mycelial-stalker",
+      "path": "/assets/enemies/progression/enemy_mycelial_stalker_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "enemy.ruin-warden",
+      "path": "/assets/enemies/progression/enemy_ruin_warden_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "perspective": "3/4 superior",
+      "pixelArt": true,
+      "status": "VISUAL_DRAFT",
+      "atlas": null
     }
   ]
 }

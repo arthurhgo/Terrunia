@@ -173,3 +173,24 @@
 .pixel-battle__hero.is-acting,.pixel-battle__enemy.is-acting{z-index:7;filter:drop-shadow(0 0 12px #f6bc61);}
 .pixel-battle__hero.is-receiving .equipped-character,.pixel-battle__enemy.is-receiving img{filter:brightness(1.4) sepia(1) saturate(6) hue-rotate(-35deg);}
 .pixel-battle__damage-number{position:absolute;z-index:15;left:50%;top:1%;transform:translateX(-50%);font:bold 30px var(--display);color:#ff5656;text-shadow:2px 2px 0 #300,0 0 7px #f66;pointer-events:none;}
+
+/* v0.5.9 — numbers anchored above the target head, not the arena center. */
+.pixel-battle__hero,.pixel-battle__enemy{position:relative}
+.pixel-battle__hero > .pixel-battle__damage-number{
+  position:absolute;top:-23px;left:50%;transform:translateX(-50%);
+}
+.pixel-battle__enemy > .pixel-battle__damage-number{
+  position:absolute;top:-28px;left:50%;transform:translateX(-50%);
+}
+.pixel-battle__damage-number{
+  z-index:30;white-space:nowrap;pointer-events:none;
+  font:900 clamp(18px,2.6vw,30px)/1 var(--display);color:#ff6960;
+  -webkit-text-stroke:1px #280c14;text-shadow:0 3px #210712,0 0 9px #f54;
+  animation:terrunia-head-damage 1.4s steps(8,end) both;
+}
+@keyframes terrunia-head-damage{
+  0%{opacity:0;translate:0 8px}
+  18%,85%{opacity:1;translate:0 -3px}
+  100%{opacity:1;translate:0 -7px}
+}
+@media(prefers-reduced-motion:reduce){.pixel-battle__damage-number{animation:none}}

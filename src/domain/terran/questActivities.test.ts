@@ -31,7 +31,8 @@ describe('objetivos realizados em objetos reais', () => {
       expect(canCompleteQuestObjectActivity(save, questId, activity.objectId, activity.solution)).toBe(false)
     }
     const allMain = Object.values(content.quests).filter((quest) =>
-      quest.category === 'main' && quest.objectives.some((objective) => objective.type === 'interact') &&
+      quest.category === 'main' && quest.id !== 'main_terran_open_base_door' &&
+      quest.objectives.some((objective) => objective.type === 'interact') &&
       quest.terranFlow?.active?.startsWith('location_terran_'))
     expect(allMain.every((quest) => quest.id in questObjectActivities)).toBe(true)
   })

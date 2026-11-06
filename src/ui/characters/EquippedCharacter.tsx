@@ -13,7 +13,7 @@ const placedStyle = (item: VisualItem, facing: ActorFacing): CSSProperties => {
   return {
     left: `${anchor.x / 32 * 100}%`, top: `${anchor.y / 32 * 100}%`,
     width: `${anchor.size / 32 * 100}%`, height: `${anchor.size / 32 * 100}%`,
-    transform: `translate(-${anchor.handleX * 100}%, -${anchor.handleY * 100}%) rotate(${anchor.angle}deg)`,
+    transform: `translate(-${anchor.handleX * 100}%, -${anchor.handleY * 100}%) rotate(${anchor.angle}deg)${facing === 'left' && item.slot === 'weapon' && !item.sheathed ? ' scaleX(-1)' : ''}`,
     transformOrigin: `${anchor.handleX * 100}% ${anchor.handleY * 100}%`,
   }
 }
@@ -34,7 +34,7 @@ export function CharacterComposite({ appearance, portraitAssetId, visuals, facin
     .map((item) => item.slot === 'armor'
       ? <svg key={item.slot} viewBox="0 0 32 32" role="presentation" aria-hidden="true"
           className="equipped-character__layer equipped-character__layer--armor equipped-character__armor-silhouette"
-          data-slot="armor" data-item-id={item.itemId} data-forged={item.forged}
+          data-slot="armor" data-item-id={item.itemId} data-forged={item.forged} data-rarity={item.rarity} data-grade={item.visualTier}
           style={{ left: 0, top: 0, width: '100%', height: '100%', transform: 'none' }}>
           {armorPixels(facing).map((rect, index) => <rect key={index} x={rect.x} y={rect.y}
             width={rect.w} height={rect.h} fill={armorPalette(item)[rect.tone]} />)}
@@ -42,7 +42,7 @@ export function CharacterComposite({ appearance, portraitAssetId, visuals, facin
       : <AssetImage key={item.slot} assetId={item.assetId}
           className={`equipped-character__layer equipped-character__layer--${item.slot} equipped-character__layer--${depth}`}
           style={placedStyle(item, facing)} alt="" aria-hidden="true"
-          data-slot={item.slot} data-item-id={item.itemId} data-forged={item.forged} />)
+          data-slot={item.slot} data-item-id={item.itemId} data-forged={item.forged} data-rarity={item.rarity} data-grade={item.visualTier} />)
   return <div className={`equipped-character character-composite ${className}`.trim()} data-facing={facing}
     data-equipped-count={visuals.length} data-weapon-id={visuals.find((item) => item.slot === 'weapon')?.itemId ?? ''}>
     {layer('back')}

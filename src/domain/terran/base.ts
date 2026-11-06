@@ -47,6 +47,12 @@ export function unlockPlayerBaseWithDaerynKey(save: GameSave, now: string): Resu
   if (save.quests.main_terran_first_home?.status !== 'completed') {
     return fail('BASE_QUEST_REQUIRED', 'Conclua a missão do alojamento com Daeryn antes de abrir a Base.')
   }
+  // The key opens the real door only after the new quest has been consciously accepted.
+  // Already-unlocked legacy homes never pass through this first-use branch.
+  const doorQuest = save.quests.main_terran_open_base_door
+  if (doorQuest && !['active', 'ready_to_turn_in', 'completed'].includes(doorQuest.status)) {
+    return fail('BASE_DOOR_QUEST_REQUIRED', 'Aceite a missão Abrir a Base antes de usar a chave na porta.')
+  }
   const index = save.inventory.findIndex((item) =>
     item.definitionId === PLAYER_HOME_KEY_ITEM_ID && item.quantity > 0)
   if (index < 0) return fail('BASE_KEY_REQUIRED', 'Você ainda não possui a Chave de Daeryn na mochila.')

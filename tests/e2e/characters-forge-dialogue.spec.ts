@@ -8,8 +8,11 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
   await page.goto('/login')
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
   await page.getByPlaceholder('Ex.: Aron').fill('Aron')
-  await page.getByRole('button', { name: 'Confirmar Terrírian' }).click()
-  await page.getByRole('button', { name: 'Aumentar Força', exact: true }).click()
+  // Allocate all six neutral creation points before entering the prologue.
+  for (const attribute of ['Força', 'Força', 'Astúcia', 'Agilidade', 'Vigor', 'Espírito']) {
+    await page.getByRole('button', { name: `Adicionar ponto de ${attribute}` }).click()
+  }
+  await page.getByRole('button', { name: 'Confirmar e continuar' }).click()
   await page.getByRole('button', { name: 'Escolher Espada Longa', exact: true }).press('Enter')
   await page.getByRole('button', { name: 'Vincular Espada Longa — Grau I', exact: true }).click()
   await page.evaluate(async () => {
@@ -37,7 +40,7 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
   const guide = page.getByRole('dialog', { name: 'Orientações de Rosetta' })
   await expect(guide).toBeVisible()
   await expect(guide.locator('.vn-cast__npc img')).toHaveAttribute('src', /npc_rosetta_portrait/)
-  await expect(guide.locator('.vn-cast__player .equipped-character__body')).toHaveAttribute('src', /player_default/)
+  await expect(guide.locator('.vn-cast__player .equipped-character__body')).toHaveAttribute('src', /^data:image\/svg\+xml/)
   await expect(guide.getByText(/4 missões em andamento · sem limite/)).toBeVisible()
   await page.screenshot({ path: '/tmp/terrunia-dialogue-cast.png' })
   await page.setViewportSize({ width: 390, height: 844 })
@@ -91,11 +94,12 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
     store().travelInTerran('location_terran_portal_plaza'); store().enterAstravel()
   })
   await page.getByRole('button', { name: 'Seguir objetivo' }).click()
+  await page.getByRole('button', { name: 'Enfrentar Fungorro próximo' }).click({ timeout: 20_000 })
   await expect(page.getByRole('heading', { name: 'Primeira Presença Fungorra', exact: true })).toBeVisible({ timeout: 20_000 })
   const actor = page.locator('.pixel-battle__hero .equipped-character')
   await expect(actor).toHaveAttribute('data-facing', 'right')
   await expect(actor).toHaveAttribute('data-weapon-id', 'bound_weapon_long_sword')
-  await expect(actor.locator('.equipped-character__weapon')).toHaveAttribute('src', /weapon_long_sword/)
+  await expect(actor.locator('.equipped-character__layer--weapon')).toHaveAttribute('src', /weapon_long_sword/)
   await expect(page.locator('.world-scene-transition')).toHaveCount(0)
   await page.screenshot({ path: '/tmp/terrunia-armed-player.png' })
   expect(errors).toEqual([])

@@ -11,6 +11,8 @@ export type VisualItem = {
   itemId: string
   itemName: string
   forged: boolean
+  /** Rarity is read from the actual item definition; never inferred from grade. */
+  rarity?: string
   sheathed?: boolean
   visualTier?: number
 }
@@ -27,7 +29,7 @@ export function getVisualEquipment(save: GameSave, sheathed = false): VisualItem
     } else if (slot === 'armor' && save.equippedBasicArmor) {
       const definition = content.items[save.equippedBasicArmor.definitionId]
       if (definition?.basicArmor && definition.iconAssetId) items.push({
-        slot, assetId: definition.iconAssetId, itemId: definition.id, itemName: definition.name, forged: false, visualTier: definition.basicArmor.tier,
+        slot, assetId: definition.iconAssetId, itemId: definition.id, itemName: definition.name, forged: false, rarity: definition.rarity, visualTier: definition.basicArmor.tier,
       })
     }
   }
@@ -53,7 +55,8 @@ export function getEquipmentAnchor(item: VisualItem, facing: ActorFacing): Visua
     const grip = getWeaponGripProfile(item.itemId)
     const handX = left ? 6 : 26
     const handY = back ? 25 : 26
-    const size = Math.min(24, Math.max(11, Math.round(32 * grip.size / 46)))
+    // VISUAL_DRAFT: calibrated one-hand silhouette on the 32px actor. Stats unchanged.
+    const size = Math.min(18, Math.max(10, Math.round(32 * grip.size / 60)))
     const handleX = grip.handleX / 100
     const handleY = grip.handleY / 100
     const angle = left ? -grip.rotation : back ? grip.rotation - 30 : grip.rotation

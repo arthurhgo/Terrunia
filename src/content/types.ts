@@ -219,6 +219,8 @@ export type QuestCategory = 'main' | 'clan' | 'class' | 'secondary' | 'bounty'
 export type QuestPrerequisite =
   | { type: 'clanKnown'; clanId: string }
   | { type: 'questCompleted'; questId: string }
+  /** BALANCE_DRAFT: optional missions; accepted quests are never re-locked. */
+  | { type: 'characterLevel'; value: number }
   | { type: 'clanJoined'; clanId: string }
   | { type: 'noClan' }
   | { type: 'noClass' }
@@ -242,6 +244,8 @@ export type QuestDefinition = {
   summary: string
   /** Optional player-facing guidance, rendered only in mission UI (not item cards). */
   contextNote?: string
+  /** Explicit narrative benefit when a quest grants access but no material reward. */
+  rewardNote?: string
   giverNpcId: string
   turnInNpcId: string
   category: QuestCategory

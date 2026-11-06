@@ -2,6 +2,8 @@ import { DialogueWindow } from './DialogueWindow'
 import { BedDouble, Check, Coins, HeartPulse, ShoppingBasket, Archive, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react'
 import { content } from '../../content/catalog'
 import { QuestContextNote } from '../quests/QuestContextNote'
+import { getQuestRewardPreview } from '../../domain/quests/questRewardPreview'
+import { getDiscoveredEnemyIds, getDiscoveredProgressiveFauna } from '../../content/progressiveFaunaLore'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import type { GameSave } from '../../domain/game/types'
 import { PLAYER_HOME_FLAG, SYLWEN_STOCK } from '../../domain/terran/services'
@@ -81,6 +83,44 @@ export function BaseChest({ save }: { save: GameSave }) {
   </section>
 }
 
+/** Personal archive from real save data; no invented quests or manual save slot. */
+export function BaseRecords({ save }: { save: GameSave }) {
+  const completed = Object.values(save.quests).filter((quest) => quest.status === 'completed')
+    .map((quest) => content.quests[quest.questId]).filter(Boolean)
+  const memories = Object.values(save.boundItems).flatMap((item) => item.memories.map((memory) => ({
+    itemId: item.baseItemId, title: memory.title, description: memory.description,
+  })))
+  const fauna = getDiscoveredProgressiveFauna(save, content)
+  const chapters = [
+    { id: 'main', title: 'Crônica principal', entries: completed.filter((quest) => quest.category === 'main') },
+    { id: 'clan', title: 'Provas de Clã', entries: completed.filter((quest) => quest.category === 'clan') },
+    { id: 'class', title: 'Caminho da Classe', entries: completed.filter((quest) => quest.category === 'class') },
+    { id: 'world', title: 'Relatos de Terran e Astravél', entries: completed.filter((quest) => quest.category === 'secondary' || quest.category === 'bounty') },
+  ]
+  return <section className="base-records" aria-label="Registros do Terrírian">
+    <h3>Registros · Memórias e Crônica</h3>
+    <p>{save.character.name} · Nível {save.character.level} · {completed.length} missões concluídas</p>
+    <p>A crônica reúne somente fatos vividos e missões entregues. Conhecimento ainda não descoberto permanece fora do registro.</p>
+    {chapters.map((chapter) => <details className="base-records__chapter" key={chapter.id} open={chapter.id === 'main'}>
+      <summary>{chapter.title} · {chapter.entries.length} registro(s)</summary>
+      {chapter.entries.length ? <ul>{chapter.entries.map((quest) => <li key={quest.id}>
+        <strong>{quest.title}</strong><small>{quest.summary}</small>
+      </li>)}</ul> : <p>Nenhum relato registrado nesta parte da jornada.</p>}
+    </details>)}
+    <details className="base-records__chapter" aria-label="Bestiário de campo descoberto">
+      <summary>Bestiário de campo · {fauna.length} relato(s) descoberto(s)</summary>
+      {fauna.length ? <ul>{fauna.map((entry) => <li key={entry.id}>
+        <strong>{entry.title}</strong><small>{entry.description}</small>
+      </li>)}</ul> : <p>Vença criaturas e recolha seus espólios para registrar observações.</p>}
+    </details>
+    <h4>Memórias dos Vínculos</h4>
+    {memories.length ? <ul>{memories.slice(-20).map((memory, i) => <li key={memory.itemId + ':' + i}>
+      <strong>{memory.title}</strong><small>{memory.description}</small>
+    </li>)}</ul> : <p>Nenhuma memória de equipamento registrada.</p>}
+    <small>O progresso é salvo automaticamente no Nexo. Registros não criam um segundo sistema de salvamento.</small>
+  </section>
+}
+
 export function SylwenShop({ save }: { save: GameSave }) {
   const buy = useGameStore((state) => state.buyFromSylwen)
   return <section className="terran-shop" aria-label="Balcão de Sylwen">
@@ -117,16 +157,21 @@ export function DaerynServices({ save }: { save: GameSave }) {
 
 export function VorrenBestiary({ save }: { save: GameSave }) {
   const unlocked = save.world.worldFlags.includes('bestiary_unlocked')
-  const identified = new Set(Object.values(content.encounters)
-    .filter((encounter) => save.world.completedEncounterIds.includes(encounter.id))
-    .flatMap((encounter) => encounter.enemyDefinitionIds))
+  const identified = getDiscoveredEnemyIds(save, content)
+  const studied = new Map<string, { description: string }>(getDiscoveredProgressiveFauna(save, content).map((entry) => [entry.enemyId, entry]))
   return <section className="terran-shop" aria-label="Bestiário de Vorren">
     <h3>Bestiário</h3>
     {!unlocked ? <p>Livro de campo fechado. Conclua “O Livro das Criaturas” com Vorren.</p>
       : <div className="terran-shop__stock">
         {Object.values(content.enemies).filter((enemy) => identified.has(enemy.id)).map((enemy) => <article key={enemy.id}>
           <AssetImage assetId={enemy.assetId} />
-          <div><strong>{enemy.name}</strong><small>Nível {enemy.level} · Suscetível a: {enemy.weaknessTags.join(', ') || 'Não catalogado'}</small></div>
+          <div><strong>{enemy.name}</strong><small>Nível {enemy.level} · Suscetível a: {enemy.weaknessTags.join(', ') || 'Não catalogado'}</small>
+            <small>Materiais associados: {enemy.lootDefinitionIds.map((id) => content.items[id]?.name ?? id).join(' · ')}</small>
+            {studied.has(enemy.id) && <small>{studied.get(enemy.id)?.description}</small>}
+            {Object.values(content.quests).filter((quest) =>
+              ['active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status ?? '')
+              && quest.objectives.some((objective) => objective.type === 'kill' && objective.targetId === enemy.id))
+              .map((quest) => <small key={quest.id}>Missão relacionada: {quest.title}</small>)}</div>
         </article>)}
         {identified.size === 0 && <p>Nenhuma criatura registrada em combate. Continue explorando Astravél.</p>}
       </div>}
@@ -141,6 +186,7 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded 
   const definition = content.quests[questId]
   const progress = save.quests[questId]
   if (!definition || !progress) return null
+  const rewardPreview = getQuestRewardPreview(definition, content)
   const npc = content.npcs[definition.giverNpcId]
   const conversations = getNpcActionableQuests(save, npc.id, content)
   const details = <section className="terran-drawer__section terran-quest-dialog" aria-label={`Missão de ${npc.name}`}>
@@ -160,12 +206,10 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded 
     {(!onSelectQuest || conversations.length < 2) && <h3>{definition.category === 'secondary' || definition.category === 'bounty' ? '◇ ' : ''}{definition.title}</h3>}
     {definition.objectives.map((objective) => <p key={objective.id}>{objective.label} · {progress.objectives[objective.id] ?? 0}/{objective.required}</p>)}
     <QuestContextNote note={definition.contextNote} />
-    <p>{definition.rewards.map((reward) => `${reward.type === 'gold' ? 'Ouro' : reward.type === 'characterXp' ? 'XP' : 'Essência'} +${reward.value}`).join(' · ')}</p>
-    {definition.itemRewards?.map((reward) => <p key={reward.itemId} className="terran-quest-dialog__item-reward">
-      <AssetImage assetId={content.items[reward.itemId].iconAssetId} alt="" />
-      <strong>Recompensa: {content.items[reward.itemId].name} ×{reward.quantity}</strong>
-      <small>Receba ao entregar a missão.</small>
-    </p>)}
+    {rewardPreview.length > 0 && <div className="terran-quest-dialog__reward-list" aria-label="Recompensas da missão">
+      <strong>Recompensas ao entregar</strong>
+      <ul>{rewardPreview.map((reward) => <li key={reward.id}>{reward.label}</li>)}</ul>
+    </div>}
     {definition.turnInItems && <div className="quest-delivery-items">
       {definition.turnInItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />
         {content.items[input.itemId].name}<strong>{getDeliverableCount(save, input.itemId, content)}/{input.quantity}</strong></span>)}
