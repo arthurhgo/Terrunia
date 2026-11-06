@@ -166,7 +166,12 @@ export function VorrenBestiary({ save }: { save: GameSave }) {
         {Object.values(content.enemies).filter((enemy) => identified.has(enemy.id)).map((enemy) => <article key={enemy.id}>
           <AssetImage assetId={enemy.assetId} />
           <div><strong>{enemy.name}</strong><small>Nível {enemy.level} · Suscetível a: {enemy.weaknessTags.join(', ') || 'Não catalogado'}</small>
-            {studied.has(enemy.id) && <small>{studied.get(enemy.id)?.description}</small>}</div>
+            <small>Materiais associados: {enemy.lootDefinitionIds.map((id) => content.items[id]?.name ?? id).join(' · ')}</small>
+            {studied.has(enemy.id) && <small>{studied.get(enemy.id)?.description}</small>}
+            {Object.values(content.quests).filter((quest) =>
+              ['active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status ?? '')
+              && quest.objectives.some((objective) => objective.type === 'kill' && objective.targetId === enemy.id))
+              .map((quest) => <small key={quest.id}>Missão relacionada: {quest.title}</small>)}</div>
         </article>)}
         {identified.size === 0 && <p>Nenhuma criatura registrada em combate. Continue explorando Astravél.</p>}
       </div>}
