@@ -15,6 +15,8 @@ const optionalQuestIds = [
   'side_astravel_spore_shells',
   'side_astravel_mycelial_tracking',
   'side_astravel_ruin_wardens',
+  'side_astravel_thornback_signs',
+  'side_astravel_forge_chitin',
 ] as const
 
 describe('v0.5.9 · progressão de inimigos, missões e capítulos', () => {
@@ -54,19 +56,29 @@ describe('v0.5.9 · progressão de inimigos, missões e capítulos', () => {
       expect(quest.category).toBe('secondary')
       for (const reward of quest.itemRewards ?? []) expect(content.items[reward.itemId]).toBeDefined()
     }
+    save.quests.vs_astravel_first_contact.status = 'completed'
     save.quests.main_vorren_bestiary.status = 'completed'
+    save.character.level = 2
+    save = refreshQuestAvailability(save, content, save.updatedAt)
+    expect(save.quests.side_astravel_thornback_signs.status).toBe('available')
+    expect(save.quests.side_astravel_spore_shells.status).toBe('locked')
+    expect(save.quests.side_astravel_forge_chitin.status).toBe('locked')
+    save.character.level = 3
     save = refreshQuestAvailability(save, content, save.updatedAt)
     expect(save.quests.side_astravel_spore_shells.status).toBe('available')
+    expect(save.quests.side_astravel_forge_chitin.status).toBe('available')
     expect(save.quests.side_astravel_mycelial_tracking.status).toBe('locked')
 
     save.quests.side_astravel_spore_shells.status = 'completed'
     save.quests.main_astravel_lost_hunters.status = 'completed'
+    save.character.level = 4
     save = refreshQuestAvailability(save, content, save.updatedAt)
     expect(save.quests.side_astravel_mycelial_tracking.status).toBe('available')
     expect(save.quests.side_astravel_ruin_wardens.status).toBe('locked')
 
     save.quests.side_astravel_mycelial_tracking.status = 'completed'
     save.quests.main_astravel_corruption.status = 'completed'
+    save.character.level = 5
     save = refreshQuestAvailability(save, content, save.updatedAt)
     expect(save.quests.side_astravel_ruin_wardens.status).toBe('available')
     expect(save.quests.side_astravel_ruin_wardens.tracked).toBe(false)
