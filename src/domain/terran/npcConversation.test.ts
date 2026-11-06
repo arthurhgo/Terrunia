@@ -39,11 +39,11 @@ describe('conversas e sinalização dos NPCs', () => {
     expect(buildNpcConversation(save, 'npc.street.arlen', [], quest).nodes.mission.text).toContain('Conto com você para o trabalho que combinamos.')
   })
 
-  it('prioriza o marcador de missão aceita mesmo com outra oferta e volta a destacar a entrega pronta', () => {
+  it('prioriza novas ofertas no marcador, sem ocultar missões aceitas, e destaca entregas prontas', () => {
     const save = createNewSave('speaker', 'Aron', 'character.terririan.default', content)
     save.quests.side_street_arlen.status = 'active'
     save.quests.delivery_arlen_nuclei.status = 'available'
-    expect(getNpcQuestNotice(save, 'npc_street_arlen', content)).toEqual({ marker: '◇', phase: 'active' })
+    expect(getNpcQuestNotice(save, 'npc_street_arlen', content)).toEqual({ marker: '◇', phase: 'available' })
     save.quests.delivery_arlen_nuclei.status = 'ready_to_turn_in'
     expect(getNpcQuestNotice(save, 'npc_street_arlen', content)).toEqual({ marker: '◆', phase: 'turn-in' })
     expect(getNpcQuestNotice(save, 'npc_rosetta', content)).toEqual({ marker: '?', phase: 'guide' })
