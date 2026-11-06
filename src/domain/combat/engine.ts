@@ -41,6 +41,19 @@ const addLog = (
   })
 }
 
+/** Different encounters receive different deterministic rolls; saves keep RNG state.
+ * Same battle ID reproduces the same dice, but distinct encounters cannot share
+ * an identical forced opening sequence (the old seed 104729 bug).
+ */
+export const seedBattleRng = (battleId: string) => {
+  let hash = 2166136261
+  for (let i = 0; i < battleId.length; i += 1) {
+    hash ^= battleId.charCodeAt(i)
+    hash = Math.imul(hash, 16777619)
+  }
+  return (hash >>> 0) % 2147483646 + 1
+}
+
 /** Deterministic, actual dice samples; never derive a fake face from log IDs. */
 const rollCombatDie = (state: BattleState, sides: 4 | 6 | 8 | 10 | 12) => {
   state.rngSeed = (state.rngSeed * 48271) % 2147483647
@@ -97,6 +110,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     alive: true,
     defending: false,
     skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds])],
+    skillCooldowns: {},
     attackDie: character.attributes[catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.scalingAttribute ?? 'strength'].die,
     statusEffects: [],
   }
@@ -118,7 +132,7 @@ const deriveEnemyCombatant = (
     maxHp: enemy.maxHp,
     mp: 0,
     maxMp: 0,
-    attackPower: enemy.attackPower,
+    attackPower: Math.max(0, enemy.attackPower - BALANCE.enemyAttackPowerOffset),
     mitigation: enemy.mitigation,
     initiative: Math.max(1, enemy.level + 3),
     initiativeDie: 4, // BALANCE_DRAFT until each creature's initiative die is authored.
@@ -171,18 +185,20 @@ const applyCombatEffects = (
 ) => {
   for (const effect of effects) {
     if (effect.type === 'damage') {
-      const defenseBonus = target.defending ? BALANCE.defendMitigation : 0
-      const damage = calculateDamage(
-        getEffectiveAttackPower(actor, catalog) + effect.powerBonus,
-        getEffectiveMitigation(target, catalog) + defenseBonus,
-      )
+      const sides = actor.attackDie ?? 4
+      // The ACTUAL die controls actual damage. Never display a cosmetic roll.
+      const face = rollCombatDie(state, sides)
+      const attackBonus = getEffectiveAttackPower(actor, catalog)
+      const armor = getEffectiveMitigation(target, catalog)
+      const blocked = target.defending && BALANCE.defendBlocksFirstHit
+      const damage = blocked ? 0 : calculateDamage(face + attackBonus + effect.powerBonus,
+        armor + (target.defending ? BALANCE.defendMitigation : 0))
       target.hp = Math.max(0, target.hp - damage)
       target.alive = target.hp > 0
       target.defending = false
-      const sides = actor.attackDie ?? 4
-      const face = rollCombatDie(state, sides)
-      addLog(state, `${actor.name} causa ${damage} de dano em ${target.name}.`, 'damage', {
-        actorId: actor.id, sides, face, action,
+      if (blocked) addLog(state, `${target.name} bloqueia o golpe com sua guarda.`, 'defense')
+      addLog(state, `${actor.name} causa ${damage} de dano em ${target.name}. [d${sides}: ${face} + Poder ${attackBonus} + Técnica ${effect.powerBonus} - Armadura ${armor}${blocked ? ' · BLOQUEADO' : ''}]`, 'damage', {
+        actorId: actor.id, sides, face, action, attackBonus, skillBonus: effect.powerBonus, armor, blocked,
       })
     }
     if (effect.type === 'restoreHp') {
@@ -230,7 +246,11 @@ const resolveSkill = (
   addPhase(state, 'SelectingTarget')
   addPhase(state, 'ResolvingAction')
   actor.mp -= skill.mpCost
-  addLog(state, `${actor.name} usa ${skill.name}.`, 'system')
+  if (actor.side === 'player') {
+    actor.skillCooldowns ??= {}
+    actor.skillCooldowns[skill.id] = (skill.cooldownTurns ?? BALANCE.defaultPlayerSkillCooldownTurns) + 1
+  }
+  addLog(state, `${actor.name} usa ${skill.name}. (+${skill.effects.filter((effect) => effect.type === 'damage').reduce((total, effect) => total + effect.powerBonus, 0)} Técnica; ${actor.side === 'player' ? (skill.cooldownTurns ?? BALANCE.defaultPlayerSkillCooldownTurns) + ' turnos de recarga' : 'ação inimiga'}).`, 'system')
   applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name)
   addPhase(state, 'ResolvingReactions')
   addPhase(state, 'ApplyingStatuses')
@@ -269,6 +289,15 @@ const applyStartStatuses = (
       `${definition.name} causa ${definition.startTurnDamage} de dano em ${actor.name}.`,
       'damage',
     )
+  }
+}
+
+/** Decrement only at the beginning of the player's next action turn. */
+const tickSkillCooldowns = (actor: Combatant) => {
+  if (!actor.skillCooldowns) return
+  for (const [id, remaining] of Object.entries(actor.skillCooldowns)) {
+    if (remaining <= 1) delete actor.skillCooldowns[id]
+    else actor.skillCooldowns[id] = remaining - 1
   }
 }
 
@@ -337,6 +366,7 @@ const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
     if (checkBattleEnd(state)) return
 
     if (actor.side === 'player') {
+      tickSkillCooldowns(actor)
       addPhase(state, 'AwaitingAction')
       return
     }
@@ -410,7 +440,7 @@ export const createBattle = (
     claimed: false,
     canFlee: encounter.canFlee,
     consumedItemInstanceIds: [],
-    rngSeed: 104729,
+    rngSeed: seedBattleRng(id),
   }
 
   addLog(state, `${encounter.name} bloqueia o avanço em Astravél.`, 'system')
@@ -489,6 +519,9 @@ export const submitBattleCommand = (
     if (!skill || !currentPlayer.skillIds.includes(command.skillId)) {
       return fail('SKILL_LOCKED', 'Esta habilidade ainda não foi desbloqueada pelo Vínculo.')
     }
+    if ((currentPlayer.skillCooldowns?.[skill.id] ?? 0) > 0) {
+      return fail('SKILL_COOLDOWN', `${skill.name} recarrega por mais ${currentPlayer.skillCooldowns?.[skill.id]} turno(s).`)
+    }
     if (currentPlayer.mp < skill.mpCost) {
       return fail('INSUFFICIENT_MP', 'Mana insuficiente para esta habilidade.')
     }
@@ -522,7 +555,7 @@ export const submitBattleCommand = (
   if (command.type === 'defend') {
     addPhase(state, 'ResolvingAction')
     player.defending = true
-    addLog(state, `${player.name} assume uma postura defensiva.`, 'defense')
+    addLog(state, `${player.name} ergue a guarda: bloqueia completamente o próximo golpe inimigo. Outros ataques atingem normalmente.`, 'defense')
     addPhase(state, 'ResolvingReactions')
     addPhase(state, 'ApplyingStatuses')
     addPhase(state, 'CheckEndConditions')

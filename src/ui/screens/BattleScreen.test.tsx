@@ -39,7 +39,7 @@ describe('combate visual v0.17', () => {
     expect(screen.getByRole('button', { name: 'ESSÊNCIAS' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'ITENS / POÇÕES' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'FUGIR' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'DEFENDER' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'DEFENDER · BLOQUEIA 1 GOLPE' })).toBeEnabled()
     const turnOrder = screen.getByLabelText('Ordem de turnos')
     expect(turnOrder.querySelectorAll('.combat-timeline__portrait')).toHaveLength(useGameStore.getState().save!.battle!.initiativeOrder.length)
     expect(turnOrder).toHaveTextContent(String(useGameStore.getState().save!.battle!.combatants.combatant_player.initiative))

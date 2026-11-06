@@ -4,6 +4,7 @@ import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmo
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
 import { create } from 'zustand'
 import { content } from '../content/catalog'
+import { BALANCE } from '../content/balance'
 import {
   gainBoundResonance,
   performGradeThreeRite,
@@ -28,6 +29,7 @@ import { requestCampaignReset } from '../domain/game/campaignReset'
 import type { AttributeId, GameSave } from '../domain/game/types'
 import type { CharacterAppearance } from '../domain/character/appearance'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
+import { applyFieldConsumable } from '../domain/inventory/fieldConsumables'
 import { addBattleLootToInventory } from '../domain/inventory/battleLoot'
 import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 import {
@@ -122,6 +124,7 @@ type GameState = {
   discoverFungalRoom: (roomId: string) => void
   exitFungalChambers: () => void
   resolveCurrentTrailNode: () => void
+  consumeFieldPotion: (itemInstanceId: string) => boolean
   startBattle: (nodeId?: string) => void
   startPortalWaves: () => void
   startPortalHunt: (encounterId: string) => void
@@ -665,6 +668,16 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(result.save)
     },
 
+    consumeFieldPotion: (itemInstanceId) => {
+      const save = get().save
+      if (!save) { failAction('Nenhum personagem disponível.'); return false }
+      const result = applyFieldConsumable(save, itemInstanceId, nowIso())
+      if (!result.ok) { failAction(result.message); return false }
+      commit(result.value)
+      show('Poção utilizada', 'Vida ou Mana recuperada na exploração de Astravél.', 'success')
+      return true
+    },
+
     resolveCurrentTrailNode: () => {
       const save = get().save
       if (!save) return
@@ -803,9 +816,11 @@ export const useGameStore = create<GameState>((set, get) => {
         return failAction('Não há recompensas de vitória disponíveis.')
       }
       let next = structuredClone(save)
-      const xpGain = gainCharacterXp(next.character, battle.rewards.characterXp)
+      const awardXp = Math.ceil(battle.rewards.characterXp * BALANCE.combatXpMultiplier)
+      const xpGain = gainCharacterXp(next.character, awardXp)
       next.character = xpGain.character
       if (xpGain.levelsGained > 0) next.eventLog.push(`CharacterLevelGained:${xpGain.levelsGained}`)
+      next.eventLog.push(`CombatXpAwarded:${awardXp}`)
       next.wallet.gold += battle.rewards.gold
       const acquiredAt = nowIso()
       // One claim collects all drops; fungible duplicates share a safe inventory slot.

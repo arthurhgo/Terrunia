@@ -1,4 +1,4 @@
-import { ArrowLeft, Backpack, BookOpen, Compass, MapPin, Swords, Trees, X } from 'lucide-react'
+import { ArrowLeft, Backpack, BookOpen, Compass, MapPin, Swords, Trees, UserRound, HeartPulse, X } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -12,11 +12,13 @@ import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
 import { GameShell } from '../components/GameShell'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
+import { NexusOverview } from '../dashboard/NexusOverview'
+import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { AstravelPixelCanvas } from '../expedition/AstravelPixelCanvas'
 import { getVisualEquipment } from '../characters/equipmentVisuals'
 
-type Drawer = 'trail' | 'node' | 'inventory' | 'quests' | null
+type Drawer = 'trail' | 'node' | 'inventory' | 'quests' | 'character' | null
 const trail = content.trails.trail_astravel_entry
 
 function NodeDrawer({ node, status, save, onAction, onReturn }: {
@@ -57,6 +59,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const enterFungalChambers = useGameStore((state) => state.enterFungalChambers)
   const returnToTerran = useGameStore((state) => state.returnToTerran)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
+  const consumeFieldPotion = useGameStore((state) => state.consumeFieldPotion)
   const [drawer, setDrawer] = useState<Drawer>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const navigate = useNavigate()
@@ -72,6 +75,12 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const completed = trail.nodes.filter((node) => node.type !== 'entry' && save.world.trailNodeStates[node.id] === 'completed').length
   const quests = getQuestJournalEntries(save, content).filter(({ progress }) => progress.status !== 'completed')
   const sector = getAstravelSector(activeNode?.index ?? 15)
+  const stats = deriveCharacterStats(save, content)
+  const restorativePotions = save.inventory.filter((instance) => {
+    const item = content.items[instance.definitionId]
+    return item?.category === 'consumable' && !item.combatKind && !item.questLocked
+      && item.combatEffects.length > 0 && item.combatEffects.every((effect) => effect.type === 'restoreHp' || effect.type === 'restoreMp')
+  })
   const activeGate = activeNode ? checkTrailQuestGate(save, activeNode, content) : null
 
   const leave = () => {
@@ -104,7 +113,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
     }
   }
 
-  const title = drawer === 'node' ? selectedNode?.label ?? 'Trilha' : drawer === 'inventory' ? 'Mochila' : drawer === 'quests' ? 'Missões' : 'Rota de Astravél'
+  const title = drawer === 'node' ? selectedNode?.label ?? 'Trilha' : drawer === 'inventory' ? 'Mochila' : drawer === 'quests' ? 'Missões' : drawer === 'character' ? 'Ficha do Personagem' : 'Rota de Astravél'
 
   const sceneContent = <div className="terran-game expedition-game">
       <header className="terran-game__topbar">
@@ -120,7 +129,8 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
           <div className="terran-game__hud" aria-label="Ações de exploração">
             {([
               { id: 'trail' as const, label: 'Trilha', icon: Compass },
-              { id: 'inventory' as const, label: 'Mochila', icon: Backpack },
+              { id: 'inventory' as const, label: 'Mochila / Poções', icon: Backpack },
+              { id: 'character' as const, label: 'Personagem', icon: UserRound },
               { id: 'quests' as const, label: 'Missões', icon: BookOpen },
             ]).map(({ id, label, icon: Icon }) => <button key={id} type="button"
               className={drawer === id ? 'active' : ''} aria-label={`Abrir ${label}`} aria-pressed={drawer === id}
@@ -154,7 +164,29 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
                 </button>)}
               </section>)}
             </div>}
-            {drawer === 'inventory' && <InventoryPanel save={save} />}
+            {drawer === 'character' && <div className="expedition-game__character-sheet">
+              <NexusOverview save={save} />
+              <p>Atributos, dados, defesa e pontos disponíveis permanecem consultáveis sem sair da floresta.</p>
+            </div>}
+            {drawer === 'inventory' && <>
+              <section className="expedition-field-potions" aria-label="Poções rápidas de exploração">
+                <h3><HeartPulse size={17} /> Recuperação fora de combate</h3>
+                <p>Vida {save.vitals.hp}/{stats.life.value} · Mana {save.vitals.mp}/{stats.mana.value}</p>
+                {restorativePotions.length === 0 && <p>Nenhuma poção restauradora disponível. As demais poções continuam utilizáveis no combate.</p>}
+                {restorativePotions.map((instance) => {
+                  const item = content.items[instance.definitionId]
+                  const hp = item.combatEffects.filter((effect) => effect.type === 'restoreHp').reduce((n, effect) => n + (effect.type === 'restoreHp' ? effect.value : 0), 0)
+                  const mp = item.combatEffects.filter((effect) => effect.type === 'restoreMp').reduce((n, effect) => n + (effect.type === 'restoreMp' ? effect.value : 0), 0)
+                  const useful = hp > 0 && save.vitals.hp < stats.life.value || mp > 0 && save.vitals.mp < stats.mana.value
+                  return <button key={instance.instanceId} type="button" disabled={!useful}
+                    onClick={() => consumeFieldPotion(instance.instanceId)}
+                    aria-label={`Usar ${item.name} em Astravél`}>
+                    {item.name} ×{instance.quantity} · {hp ? `+${hp} Vida ` : ''}{mp ? `+${mp} Mana` : ''}
+                  </button>
+                })}
+              </section>
+              <InventoryPanel save={save} />
+            </>}
             {drawer === 'quests' && <div className="expedition-route-list">
               {quests.length === 0 && <p>Converse com os responsáveis em Terran para aceitar a próxima missão.</p>}
               {quests.map(({ definition, progress }) => <section key={definition.id} className="expedition-route-sector">

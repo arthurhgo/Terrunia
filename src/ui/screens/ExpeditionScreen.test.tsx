@@ -41,7 +41,7 @@ describe('expedição pixelada de Astravél', () => {
     expect(stage).not.toContainElement(routeWindow)
     expect(routeWindow).toHaveClass('expedition-game__window')
     expect(gameLayout).toContainElement(screen.getByRole('button', { name: 'Fechar janela da instância' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir Mochila' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Mochila / Poções' }))
     expect(gameLayout).toContainElement(screen.getByRole('complementary', { name: 'Painel lateral: Mochila' }))
     fireEvent.click(screen.getByRole('button', { name: 'Fechar janela da instância' }))
     expect(screen.queryByRole('complementary', { name: 'Painel lateral: Mochila' })).not.toBeInTheDocument()

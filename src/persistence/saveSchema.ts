@@ -222,6 +222,7 @@ const combatantSchema = z.object({
   alive: z.boolean(),
   defending: z.boolean(),
   skillIds: z.array(idSchema),
+  skillCooldowns: z.record(z.string(), nonnegativeInteger).optional(),
   statusEffects: z.array(z.object({
     definitionId: idSchema,
     sourceId: idSchema,
@@ -250,7 +251,7 @@ const battleSchema = z.object({
     round: positiveInteger,
     message: z.string(),
     tone: z.enum(['neutral', 'damage', 'defense', 'reward', 'system']),
-    roll: z.object({ actorId: idSchema, sides: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(10), z.literal(12)]), face: positiveInteger, action: z.string().min(1) }).optional(),
+    roll: z.object({ actorId: idSchema, sides: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(10), z.literal(12)]), face: positiveInteger, action: z.string().min(1), attackBonus: z.number().int().optional(), skillBonus: z.number().int().optional(), armor: nonnegativeNumber.optional(), blocked: z.boolean().optional() }).optional(),
   })),
   rewards: z.object({
     characterXp: nonnegativeNumber,
