@@ -11,6 +11,7 @@ import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
 import { Modal } from '../components/Modal'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
+import { getItemDestinations, getPendingItemDeliveries } from '../../domain/inventory/itemPurpose'
 
 type Action = 'convert' | 'sell' | null
 
@@ -50,6 +51,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
     const definition = content.items[instance.definitionId]
     return definition?.sellable && !definition.questLocked && !instance.locked && !instance.favorite && instance.instanceId !== save.character.basicArmorInstanceId
   })
+  const selectedDeliveryNeeds = selectedItems.flatMap((instance) => getPendingItemDeliveries(instance.definitionId, save, content))
   const selectedForBoundProgression = selectedItems.some(
     (instance) => {
       const definition = content.items[instance.definitionId]
@@ -219,6 +221,10 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
           <i>OU</i>
           <div><Coins size={20} /><span>Economia<strong>{totals.gold} Ouro</strong></span></div>
         </div>
+        {selectedDeliveryNeeds.length > 0 && <p className="modal-warning" role="alert">
+          Atenção: este material é necessário para entrega em {selectedDeliveryNeeds.map((need) => `${need.title} (×${need.quantity})`).join(' · ')}.
+          A venda ou conversão pode impedir a conclusão até você obtê-lo novamente. Favorite para protegê-lo.
+        </p>}
         <p className="modal-warning">Esta ação remove o drop do inventário. Itens de missão e favoritos são protegidos pelo domínio.</p>
       </Modal>
       {hovered && (() => {
@@ -237,6 +243,9 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
             <span>Refinamento <b>+{item.refinementLevel ?? 0}/{armor.maxRefinement}</b></span>
           </div>}
           <p>{definition.description}</p>
+          {getPendingItemDeliveries(definition.id, save, content).map((need) =>
+            <small key={need.questId}>Missão ativa: {need.title} · Entrega de {need.quantity} unidade(s)</small>)}
+          {getItemDestinations(definition.id, content).map((use) => <small key={use}>• {use}</small>)}
           <small>{item.instanceId === save.character.basicArmorInstanceId ? 'EQUIPADO' :
             definition.basicArmor && save.character.bondedEquipment.armor ? 'BLOQUEADO: ARMADURA VINCULADA' :
               definition.basicArmor ? 'CLIQUE NO ITEM PARA EQUIPAR' : 'ITEM DA MOCHILA'}</small>
