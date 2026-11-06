@@ -100,12 +100,12 @@ describe('arsenal livre e progressão de atributos', () => {
     })
   })
 
-  it('concede um novo ponto de atributo ao subir de nível', () => {
+  it('concede dois pontos por nível para permitir uma evolução de dado', () => {
     const save = createNewSave('owner', 'Nira', 'character.terririan.default', content)
     const progression = gainCharacterXp(save.character, 250)
     expect(progression.levelsGained).toBe(1)
     expect(progression.character.level).toBe(2)
     expect(progression.character.unspentAttributePoints).toBe(8)
-    expect(progression.character.xpRequired).toBe(750)
+    expect(progression.character.xpRequired).toBe(260)
   })
 })
