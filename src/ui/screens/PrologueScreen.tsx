@@ -16,7 +16,6 @@ import './prologueEnhanced.css'
 export function PrologueScreen() {
   const save = useGameStore((state) => state.save)
   const bindWeapon = useGameStore((state) => state.bindPrologueWeapon)
-  const prepareWeapon = useGameStore((state) => state.prepareStarterWeapon)
   const navigate = useNavigate()
   const [selectedWeaponId, setSelectedWeaponId] = useState<string | null>(null)
 
@@ -37,7 +36,7 @@ export function PrologueScreen() {
     <section className="prologue-copy">
       <p className="eyebrow">PRÓLOGO · TERRÚNIA</p>
       <h1>O primeiro Vínculo</h1>
-      <p>Distribua 6 Pontos de Atributo (1 por clique; 2 para elevar o dado), ou prepare automaticamente os requisitos de uma arma. A distribuição pode ser revista até realizar o Vínculo.</p>
+      <p>Seus pontos iniciais foram distribuídos na criação. Reveja-os individualmente se necessário; dois pontos no mesmo atributo elevam o dado.</p>
       <AttributeAllocator save={save} compact layout="vertical" />
     </section>
 
@@ -68,9 +67,8 @@ export function PrologueScreen() {
       </div>
       {selectedWeapon && <div className="prologue-choice-cost">
         <strong>Investimento mínimo: {starterWeaponPointCost(selectedWeapon)} / {BALANCE.characterCreationAttributePoints} pontos</strong>
-        <span>{eligibility?.eligible ? 'Requisitos atendidos' : 'Arma disponível: ajuste os atributos ou use a distribuição sugerida.'}</span>
-        <button type="button" onClick={() => prepareWeapon(selectedWeapon.id)}
-          aria-label={`Preparar atributos para ${selectedWeapon.name}`}>Distribuir pontos para esta arma</button>
+        <span>{eligibility?.eligible ? 'Requisitos atendidos' : 'Arma disponível: ajuste os atributos individualmente para cumprir os requisitos.'}</span>
+
       </div>}
       <GameButton variant="primary" full onClick={complete} disabled={!selectedWeapon || !eligibility?.eligible}>
         {selectedWeapon && eligibility?.eligible ? <Waypoints size={18} /> : <LockKeyhole size={18} />}
