@@ -41,7 +41,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const player = battle?.combatants.combatant_player
   const [targetId, setTargetId] = useState('')
   const [menu, setMenu] = useState<Menu>(null)
-  const [pendingCommand, setPendingCommand] = useState<BattleCommand | null>(null)
   const [selectedConsumableId, setSelectedConsumableId] = useState('')
   const [hit, setHit] = useState<'player' | 'enemy' | null>(null)
   const [turnCue, setTurnCue] = useState(false)
@@ -78,7 +77,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }, [enemies, targetId])
   useEffect(() => {
     setMenu(null)
-    setPendingCommand(null)
     setActiveDice(null)
     setStagedHp(null)
     setInitiativePreview(null)
@@ -278,7 +276,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     const initiative = command.type === 'rollInitiative'
     if (initiative ? battle.phase !== 'AwaitingInitiative' || !initiativeReady || Boolean(roundCurtain) : !isPlayerTurn) return
     setMenu(null)
-    setPendingCommand(null)
     const preview = previewBattleCommand(battle, command, content, save.inventory)
     if (!preview.ok) { submit(command); return }
 
@@ -324,23 +321,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     }
     if (!requireClick) scheduleRollStep()
   }
-  const openMenu = (next: Menu) => {
-    setPendingCommand(null)
-    setMenu(menu === next ? null : next)
-  }
-  const confirmPending = () => {
-    if (!pendingCommand || !isPlayerTurn) return
-    if (pendingCommand.type === 'defend') send({ type: 'defend' })
-    if (pendingCommand.type === 'attack') send({ type: 'attack', targetId: target.id })
-    else if (pendingCommand.type === 'skill') {
-      const skill = content.combatSkills[pendingCommand.skillId]
-      if (skill) send({ ...pendingCommand, targetId: skill.target === 'self' ? player.id : target.id })
-    } else if (pendingCommand.type === 'item') {
-      const item = save.inventory.find((candidate) => candidate.instanceId === pendingCommand.itemInstanceId)
-      const definition = item ? content.items[item.definitionId] : undefined
-      if (definition) send({ ...pendingCommand, targetId: definition.combatTarget === 'enemy' ? target.id : player.id })
-    }
-  }
+  const openMenu = (next: Menu) => setMenu(menu === next ? null : next)
   const end = (toCity: boolean) => {
     if (toCity) returnToTerran()
     else finishBattleIntoExpedition()
@@ -464,31 +445,22 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               !isPlayerTurn || !hasUsefulSupplies('essence'), menu === 'essences')}
             {button('ITENS / POÇÕES', <Backpack />, () => openMenu('items'),
               !isPlayerTurn || !hasUsableConsumable, menu === 'items')}
-            {button('DEFENDER', <Shield />, () => { setMenu('defense'); setPendingCommand({ type: 'defend' }) }, !isPlayerTurn)}
+            {button('DEFENDER', <Shield />, () => send({ type: 'defend' }), !isPlayerTurn)}
             {/* The domain explicitly returns FLEE_NOT_IMPLEMENTED; never display it as actionable. */}
             {button('FUGIR', <Footprints />, () => {}, true)}
           </div>
           {menu && <div className="pixel-battle__submenu">
-            <button type="button" aria-label="Voltar sem executar a ação" onClick={() => { setPendingCommand(null); setMenu(null) }}>VOLTAR</button>
-            {pendingCommand && <div className="pixel-battle__pending-action" role="status">
-              <strong>ALVO E EXECUÇÃO</strong>
-              <small>{pendingCommand.type === 'attack' ? `Ataque básico em ${target.name}` :
-                pendingCommand.type === 'skill' ? `${content.combatSkills[pendingCommand.skillId]?.name ?? 'Habilidade'} · ${content.combatSkills[pendingCommand.skillId]?.mpCost ?? 0} MP` :
-                pendingCommand.type === 'item' ? `Usar ${content.items[save.inventory.find((item) => item.instanceId === pendingCommand.itemInstanceId)?.definitionId ?? '']?.name ?? 'Item'}` : pendingCommand.type === 'defend' ? 'Defender: prepara a mitigação para o próximo ataque inimigo' : 'Ação selecionada'}.
-                Escolha o alvo e execute; Voltar cancela sem gastar turno nem recursos.</small>
-              <button type="button" disabled={!isPlayerTurn || (pendingCommand.type !== 'item' && pendingCommand.type !== 'skill' && !target.alive)}
-                onClick={confirmPending}>{pendingCommand.type === 'attack' ? 'ATACAR' : pendingCommand.type === 'skill' ? 'USAR HABILIDADE' : pendingCommand.type === 'defend' ? 'DEFENDER AGORA' : 'USAR ITEM'}</button>
-            </div>}
+            <button type="button" aria-label="Voltar sem executar a ação" onClick={() => setMenu(null)}>VOLTAR</button>
             {menu === 'combat' && <>
               <strong className="pixel-battle__submenu-heading">ATAQUE · MAGIAS · HABILIDADES</strong>
               <button type="button" disabled={!isPlayerTurn || !target.alive}
-                onClick={() => setPendingCommand({ type: 'attack', targetId: target.id })}><Swords size={17} /> ATAQUE BÁSICO · 0 MP</button>
+                onClick={() => send({ type: 'attack', targetId: target.id })}><Swords size={17} /> ATAQUE BÁSICO · 0 MP</button>
               {skills.map((skill) => {
                 const remaining = player.skillCooldowns?.[skill.id] ?? 0
                 return <button key={skill.id}
                   disabled={!isPlayerTurn || remaining > 0 || player.mp < skill.mpCost || (skill.target === 'enemy' && !target.alive)}
                   title={remaining > 0 ? `${skill.name}: ${remaining} turno(s) para reutilizar` : `${skill.name}: ${skill.mpCost} MP, recarga ${skill.cooldownTurns ?? 0} turno(s)`}
-                  onClick={() => setPendingCommand({ type: 'skill', skillId: skill.id, targetId: skill.target === 'self' ? player.id : target.id })}>
+                  onClick={() => send({ type: 'skill', skillId: skill.id, targetId: skill.target === 'self' ? player.id : target.id })}>
                   {isMagicSkill(skill.id) ? 'MAGIA' : 'HABILIDADE'} · {skill.name} · {skill.mpCost} MP ·
                   {remaining > 0 ? ` Recarga: ${remaining} turno(s)` : ` d+${skill.damageDieSteps ?? 0} · recarga ${skill.cooldownTurns ?? 0}`}
                 </button>
@@ -498,7 +470,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             {menu === 'items' ? consumables.length ? <><select aria-label="Selecionar consumível" value={selectedItem?.instanceId ?? ''}
               onChange={(event) => setSelectedConsumableId(event.target.value)}>
               {consumables.map((item) => <option key={item.instanceId} value={item.instanceId}>{content.items[item.definitionId].name} ×{item.quantity}</option>)}
-            </select><button disabled={!itemUseful} onClick={() => selectedItem && setPendingCommand({ type: 'item', itemInstanceId: selectedItem.instanceId, targetId: player.id })}>SELECIONAR POÇÃO</button></> :
+            </select><button disabled={!itemUseful} onClick={() => selectedItem && send({ type: 'item', itemInstanceId: selectedItem.instanceId, targetId: player.id })}>SELECIONAR POÇÃO</button></> :
               <span>Sem consumíveis disponíveis.</span> : null}
             {(['throwables', 'runes', 'essences'] as const).includes(menu as 'throwables' | 'runes' | 'essences') ? (() => {
               const kind = menu === 'throwables' ? 'throwable' : menu === 'runes' ? 'rune' : 'essence'
@@ -511,7 +483,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
                   || (effect.type === 'restoreMp' && player.mp < player.maxMp)
                   || effect.type === 'damage' || effect.type === 'applyStatus' || effect.type === 'cleanseHarmful')
                 return <button key={instance.instanceId} disabled={!useful || (item.combatTarget === 'enemy' && !target.alive)}
-                  onClick={() => setPendingCommand({ type: 'item', itemInstanceId: instance.instanceId, targetId: itemTargetId })}>
+                  onClick={() => send({ type: 'item', itemInstanceId: instance.instanceId, targetId: itemTargetId })}>
                   {item.name} ×{instance.quantity} · {item.combatTarget === 'enemy' ? target.name : 'Terrírian'}</button>
               }) : <span>Você não possui {kind === 'throwable' ? 'arremessáveis' : kind === 'rune' ? 'runas de campo' : 'essências de combate'}. Encontre suprimentos em Terran.</span>
             })() : null}
