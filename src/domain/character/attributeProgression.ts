@@ -46,6 +46,8 @@ export const gainCharacterXp = (
   next.xp += Math.max(0, amount)
   let levelsGained = 0
   const maxLevel = BALANCE.xpThresholds.length
+  // Migrate the active threshold lazily: existing saves keep XP and levels unchanged.
+  next.xpRequired = BALANCE.xpThresholds[Math.min(next.level, maxLevel - 1)]
 
   while (next.level < maxLevel && next.xp >= next.xpRequired) {
     next.level += 1
