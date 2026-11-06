@@ -72,6 +72,7 @@ describe('Portal de Terran — escolhas diretas por botões', () => {
     expect(screen.getByRole('button', { name: /Guardiões do Limiar · Bloqueada/ })).toBeDisabled()
     unmount()
     save.quests.main_astravel_lost_hunters.status = 'completed'
+    save.character.level = 4
     useGameStore.setState({ save })
     view()
     expect(screen.getByRole('button', { name: /Rastro Micelial · Iniciar/ })).toBeEnabled()
