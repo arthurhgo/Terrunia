@@ -122,7 +122,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       return [{
         id: entry.id, sides: entry.roll.sides, face: entry.roll.face,
         actorId: entry.roll.actorId, targetId: actor?.side === 'enemy' ? 'combatant_player' : targetId,
-        damage: Number(damage[1]), action: entry.roll.action,
+        damage: Number(damage[1]), action: entry.roll.action, damageBreakdown: entry.roll.damageBreakdown,
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy',
       }]
     })
@@ -286,7 +286,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       const match = entry.message.match(/ causa (\d+) de dano /)
       if (!match) return []
       return [{
-        id: entry.id, sides: roll.sides, face: roll.face, damage: Number(match[1]),
+        id: entry.id, sides: roll.sides, face: roll.face, damage: Number(match[1]), damageBreakdown: roll.damageBreakdown,
         actorId: roll.actorId, targetId: actor?.side === 'enemy' ? player.id : target.id,
         action: roll.action, kind: 'damage' as const,
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy' as const,
