@@ -169,13 +169,17 @@ const applyCombatEffects = (
   effects: CombatEffectDefinition[],
   catalog: ContentCatalog,
   action = 'Ataque básico',
+  dieSteps = 0,
 ) => {
   for (const effect of effects) {
     if (effect.type === 'damage') {
       const guard = target.defending ? BALANCE.defendMitigation : 0
       const attack = getEffectiveAttackPower(actor, catalog)
       const armor = getEffectiveMitigation(target, catalog)
-      const sides = actor.attackDie ?? 4
+      const baseDie = actor.attackDie ?? 4
+      const order = BALANCE.attributeDieOrder
+      const currentTier = order.findIndex((die) => die === baseDie)
+      const sides = order[Math.min(order.length - 1, Math.max(0, currentTier + dieSteps))]
       const face = rollCombatDie(state, sides)
       const damage = calculateDamage(face + attack + effect.powerBonus, armor + guard)
       target.hp = Math.max(0, target.hp - damage)
@@ -237,7 +241,7 @@ const resolveSkill = (
   actor.skillReadyRound ??= {}
   actor.skillReadyRound[skill.id] = state.round + cooldown + 1
   addLog(state, `${actor.name} usa ${skill.name} (+${skill.effects.filter((effect) => effect.type === 'damage').reduce((total, effect) => total + (effect.type === 'damage' ? effect.powerBonus : 0), 0)} de Poder, ${skill.mpCost} MP; ${cooldown} turnos de recarga).`, 'system')
-  applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name)
+  applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name, BALANCE.skillDieStepsBonus)
   addPhase(state, 'ResolvingReactions')
   addPhase(state, 'ApplyingStatuses')
   addPhase(state, 'CheckEndConditions')
