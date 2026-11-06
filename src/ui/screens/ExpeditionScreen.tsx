@@ -58,7 +58,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const startBattle = useGameStore((state) => state.startBattle)
   const enterFungalChambers = useGameStore((state) => state.enterFungalChambers)
   const returnToTerran = useGameStore((state) => state.returnToTerran)
-  const useFieldConsumable = useGameStore((state) => state.useFieldConsumable)
+  const consumeFieldPotion = useGameStore((state) => state.consumeFieldPotion)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
   const [drawer, setDrawer] = useState<Drawer>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -166,7 +166,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
               }).map((instance) => {
                 const item = content.items[instance.definitionId]
                 return <button type="button" key={instance.instanceId}
-                  onClick={() => useFieldConsumable(instance.instanceId)}>
+                  onClick={() => consumeFieldPotion(instance.instanceId)}>
                   <AssetImage assetId={item.iconAssetId} alt="" />
                   <span><strong>{item.name} ×{instance.quantity}</strong>
                     <small>{item.combatEffects.filter((effect) => effect.type === 'restoreHp' || effect.type === 'restoreMp')
