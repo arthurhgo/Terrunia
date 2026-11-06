@@ -32,5 +32,5 @@ export const BALANCE = {
   /** BALANCE_DRAFT — consecutive own rounds that a skill remains unavailable. */
   skillCooldownRounds: 2,
   /** BALANCE_DRAFT — faster XP from one-time battles and mission payouts. */
-  characterXpRewardMultiplier: 1.5,
+  characterXpRewardMultiplier: 2,
 } as const
