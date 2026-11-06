@@ -24,7 +24,7 @@ test('Terran conserva os atalhos laterais; somente MENU abre a tela de progress�
   // without the retired four-button Terran rail/drawer system.
   const hud = page.getByRole('complementary', { name: 'Status permanente do personagem' })
   await expect(hud).toBeVisible()
-  await expect(page.getByRole('region', { name: 'Diário de missões' })).toBeVisible()
+  await expect(page.getByRole('complementary', { name: 'Diário de missões' })).toBeVisible()
   const location = page.getByRole('button', { name: 'MENU / LOCAL', exact: true })
   await location.click()
   await expect(page.locator('#terran-location-menu')).toBeVisible()
