@@ -21,6 +21,7 @@ import './battlePixel.css'
 import './battleRemake.css'
 import './battleTimeline.css'
 import './battleCinematic.css'
+import './gameplayV057.css'
 
 type Menu = 'combat' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
