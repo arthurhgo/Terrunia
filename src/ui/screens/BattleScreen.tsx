@@ -378,7 +378,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             aria-label={'Status de ' + enemy.name} id={'enemy-status-' + i}>
             <strong>{enemy.name}</strong>
             <span>Vida: {visualHp(enemy.id)}/{enemy.maxHp} · Mana: {enemy.mp}/{enemy.maxMp}</span>
-            <span>Ataque: {enemy.attackPower} · Defesa: {enemy.mitigation}</span>
+            <span>Nível {content.enemies[enemy.definitionId]?.level ?? 1} · Ataque: {enemy.attackPower} · Defesa: {enemy.mitigation}</span>
             <span>Iniciativa: {enemy.initiative} · Dado d{enemy.attackDie ?? 4}</span>
             <span>{enemy.statusEffects.length ? enemy.statusEffects.map((status) =>
               content.statusEffects[status.definitionId]?.name ?? status.definitionId).join(', ') : 'Sem efeitos ativos'}</span>
