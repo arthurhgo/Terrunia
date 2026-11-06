@@ -86,3 +86,43 @@ A nova direção de UX foi registrada em `docs/CANON_DECISIONS.md`. Não há des
 5. Possível extensão do arco opcional para múltiplos ramos, sem tornar missões secundárias obrigatórias.
 
 **Status de publicação:** alterar documentação/código em PR #60 não significa merge ou release. Conferir CI e QA antes da aprovação.
+
+
+## 7. Ampliação — animações individuais, requisitos, lore e evolução
+
+**Estado desta rodada:** implementação incremental de gameplay e interface, sujeita a QA visual e testes automatizados. IDs e valores abaixo permanecem `CONTENT_DRAFT`/`BALANCE_DRAFT`; arte em `VISUAL_DRAFT`.
+
+### Animações individuais
+
+Os quatro inimigos novos possuem atlas PNG RGBA 128×128, com 4 colunas × 4 linhas de frames nativos 32×32. Linhas: `idle`, `attack`, `hit`, `defeat`; cada atlas contém 16 frames e ritmo específico no `assetRegistry.motionSheet`. O renderer `EnemyMotionSprite` respeita `prefers-reduced-motion` e mostra PNG estático de fallback. Reiniciar o elemento ao mudar `motion` garante que sequências de ataque, dano e derrota com uma repetição comecem pelo primeiro quadro novamente. Nenhuma animação escreve o estado do combate.
+
+| ID | Ritmo em repouso | Ataque | Dano | Derrota | Identidade |
+|---|---:|---:|---:|---:|---|
+| Fungorro Espinhal | 1050 ms | 620 ms | 420 ms | 850 ms | espinhos e contração orgânica |
+| Casco de Esporos | 1480 ms | 750 ms | 520 ms | 1150 ms | peso, resistência e impacto |
+| Rastreador Micelial | 730 ms | 480 ms | 350 ms | 690 ms | agilidade e pulso micelial |
+| Vigia do Limiar | 1750 ms | 880 ms | 600 ms | 1200 ms | estrutura rígida e fulgor de inscrições |
+
+### Requisitos existentes e materiais
+
+- **Estudos de fauna:** Espinhos da Fronteira pede nível 2 e o primeiro relato; A Primeira Carapaça e Quitina para a Fornalha pedem nível 3 e o bestiário; Rastros sob o Micélio pede nível 4, caçadores entregues e estudo anterior; Vigias do Último Limiar pede nível 5, investigação da Ruína entregue e estudo anterior. Missões não são aceitas automaticamente.
+- **Caçadas novas:** Rastro Micelial exige nível 4 + entrega a Vorren; Guardiões do Limiar exige nível 5 + entrega a Lithwynn. As três caçadas iniciais mantêm sua regra anterior. Esses níveis são requisitos de entrada às **atividades novas**, não alterações retroativas aos encontros da história.
+- **Materiais:** Núcleo Fúngico (Espinhal), Quitina de Esporos (Casco), Fibra Micelial (Rastreador), Lasca da Ruína (Vigia). Venda, conversão e encomendas existentes continuam a receber os itens por ID; Vínculos jamais são trocados por esses drops.
+- **Pontos de Essência:** mantêm a regra da barra e do excedente; níveis, vitórias e kills não concedem pontos diretamente.
+
+### Lore visível apenas depois da descoberta
+
+O `progressiveFaunaLore` define quatro observações provisórias, cada uma associada ao ID real de criatura. O Bestiário de Vorren apresenta os registros apenas se o personagem já venceu o encontro e recolheu suas recompensas. Os materiais associados e as missões **ativas** relacionadas são mostrados sem divulgar missões bloqueadas.
+
+Vitórias de encontros estáticos continuam legíveis via `completedEncounterIds`/`BattleWon`. O Modo Ondas compartilha um ID de encontro dinâmico, portanto `claimBattleRewards` registra `EnemyStudied:<enemyId>` **uma vez por espécie efetivamente derrotada**. O selector ignora IDs inexistentes, não ganha novas flags e mantém a compatibilidade com saves antigos.
+
+### Portão de validação
+
+- [ ] Executar `npm run check` sobre o último commit (lint, typecheck, testes e build).
+- [ ] Verificar o atlas e as quatro animações por monstro em navegador real, sem cortes e com movimento reduzido.
+- [ ] Simular missão bloqueada → nível exigido → aceite explícito → kill/entrega → recompensa única.
+- [ ] Verificar Bestiário antes da vitória, após vitória de caçada, após Ondas e após reload.
+- [ ] Confirmar que nenhuma variação concede Joia/Fragmento único do Colosso.
+- [ ] Executar Playwright E2E + QA visual antes de considerar a v0.5.9 pronta.
+
+**OWNER_DECISION:** aparência final das espécies, texto de lore definitivo, escala dos inimigos na cena, balanceamento de níveis/recompensas, duração final das animações e eventuais novos efeitos elementais. Tudo permanece parametrizável ou em draft.
