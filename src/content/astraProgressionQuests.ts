@@ -1,7 +1,7 @@
 import type { QuestDefinition } from './types'
 
 /**
- * CONTENT_DRAFT / BALANCE_DRAFT: optional three-step field study.
+ * CONTENT_DRAFT / BALANCE_DRAFT: optional staged field studies linked to enemy identity and resource use.
  * Each chapter asks for species obtainable from the current stage or its repeatable Portal hunt.
  * It never gates the main story, Clan/Class decisions or previously accepted missions.
  */
@@ -16,7 +16,7 @@ export const astravelProgressionQuests: QuestDefinition[] = [
       label: 'Derrote 2 Cascos de Esporos em Astravél ou na Caçada do Portal' }],
     rewards: [{ type: 'characterXp', value: 35 }, { type: 'gold', value: 20 }, { type: 'rawEssence', value: 18 }],
     itemRewards: [{ itemId: 'consumable_antidote', quantity: 1 }],
-    prerequisites: [{ type: 'questCompleted', questId: 'main_vorren_bestiary' }],
+    prerequisites: [{ type: 'questCompleted', questId: 'main_vorren_bestiary' }, { type: 'characterLevel', value: 3 }],
     initialStatus: 'locked',
     terranFlow: { active: 'location_terran_portal_plaza', ready_to_turn_in: 'location_terran_vorren_post' },
     status: 'CONTENT_DRAFT',
@@ -34,6 +34,7 @@ export const astravelProgressionQuests: QuestDefinition[] = [
     prerequisites: [
       { type: 'questCompleted', questId: 'main_astravel_lost_hunters' },
       { type: 'questCompleted', questId: 'side_astravel_spore_shells' },
+      { type: 'characterLevel', value: 4 },
     ],
     initialStatus: 'locked',
     terranFlow: { active: 'location_terran_portal_plaza', ready_to_turn_in: 'location_terran_daeryn_house' },
@@ -52,9 +53,41 @@ export const astravelProgressionQuests: QuestDefinition[] = [
     prerequisites: [
       { type: 'questCompleted', questId: 'main_astravel_corruption' },
       { type: 'questCompleted', questId: 'side_astravel_mycelial_tracking' },
+      { type: 'characterLevel', value: 5 },
     ],
     initialStatus: 'locked',
     terranFlow: { active: 'location_terran_portal_plaza', ready_to_turn_in: 'location_terran_bond_workshop' },
+    status: 'CONTENT_DRAFT',
+  },
+  {
+    id: 'side_astravel_thornback_signs',
+    title: 'Espinhos da Fronteira',
+    summary: 'Eldamar precisa distinguir a carapaça dos Fungorros Espinhais do primeiro fungo rastejante. Observe dois espécimes em combate.',
+    contextNote: 'Encontre um Espinhal no marco 3 de Astravél ou em Ondas intermediárias. As observações não consomem seus Núcleos Fúngicos.',
+    giverNpcId: 'npc_eldamar', turnInNpcId: 'npc_eldamar', category: 'secondary',
+    objectives: [{ id: 'thornback_combat', type: 'kill', targetId: 'enemy_fungorro_thornback', required: 2,
+      label: 'Derrote 2 Fungorros Espinhais em Astravél ou nas Ondas do Portal' }],
+    rewards: [{ type: 'characterXp', value: 24 }, { type: 'gold', value: 14 }, { type: 'rawEssence', value: 16 }],
+    itemRewards: [{ itemId: 'consumable_minor_tonic', quantity: 1 }],
+    prerequisites: [{ type: 'questCompleted', questId: 'vs_astravel_first_contact' }, { type: 'characterLevel', value: 2 }],
+    initialStatus: 'locked',
+    terranFlow: { active: 'location_terran_portal_plaza', ready_to_turn_in: 'location_terran_eldamar_house' },
+    status: 'CONTENT_DRAFT',
+  },
+  {
+    id: 'side_astravel_forge_chitin',
+    title: 'Quitina para a Fornalha',
+    summary: 'Durnan utiliza placas de Cascos de Esporos para testar a resistência de suas peças de treino. Entregue duas amostras intactas.',
+    contextNote: 'Encontre Quitina nos Cascos de Esporos ou Louva-Esporos. Os materiais são consumidos somente na entrega, não no aceite.',
+    giverNpcId: 'npc_durnan', turnInNpcId: 'npc_durnan', category: 'secondary',
+    objectives: [{ id: 'chitin_delivery', type: 'collect', targetId: 'drop_spore_chitin', required: 2,
+      label: 'Entregue 2 Quitinas de Esporos a Durnan' }],
+    turnInItems: [{ itemId: 'drop_spore_chitin', quantity: 2 }],
+    rewards: [{ type: 'characterXp', value: 28 }, { type: 'gold', value: 35 }, { type: 'rawEssence', value: 12 }],
+    itemRewards: [{ itemId: 'consumable_antidote', quantity: 1 }],
+    prerequisites: [{ type: 'questCompleted', questId: 'main_vorren_bestiary' }, { type: 'characterLevel', value: 3 }],
+    initialStatus: 'locked',
+    terranFlow: { active: 'location_terran_portal_plaza', ready_to_turn_in: 'location_terran_forge' },
     status: 'CONTENT_DRAFT',
   },
 ]
