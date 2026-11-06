@@ -39,7 +39,7 @@ Regras: aceite e entrega explícitos; side quests nunca bloqueiam a campanha pri
 | `enemy_mycelial_stalker` | Rastreador Micelial | 4 | 16 | 1 | 5 | Fibra Micelial |
 | `enemy_ruin_warden` | Vigia do Limiar | 5 | 21 | 3 | 5 | Lasca da Ruína |
 
-O posicionamento usa os **mesmos 15 nós** de Astravél: Espinhal no marco 3, Casco no marco 5, Rastreador nos marcos 9/12 e Vigia no marco 14. Os pools do Modo Ondas incluem os novos adversários por faixas de nível, com limite de quatro atores inimigos.
+O posicionamento usa os **mesmos 15 nós** de Astravél: Espinhal no marco 3, Casco no marco 5, Rastreador no marco 9 e Vigia no marco 14. Os pools do Modo Ondas incluem os novos adversários por faixas de nível, com limite de quatro atores inimigos.
 
 ### Sprites provisórios
 
