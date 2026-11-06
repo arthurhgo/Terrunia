@@ -37,7 +37,7 @@ describe('vertical slice integrada', () => {
 
     useGameStore.getState().returnToTerran()
     useGameStore.getState().enterAstravel()
-    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_luminous_02')
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_entry')
     expect(useGameStore.getState().save?.world.trailNodeStates.astravel_entry).toBe('completed')
     expect(useGameStore.getState().save?.eventLog.filter((event) => event === 'TrailNodeCompleted:astravel_entry')).toHaveLength(1)
     expect(useGameStore.getState().save?.eventLog).toContain('ExpeditionResumed:trail_astravel_entry')
@@ -160,6 +160,11 @@ describe('vertical slice integrada', () => {
       if (node.type === 'boss') {
         store().startBattle(node.id)
         expect(store().save!.battle).toBeNull()
+        // The Portal now spawns at Entrada; this integration fixture simulates
+        // walking the cleared route to the dungeon threshold before entering.
+        const reachedThreshold = structuredClone(store().save!)
+        reachedThreshold.world.currentLocationId = content.dungeons.dungeon_fungal_chambers.entryTrailNodeId
+        useGameStore.setState({ save: reachedThreshold })
         store().enterFungalChambers()
         for (const room of content.dungeons.dungeon_fungal_chambers.rooms) store().discoverFungalRoom(room.id)
       }
