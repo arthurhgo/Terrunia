@@ -57,7 +57,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const save = useGameStore((state) => state.save)
   const resolveCurrentTrailNode = useGameStore((state) => state.resolveCurrentTrailNode)
   const startBattle = useGameStore((state) => state.startBattle)
-  const useFieldConsumable = useGameStore((state) => state.useFieldConsumable)
+  const consumeFieldItem = useGameStore((state) => state.consumeFieldItem)
   const enterFungalChambers = useGameStore((state) => state.enterFungalChambers)
   const returnToTerran = useGameStore((state) => state.returnToTerran)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
@@ -192,7 +192,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
                     <span><strong>{item.name} ×{instance.quantity}</strong>
                     <small>{effect.map((entry) => entry.type === 'restoreHp' ? `+${entry.value} PV` : `+${entry.value} MP`).join(' · ')}</small></span>
                     {pendingFieldItemId === instance.instanceId ? <>
-                      <button type="button" disabled={!useful} onClick={() => { useFieldConsumable(instance.instanceId); setPendingFieldItemId(null) }}>Confirmar uso</button>
+                      <button type="button" disabled={!useful} onClick={() => { consumeFieldItem(instance.instanceId); setPendingFieldItemId(null) }}>Confirmar uso</button>
                       <button type="button" onClick={() => setPendingFieldItemId(null)}>Voltar</button>
                     </> : <button type="button" disabled={!useful} onClick={() => setPendingFieldItemId(instance.instanceId)}>Usar</button>}
                   </div>
