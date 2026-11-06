@@ -2,13 +2,16 @@ import { describe, expect, it } from 'vitest'
 import { content } from './catalog'
 import { npcDefinitions } from './npcs'
 import { sideQuestDefinitions } from './sidequests'
+import { astravelProgressionQuests } from './astraProgressionQuests'
 import { createNewSave } from '../domain/game/createSave'
 import { migrateAndValidateSave } from '../persistence/saveSchema'
 
 describe('contratos secundários dos NPCs', () => {
   it('tem um contrato por NPC com alvo real e entrega manual', () => {
     const questGivers = npcDefinitions.filter((npc) => npc.id !== 'npc_rosetta')
-    expect(sideQuestDefinitions.filter((quest) => !quest.turnInItems)).toHaveLength(questGivers.length)
+    const originalContracts = sideQuestDefinitions.filter((quest) => !quest.turnInItems && !quest.id.startsWith('side_astravel_'))
+    expect(originalContracts).toHaveLength(questGivers.length)
+    expect(sideQuestDefinitions.filter((quest) => !quest.turnInItems)).toHaveLength(questGivers.length + astravelProgressionQuests.length)
     expect(content.npcs.npc_rosetta.questIds).toHaveLength(4)
     for (const npc of questGivers) {
       const quest = content.quests[npc.questIds.find((id) => content.quests[id]?.category === 'secondary') ?? '']
