@@ -132,7 +132,7 @@ const deriveEnemyCombatant = (
     maxHp: enemy.maxHp,
     mp: 0,
     maxMp: 0,
-    attackPower: enemy.attackPower,
+    attackPower: Math.max(0, enemy.attackPower - BALANCE.enemyAttackPowerOffset),
     mitigation: enemy.mitigation,
     initiative: Math.max(1, enemy.level + 3),
     initiativeDie: 4, // BALANCE_DRAFT until each creature's initiative die is authored.
