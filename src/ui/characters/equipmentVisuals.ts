@@ -50,7 +50,7 @@ export function getEquipmentAnchor(item: VisualItem, facing: ActorFacing): Visua
     const grip = getWeaponGripProfile(item.itemId)
     const handX = left ? 6 : 26
     const handY = back ? 25 : 26
-    const size = Math.min(26, Math.max(14, Math.round(32 * grip.size / 36)))
+    const size = Math.min(16, Math.max(10, Math.round(32 * grip.size / 64)))
     const handleX = grip.handleX / 100
     const handleY = grip.handleY / 100
     const angle = left ? -grip.rotation : back ? grip.rotation - 30 : grip.rotation
