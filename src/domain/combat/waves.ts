@@ -10,9 +10,15 @@ export const waveEncounter = (catalog: ContentCatalog, requestedWave: number): E
   const pool = wave < 4
     ? ['enemy_fungorro_crawler', 'enemy_spore_sower']
     : wave < 8
-      ? ['enemy_fungorro_crawler', 'enemy_spore_sower', 'enemy_fungal_slime', 'enemy_luminous_slime', 'enemy_void_moth']
-      : ['enemy_fungorro_crawler', 'enemy_spore_sower', 'enemy_fungal_slime', 'enemy_fungal_horror',
-        'enemy_luminous_slime', 'enemy_void_moth', 'enemy_spore_mantis', 'enemy_ruin_sentinel']
+      ? ['enemy_fungorro_crawler', 'enemy_spore_sower', 'enemy_fungal_slime', 'enemy_luminous_slime',
+        'enemy_void_moth', 'enemy_fungorro_thornback', 'enemy_spore_bulwark']
+      : wave < 12
+        ? ['enemy_fungorro_crawler', 'enemy_spore_sower', 'enemy_fungal_slime', 'enemy_fungal_horror',
+          'enemy_luminous_slime', 'enemy_void_moth', 'enemy_spore_mantis', 'enemy_ruin_sentinel',
+          'enemy_fungorro_thornback', 'enemy_spore_bulwark', 'enemy_mycelial_stalker']
+        : ['enemy_fungorro_crawler', 'enemy_spore_sower', 'enemy_fungal_slime', 'enemy_fungal_horror',
+          'enemy_luminous_slime', 'enemy_void_moth', 'enemy_spore_mantis', 'enemy_ruin_sentinel',
+          'enemy_fungorro_thornback', 'enemy_spore_bulwark', 'enemy_mycelial_stalker', 'enemy_ruin_warden']
   const enemyIds = Array.from({ length: Math.min(4, 1 + Math.floor(wave / 3)) },
     (_, index) => pool[(index + wave - 1) % pool.length])
   // Encounter instance, not the unique Colossus story boss or its grade-changing loot.
