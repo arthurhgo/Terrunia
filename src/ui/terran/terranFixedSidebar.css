@@ -295,3 +295,15 @@
   .terran-game__stage .terran-game__backpack-toggle { right: 6px; bottom: 52px; width: 36px; height: 36px; min-height: 36px; }
   .terran-game__stage .terran-game__backpack-panel { right: 6px; bottom: 96px; height: min(320px,calc(100% - 103px)); }
 }
+
+/* v0.5.9: slot accent communicates the *real* item rarity. Sprites retain their own colors. */
+.terran-character-hud__slot[data-rarity="common"]{--equipped-rarity:#a3a6a1}
+.terran-character-hud__slot[data-rarity="uncommon"]{--equipped-rarity:#64b89a}
+.terran-character-hud__slot[data-rarity="rare"]{--equipped-rarity:#6e9dd8}
+.terran-character-hud__slot[data-rarity="epic"]{--equipped-rarity:#b48bdf}
+.terran-character-hud__slot[data-rarity="legendary"]{--equipped-rarity:#dcab62}
+.terran-character-hud__slot[data-rarity="unique"]{--equipped-rarity:#e7d199}
+.terran-character-hud__slot[data-rarity] .terran-character-hud__slot-art{
+  outline:1px solid var(--equipped-rarity,#97784b);
+  box-shadow:inset 0 0 10px color-mix(in srgb,var(--equipped-rarity,#97784b) 12%,transparent);
+}
