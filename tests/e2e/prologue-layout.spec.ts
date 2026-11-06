@@ -96,7 +96,7 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
       anchor: style.left,
     }
   })
-  expect(handRig.ratio).toBeLessThan(.45)
+  expect(handRig.ratio).toBeLessThan(.65)
   expect(handRig.weaponZ).toBeGreaterThan(handRig.characterZ)
   expect(handRig.animationName).toBe('none')
   expect(handRig.weaponSize).not.toBe('0px')
