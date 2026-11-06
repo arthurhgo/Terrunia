@@ -25,6 +25,12 @@ export const PORTAL_HUNT_STORY_GATES: Partial<Record<(typeof PORTAL_HUNT_IDS)[nu
   },
 }
 
+/** BALANCE_DRAFT: level gates apply only to the two new hunts. */
+export const PORTAL_HUNT_LEVELS: Partial<Record<(typeof PORTAL_HUNT_IDS)[number], number>> = {
+  encounter_portal_mycelial_track: 4,
+  encounter_portal_ruin_guard: 5,
+}
+
 export const isPortalHuntId = (id: string): id is (typeof PORTAL_HUNT_IDS)[number] =>
   PORTAL_HUNT_IDS.some((entry) => entry === id)
 
@@ -45,6 +51,10 @@ export function canStartPortalHunt(
   const gate = PORTAL_HUNT_STORY_GATES[encounterId as (typeof PORTAL_HUNT_IDS)[number]]
   if (gate && save.quests[gate.questId]?.status !== 'completed') {
     return fail('HUNT_STORY_LOCKED', gate.description)
+  }
+  const minimumLevel = PORTAL_HUNT_LEVELS[encounterId as (typeof PORTAL_HUNT_IDS)[number]]
+  if (minimumLevel && save.character.level < minimumLevel) {
+    return fail('HUNT_LEVEL_LOCKED', `Nível ${minimumLevel} necessário para iniciar esta caçada.`)
   }
   if (save.vitals.hp <= 0) return fail('HUNT_LIFE', 'Descanse na Base antes de combater.')
   return ok(true)
