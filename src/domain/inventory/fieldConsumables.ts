@@ -6,7 +6,7 @@ import { fail, ok, type Result } from '../shared/types'
 /** Consumables are usable while exploring, but never during combat through this path.
  * No turn is advanced; no XP, Essence Points or lore effects are granted.
  */
-export const useFieldConsumable = (
+export const applyFieldConsumable = (
   save: GameSave, instanceId: string, catalog: ContentCatalog, now: string,
 ): Result<GameSave> => {
   if (save.battle) return fail('FIELD_ITEM_IN_COMBAT', 'Use o menu de itens do combate durante uma batalha.')
