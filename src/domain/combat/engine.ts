@@ -19,6 +19,7 @@ import type {
   BattleState,
   Combatant,
   CombatRoll,
+  CombatDie,
 } from './types'
 
 const addPhase = (state: BattleState, phase: BattlePhase) => {
@@ -70,6 +71,32 @@ export const getEffectiveMitigation = (combatant: Combatant, catalog: ContentCat
 
 export const calculateDamage = (attackPower: number, mitigation: number) =>
   Math.max(1, Math.floor(attackPower) - Math.max(0, Math.floor(mitigation)))
+
+/** BALANCE_DRAFT v0.5.7: one deterministic roll drives BOTH damage and its visual presentation.
+ * The midpoint offset retains the existing baseline on average; no unapproved crit mechanic.
+ */
+export const calculateRolledDamage = (
+  baseAttack: number,
+  mitigation: number,
+  face: number,
+  sides: CombatDie,
+  skillBonus = 0,
+  guardMitigation = 0,
+) => {
+  const dieAdjustment = BALANCE.combatDieCentered ? face - Math.floor((sides + 1) / 2) : face
+  const rawPower = baseAttack + skillBonus + dieAdjustment
+  const withoutGuard = calculateDamage(rawPower, mitigation)
+  const finalDamage = calculateDamage(rawPower, mitigation + guardMitigation)
+  return { baseAttack, skillBonus, dieAdjustment, mitigation, guardMitigation,
+    guardPrevented: Math.max(0, withoutGuard - finalDamage), finalDamage }
+}
+
+const selectDamageDie = (actor: Combatant, skill?: CombatSkillDefinition): CombatDie => {
+  const base = actor.attackDie ?? 4
+  const index = BALANCE.attributeDieOrder.indexOf(base)
+  const steps = Math.max(0, Math.floor(skill?.damageDieSteps ?? 0))
+  return BALANCE.attributeDieOrder[Math.min(BALANCE.attributeDieOrder.length - 1, Math.max(0, index) + steps)]
+}
 
 const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combatant => {
   const character = save.character
@@ -168,22 +195,28 @@ const applyCombatEffects = (
   effects: CombatEffectDefinition[],
   catalog: ContentCatalog,
   action = 'Ataque básico',
+  skill?: CombatSkillDefinition,
 ) => {
   for (const effect of effects) {
     if (effect.type === 'damage') {
-      const defenseBonus = target.defending ? BALANCE.defendMitigation : 0
-      const damage = calculateDamage(
-        getEffectiveAttackPower(actor, catalog) + effect.powerBonus,
-        getEffectiveMitigation(target, catalog) + defenseBonus,
+      const guardMitigation = target.defending ? BALANCE.defendMitigation : 0
+      const sides = selectDamageDie(actor, skill)
+      const face = rollCombatDie(state, sides)
+      const breakdown = calculateRolledDamage(
+        getEffectiveAttackPower(actor, catalog),
+        getEffectiveMitigation(target, catalog),
+        face, sides, effect.powerBonus, guardMitigation,
       )
+      const damage = breakdown.finalDamage
       target.hp = Math.max(0, target.hp - damage)
       target.alive = target.hp > 0
       target.defending = false
-      const sides = actor.attackDie ?? 4
-      const face = rollCombatDie(state, sides)
-      addLog(state, `${actor.name} causa ${damage} de dano em ${target.name}.`, 'damage', {
-        actorId: actor.id, sides, face, action,
-      })
+      const guardNote = guardMitigation
+        ? ` · Guarda evitou ${breakdown.guardPrevented} de dano.` : ''
+      addLog(state,
+        `${actor.name} causa ${damage} de dano em ${target.name}. d${sides}=${face} (${breakdown.dieAdjustment >= 0 ? '+' : ''}${breakdown.dieAdjustment}), ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${guardMitigation}.${guardNote}`,
+        'damage', { actorId: actor.id, sides, face, action, damageBreakdown: breakdown },
+      )
     }
     if (effect.type === 'restoreHp') {
       const restored = Math.min(effect.value, target.maxHp - target.hp)
@@ -230,8 +263,13 @@ const resolveSkill = (
   addPhase(state, 'SelectingTarget')
   addPhase(state, 'ResolvingAction')
   actor.mp -= skill.mpCost
+  if (skill.cooldownTurns) {
+    actor.skillCooldowns ??= {}
+    // Tick once after this action; the next N of the actor's turns are blocked.
+    actor.skillCooldowns[skill.id] = Math.floor(skill.cooldownTurns) + 1
+  }
   addLog(state, `${actor.name} usa ${skill.name}.`, 'system')
-  applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name)
+  applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name, skill)
   addPhase(state, 'ResolvingReactions')
   addPhase(state, 'ApplyingStatuses')
   addPhase(state, 'CheckEndConditions')
@@ -269,6 +307,14 @@ const applyStartStatuses = (
       `${definition.name} causa ${definition.startTurnDamage} de dano em ${actor.name}.`,
       'damage',
     )
+  }
+}
+
+const tickSkillCooldowns = (actor: Combatant) => {
+  if (!actor.skillCooldowns) return
+  for (const id of Object.keys(actor.skillCooldowns)) {
+    actor.skillCooldowns[id] = Math.max(0, actor.skillCooldowns[id] - 1)
+    if (!actor.skillCooldowns[id]) delete actor.skillCooldowns[id]
   }
 }
 
@@ -310,7 +356,7 @@ const resolveEnemyAction = (
       ? actor.skillIds[0]
       : undefined
   const skill = skillId ? catalog.combatSkills[skillId] : undefined
-  if (skill && actor.mp >= skill.mpCost && validTarget(actor, player, skill.target)) {
+  if (skill && actor.mp >= skill.mpCost && !(actor.skillCooldowns?.[skill.id] ?? 0) && validTarget(actor, player, skill.target)) {
     resolveSkill(state, actor, player, skill, catalog)
   } else {
     resolveAttack(state, actor, player, catalog)
@@ -319,7 +365,7 @@ const resolveEnemyAction = (
 
 const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
   const current = state.combatants[state.actorId]
-  if (current) tickStatuses(current)
+  if (current) { tickStatuses(current); tickSkillCooldowns(current) }
   addPhase(state, 'TurnEnd')
 
   for (let attempts = 0; attempts < state.initiativeOrder.length * 2; attempts += 1) {
@@ -344,6 +390,7 @@ const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
     resolveEnemyAction(state, actor, catalog)
     if (checkBattleEnd(state)) return
     tickStatuses(actor)
+    tickSkillCooldowns(actor)
     addPhase(state, 'TurnEnd')
   }
 }
@@ -488,6 +535,9 @@ export const submitBattleCommand = (
     target = battle.combatants[command.targetId]
     if (!skill || !currentPlayer.skillIds.includes(command.skillId)) {
       return fail('SKILL_LOCKED', 'Esta habilidade ainda não foi desbloqueada pelo Vínculo.')
+    }
+    if ((currentPlayer.skillCooldowns?.[skill.id] ?? 0) > 0) {
+      return fail('SKILL_COOLDOWN', `A habilidade volta em ${currentPlayer.skillCooldowns?.[skill.id]} turno(s).`)
     }
     if (currentPlayer.mp < skill.mpCost) {
       return fail('INSUFFICIENT_MP', 'Mana insuficiente para esta habilidade.')

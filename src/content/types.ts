@@ -115,6 +115,10 @@ export type CombatSkillDefinition = {
   description: string
   target: 'enemy' | 'self'
   mpCost: number
+  /** BALANCE_DRAFT: future personal turns when this skill cannot be used. */
+  cooldownTurns?: number
+  /** BALANCE_DRAFT: +1 represents an upgrade d4→d6 (capped at d12). */
+  damageDieSteps?: number
   effects: CombatEffectDefinition[]
   status: DraftStatus
 }

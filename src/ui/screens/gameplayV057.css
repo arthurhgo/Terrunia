@@ -1,0 +1,104 @@
+/* Terrúnia v0.5.7 — visual enhancements only; domain state owns all effects. */
+.terran-game__topbar--minimal {
+  position: relative;
+  min-height: 28px;
+  padding: 2px 5px 6px;
+  justify-content: flex-end;
+}
+.terran-game__location-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid #6d5838;
+  border-radius: 3px;
+  background: #101b24;
+  color: #ddc38f;
+  cursor: pointer;
+  font: 700 .66rem var(--display);
+  letter-spacing: .04em;
+}
+.terran-game__location-toggle:focus-visible { outline: 2px solid #f4cd82; outline-offset: 2px; }
+.terran-game__location-menu {
+  position: absolute;
+  top: 100%;
+  right: 4px;
+  z-index: 110;
+  display: grid;
+  gap: 4px;
+  min-width: min(250px, 80vw);
+  padding: 11px 13px;
+  border: 1px solid #967546;
+  background: #0a151ff2;
+  box-shadow: 0 9px 18px #000a;
+  color: #f6deb0;
+  font-family: var(--display);
+}
+.terran-game__location-menu small { color: #a9c5d1; }
+.pixel-battle__pending-action {
+  display: grid;
+  gap: 7px;
+  padding: 8px 10px;
+  border: 1px solid #c29c58;
+  background: #111e2c;
+  color: #f9deb4;
+  box-shadow: inset 0 0 16px #2c2e36;
+}
+.pixel-battle__pending-action strong { font-size: .72rem; letter-spacing: .04em; }
+.pixel-battle__pending-action small { font-size: .64rem; line-height: 1.4; }
+.pixel-battle__pending-action button {
+  border: 1px solid #ccab6f;
+  background: #72522d;
+  padding: 7px 9px;
+  color: white;
+}
+.pixel-battle__pending-action button:disabled { opacity: .45; }
+.expedition-field-character,
+.expedition-field-supplies {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 8px 0;
+  padding: 12px;
+  border: 1px solid #716a55;
+  background: #101f28;
+  color: #ecdfc6;
+  font-size: .84rem;
+}
+.expedition-field-character__identity { display: flex; align-items: center; gap: 12px; }
+.expedition-field-character__identity > .equipped-character { flex: 0 0 90px; width: 90px; height: 90px; }
+.expedition-field-character__identity div { min-width: 0; }
+.expedition-field-character__identity small { display: block; margin-top: 3px; color: #a7c5cc; }
+.expedition-field-character h3,
+.expedition-field-supplies h3 { margin: 0; color: #e0bd80; font-size: .95rem; }
+.expedition-field-character dl { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0; }
+.expedition-field-character dl > div { display: flex; justify-content: space-between; border-bottom: 1px solid #3a4d4e; gap: 8px; padding: 4px; }
+.expedition-field-character dd { margin: 0; color: #d8c48f; font-weight: 700; }
+.expedition-field-supplies__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid #495b5d;
+  background: #142733;
+}
+.expedition-field-supplies__item span { display: grid; gap: 3px; min-width: 115px; flex: 1 1 130px; }
+.expedition-field-supplies__item small { color: #afc6d2; }
+.expedition-field-supplies__item button {
+  padding: 6px;
+  background: #263b4b;
+  border: 1px solid #aa8851;
+  color: #f3dba7;
+  cursor: pointer;
+}
+.expedition-field-supplies__item button:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 760px) {
+  .terran-game__topbar--minimal { flex-wrap: nowrap; }
+  .expedition-field-character__identity > .equipped-character { flex-basis: 70px; width: 70px; height: 70px; }
+  .expedition-field-character dl { grid-template-columns: 1fr; }
+  .pixel-battle__pending-action { padding: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pixel-battle__pending-action, .terran-game__location-menu { transition: none; animation: none; }
+}

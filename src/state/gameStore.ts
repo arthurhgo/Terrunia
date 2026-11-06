@@ -10,6 +10,7 @@ import {
   performGradeTwoRite,
 } from '../domain/bond/boundItems'
 import { createBattle, submitBattleCommand } from '../domain/combat/engine'
+import { useFieldConsumable as applyFieldConsumable } from '../domain/exploration/fieldConsumables'
 import { createWaveBattle } from '../domain/combat/waves'
 import { canStartPortalHunt } from '../domain/combat/portalHunts'
 import type { BattleCommand } from '../domain/combat/types'
@@ -122,6 +123,7 @@ type GameState = {
   discoverFungalRoom: (roomId: string) => void
   exitFungalChambers: () => void
   resolveCurrentTrailNode: () => void
+  consumeFieldItem: (instanceId: string) => void
   startBattle: (nodeId?: string) => void
   startPortalWaves: () => void
   startPortalHunt: (encounterId: string) => void
@@ -771,6 +773,15 @@ export const useGameStore = create<GameState>((set, get) => {
       next.revision += 1
       next.eventLog.push('PortalWaveStarted:' + (old.waveIndex + 1))
       commit(next)
+    },
+
+    consumeFieldItem: (instanceId) => {
+      const save = get().save
+      if (!save) return failAction('Nenhum personagem ativo.')
+      const result = applyFieldConsumable(save, instanceId, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+      show('Suprimento utilizado', 'A recuperação foi aplicada ao seu personagem sem alterar a posição na trilha.', 'success')
     },
 
     submitBattleCommand: (command) => {

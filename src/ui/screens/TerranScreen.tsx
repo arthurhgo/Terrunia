@@ -45,6 +45,8 @@ import { CityLandmarkDialog } from '../terran/CityLandmarkDialog'
 import { Modal } from '../components/Modal'
 import { getReadyDeliveryQuestRoute, getRosettaQuestRoutes, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 
+import './gameplayV057.css'
+
 type Drawer = 'location' | 'market' | 'home' | 'chest' | 'records' | 'forge' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
 
@@ -95,6 +97,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const unlockBaseWithKey = useGameStore((state) => state.unlockBaseWithKey)
   const leaveBase = useGameStore((state) => state.leaveBase)
   const [drawer, setDrawer] = useState<Drawer>(null)
+  const [showLocationDetails, setShowLocationDetails] = useState(false)
   const drawerRef = useRef<HTMLElement>(null)
   const [locationId, setLocationId] = useState<TerranLocationId>('location_terran_portal_plaza')
   const [interiorId, setInteriorId] = useState<TerranInteriorId | null>(
@@ -261,9 +264,16 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
 
   const sceneContent = (
     <div className="terran-game">
-        <header className="terran-game__topbar">
-          <div><span className="eyebrow">HOME · CIDADE-BASE DO JOGADOR</span><h1>Terran</h1></div>
-          <div className="terran-game__readout"><MapPin size={16} /> TERRAN &gt; {currentLabel.toUpperCase()}<span>{discovered}/{TERRAN_LOCATION_IDS.length} descobertos</span></div>
+        <header className="terran-game__topbar terran-game__topbar--minimal">
+          <button type="button" className="terran-game__location-toggle"
+            aria-expanded={showLocationDetails} aria-controls="terran-location-menu"
+            onClick={() => setShowLocationDetails((open) => !open)}>
+            <MapPin size={16} /> MENU / LOCAL
+          </button>
+          {showLocationDetails && <div id="terran-location-menu" className="terran-game__location-menu">
+            <strong>Terran — {currentLabel}</strong>
+            <small>{discovered}/{TERRAN_LOCATION_IDS.length} locais descobertos</small>
+          </div>}
         </header>
         <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
           <div className="terran-game__frame" data-testid="terran-centered-gameplay">

@@ -112,13 +112,15 @@ describe('vertical slice integrada', () => {
     const store = () => useGameStore.getState()
     store().createGame('Lysa', 'character.terririan.default')
     // This regression runs the ENTIRE 15-encounter story, not a level-1 balance test.
-    // Simulate a legitimately prepared character who earned 12 points before the trail.
-    // Production creation and XP rewards are unchanged.
+    // Long 15-encounter test uses an explicit prepared-character fixture, not a
+    // level-one balance assumption. New rolled damage/cooldowns make the old fixture
+    // unsuitable for verifying QUEST, LOOT and SAVE integrity.
+    // Production creation and XP rules are never modified by this test.
     const equippedFixture = structuredClone(store().save!)
-    equippedFixture.character.unspentAttributePoints = 12
+    equippedFixture.character.unspentAttributePoints = 16
     useGameStore.setState({ save: equippedFixture })
-    store().adjustAttribute('strength', 1); store().adjustAttribute('strength', 1)
-    store().adjustAttribute('vigor', 1); store().adjustAttribute('vigor', 1); store().adjustAttribute('vigor', 1)
+    store().adjustAttribute('strength', 1); store().adjustAttribute('strength', 1); store().adjustAttribute('strength', 1)
+    store().adjustAttribute('vigor', 1); store().adjustAttribute('vigor', 1); store().adjustAttribute('vigor', 1); store().adjustAttribute('vigor', 1)
     store().adjustAttribute('agility', 1)
     store().bindPrologueWeapon()
     const weaponId = store().save!.character.bondedEquipment.weapon!
@@ -170,7 +172,7 @@ describe('vertical slice integrada', () => {
         const player = battle.combatants.combatant_player
         const target = Object.values(battle.combatants).filter((actor) => actor.side === 'enemy' && actor.alive)
           .sort((a, b) => a.hp - b.hp)[0]
-        const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((entry) => entry.mpCost <= player.mp)
+        const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((entry) => entry.mpCost <= player.mp && !(player.skillCooldowns?.[entry.id] ?? 0))
         const skill = skills.find((entry) => entry.id === 'skill_resonant_strike') ?? skills[0]
         store().submitBattleCommand(skill ? { type: 'skill', skillId: skill.id, targetId: target.id } : { type: 'attack', targetId: target.id })
       }

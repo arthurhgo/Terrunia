@@ -5,14 +5,16 @@ export const BALANCE = {
   initialGold: 0,
   /** Owner-approved v0.5.4: six points; all seven initial weapons reachable. */
   characterCreationAttributePoints: 6,
-  attributePointsPerLevel: 1,
+  /** BALANCE_DRAFT v0.5.7: each level can fund one d4→d6 style rank. */
+  attributePointsPerLevel: 2,
   defaultAttributeDie: 4,
   attributeDieOrder: [4, 6, 8, 10, 12] as const,
   // One rank advances exactly two die faces: d4 -> d6 -> d8 -> d10 -> d12.
   attributeDieFaceStep: 2,
   /** BALANCE_DRAFT v0.5.2: each d4→d6→d8→d10→d12 rank costs TWO attribute points. */
   attributePointsPerDieUpgrade: 2,
-  xpThresholds: [0, 250, 750, 1500, 2500, 4000, 6000, 8500, 11500, 15000, 19000, 24000, 30000, 37000] as const,
+  /** BALANCE_DRAFT: gentler early XP curve; final values remain OWNER_DECISION. */
+  xpThresholds: [0, 180, 540, 1080, 1800, 2880, 4320, 6120, 8280, 10800, 13680, 17280, 21600, 26640] as const,
   // Rebased with d4 defaults so the vertical slice keeps its previous survivability.
   baseHp: 12,
   vigorHpMultiplier: 2,
@@ -27,5 +29,7 @@ export const BALANCE = {
     6: 2200,
     7: 3500,
   },
+  /** BALANCE_DRAFT v0.5.7: combat die is centered on its midpoint, then adjusts damage. */
+  combatDieCentered: true,
   defendMitigation: 2,
 } as const

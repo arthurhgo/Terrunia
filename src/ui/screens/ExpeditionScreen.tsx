@@ -1,4 +1,4 @@
-import { ArrowLeft, Backpack, BookOpen, Compass, MapPin, Swords, Trees, X } from 'lucide-react'
+import { ArrowLeft, Backpack, BookOpen, Compass, MapPin, Swords, Trees, UserRound, X } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -15,8 +15,12 @@ import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { AstravelPixelCanvas } from '../expedition/AstravelPixelCanvas'
 import { getVisualEquipment } from '../characters/equipmentVisuals'
+import './gameplayV057.css'
+import { EquippedCharacter } from '../characters/EquippedCharacter'
+import { deriveCharacterStats } from '../../domain/character/derivedStats'
+import { isFieldConsumable } from '../../domain/exploration/fieldConsumables'
 
-type Drawer = 'trail' | 'node' | 'inventory' | 'quests' | null
+type Drawer = 'trail' | 'node' | 'inventory' | 'character' | 'quests' | null
 const trail = content.trails.trail_astravel_entry
 
 function NodeDrawer({ node, status, save, onAction, onReturn }: {
@@ -54,11 +58,13 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const save = useGameStore((state) => state.save)
   const resolveCurrentTrailNode = useGameStore((state) => state.resolveCurrentTrailNode)
   const startBattle = useGameStore((state) => state.startBattle)
+  const consumeFieldItem = useGameStore((state) => state.consumeFieldItem)
   const enterFungalChambers = useGameStore((state) => state.enterFungalChambers)
   const returnToTerran = useGameStore((state) => state.returnToTerran)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
   const [drawer, setDrawer] = useState<Drawer>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [pendingFieldItemId, setPendingFieldItemId] = useState<string | null>(null)
   const navigate = useNavigate()
 
   if (!save) return <Navigate to="/character/create" replace />
@@ -73,6 +79,8 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const quests = getQuestJournalEntries(save, content).filter(({ progress }) => progress.status !== 'completed')
   const sector = getAstravelSector(activeNode?.index ?? 15)
   const activeGate = activeNode ? checkTrailQuestGate(save, activeNode, content) : null
+  const stats = deriveCharacterStats(save, content)
+  const fieldSupplies = save.inventory.filter((entry) => isFieldConsumable(save, entry.instanceId, content))
 
   const leave = () => {
     returnToTerran()
@@ -104,7 +112,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
     }
   }
 
-  const title = drawer === 'node' ? selectedNode?.label ?? 'Trilha' : drawer === 'inventory' ? 'Mochila' : drawer === 'quests' ? 'Missões' : 'Rota de Astravél'
+  const title = drawer === 'node' ? selectedNode?.label ?? 'Trilha' : drawer === 'inventory' ? 'Mochila' : drawer === 'character' ? 'Personagem' : drawer === 'quests' ? 'Missões' : 'Rota de Astravél'
 
   const sceneContent = <div className="terran-game expedition-game">
       <header className="terran-game__topbar">
@@ -121,10 +129,11 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
             {([
               { id: 'trail' as const, label: 'Trilha', icon: Compass },
               { id: 'inventory' as const, label: 'Mochila', icon: Backpack },
+              { id: 'character' as const, label: 'Personagem', icon: UserRound },
               { id: 'quests' as const, label: 'Missões', icon: BookOpen },
             ]).map(({ id, label, icon: Icon }) => <button key={id} type="button"
               className={drawer === id ? 'active' : ''} aria-label={`Abrir ${label}`} aria-pressed={drawer === id}
-              onClick={() => { setDrawer(drawer === id ? null : id); setSelectedId(null) }}><Icon size={19} /><span>{label}</span></button>)}
+              onClick={() => { setDrawer(drawer === id ? null : id); setSelectedId(null); setPendingFieldItemId(null) }}><Icon size={19} /><span>{label}</span></button>)}
           </div>
           <button type="button" className="expedition-game__retreat" onClick={leave} aria-label="Retornar a Terran pelo Portal">
             <ArrowLeft size={15} /> Terran
@@ -154,7 +163,43 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
                 </button>)}
               </section>)}
             </div>}
-            {drawer === 'inventory' && <InventoryPanel save={save} />}
+            {drawer === 'character' && <section className="expedition-field-character" aria-label="Ficha de personagem em Astravél">
+              <div className="expedition-field-character__identity">
+                <EquippedCharacter save={save} alt={save.character.name} />
+                <div><strong>{save.character.name}</strong><p>Nível {save.character.level} · {save.character.xp} XP</p>
+                  <small>Clã: {save.character.clan.clanId ?? 'Não filiado'}</small>
+                  <small>Classe: {save.character.classProgression.classId ?? 'Não desenvolvida'}</small>
+                </div>
+              </div>
+              <p>Vida {save.vitals.hp}/{stats.life.value} · Mana {save.vitals.mp}/{stats.mana.value}</p>
+              <h3>Atributos</h3>
+              <dl>{Object.entries(save.character.attributes).map(([name, value]) =>
+                <div key={name}><dt>{name}</dt><dd>d{value.die}{value.bonus ? ` +${value.bonus}` : ''}</dd></div>)}</dl>
+              <small>A ficha é somente leitura na expedição; sua posição e as missões permanecem preservadas.</small>
+            </section>}
+            {drawer === 'inventory' && <>
+              <InventoryPanel save={save} />
+              <section className="expedition-field-supplies" aria-label="Usar consumíveis fora de combate">
+                <h3>Consumíveis de campo</h3>
+                <p>Somente itens restauradores podem ser usados fora de batalha nesta configuração provisória.</p>
+                {fieldSupplies.length === 0 && <small>Nenhum suprimento restaurador disponível.</small>}
+                {fieldSupplies.map((instance) => {
+                  const item = content.items[instance.definitionId]
+                  const effect = item.combatEffects.filter((entry) => entry.type === 'restoreHp' || entry.type === 'restoreMp')
+                  const useful = effect.some((entry) =>
+                    (entry.type === 'restoreHp' && save.vitals.hp < stats.life.value)
+                    || (entry.type === 'restoreMp' && save.vitals.mp < stats.mana.value))
+                  return <div key={instance.instanceId} className="expedition-field-supplies__item">
+                    <span><strong>{item.name} ×{instance.quantity}</strong>
+                    <small>{effect.map((entry) => entry.type === 'restoreHp' ? `+${entry.value} PV` : `+${entry.value} MP`).join(' · ')}</small></span>
+                    {pendingFieldItemId === instance.instanceId ? <>
+                      <button type="button" disabled={!useful} onClick={() => { consumeFieldItem(instance.instanceId); setPendingFieldItemId(null) }}>Confirmar uso</button>
+                      <button type="button" onClick={() => setPendingFieldItemId(null)}>Voltar</button>
+                    </> : <button type="button" disabled={!useful} onClick={() => setPendingFieldItemId(instance.instanceId)}>Usar</button>}
+                  </div>
+                })}
+              </section>
+            </>}
             {drawer === 'quests' && <div className="expedition-route-list">
               {quests.length === 0 && <p>Converse com os responsáveis em Terran para aceitar a próxima missão.</p>}
               {quests.map(({ definition, progress }) => <section key={definition.id} className="expedition-route-sector">

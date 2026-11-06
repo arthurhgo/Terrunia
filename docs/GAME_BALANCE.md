@@ -58,3 +58,21 @@ Neris vende Lasca da Ruína por 60 Ouro, Fibra Micelial por 48 e Cerne Raiz-Negr
 | Lição 4 | 20 XP + 10 Ouro | Aplicar reforço +1 e retornar |
 
 Partindo de zero, completar o percurso, comprar Tônico e couro e pagar pelo reforço deixa 29 Ouro e 55 XP. Cada pagamento ocorre uma vez. Peças simples não são vendáveis/conversíveis, e trocar/vestir/reforçar não cura nem gera Pontos de Essência. O bônus deixa de valer se a peça não estiver vestida; uma Armadura vinculada tem precedência exclusiva.
+
+
+## Gameplay v0.5.7 — BALANCE_DRAFT / OWNER_DECISION (2026-11-06)
+
+Esta seção substitui somente os números temporários conflitantes de XP, Pontos por Nível e dado aplicado ao dano na versão v0.5.7; os números anteriores permanecem acima como histórico, **não** como balanceamento vigente.
+
+| Parâmetro | v0.5.7 provisória | Status |
+|---|---:|---|
+| Pontos de Atributo iniciais | 6 | Decisão v0.5.4 preservada |
+| Pontos de Atributo por nível | 2 (antes 1) | BALANCE_DRAFT, OWNER_DECISION |
+| Custo por avanço d4→d6→d8→d10→d12 | 2 | Decisão v0.5.2 preservada |
+| Tabela cumulativa XP (níveis 1–14) | 0, 180, 540, 1080, 1800, 2880, 4320, 6120, 8280, 10800, 13680, 17280, 21600, 26640 | BALANCE_DRAFT, OWNER_DECISION |
+| Dano por dado | ataque + bonus skill + face − floor((dado+1)/2) − defesa − guarda; mínimo 1 | BALANCE_DRAFT, OWNER_DECISION |
+| Defender | +2 mitigação no próximo golpe recebido | BALANCE_DRAFT; regra final pendente |
+| Cooldowns | 1–2 turnos por skill e dados +0/+1 níveis | BALANCE_DRAFT |
+| Consumíveis de campo | Somente efeitos restaurativos de Vida/Mana em Astravél | BALANCE_DRAFT, OWNER_DECISION |
+
+**Limite canônico:** Pontos de Essência são concedidos apenas ao completar a barra de Essência; kills e XP não concedem pontos diretamente. O refresh da curva de XP em saves antigos não apaga XP, progresso nem equipamento. Ver `docs/TERRUNIA_UX_GAMEPLAY_v0.5.7.md`.

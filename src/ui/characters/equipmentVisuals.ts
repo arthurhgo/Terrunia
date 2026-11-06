@@ -11,6 +11,7 @@ export type VisualItem = {
   itemId: string
   itemName: string
   forged: boolean
+  visualTier?: number
 }
 /** One source of truth for exactly what the owner has equipped. Never creates an item. */
 export function getVisualEquipment(save: GameSave): VisualItem[] {
@@ -21,11 +22,11 @@ export function getVisualEquipment(save: GameSave): VisualItem[] {
     const base = instance?.slot === slot ? content.boundItemBases[instance.baseItemId] : null
     if (base && instance) {
       const assetId = base.assetIdByGrade[instance.grade] ?? base.assetIdByGrade[1]
-      if (assetId) items.push({ slot, assetId, itemId: base.id, itemName: base.name, forged: Boolean(instance.forging?.upgradeIds.length) })
+      if (assetId) items.push({ slot, assetId, itemId: base.id, itemName: base.name, forged: Boolean(instance.forging?.upgradeIds.length), visualTier: instance.grade })
     } else if (slot === 'armor' && save.equippedBasicArmor) {
       const definition = content.items[save.equippedBasicArmor.definitionId]
       if (definition?.basicArmor && definition.iconAssetId) items.push({
-        slot, assetId: definition.iconAssetId, itemId: definition.id, itemName: definition.name, forged: false,
+        slot, assetId: definition.iconAssetId, itemId: definition.id, itemName: definition.name, forged: false, visualTier: definition.basicArmor.tier,
       })
     }
   }
@@ -50,7 +51,7 @@ export function getEquipmentAnchor(item: VisualItem, facing: ActorFacing): Visua
     const grip = getWeaponGripProfile(item.itemId)
     const handX = left ? 6 : 26
     const handY = back ? 25 : 26
-    const size = Math.min(26, Math.max(14, Math.round(32 * grip.size / 36)))
+    const size = Math.min(24, Math.max(11, Math.round(32 * grip.size / 46)))
     const handleX = grip.handleX / 100
     const handleY = grip.handleY / 100
     const angle = left ? -grip.rotation : back ? grip.rotation - 30 : grip.rotation

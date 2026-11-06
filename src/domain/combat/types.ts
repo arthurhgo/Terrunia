@@ -35,6 +35,8 @@ export type Combatant = {
   alive: boolean
   defending: boolean
   skillIds: string[]
+  /** Optional for compatibility with battles serialized before v0.5.7. */
+  skillCooldowns?: Record<string, number>
   statusEffects: ActiveStatus[]
   aiSkillEveryRounds?: number
   attackDie?: CombatDie
@@ -47,7 +49,16 @@ export type CombatRoll = {
   sides: CombatDie
   face: number
   action: string
-  /** VISUAL_DRAFT: the combat damage formula is unchanged until owner approval. */
+  /** v0.5.7: the actual face determines damage; all fields are motor-produced. */
+  damageBreakdown?: {
+    baseAttack: number
+    skillBonus: number
+    dieAdjustment: number
+    mitigation: number
+    guardMitigation: number
+    guardPrevented: number
+    finalDamage: number
+  }
 }
 
 export type BattleLogEntry = {

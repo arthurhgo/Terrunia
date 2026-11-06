@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import type { InventoryItemInstance } from '../game/types'
 import { bindPrologueWeapon, createNewSave } from '../game/createSave'
-import { calculateDamage, createBattle, submitBattleCommand } from './engine'
+import { calculateDamage, calculateRolledDamage, createBattle, submitBattleCommand } from './engine'
 
 const makeSave = () => {
   const save = createNewSave(
@@ -272,6 +272,52 @@ describe('máquina de estados de combate', () => {
     expect(guarded.ok).toBe(true)
     if (!guarded.ok) return
     expect(guarded.value.combatants.combatant_player.statusEffects.some((effect) => effect.definitionId === 'status_rune_ward')).toBe(true)
+  })
+
+  it('face real muda o dano e a guarda registra quanto foi evitado', () => {
+    const low = calculateRolledDamage(12, 3, 1, 4)
+    const high = calculateRolledDamage(12, 3, 4, 4)
+    expect(high.finalDamage).toBeGreaterThan(low.finalDamage)
+    expect(high.dieAdjustment - low.dieAdjustment).toBe(3)
+    const defended = calculateRolledDamage(12, 3, 4, 4, 2, 2)
+    expect(defended.finalDamage).toBe(high.finalDamage)
+    expect(defended.guardPrevented).toBe(2)
+
+    const first = createBattle(makeSave(), firstEncounter, content, 'roll_reproducible')
+    const a = submitBattleCommand(first, { type: 'attack', targetId: firstTargetId }, content)
+    const b = submitBattleCommand(first, { type: 'attack', targetId: firstTargetId }, content)
+    expect(a).toEqual(b)
+    if (!a.ok) return
+    const damage = a.value.log.find((entry) => entry.roll?.actorId === 'combatant_player' && entry.roll.damageBreakdown)
+    expect(damage?.roll?.damageBreakdown?.finalDamage).toBeGreaterThan(0)
+    expect(damage?.message).toContain(`d${damage?.roll?.sides}=${damage?.roll?.face}`)
+  })
+
+  it('bloqueia habilidade durante cooldown sem consumir Mana nem turno na rejeição', () => {
+    const save = makeSave()
+    save.boundItems.bound_1.skillTree.unlockedNodeIds.push('weapon_bond_core')
+    const battle = createBattle(save, firstEncounter, content, 'cooldown_test')
+    const enemy = battle.combatants[firstTargetId]
+    enemy.maxHp = enemy.hp = 300
+    battle.combatants.combatant_player.maxHp = battle.combatants.combatant_player.hp = 300
+    battle.combatants.combatant_player.maxMp = battle.combatants.combatant_player.mp = 30
+    const skill = { type: 'skill' as const, skillId: 'skill_resonant_strike', targetId: firstTargetId }
+    const first = submitBattleCommand(battle, skill, content)
+    expect(first.ok).toBe(true)
+    if (!first.ok) return
+    expect(first.value.combatants.combatant_player.skillCooldowns?.[skill.skillId]).toBe(2)
+    const frozen = structuredClone(first.value)
+    expect(submitBattleCommand(first.value, skill, content)).toMatchObject({ ok: false, code: 'SKILL_COOLDOWN' })
+    expect(first.value).toEqual(frozen)
+    const one = submitBattleCommand(first.value, { type: 'attack', targetId: firstTargetId }, content)
+    expect(one.ok).toBe(true)
+    if (!one.ok) return
+    expect(one.value.combatants.combatant_player.skillCooldowns?.[skill.skillId]).toBe(1)
+    const two = submitBattleCommand(one.value, { type: 'attack', targetId: firstTargetId }, content)
+    expect(two.ok).toBe(true)
+    if (!two.ok) return
+    expect(two.value.combatants.combatant_player.skillCooldowns?.[skill.skillId] ?? 0).toBe(0)
+    expect(submitBattleCommand(two.value, skill, content).ok).toBe(true)
   })
 
 })
