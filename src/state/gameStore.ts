@@ -913,6 +913,13 @@ export const useGameStore = create<GameState>((set, get) => {
           next.world.completedEncounterIds.push(battle.encounterId)
         }
       }
+      // Persist precisely which species were defeated: dynamic Portal waves share
+      // an encounter ID and cannot be reconstructed from the static catalog.
+      const defeatedSpecies = [...new Set(Object.values(battle.combatants)
+        .filter((combatant) => combatant.side === 'enemy' && !combatant.alive)
+        .map((combatant) => combatant.definitionId))]
+      next.eventLog.push(...defeatedSpecies.filter((id) => !next.eventLog.includes(`EnemyStudied:${id}`))
+        .map((id) => `EnemyStudied:${id}`))
       next.eventLog.push(`BattleWon:${battle.encounterId}`, `DropReceived:${loot.length}`)
       next.updatedAt = acquiredAt
       if (!battle.waveIndex && !battle.portalHuntId) {
