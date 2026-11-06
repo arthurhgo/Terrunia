@@ -131,3 +131,19 @@
 @media(max-width:720px) {
  .terran-shop__tooltip { right:auto;left:0;bottom:calc(100% + 2px);width:min(240px,75vw);}
 }
+
+/* v0.5.9: physical Base-door quest and 3-function home interaction. */
+.terran-base-functions .modal-card__content{display:grid;gap:14px}
+.terran-base-functions__actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.terran-base-functions__actions button{
+ display:grid;justify-items:center;gap:8px;padding:14px 9px;
+ border:2px solid #aa8652;background:#193039;color:#f2dca9;
+ font:700 11px/1.35 var(--display);cursor:pointer;min-height:85px;
+}
+.terran-base-functions__actions button:is(:hover,:focus-visible){border-color:#f6ce7e;background:#304d4c}
+.base-records{display:grid;gap:8px;color:#e2d2b3}
+.base-records h3,.base-records h4{margin:6px 0 1px;color:#f1ca86}
+.base-records ul{margin:0;padding:6px 12px 6px 25px;max-height:180px;overflow-y:auto;border:1px solid #4d605b}
+.base-records li{padding:3px 0}
+.base-records li small{display:block;color:#b5c3c0}
+@media(max-width:560px){.terran-base-functions__actions{grid-template-columns:1fr}.terran-base-functions__actions button{min-height:47px;display:flex;justify-content:center}}
