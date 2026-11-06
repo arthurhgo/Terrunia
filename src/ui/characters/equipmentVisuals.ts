@@ -11,6 +11,8 @@ export type VisualItem = {
   itemId: string
   itemName: string
   forged: boolean
+  /** Rarity is read from the actual item definition; never inferred from grade. */
+  rarity?: string
   sheathed?: boolean
   visualTier?: number
 }
@@ -23,11 +25,11 @@ export function getVisualEquipment(save: GameSave, sheathed = false): VisualItem
     const base = instance?.slot === slot ? content.boundItemBases[instance.baseItemId] : null
     if (base && instance) {
       const assetId = base.assetIdByGrade[instance.grade] ?? base.assetIdByGrade[1]
-      if (assetId) items.push({ slot, assetId, itemId: base.id, itemName: base.name, forged: Boolean(instance.forging?.upgradeIds.length), sheathed: slot === 'weapon' && sheathed, visualTier: instance.grade })
+      if (assetId) items.push({ slot, assetId, itemId: base.id, itemName: base.name, forged: Boolean(instance.forging?.upgradeIds.length), rarity: base.rarity, sheathed: slot === 'weapon' && sheathed, visualTier: instance.grade })
     } else if (slot === 'armor' && save.equippedBasicArmor) {
       const definition = content.items[save.equippedBasicArmor.definitionId]
       if (definition?.basicArmor && definition.iconAssetId) items.push({
-        slot, assetId: definition.iconAssetId, itemId: definition.id, itemName: definition.name, forged: false, visualTier: definition.basicArmor.tier,
+        slot, assetId: definition.iconAssetId, itemId: definition.id, itemName: definition.name, forged: false, rarity: definition.rarity, visualTier: definition.basicArmor.tier,
       })
     }
   }
