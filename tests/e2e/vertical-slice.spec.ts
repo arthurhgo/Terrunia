@@ -30,7 +30,7 @@ async function createExpedition(page: Page) {
 }
 
 async function fightAndCollect(page: Page, expectedDropCount: number) {
-  for (let step = 0; step < 35; step++) {
+  for (let step = 0; step < 90; step++) {
     const phase = await page.evaluate(async () => {
       const { useGameStore } = await import('/src/state/gameStore.ts')
       return useGameStore.getState().save?.battle?.phase
@@ -39,8 +39,10 @@ async function fightAndCollect(page: Page, expectedDropCount: number) {
     expect(phase).not.toBe('Defeat')
     if (phase === 'AwaitingInitiative') {
       const initiative = page.getByRole('button', { name: /Arrastar dado de iniciativa d\d+ para cima para rolar/ })
-      await expect(initiative).toBeEnabled({ timeout: 10_000 })
-      await initiative.press('Enter')
+      // During the initiative presentation, the same die stays disabled until
+      // the deterministic preview is committed. Do not throw a second time.
+      if (await initiative.isEnabled()) await initiative.press('Enter')
+      else await page.waitForTimeout(150)
     } else if (phase === 'AwaitingAction') {
       const menu = page.getByRole('button', { name: 'ATAQUE · MAGIAS · HABILIDADES', exact: true })
       await expect(menu).toBeEnabled({ timeout: 10_000 })
@@ -128,6 +130,7 @@ test('o próximo setor exige missão aceita e permite retornar sem iniciar comba
   await expect(page.getByRole('complementary', { name: 'Painel lateral: Rastros dos Caçadores' })).toBeVisible({ timeout: 20_000 })
   await expect(page.getByText(/aceite “Caçadores Perdidos” com Vorren/).first()).toBeVisible()
   await expect(page.getByRole('region', { name: 'Viewport unificada de combate' })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Fechar painel', exact: true }).click()
   await page.getByRole('button', { name: 'Retornar a Terran pelo Portal', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Cenário contínuo de Terran' })).toBeVisible()
 })
