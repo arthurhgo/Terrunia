@@ -97,3 +97,23 @@
   .portal-hub__choice { transition: none; }
   .portal-hub__choice.is-open:is(:hover, :focus-visible) { transform: none; }
 }
+
+
+/* v0.5.9 — stage guidance shares the same save selectors as the Journal. */
+.portal-hub__chapters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.portal-hub__chapter {
+  display: grid; gap: 4px; padding: 9px 11px;
+  border-left: 3px solid #697c82;
+  background: #132930; color: #d5e0da;
+  min-width: 0;
+}
+.portal-hub__chapter strong { color: #f1d39a; font: 700 11px/1.35 var(--display); overflow-wrap: anywhere; }
+.portal-hub__chapter span { color: #a5c6c8; font: 10px/1.4 var(--display); }
+.portal-hub__chapter small { color: #b9cac6; font: 10px/1.4 Georgia, serif; }
+.portal-hub__chapter--active, .portal-hub__chapter--ready_to_turn_in { border-color: #e0b369; }
+.portal-hub__chapter--completed { border-color: #84c39b; }
+@media (max-width: 760px) { .portal-hub__chapters { grid-template-columns: minmax(0,1fr); } }
