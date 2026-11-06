@@ -5,7 +5,7 @@ export type QuestRewardPreview = { id: string; kind: 'resource' | 'item' | 'choi
 
 /** Only describes rewards actually granted at turn-in. No currency or item is created here. */
 export function getQuestRewardPreview(quest: QuestDefinition, catalog: ContentCatalog): QuestRewardPreview[] {
-  const rows: QuestRewardPreview[] = quest.rewards.map((reward, index) => ({
+  const rows: QuestRewardPreview[] = quest.rewards.map((reward, index): QuestRewardPreview => ({
     id: `resource-${index}`,
     kind: 'resource',
     label: `+${reward.value} ${reward.type === 'gold' ? 'Ouro' : reward.type === 'characterXp' ? 'XP' : 'Essência Bruta'}`,
