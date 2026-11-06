@@ -19,7 +19,7 @@ describe('poções durante exploração', () => {
     const maxHp = deriveCharacterStats(save,content).life.value
     save.vitals.hp = maxHp - 10
     const before = structuredClone(save)
-    const result = useFieldConsumable(save,'potion-v057',content,save.updatedAt)
+    const result = applyFieldConsumable(save,'potion-v057',content,save.updatedAt)
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.value.vitals.hp).toBe(maxHp - 2)
@@ -31,7 +31,7 @@ describe('poções durante exploração', () => {
 
   it('recusa poção inútil em vida cheia e não gasta itens', () => {
     const save = make()
-    const result = useFieldConsumable(save,'potion-v057',content,save.updatedAt)
+    const result = applyFieldConsumable(save,'potion-v057',content,save.updatedAt)
     expect(result).toMatchObject({ok:false,code:'FIELD_RECOVERY_FULL'})
     expect(save.inventory[0].quantity).toBe(2)
   })
@@ -39,7 +39,7 @@ describe('poções durante exploração', () => {
   it('não permite usar a ação de exploração com batalha ativa', () => {
     const save = make()
     save.battle = {} as typeof save.battle
-    expect(useFieldConsumable(save,'potion-v057',content,save.updatedAt))
+    expect(applyFieldConsumable(save,'potion-v057',content,save.updatedAt))
       .toMatchObject({ok:false,code:'FIELD_ITEM_IN_COMBAT'})
   })
 })
