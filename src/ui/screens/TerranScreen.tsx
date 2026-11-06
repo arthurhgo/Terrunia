@@ -45,6 +45,8 @@ import { CityLandmarkDialog } from '../terran/CityLandmarkDialog'
 import { Modal } from '../components/Modal'
 import { getReadyDeliveryQuestRoute, getRosettaQuestRoutes, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 
+import './gameplayV057.css'
+
 type Drawer = 'location' | 'market' | 'home' | 'chest' | 'records' | 'forge' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
 
