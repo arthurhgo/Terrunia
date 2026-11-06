@@ -606,12 +606,13 @@ export const useGameStore = create<GameState>((set, get) => {
         const completedBoss = save.world.trailNodeStates.astravel_boss_preview === 'completed'
         if (!activeNode && !completedBoss) return failAction('A expedição não possui um marco acessível.')
         const resumed = structuredClone(save)
-        resumed.world.currentLocationId = activeNode?.id ?? 'astravel_boss_preview'
+        // Re-entry always starts from Entrada; previously completed nodes remain intact.
+        resumed.world.currentLocationId = 'astravel_entry'
         resumed.updatedAt = nowIso()
         resumed.revision += 1
         resumed.eventLog.push(completedBoss && !activeNode ? 'ExpeditionRevisited:trail_astravel_entry' : 'ExpeditionResumed:trail_astravel_entry')
         commit(resumed)
-        show('Astravél', completedBoss && !activeNode ? 'A ruína concluída pode ser visitada sem repetir recompensas.' : 'A expedição foi retomada na etapa já alcançada.', 'info')
+        show('Astravél', completedBoss && !activeNode ? 'A ruína concluída pode ser visitada sem repetir recompensas.' : 'Entrada da instância · progressão e marcos preservados.', 'info')
         return
       }
       const visiting = structuredClone(save)
