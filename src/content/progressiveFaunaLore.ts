@@ -32,7 +32,12 @@ export function getDiscoveredEnemyIds(
     ...save.world.completedEncounterIds,
     ...save.eventLog.flatMap((event) => event.startsWith('BattleWon:') ? [event.slice('BattleWon:'.length)] : []),
   ])
-  return new Set([...won].flatMap((encounterId) => catalog.encounters[encounterId]?.enemyDefinitionIds ?? []))
+  const direct = save.eventLog.flatMap((event) => event.startsWith('EnemyStudied:')
+    ? [event.slice('EnemyStudied:'.length)] : [])
+  // Legacy static encounter wins remain readable without any save migration.
+  // For generated waves, the exact defeated species comes from EnemyStudied events.
+  return new Set([...direct.filter((id) => Boolean(catalog.enemies[id])),
+    ...[...won].flatMap((encounterId) => catalog.encounters[encounterId]?.enemyDefinitionIds ?? [])])
 }
 
 export function getDiscoveredProgressiveFauna(save: GameSave, catalog: ContentCatalog) {
