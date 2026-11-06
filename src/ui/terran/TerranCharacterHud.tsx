@@ -1,4 +1,4 @@
-import { ChevronDown, Coins, Gem, Shield, Shirt, Sparkles, Sword, Swords, Watch } from 'lucide-react'
+import { Backpack, ChevronDown, Coins, Gem, Shield, Shirt, Sparkles, Sword, Swords, Watch } from 'lucide-react'
 import { useState } from 'react'
 import { content } from '../../content/catalog'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
@@ -8,6 +8,10 @@ import { AssetImage } from '../components/AssetImage'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { ProgressBar } from '../components/ProgressBar'
 import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
+import { getBackpackCapacity } from '../../domain/inventory/backpacks'
+import { AttributeAllocator } from '../character/AttributeAllocator'
+import { InventoryPanel } from '../dashboard/InventoryPanel'
+import { useGameStore } from '../../state/gameStore'
 
 const attributeLabels = {
   cunning: 'AST',
@@ -28,7 +32,8 @@ const attributeFullNames = {
 const emptySlotIcons = { weapon: Sword, shield: Shield, armor: Shirt, necklace: Gem, bracelet: Watch } as const
 
 /** Fixed, read-only classic RPG HUD. All numerical values come from the actual save. */
-export function TerranCharacterHud({ save }: { save: GameSave }) {
+export function TerranCharacterHud({ save, backpackOpen = false, onToggleBackpack }: { save: GameSave; backpackOpen?: boolean; onToggleBackpack?: () => void }) {
+  const equipArmor = useGameStore((state) => state.equipArmor)
   const { character, essence } = save
   const [attributesExpanded, setAttributesExpanded] = useState(true)
   const derived = deriveCharacterStats(save, content)
@@ -44,7 +49,7 @@ export function TerranCharacterHud({ save }: { save: GameSave }) {
       <h2>PERSONAGEM</h2>
       <div className="terran-character-hud__identity">
         <div className="terran-character-hud__portrait">
-          <EquippedCharacter save={save} alt={`Personagem equipado: ${character.name}`} />
+          <EquippedCharacter save={save} sheathed alt={`Personagem equipado: ${character.name}`} />
           <span>LV {character.level}</span>
         </div>
         <div>
@@ -90,6 +95,10 @@ export function TerranCharacterHud({ save }: { save: GameSave }) {
           </div>
         })}
       </div>
+      {basicArmor && <button type="button" className="terran-character-hud__unequip" onClick={() => equipArmor(null)} disabled={Boolean(save.battle)}>
+        Desequipar {basicArmor.definition.name}
+      </button>}
+      {character.bondedEquipment.weapon && <small className="terran-character-hud__bound-note">Arma vinculada permanente · guardada nas costas em Terran.</small>}
     </section>
 
     <section className="terran-character-hud__section" aria-label="Atributos e combate">
@@ -109,11 +118,18 @@ export function TerranCharacterHud({ save }: { save: GameSave }) {
           </div>
         })}
       </div>
+      {character.unspentAttributePoints > 0 && <AttributeAllocator save={save} compact layout="vertical" />}
       <div className="terran-character-hud__combat">
         <span><Swords size={13} aria-hidden="true" /> Ataque <strong>{derived.primaryAttack.value}</strong></span>
         <span><Shield size={13} aria-hidden="true" /> Defesa <strong>{derived.defense.value}</strong></span>
       </div>
       </div>}
+    </section>
+    <section className="terran-character-hud__section terran-character-hud__backpack" aria-label="Mochila do personagem" id="terran-backpack-panel">
+      <button type="button" className="terran-character-hud__section-heading terran-character-hud__toggle" aria-expanded={backpackOpen}
+        onClick={onToggleBackpack}><Backpack size={15} /> MOCHILA <span>{save.inventory.length}/{getBackpackCapacity(save)}</span>
+        <ChevronDown size={16} className={backpackOpen ? 'is-expanded' : ''} /></button>
+      {backpackOpen && <InventoryPanel save={save} compact />}
     </section>
   </aside>
 }
