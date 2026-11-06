@@ -324,3 +324,8 @@
 - validado o fluxo completo em Chromium, incluindo persistência após reload;
 - conferidos dashboard desktop, dashboard mobile, login e Skill Tree por screenshots headless;
 - adicionadas regras de Firestore, CI e documentação operacional.
+
+
+## 2026-11-06 — Gameplay v0.5.7 (PR #58, draft)
+
+Branch `feat/gameplay-v0.5.7` sobre `main` `82f0099`. Alterações incrementais: rolagem real de dano com breakdown, recarga por skill, confirmação/Voltar sem commit, defesa rastreável, nova curva de XP e ganho de atributos como BALANCE_DRAFT; ficha e consumíveis restauradores em Astravél; MENU/LOCAL reduzido; arma proporcional e armadura paletizada 32×32; compatibilidade de save e novos testes. **Não mesclado nem publicado** enquanto CI/QA e OWNER_DECISION estiverem pendentes. Documentação: `docs/TERRUNIA_UX_GAMEPLAY_v0.5.7.md`.
