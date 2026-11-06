@@ -23,7 +23,7 @@ export default defineConfig({
         launchOptions: chromiumExecutable
           ? {
               executablePath: chromiumExecutable,
-              args: ['--no-sandbox', '--disable-setuid-sandbox', '--single-process', '--no-zygote'],
+              args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-features=Vulkan'],
             }
           : undefined,
       },
