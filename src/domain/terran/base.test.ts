@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
 import { migrateAndValidateSave } from '../../persistence/saveSchema'
-import { turnInQuest } from '../quests/questEngine'
+import { acceptQuest, offerQuest, turnInQuest } from '../quests/questEngine'
 import { BASE_LOCATION_ID, PLAYER_HOME_DOOR_OPENED_FLAG, PLAYER_HOME_KEY_USED_FLAG, PLAYER_HOME_KEY_ITEM_ID,
   enterPlayerBase, hasPlayerHomeKey, isPlayerHomeDoorOpen, unlockPlayerBaseWithDaerynKey,
   leavePlayerBase, respawnDefeatedPlayer, transferBaseChestItem } from './base'
@@ -10,6 +10,14 @@ import { BASE_LOCATION_ID, PLAYER_HOME_DOOR_OPENED_FLAG, PLAYER_HOME_KEY_USED_FL
 const now = '2026-10-29T19:34:00.000Z'
 const fresh = (owner = 'player-a') => createNewSave(owner, 'Viajante', 'character.terririan.default', content, now,
   { saveId: owner + '-save', characterId: owner + '-character' })
+
+const acceptDoor = (save: ReturnType<typeof fresh>) => {
+  const offered = offerQuest(save, 'main_terran_open_base_door', content, now)
+  if (!offered.ok) throw Error(offered.message)
+  const accepted = acceptQuest(offered.value, 'main_terran_open_base_door', content, now)
+  if (!accepted.ok) throw Error(accepted.message)
+  return accepted.value
+}
 
 describe('Base individual e mundo isolado por campanha', () => {
   it('dois jogadores começam com instâncias e progresso independentes', () => {
@@ -44,7 +52,10 @@ describe('Base individual e mundo isolado por campanha', () => {
     expect(duplicate.ok).toBe(false)
     expect(rewarded.inventory).toHaveLength(1)
 
-    const used = unlockPlayerBaseWithDaerynKey(rewarded, now)
+    expect(unlockPlayerBaseWithDaerynKey(rewarded, now)).toMatchObject({ ok: false, code: 'BASE_DOOR_QUEST_REQUIRED' })
+    const acceptedDoor = acceptDoor(rewarded)
+    expect(acceptedDoor.quests.main_terran_open_base_door.status).toBe('active')
+    const used = unlockPlayerBaseWithDaerynKey(acceptedDoor, now)
     if (!used.ok) throw new Error(used.message)
     expect(used.value.world.currentLocationId).toBe(BASE_LOCATION_ID)
     expect(isPlayerHomeDoorOpen(used.value)).toBe(true)
@@ -182,7 +193,7 @@ describe('Base individual e mundo isolado por campanha', () => {
     expect(migrated.world.worldFlags).not.toContain(PLAYER_HOME_DOOR_OPENED_FLAG)
     expect(migrated.world.worldFlags).not.toContain(PLAYER_HOME_KEY_USED_FLAG)
     expect(hasPlayerHomeKey(migrated)).toBe(true)
-    const used = unlockPlayerBaseWithDaerynKey(migrated, now)
+    const used = unlockPlayerBaseWithDaerynKey(acceptDoor(migrated), now)
     if (!used.ok) throw new Error(used.message)
     expect(used.value.world.currentLocationId).toBe(BASE_LOCATION_ID)
     expect(isPlayerHomeDoorOpen(used.value)).toBe(true)
