@@ -1,6 +1,7 @@
-import { forgeRecipes, forgeUpgradeDefinitions } from '../../content/forge'
+import { forgeRecipes, forgeUpgradeDefinitions, goldForgeOffers } from '../../content/forge'
 import type { ContentCatalog } from '../../content/catalog'
 import type { GameSave } from '../game/types'
+import type { BoundSlot } from '../shared/types'
 import { deriveCharacterStats } from '../character/derivedStats'
 import { fail, ok, type Result } from '../shared/types'
 
@@ -62,6 +63,47 @@ export function executeForgeRecipe(save: GameSave, recipeId: string, catalog: Co
   next.updatedAt = now; next.revision += 1
   next.eventLog.push(`ForgeCrafted:${recipe.id}`)
   // A forge upgrade changes maxima; it does not silently heal the player.
+  const stats = deriveCharacterStats(next, catalog)
+  next.vitals.hp = Math.min(next.vitals.hp, stats.life.value)
+  next.vitals.mp = Math.min(next.vitals.mp, stats.mana.value)
+  return ok(next)
+}
+
+
+/** Premium forge service: Gold only, applied to the current permanent Bound Item. */
+export function checkGoldForgeUpgrade(save: GameSave, slot: BoundSlot): Result<true> {
+  if (save.battle || save.world.currentLocationId !== FORGE_LOCATION_ID)
+    return fail('FORGE_LOCATION', 'Fale com Durnan na Casa do Ferreiro.')
+  const offer = goldForgeOffers.find((candidate) => candidate.slot === slot)
+  if (!offer) return fail('FORGE_OFFER', 'Serviço indisponível.')
+  const id = save.character.bondedEquipment[slot]
+  const item = id ? save.boundItems[id] : null
+  if (!item || item.slot !== slot) return fail('FORGE_BOND', 'Vincule este equipamento antes de aprimorá-lo.')
+  if (item.forging?.upgradeIds.includes(offer.id))
+    return fail('FORGE_ALREADY_APPLIED', 'Este aprimoramento permanente já foi realizado.')
+  if (save.wallet.gold < offer.gold) return fail('FORGE_GOLD', `São necessários ${offer.gold} Ouro.`)
+  return ok(true)
+}
+
+export function executeGoldForgeUpgrade(
+  save: GameSave, slot: BoundSlot, catalog: ContentCatalog, now: string,
+): Result<GameSave> {
+  const allowed = checkGoldForgeUpgrade(save, slot)
+  if (!allowed.ok) return allowed
+  const offer = goldForgeOffers.find((candidate) => candidate.slot === slot)!
+  const next = structuredClone(save)
+  const item = next.boundItems[next.character.bondedEquipment[slot]!]
+  next.wallet.gold -= offer.gold
+  item.forging ??= { upgradeIds: [] }
+  item.forging.upgradeIds.push(offer.id)
+  item.memories.push({
+    id: `memory_${item.id}_${offer.id}`, type: 'bond', sourceId: offer.id,
+    title: offer.name, description: `Aprimorado por Durnan por ${offer.gold} Ouro.`, createdAt: now,
+  })
+  item.updatedAt = now
+  next.updatedAt = now
+  next.revision += 1
+  next.eventLog.push(`ForgeGoldUpgrade:${slot}:${offer.gold}`)
   const stats = deriveCharacterStats(next, catalog)
   next.vitals.hp = Math.min(next.vitals.hp, stats.life.value)
   next.vitals.mp = Math.min(next.vitals.mp, stats.mana.value)

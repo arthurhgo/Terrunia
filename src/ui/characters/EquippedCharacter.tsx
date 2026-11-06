@@ -52,9 +52,9 @@ export function CharacterComposite({ appearance, portraitAssetId, visuals, facin
   </div>
 }
 
-export function EquippedCharacter({ save, facing = 'down', className = '', alt }: {
-  save: GameSave; facing?: ActorFacing; className?: string; alt?: string
+export function EquippedCharacter({ save, facing = 'down', className = '', alt, sheathed = false }: {
+  save: GameSave; facing?: ActorFacing; className?: string; alt?: string; sheathed?: boolean
 }) {
   return <CharacterComposite appearance={save.character.appearance} portraitAssetId={save.character.portraitAssetId}
-    facing={facing} visuals={getVisualEquipment(save)} className={className} alt={alt ?? save.character.name} />
+    facing={facing} visuals={getVisualEquipment(save, sheathed)} className={className} alt={alt ?? save.character.name} />
 }

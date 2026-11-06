@@ -1,4 +1,4 @@
-import { Backpack, MapPin, X } from 'lucide-react'
+import { MapPin, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -11,7 +11,6 @@ import { getDiscoveredTerranLocationIds, getTerranQuestDestination } from '../..
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { ClanHallPanel } from '../dashboard/ClanHallPanel'
-import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { NpcDialog } from '../dashboard/NpcDialog'
 import { PortalPanel } from '../dashboard/PortalPanel'
 import { DialogueWindow } from '../terran/DialogueWindow'
@@ -281,14 +280,6 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             <TerranQuickJournal save={save} />
           </aside>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
-            <button type="button" className="terran-game__backpack-toggle" aria-label={backpackOpen ? 'Recolher mochila' : 'Mochila'}
-              title={backpackOpen ? 'Recolher mochila' : 'Abrir mochila'} aria-expanded={backpackOpen}
-              aria-controls="terran-backpack-panel" onClick={() => setBackpackOpen((open) => !open)}>
-              <Backpack size={23} strokeWidth={1.7} aria-hidden="true" />
-            </button>
-            {backpackOpen && <aside id="terran-backpack-panel" className="terran-game__backpack-panel" aria-label="Mochila expandida">
-              <InventoryPanel save={save} compact />
-            </aside>}
             {interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
                 questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
                 showTrackedQuestRoute={Boolean(trackedRoute)} trackedQuestRoute={trackedRoute}
@@ -301,7 +292,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 }}
                 onFurniture={inspectFurniture}
                 onExit={exitInterior} />
-              : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save)} guideHasOffers={getNpcActionableQuests(save, 'npc_rosetta', content).some((quest) => ['available', 'offered'].includes(save.quests[quest.id]?.status ?? 'locked'))} reducedMotion={save.settings.reducedMotion}
+              : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save, true)} guideHasOffers={getNpcActionableQuests(save, 'npc_rosetta', content).some((quest) => ['available', 'offered'].includes(save.quests[quest.id]?.status ?? 'locked'))} reducedMotion={save.settings.reducedMotion}
                   currentLocationId={save.world.currentLocationId} spawnPoint={streetSpawn}
                   homeUnlocked={isPlayerHomeDoorOpen(save)} onEnterHome={enterHome}
                   enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
@@ -350,7 +341,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             {activeQuestObjectId && <QuestObjectPuzzle key={activeQuestObjectId} save={save}
               questId={activeQuestObjectId} onClose={() => setActiveQuestObjectId(null)} />}
           </section>
-          <TerranCharacterHud save={save} />
+          <TerranCharacterHud save={save} backpackOpen={backpackOpen} onToggleBackpack={() => setBackpackOpen((open) => !open)} />
           {drawer && <aside ref={drawerRef} className={`terran-game__drawer ${eldamarOpen || localQuestId || dialogue || drawer === 'market' || drawer === 'forge' ? 'terran-game__drawer--dialogue' : ''}`} aria-label={`Painel lateral: ${activeTitle}`}>
             <header><span className="eyebrow">NEXO · INTERAÇÃO CONTÍNUA</span><h2>{activeTitle}</h2>
               <button type="button" onClick={() => { setDrawer(null); setLocalQuestId(null) }} aria-label="Fechar painel"><X size={19} /></button>

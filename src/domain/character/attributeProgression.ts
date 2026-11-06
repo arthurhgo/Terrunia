@@ -8,6 +8,10 @@ export const getAttributeScore = (attribute: AttributeValue) => attribute.die + 
 export const nextAttributeDie = (current: AttributeValue['die'], direction: 1 | -1) =>
   BALANCE.attributeDieOrder.find((die) => die === current + BALANCE.attributeDieFaceStep * direction)
 
+/** Each click invests one point. Two investments upgrade d4→d6 etc.
+ * The stored bonus represents the intermediate invested face and contributes to stats.
+ * Reimburse a single point before the first permanent Bond.
+ */
 export const adjustCharacterAttribute = (
   save: GameSave,
   attributeId: AttributeId,
@@ -15,26 +19,40 @@ export const adjustCharacterAttribute = (
   now: string,
 ): Result<GameSave> => {
   const current = save.character.attributes[attributeId]
-  const targetDie = nextAttributeDie(current.die, direction)
-  if (!targetDie) {
-    return fail(
-      direction === 1 ? 'ATTRIBUTE_AT_MAXIMUM' : 'ATTRIBUTE_AT_MINIMUM',
-      direction === 1 ? 'Este atributo já alcançou d12.' : 'Este atributo já está no dado-base d4.',
-    )
+  const upward = nextAttributeDie(current.die, 1)
+  const downward = nextAttributeDie(current.die, -1)
+  if (direction === 1 && !upward) {
+    return fail('ATTRIBUTE_AT_MAXIMUM', 'Este atributo já alcançou d12.')
   }
-  if (direction === 1 && save.character.unspentAttributePoints < BALANCE.attributePointsPerDieUpgrade) {
-    return fail('ATTRIBUTE_POINTS_REQUIRED', `São necessários ${BALANCE.attributePointsPerDieUpgrade} Pontos de Atributo para avançar um dado.`)
+  if (direction === 1 && save.character.unspentAttributePoints < 1) {
+    return fail('ATTRIBUTE_POINTS_REQUIRED', 'É necessário 1 Ponto de Atributo.')
   }
   if (direction === -1 && save.character.bondedEquipment.weapon) {
     return fail('ATTRIBUTE_REFUND_LOCKED', 'A distribuição inicial torna-se permanente após o primeiro Vínculo.')
   }
+  if (direction === -1 && current.die === BALANCE.defaultAttributeDie && current.bonus <= 0) {
+    return fail('ATTRIBUTE_AT_MINIMUM', 'Este atributo já está no dado-base d4.')
+  }
 
   const next = structuredClone(save)
-  next.character.attributes[attributeId].die = targetDie
-  next.character.unspentAttributePoints -= direction * BALANCE.attributePointsPerDieUpgrade
+  const attribute = next.character.attributes[attributeId]
+  if (direction === 1) {
+    if (attribute.bonus >= 1) {
+      attribute.die = upward!
+      attribute.bonus -= 1
+    } else {
+      attribute.bonus += 1
+    }
+  } else if (attribute.bonus > 0) {
+    attribute.bonus -= 1
+  } else {
+    attribute.die = downward!
+    attribute.bonus = 1
+  }
+  next.character.unspentAttributePoints -= direction
   next.updatedAt = now
   next.revision += 1
-  next.eventLog.push(`AttributeAdjusted:${attributeId}:d${targetDie}`)
+  next.eventLog.push(`AttributeAdjusted:${attributeId}:d${attribute.die}+${attribute.bonus}`)
   return ok(next)
 }
 

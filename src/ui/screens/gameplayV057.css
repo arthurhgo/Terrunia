@@ -102,3 +102,32 @@
 @media (prefers-reduced-motion: reduce) {
   .pixel-battle__pending-action, .terran-game__location-menu { transition: none; animation: none; }
 }
+
+/* v0.5.8 — Right-hand character inventory and storefront comparisons. */
+.terran-character-hud { overflow-y:auto; scrollbar-width:thin; min-height:0; }
+.terran-character-hud__backpack { min-width:0; padding-bottom:10px; }
+.terran-character-hud__backpack .inventory-panel { width:100%; min-width:0; }
+.terran-character-hud__backpack .inventory-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.terran-character-hud__backpack .inventory-slot { min-width:0; }
+.terran-character-hud__unequip {
+  width:100%; margin-top:8px; padding:6px; border:1px solid #997349;
+  background:#172b32; color:#edd4ab; cursor:pointer; font:700 10px var(--display);
+}
+.terran-character-hud__bound-note{display:block;color:#c7b48a;font-size:10px;margin-top:5px;}
+.terran-character-hud .attribute-allocator { min-width:0; max-width:100%; padding:6px; }
+.terran-character-hud .attribute-allocator__grid { grid-template-columns:1fr; }
+.terran-shop__offer { position:relative; }
+.terran-shop__tooltip {
+  position:absolute; z-index:70; bottom:calc(100% + 4px); right:0;
+  min-width:220px; width:min(300px,80vw); display:grid; gap:5px;
+  padding:12px; border:1px solid #cbab72; background:#0b1d2bed;
+  color:#e9dab7; box-shadow:0 7px 22px #000c; pointer-events:none;
+  font:12px/1.4 Georgia,serif;
+}
+.terran-shop__tooltip strong { color:#f5d496; font-size:13px; }
+.terran-shop__tooltip small { color:#bad6d6; }
+.terran-shop__tooltip p { margin:0; }
+.terran-shop__tooltip span { border-top:1px solid #365356; padding-top:4px; }
+@media(max-width:720px) {
+ .terran-shop__tooltip { right:auto;left:0;bottom:calc(100% + 2px);width:min(240px,75vw);}
+}

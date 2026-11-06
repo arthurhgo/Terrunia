@@ -17,10 +17,10 @@ export function prepareStarterWeapon(save: GameSave, weapon: BoundItemBaseDefini
   if (weapon.slot !== 'weapon') return fail('INVALID_WEAPON', 'Selecione uma arma inicial válida.')
   if (weapon.requirements.level > save.character.level) return fail('REQUIRES_LEVEL', 'Esta arma exige nível maior.')
   const available = save.character.unspentAttributePoints + ATTRIBUTE_IDS.reduce(
-    (sum, id) => sum + Math.max(0, (save.character.attributes[id].die - BALANCE.defaultAttributeDie) / 2) * BALANCE.attributePointsPerDieUpgrade, 0)
+    (sum, id) => sum + Math.max(0, (save.character.attributes[id].die - BALANCE.defaultAttributeDie) + save.character.attributes[id].bonus), 0)
   if (starterWeaponPointCost(weapon) > available) return fail('ATTRIBUTE_POINTS_REQUIRED', 'Pontos insuficientes para a arma selecionada.')
   let draft = save
-  for (const id of ATTRIBUTE_IDS) while (draft.character.attributes[id].die > BALANCE.defaultAttributeDie) {
+  for (const id of ATTRIBUTE_IDS) while (draft.character.attributes[id].die > BALANCE.defaultAttributeDie || draft.character.attributes[id].bonus > 0) {
     const result = adjustCharacterAttribute(draft, id, -1, now)
     if (!result.ok) return result
     draft = result.value

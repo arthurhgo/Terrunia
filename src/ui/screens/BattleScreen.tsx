@@ -3,7 +3,7 @@ import { Backpack, Bomb, Crosshair, Footprints, Gem, ScrollText, Shield, Swords,
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
-import type { BattleCommand } from '../../domain/combat/types'
+import type { BattleCommand, BattleState } from '../../domain/combat/types'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { useGameStore } from '../../state/gameStore'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
@@ -49,6 +49,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const announcedRound = useRef<{ battleId: string; round: number } | null>(null)
   const [showLog, setShowLog] = useState(false)
   const [activeDice, setActiveDice] = useState<BattleDiceEvent | null>(null)
+  const [stagedHp, setStagedHp] = useState<Record<string, number> | null>(null)
+  const [initiativePreview, setInitiativePreview] = useState<BattleState | null>(null)
+  const [impactEventId, setImpactEventId] = useState<string | null>(null)
   const [diceQueue, setDiceQueue] = useState<BattleDiceEvent[]>([])
   const [resolvingRolls, setResolvingRolls] = useState(false)
   const [diceAwaitingClick, setDiceAwaitingClick] = useState(false)
@@ -77,6 +80,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     setMenu(null)
     setPendingCommand(null)
     setActiveDice(null)
+    setStagedHp(null)
+    setInitiativePreview(null)
+    setImpactEventId(null)
     setDiceQueue([])
     setResolvingRolls(false)
     setDiceAwaitingClick(false)
@@ -123,7 +129,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       const actor = battle.combatants[entry.roll.actorId]
       return [{
         id: entry.id, sides: entry.roll.sides, face: entry.roll.face,
-        actorId: entry.roll.actorId, targetId: actor?.side === 'enemy' ? 'combatant_player' : targetId,
+        actorId: entry.roll.actorId, targetId: entry.roll.targetId ?? (actor?.side === 'enemy' ? 'combatant_player' : targetId),
         damage: Number(damage[1]), action: entry.roll.action,
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy',
       }]
@@ -142,6 +148,21 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     const timer = window.setTimeout(() => setActiveDice(null), reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs : BATTLE_PRESENTATION.queuedDieMs)
     return () => window.clearTimeout(timer)
   }, [activeDice, reducedMotion, resolvingRolls])
+
+  // Reveal each impact and defeat before the next actor animates.
+  useEffect(() => {
+    if (!resolvingRolls || !activeDice || activeDice.kind !== 'damage' ||
+        diceAwaitingClick || !activeDice.targetId) return
+    const event = activeDice
+    const timer = window.setTimeout(() => {
+      setStagedHp((current) => current ? {
+        ...current,
+        [event.targetId!]: Math.max(0, (current[event.targetId!] ?? 0) - event.damage),
+      } : current)
+      setImpactEventId(event.id)
+    }, reducedMotion ? 100 : BATTLE_PRESENTATION.dieSpinMs + 180)
+    return () => window.clearTimeout(timer)
+  }, [activeDice, diceAwaitingClick, reducedMotion, resolvingRolls])
 
   // Round separators belong to the presentation layer. One banner per real round
   // even when several enemies are resolved inside the same domain command.
@@ -235,6 +256,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         setActiveDice(null)
         setDiceAwaitingClick(false)
         setResolvingRolls(false)
+        setStagedHp(null)
+        setInitiativePreview(null)
+        setImpactEventId(null)
         sequence.commit()
         return
       }
@@ -276,12 +300,15 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       if (!match) return []
       return [{
         id: entry.id, sides: roll.sides, face: roll.face, damage: Number(match[1]),
-        actorId: roll.actorId, targetId: actor?.side === 'enemy' ? player.id : target.id,
+        actorId: roll.actorId, targetId: roll.targetId ?? (actor?.side === 'enemy' ? player.id : target.id),
         action: roll.action, kind: 'damage' as const,
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy' as const,
       }]
     })
     if (!rolls.length) { submit(command); return }
+    setStagedHp(Object.fromEntries(Object.values(battle.combatants).map((actor) => [actor.id, actor.hp])))
+    setInitiativePreview(initiative ? preview.value : null)
+    setImpactEventId(null)
     setResolvingRolls(true)
     setActiveDice(rolls[0])
     const requireClick = !initiative && rolls[0].actorSide === 'player'
@@ -328,35 +355,42 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     </button>
   )
 
+  const visualHp = (id: string) => stagedHp?.[id] ?? battle.combatants[id]?.hp ?? 0
+  const actingId = activeDice?.actorId ?? battle.actorId
+  const receivingId = activeDice?.kind === 'damage' ? activeDice.targetId : undefined
+  const damageRevealed = activeDice?.id === impactEventId
+
   const scene = <section className={`pixel-battle ${activeDice ? "pixel-battle--dice-pending" : ""} ${diceAwaitingClick ? "pixel-battle--dice-awaiting" : ""}`} role="region" aria-label="Viewport unificada de combate">
     <header className="pixel-battle__header" aria-label="Encontro de combate">
       <strong>TERRÚNIA</strong>
       <div className="pixel-battle__encounter-label"><span>{battle.waveIndex ? 'PORTAL · ONDAS DA RUÍNA' : encounter?.locationLabel ?? 'ASTRAVÉL'}</span><h1>{encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}</h1></div>
       <small>{battle.waveIndex ? 'ONDA ' + battle.waveIndex + ' · ' : ''}RODADA {battle.round} · {turnCue ? 'TURNO DOS INIMIGOS' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : battle.phase === 'AwaitingInitiative' ? 'INICIATIVA PENDENTE' : 'TURNO DO JOGADOR'}</small>
     </header>
-    <BattleTimeline battle={battle} playerAppearance={save.character.appearance} playerPortraitAssetId={save.character.portraitAssetId} />
+    <BattleTimeline battle={initiativePreview ?? battle} activeActorId={actingId} stagedHp={stagedHp} playerAppearance={save.character.appearance} playerPortraitAssetId={save.character.portraitAssetId} />
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
       <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} />
-      <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''} ${strikeFx?.actorId === player.id ? 'is-striking' : ''} ${strikeFx?.targetId === player.id ? 'is-strike-target' : ''}`}>
+      <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''} ${strikeFx?.actorId === player.id ? 'is-striking' : ''} ${strikeFx?.targetId === player.id ? 'is-strike-target' : ''} ${activeDice && actingId === player.id ? 'is-acting' : ''} ${receivingId === player.id ? 'is-receiving' : ''}`}>
+        {damageRevealed && receivingId === player.id && <b className="pixel-battle__damage-number" role="status">−{activeDice?.damage}</b>}
         <EquippedCharacter save={save} facing="right" alt={player.alive ? 'Terrírian voltado para os inimigos' : 'Terrírian derrotado'} />
       </div>
       <div className={`pixel-battle__enemies pixel-battle__enemies--${enemies.length}`}>
         {enemies.map((enemy, i) => <button type="button" key={enemy.id}
-          className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${!enemy.alive ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''}`}
+          className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
           onClick={() => enemy.alive && setTargetId(enemy.id)} disabled={!enemy.alive}
           onMouseEnter={() => setHoveredEnemyId(enemy.id)} onMouseLeave={() => setHoveredEnemyId(null)}
           onFocus={() => setHoveredEnemyId(enemy.id)} onBlur={() => setHoveredEnemyId(null)}
           aria-describedby={hoveredEnemyId === enemy.id ? 'enemy-status-' + i : undefined}
-          aria-label={`Selecionar ${enemy.name} ${i + 1}, ${enemy.hp} de ${enemy.maxHp} de Vida`}
+          aria-label={`Selecionar ${enemy.name} ${i + 1}, ${visualHp(enemy.id)} de ${enemy.maxHp} de Vida`}
           aria-pressed={enemy.id === target.id}>
           {enemy.alive && enemy.id === target.id && <span className="pixel-battle__target-arrow" aria-hidden="true">◆</span>}
-          <span className="pixel-battle__enemy-bar"><i style={{ width: clampPercent(enemy.hp, enemy.maxHp) + '%' }} /></span>
+          <span className="pixel-battle__enemy-bar"><i style={{ width: clampPercent(visualHp(enemy.id), enemy.maxHp) + '%' }} /></span>
           <AssetImage assetId={content.enemies[enemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} alt="" />
-          <small>{enemy.name}</small>
+          {damageRevealed && receivingId === enemy.id && <b className="pixel-battle__damage-number" role="status">−{activeDice?.damage}</b>}
+           <small>{enemy.name}</small>
           {hoveredEnemyId === enemy.id && <span className="pixel-battle__enemy-tooltip" role="tooltip"
             aria-label={'Status de ' + enemy.name} id={'enemy-status-' + i}>
             <strong>{enemy.name}</strong>
-            <span>Vida: {enemy.hp}/{enemy.maxHp} · Mana: {enemy.mp}/{enemy.maxMp}</span>
+            <span>Vida: {visualHp(enemy.id)}/{enemy.maxHp} · Mana: {enemy.mp}/{enemy.maxMp}</span>
             <span>Ataque: {enemy.attackPower} · Defesa: {enemy.mitigation}</span>
             <span>Iniciativa: {enemy.initiative} · Dado d{enemy.attackDie ?? 4}</span>
             <span>{enemy.statusEffects.length ? enemy.statusEffects.map((status) =>
@@ -400,8 +434,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           <CharacterPortrait appearance={save.character.appearance} portraitAssetId={save.character.portraitAssetId} alt="" className="pixel-battle__portrait" />
           <div>
             <strong>{player.name}</strong>
-            <label>VIDA <span>{player.hp} / {player.maxHp}</span></label>
-            <div className="pixel-battle__meter hp"><i style={{ width: clampPercent(player.hp, player.maxHp) + '%' }} /></div>
+            <label>VIDA <span>{visualHp(player.id)} / {player.maxHp}</span></label>
+            <div className="pixel-battle__meter hp"><i style={{ width: clampPercent(visualHp(player.id), player.maxHp) + '%' }} /></div>
             <label>MANA <span>{player.mp} / {player.maxMp}</span></label>
             <div className="pixel-battle__meter mp"><i style={{ width: clampPercent(player.mp, player.maxMp) + '%' }} /></div>
           </div>
@@ -437,13 +471,13 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           {menu && <div className="pixel-battle__submenu">
             <button type="button" aria-label="Voltar sem executar a ação" onClick={() => { setPendingCommand(null); setMenu(null) }}>VOLTAR</button>
             {pendingCommand && <div className="pixel-battle__pending-action" role="status">
-              <strong>CONFIRMAR AÇÃO</strong>
+              <strong>ALVO E EXECUÇÃO</strong>
               <small>{pendingCommand.type === 'attack' ? `Ataque básico em ${target.name}` :
                 pendingCommand.type === 'skill' ? `${content.combatSkills[pendingCommand.skillId]?.name ?? 'Habilidade'} · ${content.combatSkills[pendingCommand.skillId]?.mpCost ?? 0} MP` :
                 pendingCommand.type === 'item' ? `Usar ${content.items[save.inventory.find((item) => item.instanceId === pendingCommand.itemInstanceId)?.definitionId ?? '']?.name ?? 'Item'}` : pendingCommand.type === 'defend' ? 'Defender: prepara a mitigação para o próximo ataque inimigo' : 'Ação selecionada'}.
-                Selecione o alvo e confirme; Voltar não gasta turno nem recursos.</small>
+                Escolha o alvo e execute; Voltar cancela sem gastar turno nem recursos.</small>
               <button type="button" disabled={!isPlayerTurn || (pendingCommand.type !== 'item' && pendingCommand.type !== 'skill' && !target.alive)}
-                onClick={confirmPending}>CONFIRMAR AÇÃO</button>
+                onClick={confirmPending}>{pendingCommand.type === 'attack' ? 'ATACAR' : pendingCommand.type === 'skill' ? 'USAR HABILIDADE' : pendingCommand.type === 'defend' ? 'DEFENDER AGORA' : 'USAR ITEM'}</button>
             </div>}
             {menu === 'combat' && <>
               <strong className="pixel-battle__submenu-heading">ATAQUE · MAGIAS · HABILIDADES</strong>
@@ -499,8 +533,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           {battle.log.slice(-8).map((entry) => <p key={entry.id}>R{entry.round} · {entry.message}</p>)}
         </div> : <div className="pixel-battle__target-info">
           <AssetImage assetId={content.enemies[target.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} alt="" />
-          <div><strong>{target.name}</strong><span>{target.hp} / {target.maxHp} PV</span>
-            <div className="pixel-battle__meter hp"><i style={{ width: clampPercent(target.hp, target.maxHp) + '%' }} /></div></div>
+          <div><strong>{target.name}</strong><span>{visualHp(target.id)} / {target.maxHp} PV</span>
+            <div className="pixel-battle__meter hp"><i style={{ width: clampPercent(visualHp(target.id), target.maxHp) + '%' }} /></div></div>
         </div>}
         <p className="pixel-battle__hint"><Crosshair size={14} /> {battle.phase === 'Victory' ? 'Recolha tudo de uma vez e continue.' : battle.phase === 'Defeat' ? 'A expedição foi interrompida.' : 'Selecione um inimigo e escolha sua ação.'}</p>
       </section>

@@ -11,10 +11,11 @@ export type VisualItem = {
   itemId: string
   itemName: string
   forged: boolean
+  sheathed?: boolean
   visualTier?: number
 }
 /** One source of truth for exactly what the owner has equipped. Never creates an item. */
-export function getVisualEquipment(save: GameSave): VisualItem[] {
+export function getVisualEquipment(save: GameSave, sheathed = false): VisualItem[] {
   const items: VisualItem[] = []
   for (const slot of VISUAL_EQUIPMENT_ORDER) {
     const instanceId = save.character.bondedEquipment[slot]
@@ -22,7 +23,7 @@ export function getVisualEquipment(save: GameSave): VisualItem[] {
     const base = instance?.slot === slot ? content.boundItemBases[instance.baseItemId] : null
     if (base && instance) {
       const assetId = base.assetIdByGrade[instance.grade] ?? base.assetIdByGrade[1]
-      if (assetId) items.push({ slot, assetId, itemId: base.id, itemName: base.name, forged: Boolean(instance.forging?.upgradeIds.length), visualTier: instance.grade })
+      if (assetId) items.push({ slot, assetId, itemId: base.id, itemName: base.name, forged: Boolean(instance.forging?.upgradeIds.length), sheathed: slot === 'weapon' && sheathed, visualTier: instance.grade })
     } else if (slot === 'armor' && save.equippedBasicArmor) {
       const definition = content.items[save.equippedBasicArmor.definitionId]
       if (definition?.basicArmor && definition.iconAssetId) items.push({
@@ -47,6 +48,7 @@ const point = (x: number, y: number, size: number, handleX = .5, handleY = .5, a
 export function getEquipmentAnchor(item: VisualItem, facing: ActorFacing): VisualAnchor {
   const left = facing === 'left'
   const back = facing === 'up'
+  if (item.slot === 'weapon' && item.sheathed) return point(18, 15, 22, .5, .7, -42, 'back')
   if (item.slot === 'weapon') {
     const grip = getWeaponGripProfile(item.itemId)
     const handX = left ? 6 : 26

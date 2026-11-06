@@ -43,6 +43,15 @@ const addLog = (
 }
 
 /** Deterministic, actual dice samples; never derive a fake face from log IDs. */
+/** Seed is derived from a random battle UUID, then stored in the save.
+ * All action previews consume the stored PRNG state without rerolling on render.
+ */
+export const seedFromBattleId = (id: string): number => {
+  let hash = 2166136261
+  for (let i = 0; i < id.length; i++) hash = Math.imul(hash ^ id.charCodeAt(i), 16777619)
+  return (hash >>> 0) % 2147483646 + 1
+}
+
 const rollCombatDie = (state: BattleState, sides: 4 | 6 | 8 | 10 | 12) => {
   state.rngSeed = (state.rngSeed * 48271) % 2147483647
   return 1 + Math.floor(state.rngSeed / 2147483647 * sides)
@@ -215,7 +224,7 @@ const applyCombatEffects = (
         ? ` · Guarda evitou ${breakdown.guardPrevented} de dano.` : ''
       addLog(state,
         `${actor.name} causa ${damage} de dano em ${target.name}. d${sides}=${face} (${breakdown.dieAdjustment >= 0 ? '+' : ''}${breakdown.dieAdjustment}), ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${guardMitigation}.${guardNote}`,
-        'damage', { actorId: actor.id, sides, face, action, damageBreakdown: breakdown },
+        'damage', { actorId: actor.id, targetId: target.id, sides, face, action, damageBreakdown: breakdown },
       )
     }
     if (effect.type === 'restoreHp') {
@@ -401,7 +410,8 @@ const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
  * before this command is committed. Old already-started battles remain valid.
  */
 const resolveInitiative = (state: BattleState, catalog: ContentCatalog): void => {
-  const actors = Object.values(state.combatants)
+  // Presentation rolls the player's die first; initiative totals still determine turn order.
+  const actors = Object.values(state.combatants).sort((a, b) => Number(b.side === 'player') - Number(a.side === 'player'))
   for (const actor of actors) {
     const sides = actor.initiativeDie ?? 4
     const face = rollCombatDie(state, sides)
@@ -436,7 +446,7 @@ export const createBattle = (
     deriveEnemyCombatant(definitionId, index, catalog),
   )
   const combatants = [player, ...enemies]
-  const initiativeOrder = combatants
+  const initiativeOrder = [...combatants]
     .sort((a, b) => b.initiative - a.initiative || a.id.localeCompare(b.id))
     .map((combatant) => combatant.id)
   const actorId = initiativeOrder[0]
@@ -457,7 +467,7 @@ export const createBattle = (
     claimed: false,
     canFlee: encounter.canFlee,
     consumedItemInstanceIds: [],
-    rngSeed: 104729,
+    rngSeed: seedFromBattleId(id),
   }
 
   addLog(state, `${encounter.name} bloqueia o avanço em Astravél.`, 'system')

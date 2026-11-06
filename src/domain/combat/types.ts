@@ -46,6 +46,8 @@ export type Combatant = {
 export type CombatDie = 4 | 6 | 8 | 10 | 12
 export type CombatRoll = {
   actorId: string
+  /** Exact affected combatant for staged hit and defeat VFX. */
+  targetId?: string
   sides: CombatDie
   face: number
   action: string
