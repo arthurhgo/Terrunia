@@ -23,7 +23,7 @@ import './battleTimeline.css'
 import './battleCinematic.css'
 import './gameplayV057.css'
 
-type Menu = 'combat' | 'items' | 'throwables' | 'runes' | 'essences' | null
+type Menu = 'combat' | 'defense' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
 
 export function BattleScene({ unified = false }: { unified?: boolean }) {
@@ -303,6 +303,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }
   const confirmPending = () => {
     if (!pendingCommand || !isPlayerTurn) return
+    if (pendingCommand.type === 'defend') send({ type: 'defend' })
     if (pendingCommand.type === 'attack') send({ type: 'attack', targetId: target.id })
     else if (pendingCommand.type === 'skill') {
       const skill = content.combatSkills[pendingCommand.skillId]
@@ -429,7 +430,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               !isPlayerTurn || !hasUsefulSupplies('essence'), menu === 'essences')}
             {button('ITENS / POÇÕES', <Backpack />, () => openMenu('items'),
               !isPlayerTurn || !hasUsableConsumable, menu === 'items')}
-            {button('DEFENDER', <Shield />, () => send({ type: 'defend' }), !isPlayerTurn)}
+            {button('DEFENDER', <Shield />, () => { setMenu('defense'); setPendingCommand({ type: 'defend' }) }, !isPlayerTurn)}
             {/* The domain explicitly returns FLEE_NOT_IMPLEMENTED; never display it as actionable. */}
             {button('FUGIR', <Footprints />, () => {}, true)}
           </div>
@@ -439,7 +440,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               <strong>CONFIRMAR AÇÃO</strong>
               <small>{pendingCommand.type === 'attack' ? `Ataque básico em ${target.name}` :
                 pendingCommand.type === 'skill' ? `${content.combatSkills[pendingCommand.skillId]?.name ?? 'Habilidade'} · ${content.combatSkills[pendingCommand.skillId]?.mpCost ?? 0} MP` :
-                pendingCommand.type === 'item' ? `Usar ${content.items[save.inventory.find((item) => item.instanceId === pendingCommand.itemInstanceId)?.definitionId ?? '']?.name ?? 'Item'}` : 'Ação selecionada'}.
+                pendingCommand.type === 'item' ? `Usar ${content.items[save.inventory.find((item) => item.instanceId === pendingCommand.itemInstanceId)?.definitionId ?? '']?.name ?? 'Item'}` : pendingCommand.type === 'defend' ? 'Defender: prepara a mitigação para o próximo ataque inimigo' : 'Ação selecionada'}.
                 Selecione o alvo e confirme; Voltar não gasta turno nem recursos.</small>
               <button type="button" disabled={!isPlayerTurn || (pendingCommand.type !== 'item' && pendingCommand.type !== 'skill' && !target.alive)}
                 onClick={confirmPending}>CONFIRMAR AÇÃO</button>
