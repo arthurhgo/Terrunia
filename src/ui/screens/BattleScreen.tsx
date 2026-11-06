@@ -240,6 +240,15 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     (effect.type === 'cleanseHarmful' && player.statusEffects.some((status) =>
       content.statusEffects[status.definitionId]?.tone === 'harmful'))))
   const isPlayerTurn = battle.phase === 'AwaitingAction' && !roundCurtain && !turnCue && !activeDice && !diceQueue.length && !resolvingRolls
+  // A read-only diagnostic for UI tests and future support investigations.
+  // Combat authority remains in the domain state machine.
+  const actionGate = battle.phase !== 'AwaitingAction' ? battle.phase
+    : roundCurtain ? 'round-curtain'
+      : turnCue ? 'enemy-reaction'
+        : activeDice ? diceAwaitingClick ? 'player-die' : 'die-presentation'
+          : diceQueue.length ? 'queued-dice'
+            : resolvingRolls ? 'resolving-rolls'
+              : target.alive ? 'ready' : 'no-live-target'
   const drops = battle.rewards.lootDefinitionIds
   const lootGroups = groupBattleLoot(drops)
 
@@ -429,7 +438,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         </div>
         <BattleEquipmentHud save={save} />
       </section>
-      <section className="pixel-battle__panel pixel-battle__actions" aria-label="Ações de combate">
+      <section className="pixel-battle__panel pixel-battle__actions" aria-label="Ações de combate" data-turn-gate={actionGate}>
         <h2>{diceAwaitingClick ? 'LANCE SEU DADO' : battle.phase === 'AwaitingInitiative' ? 'ROLAGEM DE INICIATIVA' : battle.phase === 'AwaitingAction' ? 'ESCOLHA SUA AÇÃO' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'COMBATE'}</h2>
         {diceAwaitingClick && activeDice && <DraggableBattleDie key={activeDice.id} sides={activeDice.sides}
           onThrow={releasePlayerDie} ariaLabel={`Arrastar dado d${activeDice.sides} para cima para rolar`} />}

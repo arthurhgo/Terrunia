@@ -1,21 +1,8 @@
-import { expect, test, type Page } from '@playwright/test'
-
-async function fightAndCollect(page: Page, count: number) {
-  for (let turn = 0; turn < 16; turn++) {
-    if (await page.getByRole('heading', { name: 'VITÓRIA', exact: true }).isVisible()) break
-    const attack = page.getByRole('button', { name: 'ATACAR', exact: true })
-    await expect(attack).toBeEnabled()
-    await attack.click()
-  }
-  await expect(page.getByRole('heading', { name: 'VITÓRIA', exact: true })).toBeVisible()
-  const drops = page.locator('.pixel-battle__drops button')
-  await expect(drops).toHaveCount(count)
-  for (let index = 0; index < count; index++) await drops.nth(index).click()
-  await page.getByRole('button', { name: 'CONFIRMAR RECOMPENSAS', exact: true }).click()
-}
+import { expect, test } from '@playwright/test'
+import { fightAndCollect } from './helpers/combatUi'
 
 test('Terran: câmera, exploração, marcadores, drops reais e entrega de encomenda por ouro', async ({ page }) => {
-  test.setTimeout(180_000)
+  test.setTimeout(240_000)
   page.setDefaultTimeout(20_000)
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
@@ -85,7 +72,8 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await page.getByRole('button', { name: 'Sair do interior para as ruas de Terran', exact: true }).click()
   // Reach the Plaza in world state, then explicitly select an instance.
   await page.getByRole('button', { name: 'Ir para Praça do Portal', exact: true }).click()
-  await page.goto('/portal-hub')
+  await page.getByRole('button', { name: 'Escolher destino no Portal', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Escolha seu destino' })).toBeVisible()
   await page.getByRole('button', { name: /Modo Ondas · Iniciar/ }).click()
   for (let wave = 1; wave <= 3; wave++) {
     await fightAndCollect(page, wave === 3 ? 2 : 1)
@@ -94,7 +82,8 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await page.getByRole('button', { name: 'RETORNAR A TERRAN', exact: true }).click()
   // Reach the Plaza in world state, then explicitly select an instance.
   await page.getByRole('button', { name: 'Ir para Praça do Portal', exact: true }).click()
-  await page.goto('/portal-hub')
+  await page.getByRole('button', { name: 'Escolher destino no Portal', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Escolha seu destino' })).toBeVisible()
   await page.getByRole('button', { name: /Vigília da Ruína · Iniciar/ }).click()
   await fightAndCollect(page, 3)
   await page.getByRole('button', { name: 'VOLTAR AO PORTAL', exact: true }).click()

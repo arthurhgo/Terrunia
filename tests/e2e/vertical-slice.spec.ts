@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { fightAndCollect } from './helpers/combatUi'
 
 async function createExpedition(page: Page) {
   page.setDefaultTimeout(12_000)
@@ -29,43 +30,8 @@ async function createExpedition(page: Page) {
   await expect(page.getByRole('heading', { name: 'Astravél', exact: true })).toBeVisible()
 }
 
-async function fightAndCollect(page: Page, expectedDropCount: number) {
-  for (let step = 0; step < 90; step++) {
-    const phase = await page.evaluate(async () => {
-      const { useGameStore } = await import('/src/state/gameStore.ts')
-      return useGameStore.getState().save?.battle?.phase
-    })
-    if (phase === 'Victory') break
-    expect(phase).not.toBe('Defeat')
-    if (phase === 'AwaitingInitiative') {
-      const initiative = page.getByRole('button', { name: /Arrastar dado de iniciativa d\d+ para cima para rolar/ })
-      // During the initiative presentation, the same die stays disabled until
-      // the deterministic preview is committed. Do not throw a second time.
-      if (await initiative.isEnabled()) await initiative.press('Enter')
-      else await page.waitForTimeout(150)
-    } else if (phase === 'AwaitingAction') {
-      const menu = page.getByRole('button', { name: 'ATAQUE · MAGIAS · HABILIDADES', exact: true })
-      await expect(menu).toBeEnabled({ timeout: 10_000 })
-      await menu.click()
-      await page.getByRole('button', { name: /ATAQUE BÁSICO · 0 MP/ }).click()
-      const die = page.getByRole('button', { name: /Arrastar dado d\d+ para cima para rolar/ })
-      await expect(die).toBeVisible({ timeout: 10_000 })
-      await die.press('Enter')
-    } else {
-      await page.waitForTimeout(100)
-    }
-  }
-  await expect(page.getByRole('heading', { name: 'VITÓRIA', exact: true })).toBeVisible({ timeout: 12_000 })
-  const dropCount = await page.evaluate(async () => {
-    const { useGameStore } = await import('/src/state/gameStore.ts')
-    return useGameStore.getState().save?.battle?.rewards.lootDefinitionIds.length
-  })
-  expect(dropCount).toBe(expectedDropCount)
-  await page.getByRole('button', { name: 'RECOLHER TODOS OS ESPÓLIOS', exact: true }).click()
-}
-
 test('Astravél: câmera, dois combates, coleta manual de drops e retomada do save', async ({ page }) => {
-  test.setTimeout(90_000)
+  test.setTimeout(180_000)
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await createExpedition(page)

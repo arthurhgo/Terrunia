@@ -1,6 +1,6 @@
 import { Archive, BedDouble, MapPin, ScrollText, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { TerranLocationDefinition } from '../../content/types'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
@@ -88,6 +88,7 @@ function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
 }
 
 export function TerranScene({ unified = false }: { unified?: boolean }) {
+  const navigate = useNavigate()
   const save = useGameStore((state) => state.save)
   const travel = useGameStore((state) => state.travelInTerran)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
@@ -354,7 +355,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             {rosettaOpen && <RosettaGuide save={save} onClose={() => setRosettaOpen(false)}
               onOpenInventory={() => { setRosettaOpen(false); setDrawer(null); setBackpackOpen(true) }}
               onShowPaths={() => { setRosettaOpen(false); setDrawer(null); setRosettaPathsPinned(true) }}
-              onOpenQuests={() => { setRosettaOpen(false); setDrawer(null) }} />}
+              onOpenQuests={() => { setRosettaOpen(false); setDrawer(null); navigate('/quests') }} />}
             {dialogue && <DialogueBox save={save} presence={dialogue} onClose={() => setDialogue(null)} />}
             {missionNpc && <NpcMissionHub save={save} presence={missionNpc.presence}
               initialQuestId={missionNpc.questId}
