@@ -35,4 +35,6 @@ export const BALANCE = {
   skillDieStepsBonus: 1,
   /** BALANCE_DRAFT — faster XP from one-time battles and mission payouts. */
   characterXpRewardMultiplier: 2,
+  /** BALANCE_DRAFT: items converted intentionally by the player yield more raw Essence. */
+  essenceConversionMultiplier: 1.5,
 } as const
