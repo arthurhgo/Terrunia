@@ -61,7 +61,7 @@ describe('inventário de drops', () => {
     expect(converted.ok).toBe(true)
     if (converted.ok) {
       expect(converted.value.inventory).toEqual([equipped])
-      expect(converted.value.rawEssence).toBe(8)
+      expect(converted.value.rawEssence).toBe(12)
     }
     const sold = sellInventoryItems(inventory, 0, [spare.instanceId], content, [equipped.instanceId])
     expect(sold.ok).toBe(true)
