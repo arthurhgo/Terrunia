@@ -5,6 +5,7 @@ import { content } from '../../content/catalog'
 import { submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { useGameStore } from '../../state/gameStore'
+import { effectiveCharacterXpReward } from '../../domain/character/attributeProgression'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { CharacterPortrait } from '../characters/CharacterSprite'
 import { AssetImage } from '../components/AssetImage'
@@ -447,7 +448,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
 
           </div>}
         </> : battle.phase === 'Victory' ? <div className="pixel-battle__result">
-          <p>+{battle.rewards.characterXp} XP · +{battle.rewards.gold} Ouro · {drops.length} drops</p>
+          <p> +{effectiveCharacterXpReward(battle.rewards.characterXp)} XP · +{battle.rewards.gold} Ouro · {drops.length} drops</p>
           {!battle.claimed ? <button type="button" onClick={claim}>RECOLHER TODOS OS ESPÓLIOS</button> : <>
             {battle.waveIndex ? <button onClick={nextWave}>PRÓXIMA ONDA · {battle.waveIndex + 1}</button> :
               battle.portalHuntId ? null : <button onClick={() => end(false)}>CONTINUAR EXPEDIÇÃO</button>}
