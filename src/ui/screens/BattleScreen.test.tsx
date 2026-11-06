@@ -50,6 +50,22 @@ describe('combate visual v0.17', () => {
     expect(screen.queryByRole('button', { name: 'MAGIAS' })).not.toBeInTheDocument()
   })
 
+
+  it('Voltar cancela um comando preparado sem alterar batalha, Mana ou turno', () => {
+    vi.useFakeTimers()
+    createBattleSave()
+    render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    act(() => { vi.advanceTimersByTime(1950) })
+    const before = structuredClone(useGameStore.getState().save!.battle!)
+    fireEvent.click(screen.getByRole('button', { name: 'ATAQUE · MAGIAS · HABILIDADES' }))
+    fireEvent.click(screen.getByRole('button', { name: /ATAQUE BÁSICO/ }))
+    expect(screen.getByRole('button', { name: 'CONFIRMAR AÇÃO' })).toBeInTheDocument()
+    expect(useGameStore.getState().save!.battle).toEqual(before)
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar sem executar a ação' }))
+    expect(screen.queryByRole('button', { name: 'CONFIRMAR AÇÃO' })).not.toBeInTheDocument()
+    expect(useGameStore.getState().save!.battle).toEqual(before)
+    expect(screen.getByRole('button', { name: 'DEFENDER' })).toBeEnabled()
+  })
   it('aguarda a sequência de dados antes de aplicar dano e avançar turnos no save', () => {
     vi.useFakeTimers()
     const save = createBattleSave()
