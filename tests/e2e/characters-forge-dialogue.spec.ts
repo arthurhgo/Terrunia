@@ -8,8 +8,11 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
   await page.goto('/login')
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
   await page.getByPlaceholder('Ex.: Aron').fill('Aron')
-  await page.getByRole('button', { name: 'Confirmar Terrírian' }).click()
-  await page.getByRole('button', { name: 'Aumentar Força', exact: true }).click()
+  // Allocate all six neutral creation points before entering the prologue.
+  for (const attribute of ['Força', 'Força', 'Astúcia', 'Agilidade', 'Vigor', 'Espírito']) {
+    await page.getByRole('button', { name: `Adicionar ponto de ${attribute}` }).click()
+  }
+  await page.getByRole('button', { name: 'Confirmar e continuar' }).click()
   await page.getByRole('button', { name: 'Escolher Espada Longa', exact: true }).press('Enter')
   await page.getByRole('button', { name: 'Vincular Espada Longa — Grau I', exact: true }).click()
   await page.evaluate(async () => {

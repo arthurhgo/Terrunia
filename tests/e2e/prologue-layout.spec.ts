@@ -5,7 +5,11 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
   await page.goto('/login')
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
   await page.getByPlaceholder('Ex.: Aron').fill('Lysa')
-  await page.getByRole('button', { name: 'Confirmar Terrírian' }).click()
+  // Allocate all six neutral creation points before entering the prologue.
+  for (const attribute of ['Força', 'Força', 'Astúcia', 'Agilidade', 'Vigor', 'Espírito']) {
+    await page.getByRole('button', { name: `Adicionar ponto de ${attribute}` }).click()
+  }
+  await page.getByRole('button', { name: 'Confirmar e continuar' }).click()
   await expect(page.getByRole('heading', { name: 'O primeiro Vínculo' })).toBeVisible()
 
   const stats = page.getByRole('region', { name: 'Distribuição de atributos' })
