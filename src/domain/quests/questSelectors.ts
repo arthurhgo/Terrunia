@@ -83,12 +83,24 @@ export const getNpcActionableQuests = (save: GameSave, npcId: string, catalog: C
       || (quest.turnInNpcId === npcId && status === 'ready_to_turn_in')
   })
     .sort((a, b) => {
-      const priority = { ready_to_turn_in: 0, active: 1, offered: 2, available: 3, locked: 4, completed: 5 }
+      const priority = { ready_to_turn_in: 0, offered: 1, available: 1, active: 2, locked: 4, completed: 5 }
       return priority[save.quests[a.id].status] - priority[save.quests[b.id].status]
         || Number(a.category === 'secondary' || a.category === 'bounty') - Number(b.category === 'secondary' || b.category === 'bounty')
     })
 
 export type NpcWorldMarker = '!' | '◇' | '◆' | '?' | null
+/** Derived display counts. Completed/locked quests never appear as open offers. */
+export const getNpcQuestCounts = (save: GameSave, npcId: string, catalog: ContentCatalog) => {
+  const totals = { available: 0, active: 0, ready: 0 }
+  for (const definition of Object.values(catalog.quests)) {
+    const status = save.quests[definition.id]?.status
+    if (definition.giverNpcId === npcId && (status === 'available' || status === 'offered')) totals.available += 1
+    if (definition.giverNpcId === npcId && status === 'active') totals.active += 1
+    if (definition.turnInNpcId === npcId && status === 'ready_to_turn_in') totals.ready += 1
+  }
+  return totals
+}
+
 export type NpcMarkerPhase = 'guide' | 'available' | 'active' | 'turn-in'
 
 export const getNpcQuestNotice = (save: GameSave, npcId: string, catalog: ContentCatalog): { marker: NpcWorldMarker; phase: NpcMarkerPhase } => {
