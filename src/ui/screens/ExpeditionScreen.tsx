@@ -15,6 +15,7 @@ import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { AstravelPixelCanvas } from '../expedition/AstravelPixelCanvas'
 import { getVisualEquipment } from '../characters/equipmentVisuals'
+import { effectiveCharacterXpReward } from '../../domain/character/attributeProgression'
 
 type Drawer = 'trail' | 'node' | 'inventory' | 'quests' | null
 const trail = content.trails.trail_astravel_entry
@@ -36,7 +37,7 @@ function NodeDrawer({ node, status, save, onAction, onReturn }: {
           <AssetImage assetId={content.enemies[id].assetId} /><small>{content.enemies[id].name}</small>
         </span>)}
       </div>
-      <small>Nível sugerido {node.recommendedLevel} · {encounter.rewards.characterXp} XP · {encounter.rewards.gold} Ouro · {encounter.rewards.boundResonance} Ressonância</small>
+      <small>Nível sugerido {node.recommendedLevel} · {effectiveCharacterXpReward(encounter.rewards.characterXp)} XP · {encounter.rewards.gold} Ouro · {encounter.rewards.boundResonance} Ressonância</small>
       <div className="expedition-drops"><span className="eyebrow">MATERIAIS E SUPRIMENTOS</span>
         {drops.map((item) => <span key={item.id}><AssetImage assetId={item.iconAssetId} />{item.name}</span>)}
       </div>
