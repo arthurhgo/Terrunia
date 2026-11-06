@@ -28,7 +28,7 @@ import { requestCampaignReset } from '../domain/game/campaignReset'
 import type { AttributeId, GameSave } from '../domain/game/types'
 import type { CharacterAppearance } from '../domain/character/appearance'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
-import { useFieldConsumable } from '../domain/inventory/fieldConsumables'
+import { applyFieldConsumable } from '../domain/inventory/fieldConsumables'
 import { addBattleLootToInventory } from '../domain/inventory/battleLoot'
 import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 import {
@@ -134,7 +134,7 @@ type GameState = {
   convertItems: (instanceIds: string[]) => void
   sellItems: (instanceIds: string[]) => void
   toggleFavorite: (instanceId: string) => void
-  useFieldConsumable: (instanceId: string) => void
+  consumeFieldPotion: (instanceId: string) => void
   performGradeTwoRite: (boundItemId: string, fragmentInstanceId: string) => void
   performGradeThreeRite: (boundItemId: string, gemInstanceId: string) => void
   unlockNode: (nodeId: string) => void
@@ -967,10 +967,10 @@ export const useGameStore = create<GameState>((set, get) => {
       show(`+${result.value.gainedGold} Ouro`, 'O drop foi convertido em recursos econômicos.', 'success')
     },
 
-    useFieldConsumable: (instanceId) => {
+    consumeFieldPotion: (instanceId) => {
       const save = get().save
       if (!save) return
-      const result = useFieldConsumable(save, instanceId, content, nowIso())
+      const result = applyFieldConsumable(save, instanceId, content, nowIso())
       if (!result.ok) { failAction(result.message); return }
       const gainedHp = result.value.vitals.hp - save.vitals.hp
       const gainedMp = result.value.vitals.mp - save.vitals.mp
