@@ -4,6 +4,7 @@ import { NpcNameplate } from './NpcNameplate'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { CharacterAppearance } from '../../domain/character/appearance'
 import { appearanceSpriteSheetUri } from '../characters/CharacterSprite'
+import { useWearableAppearance } from '../characters/wearablePalette'
 import type { VisualItem } from '../characters/equipmentVisuals'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
@@ -81,7 +82,8 @@ const nearestNpc = (point: WorldPoint, actors: readonly CityActor[], radius: num
 }
 
 export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], guideHasOffers = false, reducedMotion, currentLocationId, enabled, objectiveId, actors, homeUnlocked, spawnPoint, onEnterHome, onEnter, onTalk, onInspectLandmark, landmarkFlags, questRoutes = [], showQuestRoutes = false, showTrackedQuestRoute = false, trackedQuestRoute = null, onHideQuestRoutes }: Props) {
-  const appearanceSource = appearance ? appearanceSpriteSheetUri(appearance) : null
+  const dressedAppearance = useWearableAppearance(appearance, equipment)
+  const appearanceSource = dressedAppearance ? appearanceSpriteSheetUri(dressedAppearance) : null
   const equipmentKey = equipment.map((item) => item.assetId).join('|')
   const equipmentRef = useRef(equipment)
   equipmentRef.current = equipment
