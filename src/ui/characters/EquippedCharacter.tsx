@@ -13,7 +13,7 @@ const placedStyle = (item: VisualItem, facing: ActorFacing): CSSProperties => {
   return {
     left: `${anchor.x / 32 * 100}%`, top: `${anchor.y / 32 * 100}%`,
     width: `${anchor.size / 32 * 100}%`, height: `${anchor.size / 32 * 100}%`,
-    transform: `translate(-${anchor.handleX * 100}%, -${anchor.handleY * 100}%) rotate(${anchor.angle}deg)`,
+    transform: `translate(-${anchor.handleX * 100}%, -${anchor.handleY * 100}%) rotate(${anchor.angle}deg)${facing === 'left' && item.slot === 'weapon' && !item.sheathed ? ' scaleX(-1)' : ''}`,
     transformOrigin: `${anchor.handleX * 100}% ${anchor.handleY * 100}%`,
   }
 }
