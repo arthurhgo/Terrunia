@@ -27,5 +27,7 @@ export const BALANCE = {
     6: 2200,
     7: 3500,
   },
+  /** BALANCE_DRAFT v0.5.7: combat die is centered on its midpoint, then adjusts damage. */
+  combatDieCentered: true,
   defendMitigation: 2,
 } as const
