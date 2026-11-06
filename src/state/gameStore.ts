@@ -4,6 +4,7 @@ import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmo
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
 import { create } from 'zustand'
 import { content } from '../content/catalog'
+import { BALANCE } from '../content/balance'
 import {
   gainBoundResonance,
   performGradeThreeRite,
@@ -803,9 +804,11 @@ export const useGameStore = create<GameState>((set, get) => {
         return failAction('Não há recompensas de vitória disponíveis.')
       }
       let next = structuredClone(save)
-      const xpGain = gainCharacterXp(next.character, battle.rewards.characterXp)
+      const awardXp = Math.ceil(battle.rewards.characterXp * BALANCE.combatXpMultiplier)
+      const xpGain = gainCharacterXp(next.character, awardXp)
       next.character = xpGain.character
       if (xpGain.levelsGained > 0) next.eventLog.push(`CharacterLevelGained:${xpGain.levelsGained}`)
+      next.eventLog.push(`CombatXpAwarded:${awardXp}`)
       next.wallet.gold += battle.rewards.gold
       const acquiredAt = nowIso()
       // One claim collects all drops; fungible duplicates share a safe inventory slot.
