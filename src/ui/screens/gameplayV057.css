@@ -147,3 +147,58 @@
 .base-records li{padding:3px 0}
 .base-records li small{display:block;color:#b5c3c0}
 @media(max-width:560px){.terran-base-functions__actions{grid-template-columns:1fr}.terran-base-functions__actions button{min-height:47px;display:flex;justify-content:center}}
+
+
+/* v0.5.9: readable earned-lore chapters and honest reward breakdowns. */
+.base-records__chapter {
+  margin: 8px 0;
+  border: 1px solid #52636a;
+  background: #12232c;
+  color: #e6ddd1;
+}
+.base-records__chapter summary {
+  cursor: pointer;
+  padding: 10px 12px;
+  color: #ead0a0;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.base-records__chapter summary:focus-visible {
+  outline: 2px solid #e3b66b;
+  outline-offset: 2px;
+}
+.base-records__chapter[open] summary {
+  border-bottom: 1px solid #465861;
+  background: #1c3037;
+}
+.base-records__chapter ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 12px 12px 28px;
+}
+.base-records__chapter li strong,
+.base-records__chapter li small { display: block; }
+.base-records__chapter li small {
+  margin-top: 4px;
+  color: #b9c8ca;
+  line-height: 1.45;
+}
+.base-records__chapter > p { padding: 8px 12px; margin: 0; }
+.terran-quest-dialog__reward-list {
+  margin: 8px 0;
+  padding: 10px;
+  border: 1px solid #78633f;
+  background: #1d2a2d;
+  color: #ecd5a7;
+}
+.terran-quest-dialog__reward-list > strong { display: block; margin-bottom: 6px; }
+.terran-quest-dialog__reward-list ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+  color: #dbe0d6;
+  font-size: .75rem;
+  line-height: 1.45;
+}
