@@ -1,4 +1,4 @@
-import { ArrowLeft, Backpack, BookOpen, Compass, DoorOpen, MapPin, Swords, X } from 'lucide-react'
+import { ArrowLeft, Compass, DoorOpen, MapPin, Swords, X } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -8,10 +8,12 @@ import { useGameStore } from '../../state/gameStore'
 import { GameShell } from '../components/GameShell'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { FungalDungeonCanvas } from '../expedition/FungalDungeonCanvas'
+import { ExpeditionStatusHud } from '../expedition/ExpeditionStatusHud'
+import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import { getVisualEquipment } from '../characters/equipmentVisuals'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 
-type Drawer = 'rooms' | 'room' | 'inventory' | 'quests' | null
+type Drawer = 'rooms' | 'room' | 'inventory' | 'character' | 'quests' | null
 const dungeon = content.dungeons.dungeon_fungal_chambers
 
 export function DungeonScene({ unified = false }: { unified?: boolean }) {
@@ -37,7 +39,7 @@ export function DungeonScene({ unified = false }: { unified?: boolean }) {
   const selectedRoom = dungeon.rooms.find((room) => room.id === selectedId)
   const quest = save.quests.vs_astravel_first_contact
   const questDefinition = content.quests.vs_astravel_first_contact
-  const title = drawer === 'room' ? selectedRoom?.name ?? 'Câmaras' : drawer === 'rooms' ? 'Mapa das Salas' : drawer === 'inventory' ? 'Mochila' : 'Missões'
+  const title = drawer === 'room' ? selectedRoom?.name ?? 'Câmaras' : drawer === 'rooms' ? 'Mapa das Salas' : drawer === 'inventory' ? 'Mochila' : drawer === 'character' ? 'Personagem' : 'Missões'
 
   const inspect = (roomId: string) => {
     discoverFungalRoom(roomId)
@@ -65,15 +67,12 @@ export function DungeonScene({ unified = false }: { unified?: boolean }) {
             portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save)} reducedMotion={save.settings.reducedMotion}
             enabled={!scene} onDiscover={discoverFungalRoom} onInspect={inspect}
             onTravelStart={() => { if (drawer === 'room') { setDrawer(null); setSelectedId(null) } }} />
-          <div className="terran-game__hud" aria-label="Ações na dungeon">
-            {([
-              { id: 'rooms' as const, label: 'Salas', icon: Compass },
-              { id: 'inventory' as const, label: 'Mochila', icon: Backpack },
-              { id: 'quests' as const, label: 'Missões', icon: BookOpen },
-            ]).map(({ id, label, icon: Icon }) => <button key={id} type="button"
-              className={drawer === id ? 'active' : ''} aria-label={`Abrir ${label}`} aria-pressed={drawer === id}
-              onClick={() => { setDrawer(drawer === id ? null : id); setSelectedId(null) }}><Icon size={19} /><span>{label}</span></button>)}
-          </div>
+          <ExpeditionStatusHud save={save} selected={drawer}
+            onOpen={(tab) => { setDrawer(drawer === tab ? null : tab); setSelectedId(null) }} />
+          <button type="button" className="expedition-game__route-open"
+            onClick={() => { setDrawer(drawer === 'rooms' ? null : 'rooms'); setSelectedId(null) }}>
+            <Compass size={14} /> Mapa das Salas
+          </button>
           <button type="button" className="expedition-game__retreat" onClick={leave} aria-label="Sair das Câmaras para Astravél">
             <ArrowLeft size={15} /> Astravél
           </button>
@@ -102,6 +101,12 @@ export function DungeonScene({ unified = false }: { unified?: boolean }) {
               </div>)}
             </div>}
             {drawer === 'inventory' && <InventoryPanel save={save} />}
+            {drawer === 'character' && <section className="expedition-field-character" aria-label="Ficha do Terrírian na dungeon">
+              <h3>{save.character.name} · Nível {save.character.level}</h3>
+              <p>Vida {save.vitals.hp}/{deriveCharacterStats(save, content).life.value} · Mana {save.vitals.mp}/{deriveCharacterStats(save, content).mana.value}</p>
+              <dl>{Object.entries(save.character.attributes).map(([name, value]) =>
+                <div key={name}><dt>{name}</dt><dd>d{value.die}{value.bonus ? ` +${value.bonus}` : ''}</dd></div>)}</dl>
+            </section>}
             {drawer === 'quests' && <div className="expedition-route-list">
               <h3>{questDefinition.title}</h3><p>{questDefinition.summary}</p>
               <small>{quest.status.replaceAll('_', ' ').toUpperCase()}</small>
