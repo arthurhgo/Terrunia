@@ -47,7 +47,7 @@ export function getPortalActivities(save: GameSave, catalog: ContentCatalog): Po
       return {
         id, kind: 'hunt' as const, title: encounter.name,
         description: enemies.join(' · '),
-        detail: `+${encounter.rewards.characterXp} XP · +${encounter.rewards.gold} Ouro`,
+        detail: `Nível ${Math.min(...encounter.enemyDefinitionIds.map((id) => catalog.enemies[id].level))}–${Math.max(...encounter.enemyDefinitionIds.map((id) => catalog.enemies[id].level))} · +${encounter.rewards.characterXp} XP · +${encounter.rewards.gold} Ouro`
         unlocked: gate.ok,
         requirement: gate.ok ? 'Caçada repetível disponível.' :
           gate.message,
