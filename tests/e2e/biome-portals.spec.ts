@@ -8,12 +8,13 @@ test('v0.5.10: Portal inicia Cerrado e Elduran, com exploração e combate por r
   await page.goto('/login')
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
   await page.getByPlaceholder('Ex.: Aron').fill('Vela')
-  for (const name of ['Força', 'Força', 'Astúcia', 'Agilidade', 'Vigor', 'Espírito']) {
-    await page.getByRole('button', { name: 'Adicionar ponto de ' + name }).click()
-  }
   await page.getByRole('button', { name: 'Confirmar e continuar' }).click()
   await page.getByRole('button', { name: 'Escolher Espada Longa', exact: true }).press('Enter')
-  await page.getByRole('button', { name: 'Vincular Espada Longa — Grau I', exact: true }).click()
+  await page.getByRole('button', { name: 'Distribuir pontos e vincular Espada Longa', exact: true }).click()
+  for (const attribute of ['Força', 'Força', 'Astúcia', 'Agilidade', 'Vigor', 'Espírito']) {
+    await page.getByRole('button', { name: 'Aumentar ' + attribute }).click()
+  }
+  await page.getByRole('button', { name: 'Confirmar Vínculo de Espada Longa — Grau I', exact: true }).click()
 
   // Fixture: accepted Astravél victory is the only gate precondition. All
   // Portal navigation and combat start below go through actual player controls.

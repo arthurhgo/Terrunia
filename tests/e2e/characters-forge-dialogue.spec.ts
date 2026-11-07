@@ -8,13 +8,14 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
   await page.goto('/login')
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
   await page.getByPlaceholder('Ex.: Aron').fill('Aron')
-  // Allocate all six neutral creation points before entering the prologue.
-  for (const attribute of ['Força', 'Força', 'Astúcia', 'Agilidade', 'Vigor', 'Espírito']) {
-    await page.getByRole('button', { name: `Adicionar ponto de ${attribute}` }).click()
-  }
+  // Os seis pontos são aplicados durante o Vínculo, não na criação.
   await page.getByRole('button', { name: 'Confirmar e continuar' }).click()
   await page.getByRole('button', { name: 'Escolher Espada Longa', exact: true }).press('Enter')
-  await page.getByRole('button', { name: 'Vincular Espada Longa — Grau I', exact: true }).click()
+  await page.getByRole('button', { name: 'Distribuir pontos e vincular Espada Longa', exact: true }).click()
+  for (const attribute of ['Força', 'Força', 'Astúcia', 'Agilidade', 'Vigor', 'Espírito']) {
+    await page.getByRole('button', { name: 'Aumentar ' + attribute }).click()
+  }
+  await page.getByRole('button', { name: 'Confirmar Vínculo de Espada Longa — Grau I', exact: true }).click()
   await page.evaluate(async () => {
     const { useGameStore } = await import('/src/state/gameStore.ts')
     const store = () => useGameStore.getState()
