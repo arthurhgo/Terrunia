@@ -49,24 +49,27 @@ export function TerranCharacterHud({ save, backpackOpen = false, onToggleBackpac
       <h2>PERSONAGEM</h2>
       <div className="terran-character-hud__identity">
         <div className="terran-character-hud__portrait">
-          <EquippedCharacter save={save} sheathed alt={`Personagem equipado: ${character.name}`} />
+          <EquippedCharacter save={save} facing="up" sheathed alt={'Arma guardada nas costas de ' + character.name} />
           <span>LV {character.level}</span>
         </div>
-        <div>
-          <strong>{character.name}</strong>
-          <small>{character.clan.clanId ? content.clans[character.clan.clanId]?.name ?? 'Clã' : 'Sem Clã'} · {character.classProgression.classId ? content.classes[character.classProgression.classId]?.name ?? 'Classe' : 'Sem Classe'}</small>
-          <p><Coins size={13} aria-hidden="true" /> {save.wallet.gold.toLocaleString('pt-BR')} Ouro</p>
+        <div className="terran-character-hud__identity-main">
+          <div className="terran-character-hud__identity-meta">
+            <strong>{character.name}</strong>
+            <small>{character.clan.clanId ? content.clans[character.clan.clanId]?.name ?? 'Clã' : 'Sem Clã'} · {character.classProgression.classId ? content.classes[character.classProgression.classId]?.name ?? 'Classe' : 'Sem Classe'}</small>
+          </div>
+          <section className="terran-character-hud__resource-bars" aria-label="Recursos atuais">
+            <ProgressBar label="Vida" value={save.vitals.hp} max={derived.life.value} tone="health" compact inside />
+            <ProgressBar label="Mana" value={save.vitals.mp} max={derived.mana.value} compact inside />
+            <ProgressBar label="Essência" value={essence.current} max={essence.required} tone="essence" compact inside />
+            <ProgressBar label="XP" value={character.xp} max={character.xpRequired} compact inside />
+          </section>
         </div>
       </div>
+      <div className="terran-character-hud__resource-meta">
+        <span><Coins size={12} aria-hidden="true" /> {save.wallet.gold.toLocaleString('pt-BR')} Ouro</span>
+        <span><Sparkles size={12} aria-hidden="true" /> {essence.essencePoints} ponto(s) de Essência</span>
+      </div>
     </header>
-
-    <section className="terran-character-hud__section" aria-label="Recursos atuais">
-      <ProgressBar label="Vida" value={save.vitals.hp} max={derived.life.value} tone="health" compact />
-      <ProgressBar label="Mana" value={save.vitals.mp} max={derived.mana.value} compact />
-      <ProgressBar label="XP" value={character.xp} max={character.xpRequired} compact />
-      <ProgressBar label="Essência" value={essence.current} max={essence.required} tone="essence" compact />
-      <p className="terran-character-hud__essence"><Sparkles size={13} aria-hidden="true" /> {essence.essencePoints} ponto(s) de Essência</p>
-    </section>
 
     <section className="terran-character-hud__section" aria-label="Cinco equipamentos vinculados">
       <div className="terran-character-hud__section-heading"><Gem size={14} aria-hidden="true" /> VÍNCULOS <span>{equippedCount}/5</span></div>
