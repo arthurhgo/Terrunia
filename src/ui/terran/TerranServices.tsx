@@ -11,7 +11,7 @@ import { PLAYER_HOME_FLAG, SYLWEN_STOCK } from '../../domain/terran/services'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
 import { ProgressBar } from '../components/ProgressBar'
-import { getNpcActionableQuests, getQuestStatusLabel } from '../../domain/quests/questSelectors'
+import { getNpcActionableQuests } from '../../domain/quests/questSelectors'
 import { getDeliverableCount } from '../../domain/quests/questInventory'
 import { isQuestObjectActivityId, questObjectActivities } from '../../domain/terran/questActivities'
 
