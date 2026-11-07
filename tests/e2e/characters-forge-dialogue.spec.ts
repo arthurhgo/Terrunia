@@ -112,6 +112,14 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
   })
   expect(feet.heroPosition).toBe('absolute')
   expect(Math.abs(feet.heroGround - feet.enemyGround)).toBeLessThan(18)
+  // The arena can first await a manual initiative roll: actions only appear
+  // after that phase completes. Test the hotbar in the actual player turn.
+  const initiative = page.getByRole('button', { name: /^Arrastar dado de iniciativa d\\d+ para cima para rolar$/ })
+  if (await initiative.isVisible().catch(() => false)) {
+    await expect(initiative).toBeEnabled({ timeout: 10_000 })
+    await initiative.press('Enter')
+  }
+  await expect(page.getByRole('button', { name: 'ATAQUE', exact: true })).toBeVisible({ timeout: 15_000 })
   const slots = await page.locator('.pixel-battle__command').first().evaluate((button) => {
     const bounds = button.getBoundingClientRect()
     return { width: bounds.width, height: bounds.height }
