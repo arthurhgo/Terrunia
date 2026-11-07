@@ -272,3 +272,19 @@
   .pixel-battle__stat-body {grid-template-columns:64px 1fr;}
   .pixel-battle__roll-choice {min-height:150px;}
 }
+
+/* 0.5.10.2 hotbar: actual 1:1 squares, 8-slot desktop row and 4-slot compact rows. */
+.pixel-battle__commands {grid-template-columns:repeat(8,minmax(0,1fr));grid-auto-rows:auto;align-content:center;gap:4px;}
+.pixel-battle__command,.pixel-battle__command.is-primary {
+  width:100%;height:auto;min-height:0;aspect-ratio:1/1;align-self:center;
+  padding:4px 2px;font-size:clamp(7px,.7vw,10px);
+}
+.pixel-battle__command svg {width:clamp(16px,1.8vw,25px);height:clamp(16px,1.8vw,25px);}
+@media(max-width:1150px){
+ .pixel-battle__commands {grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:auto;}
+ .pixel-battle__command,.pixel-battle__command.is-primary {font-size:9px;}
+}
+@media(max-width:600px){
+ .pixel-battle__commands {grid-template-columns:repeat(4,minmax(0,1fr));}
+ .pixel-battle__command,.pixel-battle__command.is-primary {min-height:0;}
+}

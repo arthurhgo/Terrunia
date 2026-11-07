@@ -104,6 +104,20 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
   await expect(page.getByRole('heading', { name: 'Primeira Presença Fungorra', exact: true })).toBeVisible({ timeout: 20_000 })
   const actor = page.locator('.pixel-battle__hero .equipped-character')
   await expect(actor).toHaveAttribute('data-facing', 'right')
+  const feet = await page.locator('.pixel-battle__arena').evaluate((arena) => {
+    const hero = arena.querySelector('.pixel-battle__hero')!.getBoundingClientRect()
+    const enemy = arena.querySelector('.pixel-battle__enemy')!.getBoundingClientRect()
+    return { heroGround: hero.bottom, enemyGround: enemy.bottom,
+      heroPosition: getComputedStyle(arena.querySelector('.pixel-battle__hero')!).position }
+  })
+  expect(feet.heroPosition).toBe('absolute')
+  expect(Math.abs(feet.heroGround - feet.enemyGround)).toBeLessThan(18)
+  const slots = await page.locator('.pixel-battle__command').first().evaluate((button) => {
+    const bounds = button.getBoundingClientRect()
+    return { width: bounds.width, height: bounds.height }
+  })
+  expect(Math.abs(slots.width - slots.height)).toBeLessThan(3)
+
   await expect(actor).toHaveAttribute('data-weapon-id', 'bound_weapon_long_sword')
   await expect(actor.locator('.equipped-character__layer--weapon')).toHaveAttribute('src', /weapon_long_sword/)
   await expect(page.locator('.world-scene-transition')).toHaveCount(0)
