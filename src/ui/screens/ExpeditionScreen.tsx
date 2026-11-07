@@ -120,7 +120,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
 
   const sceneContent = <div className="terran-game expedition-game">
       <header className="terran-game__topbar">
-        <div><span className="eyebrow">EXPEDIÇÃO · INSTÂNCIA EXTERNA</span><h1>{trail.name}</h1></div>
+        <div><span className="eyebrow">EXPEDIÇÃO · INSTÂNCIA EXTERNA</span><h1>{isAstravel ? 'Astravél' : trail.name}</h1></div>
         <div className="terran-game__readout"><MapPin size={16} /> BIOMA &gt; {activeNode?.label.toUpperCase() ?? 'PERCURSO CONCLUÍDO'}<span>{completed}/{trail.nodes.length - 1} encontros · {sector?.name ?? trail.name}</span></div>
       </header>
       <div className={`terran-game__layout expedition-game__layout ${drawer ? 'has-drawer' : ''}`}>
