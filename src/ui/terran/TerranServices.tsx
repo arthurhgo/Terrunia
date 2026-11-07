@@ -1,4 +1,5 @@
 import { DialogueWindow } from './DialogueWindow'
+import { playerCopy } from '../text/playerCopy'
 import { BedDouble, Check, Coins, HeartPulse, ShoppingBasket, Archive, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react'
 import { content } from '../../content/catalog'
 import { QuestContextNote } from '../quests/QuestContextNote'
@@ -125,7 +126,7 @@ export function SylwenShop({ save }: { save: GameSave }) {
   const buy = useGameStore((state) => state.buyFromSylwen)
   return <section className="terran-shop" aria-label="Balcão de Sylwen">
     <h3><ShoppingBasket size={18} /> Balcão de Sylwen</h3>
-    <p>Alquimia básica · estoque de desenvolvimento (BALANCE_DRAFT)</p>
+    <p>Alquimia básica · tônicos e reagentes.</p>
     <p className="terran-shop__wallet"><Coins size={17} /> {save.wallet.gold} Ouro disponível</p>
     <div className="terran-shop__stock">
       {SYLWEN_STOCK.map(({ itemId, price }) => {
@@ -203,12 +204,12 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded 
         </div>
       })}
     </nav>}
-    {(!onSelectQuest || conversations.length < 2) && <h3>{definition.category === 'secondary' || definition.category === 'bounty' ? '◇ ' : ''}{definition.title}</h3>}
-    {definition.objectives.map((objective) => <p key={objective.id}>{objective.label} · {progress.objectives[objective.id] ?? 0}/{objective.required}</p>)}
+    {(!onSelectQuest || conversations.length < 2) && <h3>{definition.category === 'secondary' || definition.category === 'bounty' ? '◇ ' : ''}{playerCopy(definition.title)}</h3>}
+    {definition.objectives.map((objective) => <p key={objective.id}>{playerCopy(objective.label)} · {progress.objectives[objective.id] ?? 0}/{objective.required}</p>)}
     <QuestContextNote note={definition.contextNote} />
     {rewardPreview.length > 0 && <div className="terran-quest-dialog__reward-list" aria-label="Recompensas da missão">
       <strong>Recompensas ao entregar</strong>
-      <ul>{rewardPreview.map((reward) => <li key={reward.id}>{reward.label}</li>)}</ul>
+      <ul>{rewardPreview.map((reward) => <li key={reward.id}>{playerCopy(reward.label)}</li>)}</ul>
     </div>}
     {definition.turnInItems && <div className="quest-delivery-items">
       {definition.turnInItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />

@@ -5,6 +5,7 @@ import { content } from '../../content/catalog'
 import { getPortalActivities, type PortalActivity } from '../../domain/exploration/portalActivities'
 import { useGameStore } from '../../state/gameStore'
 import { GameShell } from '../components/GameShell'
+import { playerCopy } from '../text/playerCopy'
 import './portalHub.css'
 
 /** VISUAL_DRAFT: direct action buttons, not a separate explorable region.
@@ -27,7 +28,7 @@ export function PortalHubScreen() {
 
   const enter = (activity: PortalActivity) => {
     if (!activity.unlocked) {
-      setMessage(activity.requirement)
+      setMessage(playerCopy(activity.requirement))
       return
     }
     if (activity.kind === 'trail') {
@@ -53,17 +54,17 @@ export function PortalHubScreen() {
       className={`portal-hub__choice portal-hub__choice--${activity.kind}${activity.unlocked ? ' is-open' : ' is-locked'}`}
       disabled={!activity.unlocked}
       onClick={() => enter(activity)}
-      aria-label={`${activity.title} · ${activity.unlocked ? 'Iniciar' : 'Bloqueada: ' + activity.requirement}`}
-      title={activity.unlocked ? `Iniciar ${activity.title}` : activity.requirement}
+      aria-label={`${activity.title} · ${activity.unlocked ? 'Iniciar' : 'Bloqueada: ' + playerCopy(activity.requirement)}`}
+      title={activity.unlocked ? `Iniciar ${activity.title}` : playerCopy(activity.requirement)}
     >
       <span className="portal-hub__choice-symbol" aria-hidden="true">
         {activity.unlocked ? <Icon size={25} /> : <LockKeyhole size={24} />}
       </span>
       <span className="portal-hub__choice-content">
         <strong>{activity.title}</strong>
-        <span>{activity.description}</span>
-        <small>{activity.detail}</small>
-        <em>{activity.unlocked ? 'SELECIONAR E ENTRAR' : activity.requirement}</em>
+        <span>{playerCopy(activity.description)}</span>
+        <small>{playerCopy(activity.detail)}</small>
+        <em>{activity.unlocked ? 'SELECIONAR E ENTRAR' : playerCopy(activity.requirement)}</em>
       </span>
     </button>
   }
