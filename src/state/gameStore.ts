@@ -1,3 +1,4 @@
+import { enterBiomeTrail } from '../domain/exploration/biomeAccess'
 import { BACKPACK_UPGRADES, routeNewItemOverflow } from '../domain/inventory/backpacks'
 import { executeForgeRecipe, executeGoldForgeUpgrade } from '../domain/terran/forge'
 import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmor'
@@ -124,6 +125,7 @@ type GameState = {
   buyFromMarket: (npcId: string, itemId: string, quantity?: number) => void
   recordCutsceneViewed: (sceneId: CutsceneId) => void
   enterAstravel: () => void
+  enterBiome: (biomeId: string) => void
   enterFungalChambers: () => void
   discoverFungalRoom: (roomId: string) => void
   exitFungalChambers: () => void
@@ -688,6 +690,17 @@ export const useGameStore = create<GameState>((set, get) => {
       show('Astravél', 'A presença Fungorra foi localizada no próximo nó.', 'info')
     },
 
+    enterBiome: (biomeId) => {
+      const save = get().save
+      if (!save) return
+      const result = enterBiomeTrail(save, biomeId, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+      const region = content.trails[Object.values(content.trails).find((trail) =>
+        trail.nodes[0].id === result.value.world.currentLocationId)?.id ?? '']
+      show('Expedição', region?.name ?? 'Novo bioma', 'info')
+    },
+
     enterFungalChambers: () => {
       const save = get().save
       if (!save) return
@@ -724,10 +737,11 @@ export const useGameStore = create<GameState>((set, get) => {
     resolveCurrentTrailNode: () => {
       const save = get().save
       if (!save) return
-      const trail = content.trails.trail_astravel_entry
-      const node = getCurrentTrailNode(save, trail)
+      const trail = getTrailByNodeId(content, save.world.currentLocationId)
+      const node = trail ? getCurrentTrailNode(save, trail) : null
       if (!node) return failAction('Não existe uma interação atual na trilha.')
       const now = nowIso()
+      if (!trail) return failAction('Trilha desconhecida.')
       const result = resolveTrailInteraction(save, trail, node.id, content, now)
       if (!result.ok) return failAction(result.message)
       result.value.save.world.currentLocationId = node.id
@@ -744,10 +758,10 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!save) return
       if (save.battle) return failAction('Finalize o encontro atual antes de iniciar outro combate.')
       if (save.vitals.hp <= 0) return failAction('Descanse na Base antes de combater.')
-      const trail = content.trails.trail_astravel_entry
+      const trail = getTrailByNodeId(content, nodeId ?? save.world.currentLocationId)
       const node = nodeId
-        ? trail.nodes.find((candidate) => candidate.id === nodeId)
-        : getActiveTrailNode(save, trail)
+        ? trail?.nodes.find((candidate) => candidate.id === nodeId)
+        : trail ? getActiveTrailNode(save, trail) : null
       const nodeStatus = node ? save.world.trailNodeStates[node.id] : undefined
       const accessible = node?.type === 'boss'
         ? nodeStatus === 'bossCurrent'
@@ -758,13 +772,13 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!['battle', 'boss'].includes(node.type) || !node.encounterId) {
         return failAction('O nó atual não contém um encontro de combate.')
       }
-      if (!trail.nodes.some((candidate) => candidate.id === save.world.currentLocationId)
-        && save.world.currentLocationId !== FUNGAL_DUNGEON_ID) {
-        return failAction('Entre em Astravél pelo Portal antes de iniciar este encontro.')
+      if (!trail || (!trail.nodes.some((candidate) => candidate.id === save.world.currentLocationId)
+        && !(trail.id === 'trail_astravel_entry' && save.world.currentLocationId === FUNGAL_DUNGEON_ID))) {
+        return failAction('Entre na instância correspondente pelo Portal antes de iniciar este encontro.')
       }
       const questGate = checkTrailQuestGate(save, node, content)
       if (!questGate.ok) return failAction(questGate.message)
-      if (node.type === 'boss' && (save.world.currentLocationId !== FUNGAL_DUNGEON_ID
+      if (trail.id === 'trail_astravel_entry' && node.type === 'boss' && (save.world.currentLocationId !== FUNGAL_DUNGEON_ID
         || !save.world.worldFlags.includes(dungeonRoomFlag('fungal_core')))) {
         return failAction('Alcance o Núcleo da Ruína dentro das Câmaras Fúngicas antes de enfrentar o Colosso.')
       }

@@ -1,4 +1,5 @@
 import type { EnemyDefinition } from './types'
+import { biomeEnemyDefinitions } from './biomeExpeditions'
 
 export const enemyDefinitions = [
   {
@@ -178,4 +179,4 @@ export const enemyDefinitions = [
     skillIds: ['skill_blackroot_crush'], aiSkillEveryRounds: 3,
     weaknessTags: ['light', 'fire'], assetId: 'enemy.blackroot-titan', status: 'BALANCE_DRAFT',
   },
-] satisfies EnemyDefinition[]
+  ...biomeEnemyDefinitions] satisfies EnemyDefinition[]

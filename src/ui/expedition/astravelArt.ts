@@ -1,3 +1,4 @@
+import { drawBiomeTerrain, drawBiomeDecoration, drawBiomeBattleMarker } from './biomeArt'
 import { drawActorImage } from '../terran/worldSprites'
 import { drawEquipmentLayer } from '../characters/equipmentCanvas'
 import type { VisualItem } from '../characters/equipmentVisuals'
@@ -36,10 +37,12 @@ function mushroom(ctx: CanvasRenderingContext2D, x: number, y: number, frame: nu
   pixel(ctx, '#e4d4d0', x - 2, y - size - 3, 3, 2)
 }
 
-function landmark(ctx: CanvasRenderingContext2D, node: TrailNodeDefinition, frame: number, status: TrailNodeStatus | undefined) {
+function landmark(ctx: CanvasRenderingContext2D, node: TrailNodeDefinition, frame: number, status: TrailNodeStatus | undefined, region: string) {
   const point = getAstravelPoint(node)
   const { x, y } = point
-  if (node.type === 'entry') {
+  if (region === 'cerrado' || region === 'elduran') {
+    drawBiomeBattleMarker(ctx, region, node)
+  } else if (node.type === 'entry') {
     pixel(ctx, '#263b47', x - 13, y - 25, 26, 25)
     pixel(ctx, '#8a9889', x - 10, y - 24, 20, 19)
     pixel(ctx, '#193a48', x - 6, y - 19, 12, 17)
@@ -83,6 +86,9 @@ export function drawAstravel(
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   ctx.save()
   ctx.translate(-camera.x, -camera.y)
+  if (trail.regionId === 'cerrado' || trail.regionId === 'elduran') {
+    drawBiomeTerrain(ctx, trail.regionId, camera)
+  } else {
   pixel(ctx, '#152f31', 0, 0, ASTRAVEL_WIDTH, ASTRAVEL_HEIGHT)
   for (let y = Math.floor(camera.y / 16) * 16; y < camera.y + ctx.canvas.height; y += 16) {
     for (let x = Math.floor(camera.x / 16) * 16; x < camera.x + ctx.canvas.width; x += 16) {
@@ -100,6 +106,7 @@ export function drawAstravel(
     pixel(ctx, '#32849a', x + 3, y + 2, 7, 3)
     pixel(ctx, '#65b5b1', x + 11, y + 6, 4, 2)
   }
+  }
   const points = trail.nodes.map(getAstravelPoint)
   for (let segment = 1; segment < points.length; segment += 1) {
     const a = points[segment - 1], b = points[segment]
@@ -113,7 +120,8 @@ export function drawAstravel(
     }
   }
   for (const decoration of getAstravelDecorations(trail)) {
-    if (decoration.kind === 'tree') tree(ctx, decoration.x, decoration.y, decoration.rune)
+    if (trail.regionId === 'cerrado' || trail.regionId === 'elduran') drawBiomeDecoration(ctx, trail.regionId, decoration)
+    else if (decoration.kind === 'tree') tree(ctx, decoration.x, decoration.y, decoration.rune)
     else mushroom(ctx, decoration.x, decoration.y, frame)
   }
   for (let i = 0; i < 22; i += 1) {
@@ -122,11 +130,12 @@ export function drawAstravel(
     pixel(ctx, i % 2 ? '#8cd7a1' : '#8abbd2', x, y, 2, 2)
   }
   for (const node of trail.nodes) {
-    landmark(ctx, node, frame, statuses[node.id])
+    landmark(ctx, node, frame, statuses[node.id], trail.regionId)
     const point = getAstravelPoint(node)
     if (node.index > 0) {
-      const sector = getAstravelSector(node.index)
-      pixel(ctx, sector.color, point.x - 14, point.y + 7, 28, 2)
+      const color = trail.regionId === 'astravel' ? getAstravelSector(node.index).color
+        : trail.regionId === 'cerrado' ? '#e6b665' : '#edcc92'
+      pixel(ctx, color, point.x - 14, point.y + 7, 28, 2)
     }
     const enemy = enemySprites[node.id]
     if (enemy?.complete && enemy.naturalWidth && statuses[node.id] !== 'completed') {

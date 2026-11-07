@@ -23,8 +23,8 @@ export const getWorldScene = (save: GameSave, catalog: ContentCatalog): WorldSce
     return { kind: 'dungeon', key: `dungeon:${save.world.currentLocationId}` }
   }
 
-  const isExpedition = catalog.trails.trail_astravel_entry.nodes.some(
-    (node) => node.id === save.world.currentLocationId,
+  const isExpedition = Object.values(catalog.trails).some((trail) =>
+    trail.nodes.some((node) => node.id === save.world.currentLocationId),
   )
   if (isExpedition) {
     return { kind: 'expedition', key: `expedition:${save.world.currentLocationId}` }

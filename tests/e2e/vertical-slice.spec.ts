@@ -42,7 +42,11 @@ test('Astravél: câmera, dois combates, coleta manual de drops e retomada do sa
   await expect(route.locator('.expedition-route-list__item')).toHaveCount(15)
   await page.getByRole('button', { name: 'Fechar painel', exact: true }).click()
   await page.getByRole('button', { name: 'Seguir objetivo' }).click()
-  await page.getByRole('button', { name: 'Enfrentar Fungorro próximo' }).click({ timeout: 20_000 })
+  // A aproximação abre o painel: o combate começa pela ação em primeiro plano.
+  const firstEncounterPanel = page.getByRole('complementary', { name: 'Painel lateral: Presença Fungorra' })
+  await expect(firstEncounterPanel).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByRole('button', { name: 'Enfrentar Fungorro próximo' })).toBeHidden()
+  await firstEncounterPanel.locator('.expedition-node-detail__action').click()
   await expect(page.getByRole('heading', { name: 'Primeira Presença Fungorra', exact: true })).toBeVisible({ timeout: 20_000 })
   await fightAndCollect(page, 1)
   await page.getByRole('button', { name: 'CONTINUAR EXPEDIÇÃO', exact: true }).click()

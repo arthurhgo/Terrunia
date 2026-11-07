@@ -13,6 +13,7 @@ import './portalHub.css'
 export function PortalHubScreen() {
   const save = useGameStore((state) => state.save)
   const enterAstravel = useGameStore((state) => state.enterAstravel)
+  const enterBiome = useGameStore((state) => state.enterBiome)
   const startPortalWaves = useGameStore((state) => state.startPortalWaves)
   const startPortalHunt = useGameStore((state) => state.startPortalHunt)
   const navigate = useNavigate()
@@ -30,12 +31,15 @@ export function PortalHubScreen() {
       setMessage(activity.requirement)
       return
     }
-    if (activity.kind === 'trail') enterAstravel()
+    if (activity.kind === 'trail') {
+      if (activity.id === 'astravel') enterAstravel()
+      else enterBiome(activity.id)
+    }
     else if (activity.kind === 'waves') startPortalWaves()
     else startPortalHunt(activity.id)
 
     const next = useGameStore.getState().save
-    if (next?.battle || next?.world.currentLocationId === 'astravel_entry') {
+    if (next?.battle || Object.values(content.trails).some((trail) => trail.nodes[0].id === next?.world.currentLocationId)) {
       navigate('/play')
       return
     }
@@ -77,7 +81,7 @@ export function PortalHubScreen() {
       </div>
     </header>
     <div className="portal-hub__content">
-      <section className="portal-hub__chapters" aria-label="Progressão da campanha de Astravél">
+      <section className="portal-hub__chapters" aria-label="Progressão da campanha de Terrúnia">
         {chapters.map((chapter) => <div key={chapter.id} className={'portal-hub__chapter portal-hub__chapter--' + chapter.questStatus}>
           <strong>{chapter.title}</strong>
           <span>{chapter.cleared}/{chapter.total} encontros · marcos {chapter.range}</span>

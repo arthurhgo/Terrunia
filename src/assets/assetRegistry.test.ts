@@ -59,7 +59,7 @@ describe('grade pixel art v0.1', () => {
   })
 
   it('mantém todas as imagens pixel art como PNGs reais em resolução nativa', () => {
-    for (const entry of Object.values(assetRegistry).filter((asset) => asset.pixelArt)) {
+    for (const entry of Object.values(assetRegistry).filter((asset) => asset.pixelArt && !asset.draftPlaceholder)) {
       const absolutePath = join(process.cwd(), 'public', entry.path.slice(1))
       expect(existsSync(absolutePath), entry.id).toBe(true)
       const bytes = readFileSync(absolutePath)
@@ -121,7 +121,17 @@ describe('grade pixel art v0.1', () => {
       }
     }
     expect(ids.sort()).toEqual(Object.keys(assetRegistry).filter((id) =>
-      assetRegistry[id].pixelArt && id !== 'character.terririan.map').sort())
+      assetRegistry[id].pixelArt && !assetRegistry[id].draftPlaceholder && id !== 'character.terririan.map').sort())
+  })
+
+  it('reserva IDs editáveis para os novos biomas sem exigir PNG não produzido', () => {
+    const pending = Object.values(assetRegistry).filter((asset) => asset.draftPlaceholder)
+    expect(pending).toHaveLength(17)
+    for (const asset of pending) {
+      expect(asset.pixelArt).toBe(true)
+      expect(asset.fallback).toMatch(/^\/assets\/placeholders\/(enemy|item)\.svg$/)
+      expect(existsSync(join(process.cwd(), 'public', asset.fallback.slice(1)))).toBe(true)
+    }
   })
 
   it('mantém fallback para IDs ainda sem arte', () => {

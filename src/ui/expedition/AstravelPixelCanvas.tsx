@@ -214,9 +214,11 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
     else walkTo(point, null)
   }
 
-  return <div ref={stageRef} className="pixel-city astravel-field" aria-label="Exploração pixelada da Floresta de Astravél">
+  const regionLabel = trail.regionId === 'astravel' ? 'Astravél' : trail.name
+  const encounterCount = trail.nodes.length - 1
+  return <div ref={stageRef} className="pixel-city astravel-field" aria-label={'Exploração pixelada de ' + regionLabel}>
     <canvas ref={canvasRef} width={viewport.width} height={viewport.height} className="pixel-city__canvas"
-      role="img" tabIndex={0} aria-label="Astravél em pixels, vista superior 3/4; caminhe por WASD, setas ou toque" onPointerDown={pointerWalk} />
+      role="img" tabIndex={0} aria-label={regionLabel + ' em pixels, vista superior 3/4; caminhe por WASD, setas ou toque'} onPointerDown={pointerWalk} />
     <div className="astravel-field__nodes">
       {trail.nodes.map((node) => {
         const point = getAstravelPoint(node)
@@ -232,14 +234,14 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
         </button>
       })}
     </div>
-    <div className="astravel-minimap" aria-label="Minimapa de Astravél: 15 encontros conectados">
+    <div className="astravel-minimap" aria-label={'Minimapa de ' + regionLabel + ': ' + encounterCount + ' encontros conectados'}>
       <svg viewBox={`0 0 ${ASTRAVEL_WIDTH} ${ASTRAVEL_HEIGHT}`} role="img" aria-label="Posição do jogador e sequência dos encontros">
         <polyline points={trail.nodes.map((node) => { const point = getAstravelPoint(node); return `${point.x},${point.y}` }).join(' ')} fill="none" stroke="#6d8078" strokeWidth="5" />
         {trail.nodes.map((node) => { const point = getAstravelPoint(node); const status = statuses[node.id]; return <circle key={node.id} cx={point.x} cy={point.y} r={node.type === 'boss' ? 11 : 8}
           fill={status === 'completed' ? '#88c8a4' : ['current', 'bossCurrent'].includes(status ?? '') ? '#f4d38d' : '#475a59'} /> })}
         <rect x={view.x} y={view.y} width={viewport.width} height={viewport.height} fill="none" stroke="#a8c7bc" strokeWidth="3" />
         <circle cx={view.player.x} cy={view.player.y} r="9" fill="#fff2c8" stroke="#162323" strokeWidth="3" />
-      </svg><span>ASTRAVÉL · 15 ENCONTROS</span>
+      </svg><span>{regionLabel.toUpperCase()} · {encounterCount} ENCONTROS</span>
     </div>
     {enabled && trail.nodes.some((node) => ['current', 'bossCurrent'].includes(statuses[node.id] ?? '')) && <button type="button"
       className="astravel-follow" onClick={() => {
@@ -248,7 +250,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
       }}>Seguir objetivo <span>→</span></button>}
     {nearbyActiveBattleId && enabled && <button type="button"
       className="astravel-field__fight-action"
-      aria-label="Enfrentar Fungorro próximo"
+      aria-label={trail.regionId === "astravel" ? "Enfrentar Fungorro próximo" : "Enfrentar criatura próxima"}
       onClick={() => {
         if (engageRef.current(nearbyActiveBattleId)) {
           destinationRef.current = null

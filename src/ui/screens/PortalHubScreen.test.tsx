@@ -63,6 +63,29 @@ describe('Portal de Terran — escolhas diretas por botões', () => {
     expect(screen.getByText('Exploração iniciada')).toBeInTheDocument()
   })
 
+  it('abre Cerrado e Elduran por confirmação explícita, com saves separados por ID', () => {
+    const save = seed()
+    const view1 = view()
+    expect(screen.getByRole('button', { name: /Cerrado Místico · Bloqueada/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /Deserto de Elduran · Bloqueada/ })).toBeDisabled()
+    view1.unmount()
+    save.world.trailNodeStates.astravel_boss_preview = 'completed'
+    useGameStore.setState({ save })
+    const view2 = view()
+    fireEvent.click(screen.getByRole('button', { name: /Cerrado Místico · Iniciar/ }))
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('cerrado_entry')
+    expect(useGameStore.getState().save?.battle).toBeNull()
+    view2.unmount()
+    const resumed = structuredClone(useGameStore.getState().save!)
+    resumed.world.currentLocationId = 'location_terran_portal_plaza'
+    resumed.world.trailNodeStates.cerrado_storm_04 = 'completed'
+    useGameStore.setState({ save: resumed })
+    view()
+    fireEvent.click(screen.getByRole('button', { name: /Deserto de Elduran · Iniciar/ }))
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('elduran_entry')
+    expect(useGameStore.getState().save?.battle).toBeNull()
+  })
+
   it('mantém os novos destinos bloqueados até a entrega dos capítulos principais', () => {
     const save = seed()
     save.world.trailNodeStates.astravel_fungorro_01 = 'completed'

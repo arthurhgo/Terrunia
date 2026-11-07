@@ -1,6 +1,6 @@
 /** v0.5.10 CONTENT_DRAFT: expand by ID, never by image path or implicit locale.
- * Exactly one biome currently has a playable trail. Future entries cannot be entered
- * until the owner approves the progression and a functional scene exists.
+ * Cerrado and Elduran have gameplay slices by owner request. Sequence is provisional
+ * OWNER_DECISION; Glacial and Korduun remain blocked.
  */
 export type BiomeManifest = {
   id: string
@@ -20,13 +20,13 @@ export const biomeRegistry = [
   },
   {
     id: 'biome_cerrado_mistico', name: 'Cerrado Místico',
-    levelMinDraft: 6, levelMaxDraft: 10, trailIds: [],
-    playable: false, stage: 2, status: 'CONTENT_DRAFT',
+    levelMinDraft: 6, levelMaxDraft: 10, trailIds: ['trail_cerrado_mistico'],
+    playable: true, stage: 2, status: 'CONTENT_DRAFT',
   },
   {
     id: 'biome_deserto_elduran', name: 'Deserto de Elduran',
-    levelMinDraft: 10, levelMaxDraft: 14, trailIds: [],
-    playable: false, stage: 3, status: 'CONTENT_DRAFT',
+    levelMinDraft: 10, levelMaxDraft: 14, trailIds: ['trail_deserto_elduran'],
+    playable: true, stage: 3, status: 'CONTENT_DRAFT',
   },
   {
     id: 'biome_deserto_glacial', name: 'Deserto Glacial',

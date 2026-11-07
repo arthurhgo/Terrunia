@@ -18,7 +18,7 @@
 - NPCs: nome maior, função menor, placa mais estreita; números de disponíveis/ativas/entregáveis alinhados abaixo à esquerda. Rosetta, que apresenta orientação e não aceita quests pela placa, não exibe falso contador de oferta.
 - Base: entra diretamente no interior; modal orientativo somente na primeira entrada após desbloqueio. Confirmação grava `base_intro_viewed_v0510` em `worldFlags`, sem migrar schema. Cama, baú e estante continuam interativos.
 - Portal: destinos e atividades na coluna esquerda em desktop; a atividade Astravél usa `enterAstravel` e o marco `astravel_entry` (0), sem inventar mapas navegáveis.
-- `biomeRegistry`: cinco biomas referenciados. Apenas Astravél está jogável; Cerrado Místico, Elduran, Glacial e Korduun são `CONTENT_DRAFT` bloqueados. Ordem pós-Astravél = `OWNER_DECISION`.
+- `biomeRegistry`: cinco biomas referenciados. **Estado anterior à expansão:** apenas Astravél era jogável. A continuação abaixo introduz Cerrado Místico e Elduran; Glacial e Korduun permanecem fechados. Ordem pós-Astravél = `OWNER_DECISION`.
 
 ## Conteúdo preparado, **não ativado** por segurança de canon e save
 
@@ -44,4 +44,19 @@
 - Correção: o rodapé institucional não deve ser montado dentro do `GameShell` imersivo. A cena retém a altura total do viewport e deixa o rodapé somente nas páginas de menu/status.
 - E2E de Terran agora valida posicionamento do canvas e controles nas sete dimensões da lista e salva sete capturas PNG por execução; as evidências são arquivadas no GitHub Actions inclusive quando o teste passa.
 - A captura automatizada NÃO equivale a aprovação estética: inspecionar as sete imagens antes de aprovar a interface.
-- Chance de drops raros, efeitos das runas, outras quatro regiões e dez atlas de animação final permanecem bloqueados ou em produção como `OWNER_DECISION` / `BALANCE_DRAFT` / `CONTENT_DRAFT`.
+- Chance de drops raros, efeitos das runas, Glacial, Korduun e dez atlas de animação final permanecem bloqueados ou em produção como `OWNER_DECISION` / `BALANCE_DRAFT` / `CONTENT_DRAFT`.
+
+## Continuação: dois biomas jogáveis (branch feat/v0510-cerrado-elduran)
+
+**Conteúdo solicitado:** Cerrado Místico e Deserto de Elduran. Cada um recebeu 0 Entrada + 4 encontros progressivos (incluindo uma batalha final), 9 espécies compartilhadas pelos dois biomas e 8 materiais comuns. Os nomes das espécies seguem o documento de biomas de Terrúnia.
+
+- Exploração pixelada: visuais distintos (cactos/vegetação seca no Cerrado; dunas e estruturas soterradas em Elduran), câmera e hitboxes do motor de Astravél.
+- Portal: ações separadas por ID; entrada voluntária sem batalha automática.
+- Combate: máquina de estados existente, com o mesmo fluxo de loot/claim/save, sem novos equipamentos vinculados.
+- Progressão provisória: Colosso de Astravél concluído → Cerrado; chefe da rota do Cerrado concluído → Elduran. **OWNER_DECISION** quanto à ordem e gates finais.
+- Acesso de saves v0.5.9/v0.5.10: os novos nós são inicializados apenas na primeira entrada, sem alterar save schema nem resetar progresso antigo.
+- **BALANCE_DRAFT:** HP, ataque, XP, Ouro, Ressonância, valores de venda/conversão de materiais, níveis e seleção de guardiões finais.
+- **Não ativado:** 25 fontes de drops raros, 13 runas, regiões Glacial e Korduun, novas missões de NPC e sprites finais.
+- Sprites futuros são mapeados por asset IDs; a ausência de PNG usa placeholder.
+
+**QA automatizado:** CI, 98 suítes unitárias, e Playwright 11/11 testes aprovados no commit `9779b24` da expansão. **QA pendente:** inspeção estética manual em desktop/mobile, sprites finais e balanceamento com o proprietário. Integração condicionada à autorização explícita do proprietário.

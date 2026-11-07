@@ -1,3 +1,5 @@
+import { canEnterBiome } from './biomeAccess'
+import { biomeRegistry } from '../../content/biomeRegistry'
 import type { ContentCatalog } from '../../content/catalog'
 import type { GameSave } from '../game/types'
 import { canStartPortalHunt, PORTAL_HUNT_IDS } from '../combat/portalHunts'
@@ -40,6 +42,19 @@ export function getPortalActivities(save: GameSave, catalog: ContentCatalog): Po
         : save.vitals.hp <= 0 ? 'Recupere Vida antes de enfrentar as ondas.'
           : save.battle ? 'Termine o combate atual.' : 'Modo repetível disponível.',
     },
+    ...biomeRegistry.filter((biome) => biome.playable && biome.id !== 'biome_astravel').map((biome) => {
+      const gate = canEnterBiome(save, biome.id, catalog)
+      const trail = catalog.trails[biome.trailIds[0]]
+      const cleared = trail?.nodes.filter((node) =>
+        node.type !== 'entry' && save.world.trailNodeStates[node.id] === 'completed').length ?? 0
+      return {
+        id: biome.id, kind: 'trail' as const, title: biome.name,
+        description: 'Nova expedição · criaturas e cenários do bioma',
+        detail: cleared + '/' + ((trail?.nodes.length ?? 1) - 1) + ' encontros concluídos · CONTENT_DRAFT',
+        unlocked: gate.ok,
+        requirement: gate.ok ? 'Entrada disponível no Portal.' : gate.message,
+      }
+    }),
     ...PORTAL_HUNT_IDS.map((id) => {
       const encounter = catalog.encounters[id]
       const gate = canStartPortalHunt(save, id, catalog)

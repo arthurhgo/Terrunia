@@ -25,7 +25,7 @@ describe('v0.5.10 content integration and canon guards', () => {
   })
   it('covers all existing enemies with native animation or species-specific fallback', () => {
     const monsters = Object.values(content.enemies)
-    expect(monsters).toHaveLength(14)
+    expect(monsters).toHaveLength(23)
     const native = monsters.filter((enemy) => Boolean(resolveAsset(enemy.assetId).motionSheet))
     expect(native).toHaveLength(4)
     for (const enemy of monsters) {
@@ -35,7 +35,7 @@ describe('v0.5.10 content integration and canon guards', () => {
   })
   it('keeps biomes, chance tables and rune effects non-canonical until approved', () => {
     expect(biomeRegistry).toHaveLength(5)
-    expect(biomeRegistry.filter((biome) => biome.playable)).toHaveLength(1)
+    expect(biomeRegistry.filter((biome) => biome.playable)).toHaveLength(3)
     expect(rareDropDrafts).toHaveLength(25)
     expect(getLiveRareDrops()).toHaveLength(0)
     for (const drop of rareDropDrafts) {

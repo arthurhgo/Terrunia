@@ -1,3 +1,4 @@
+import { biomeMaterialDefinitions, biomeEnemyDefinitions } from '../content/biomeExpeditions'
 import type { BoundSlot } from '../domain/shared/types'
 import { visualEquipmentCatalog } from '../content/visualEquipment'
 import { gemComponentDefinitions } from '../content/gems'
@@ -9,6 +10,8 @@ export type AssetEntry = {
   fallback: string
   alt: string
   pixelArt?: boolean
+  /** Visual draft awaiting creator-supplied PNG; valid fallback is mandatory. */
+  draftPlaceholder?: true
   /** Optional 4×4 native pixel-animation sheet, 32px per frame (UI only). */
   motionSheet?: {
     path: string
@@ -23,6 +26,14 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
+  ...biomeMaterialDefinitions.map((item) => ({
+    id: item.iconAssetId, path: '/assets/items/biomes/' + item.id + '.png',
+    fallback: '/assets/placeholders/item.svg', alt: item.name, pixelArt: true, draftPlaceholder: true,
+  })),
+  ...biomeEnemyDefinitions.map((enemy) => ({
+    id: enemy.assetId, path: '/assets/enemies/biomes/' + enemy.assetId.slice(6) + '.png',
+    fallback: '/assets/placeholders/enemy.svg', alt: enemy.name, pixelArt: true, draftPlaceholder: true,
+  })),
   {
     id: 'item.daeryn-home-key', path: '/assets/items/item_daeryn_home_key.png',
     fallback: '/assets/placeholders/item.svg', alt: 'Chave de Daeryn', pixelArt: true,

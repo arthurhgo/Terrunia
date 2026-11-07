@@ -1,4 +1,5 @@
 import { astravelEncounterDefinitions } from './astravel'
+import { biomeEncounterDefinitions } from './biomeExpeditions'
 import type {
   CombatSkillDefinition,
   EncounterDefinition,
@@ -249,7 +250,7 @@ export const statusEffectDefinitions = [
 ] satisfies StatusEffectDefinition[]
 
 export const encounterDefinitions = [
-  ...astravelEncounterDefinitions,
+  ...astravelEncounterDefinitions, ...biomeEncounterDefinitions,
   {
     id: 'encounter_portal_luminous_nest',
     name: 'Ninho Luminescente',
