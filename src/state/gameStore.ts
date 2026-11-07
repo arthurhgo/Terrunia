@@ -334,8 +334,16 @@ export const useGameStore = create<GameState>((set, get) => {
       const result = adjustCharacterAttribute(save, attributeId, direction, nowIso())
       if (!result.ok) return failAction(result.message)
       const stats = deriveCharacterStats(result.value, content)
-      result.value.vitals.hp = Math.min(result.value.vitals.hp, stats.life.value)
-      result.value.vitals.mp = Math.min(result.value.vitals.mp, stats.mana.value)
+      // During the initial bond setup, newly allocated Vigor/Espírito must not
+      // leave a fresh character injured or depleted before their first battle.
+      // Normal progression after the bond keeps the existing clamp behavior.
+      if (!save.character.bondedEquipment.weapon) {
+        result.value.vitals.hp = stats.life.value
+        result.value.vitals.mp = stats.mana.value
+      } else {
+        result.value.vitals.hp = Math.min(result.value.vitals.hp, stats.life.value)
+        result.value.vitals.mp = Math.min(result.value.vitals.mp, stats.mana.value)
+      }
       commit(result.value)
     },
 

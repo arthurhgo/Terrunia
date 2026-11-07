@@ -6,42 +6,32 @@ import { CharacterCreationScreen } from './CharacterCreationScreen'
 
 afterEach(() => { cleanup(); useGameStore.getState().resetSession(); vi.restoreAllMocks() })
 
-describe('criação com pontos individuais', () => {
-  it('investe um ponto por clique, d4+1 antes de d6, sem conceder build pronta', async () => {
+describe('criação: a distribuição pertence ao primeiro Vínculo', () => {
+  it('permite criar o Terrírian sem atribuir pontos', async () => {
     const createGame = vi.fn(async () => false)
     useGameStore.setState({ save: null, createGame })
     render(<MemoryRouter><CharacterCreationScreen /></MemoryRouter>)
-    const plus = (name: string) => screen.getByRole('button', { name: 'Adicionar ponto de ' + name })
-    const die = (name: string) => screen.getByLabelText('Dado de ' + name)
-    const continueButton = screen.getByRole('button', { name: /Confirmar e continuar/ })
+    const submit = screen.getByRole('button', { name: /Confirmar e continuar/ })
+    expect(submit).toBeDisabled()
+    expect(screen.queryByRole('button', { name: /Adicionar ponto/ })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Distribuir atributos na criação')).not.toBeInTheDocument()
     fireEvent.change(screen.getByPlaceholderText('Ex.: Aron'), { target: { value: 'Aron' } })
-    expect(continueButton).toBeDisabled()
-    expect(die('Força')).toHaveTextContent('d4')
-    fireEvent.click(plus('Força'))
-    expect(die('Força')).toHaveTextContent('d4 + 1')
-    fireEvent.click(plus('Força'))
-    expect(die('Força')).toHaveTextContent('d6')
-    for (const name of ['Astúcia', 'Agilidade', 'Vigor', 'Espírito']) fireEvent.click(plus(name))
-    expect(continueButton).toBeEnabled()
-    fireEvent.click(continueButton)
+    expect(submit).toBeEnabled()
+    fireEvent.click(submit)
     await waitFor(() => expect(createGame).toHaveBeenCalledWith('Aron', 'character.terririan.default',
-      expect.objectContaining({ presentation: expect.any(String) }),
-      { cunning: 1, agility: 1, strength: 2, vigor: 1, spirit: 1 }))
+      expect.objectContaining({ presentation: expect.any(String) })))
+    expect(createGame.mock.calls[0]).toHaveLength(3)
   })
 
-  it('recupera exatamente um ponto e bloqueia ultrapassar os seis pontos iniciais', () => {
-    useGameStore.setState({ save: null })
+  it('preserva personalização de aparência sem criar build inicial', async () => {
+    const createGame = vi.fn(async () => false)
+    useGameStore.setState({ save: null, createGame })
     render(<MemoryRouter><CharacterCreationScreen /></MemoryRouter>)
-    const strength = screen.getByRole('button', { name: 'Adicionar ponto de Força' })
-    const subtract = screen.getByRole('button', { name: 'Retirar ponto de Força' })
-    expect(subtract).toBeDisabled()
-    fireEvent.click(strength)
-    fireEvent.click(strength)
-    fireEvent.click(subtract)
-    expect(screen.getByLabelText('Dado de Força')).toHaveTextContent('d4 + 1')
-    for (const name of ['Astúcia', 'Agilidade', 'Vigor', 'Espírito']) fireEvent.click(screen.getByRole('button', { name: 'Adicionar ponto de ' + name }))
-    fireEvent.click(strength)
-    expect(screen.getByText(/0 pontos restantes/)).toBeInTheDocument()
-    expect(strength).toBeDisabled()
+    fireEvent.change(screen.getByPlaceholderText('Ex.: Aron'), { target: { value: 'Lysa' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Costas' }))
+    expect(screen.getByRole('button', { name: 'Costas' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(screen.getByRole('button', { name: /Confirmar e continuar/ }))
+    await waitFor(() => expect(createGame).toHaveBeenCalledOnce())
+    expect(createGame.mock.calls[0][0]).toBe('Lysa')
   })
 })
