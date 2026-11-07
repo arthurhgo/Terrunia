@@ -1,7 +1,8 @@
 import { content } from '../../content/catalog'
 import type { TerranNpcPresence } from '../../content/types'
 import { useGameStore } from '../../state/gameStore'
-import { getNpcQuestCounts } from '../../domain/quests/questSelectors'
+import { getNpcQuestCounts, type NpcWorldMarker, type NpcMarkerPhase } from '../../domain/quests/questSelectors'
+import { NpcMarker } from './NpcMarker'
 import './npcNameplate.css'
 
 /** Labels use existing catalog/presence fields, never invented character lore. */
@@ -13,7 +14,7 @@ export function getNpcSubtitle(presence: TerranNpcPresence): string {
 }
 
 /** Display-only label; interaction and identity continue to use the NPC presence ID. */
-export function NpcNameplate({ presence }: { presence: TerranNpcPresence }) {
+export function NpcNameplate({ presence, marker, markerPhase }: { presence: TerranNpcPresence; marker?: NpcWorldMarker; markerPhase?: NpcMarkerPhase }) {
   const subtitle = getNpcSubtitle(presence)
   const save = useGameStore((state) => state.save)
   // Rosetta is the tutorial guide, not a quest acceptance terminal.
@@ -23,7 +24,10 @@ export function NpcNameplate({ presence }: { presence: TerranNpcPresence }) {
   const hasQuests = totals && (totals.available + totals.active + totals.ready > 0)
   return <span className="npc-nameplate" aria-hidden="true" data-npc-title={subtitle}
     title={subtitle ? `${presence.label} · ${subtitle}` : presence.label}>
-    <strong className="npc-nameplate__name">{presence.label}</strong>
+    <span className="npc-nameplate__heading">
+      {marker && <NpcMarker state={marker} phase={markerPhase} />}
+      <strong className="npc-nameplate__name">{presence.label}</strong>
+    </span>
     {subtitle && <small className="npc-nameplate__subtitle">{subtitle}</small>}
     {hasQuests && <span className="npc-nameplate__quest-counts" title={`${totals.available} disponíveis, ${totals.active} em andamento, ${totals.ready} para entregar`}>
       {totals.available > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--available" title={`${totals.available} disponíveis`}>{totals.available}</small>}
