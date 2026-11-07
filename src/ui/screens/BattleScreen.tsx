@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Backpack, Bomb, Crosshair, Footprints, Gem, ScrollText, Shield, Swords, Zap } from 'lucide-react'
+import { Backpack, Bomb, BookOpen, Crosshair, Gem, ScrollText, Shield, Sparkles, Swords, Zap } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
@@ -25,7 +25,7 @@ import './battleTimeline.css'
 import './battleCinematic.css'
 import './gameplayV057.css'
 
-type Menu = 'combat' | 'defense' | 'items' | 'throwables' | 'runes' | 'essences' | null
+type Menu = 'skills' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
 
 export function BattleScene({ unified = false }: { unified?: boolean }) {
@@ -43,6 +43,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const player = battle?.combatants.combatant_player
   const [targetId, setTargetId] = useState('')
   const [menu, setMenu] = useState<Menu>(null)
+  const [rollReturnMenu, setRollReturnMenu] = useState<Menu>(null)
+  const [confirmDefense, setConfirmDefense] = useState(false)
   const [selectedConsumableId, setSelectedConsumableId] = useState('')
   const [hit, setHit] = useState<'player' | 'enemy' | null>(null)
   const [turnCue, setTurnCue] = useState(false)
@@ -79,6 +81,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }, [enemies, targetId])
   useEffect(() => {
     setMenu(null)
+    setConfirmDefense(false)
+    setRollReturnMenu(null)
     setActiveDice(null)
     setStagedHp(null)
     setInitiativePreview(null)
@@ -285,10 +289,28 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     setDiceAwaitingClick(false)
     scheduleRollStep()
   }
+  // The domain preview has NOT been committed while the player's die is awaiting
+  // input. Canceling must discard the preview atomically, not spend MP or a turn.
+  const cancelPendingRoll = () => {
+    if (!diceAwaitingClick || !pendingRollsRef.current) return
+    if (previewTimer.current !== null) window.clearTimeout(previewTimer.current)
+    previewTimer.current = null
+    pendingRollsRef.current = null
+    setActiveDice(null)
+    setDiceQueue([])
+    setStagedHp(null)
+    setInitiativePreview(null)
+    setImpactEventId(null)
+    setDiceAwaitingClick(false)
+    setResolvingRolls(false)
+    setMenu(rollReturnMenu)
+  }
   const send = (command: Parameters<typeof submit>[0]) => {
     const initiative = command.type === 'rollInitiative'
     if (initiative ? battle.phase !== 'AwaitingInitiative' || !initiativeReady || Boolean(roundCurtain) : !isPlayerTurn) return
+    setRollReturnMenu(menu)
     setMenu(null)
+    setConfirmDefense(false)
     const preview = previewBattleCommand(battle, command, content, save.inventory)
     if (!preview.ok) { submit(command); return }
 
@@ -334,7 +356,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     }
     if (!requireClick) scheduleRollStep()
   }
-  const openMenu = (next: Menu) => setMenu(menu === next ? null : next)
+  const openMenu = (next: Menu) => {
+    setConfirmDefense(false)
+    setMenu(menu === next ? null : next)
+  }
   const end = (toCity: boolean) => {
     if (toCity) returnToTerran()
     else finishBattleIntoExpedition()
@@ -342,7 +367,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }
   const button = (label: string, icon: React.ReactNode, onClick: () => void, disabled = false, selected = false) => (
     <button key={label} type="button"
-      className={`pixel-battle__command ${label.startsWith('ATAQUE') ? 'is-primary' : ''} ${selected ? 'is-selected' : ''}`}
+      className={`pixel-battle__command ${label === 'ATAQUE' ? 'is-primary' : ''} ${selected ? 'is-selected' : ''}`}
       disabled={disabled} aria-disabled={disabled} title={disabled ? `${label}: ação indisponível` : label}
       onClick={onClick}>
       {icon}<span>{label}</span>
@@ -443,18 +468,20 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           <CharacterPortrait appearance={save.character.appearance} portraitAssetId={save.character.portraitAssetId} alt="" className="pixel-battle__portrait" />
           <div>
             <strong>{player.name}</strong>
-            <label>VIDA <span>{visualHp(player.id)} / {player.maxHp}</span></label>
-            <div className="pixel-battle__meter hp"><i style={{ width: clampPercent(visualHp(player.id), player.maxHp) + '%' }} /></div>
-            <label>MANA <span>{player.mp} / {player.maxMp}</span></label>
-            <div className="pixel-battle__meter mp"><i style={{ width: clampPercent(player.mp, player.maxMp) + '%' }} /></div>
+            <div className="pixel-battle__meter hp" role="progressbar" aria-label="Vida" aria-valuenow={visualHp(player.id)} aria-valuemin={0} aria-valuemax={player.maxHp}><i style={{ width: clampPercent(visualHp(player.id), player.maxHp) + '%' }} /><span>VIDA {visualHp(player.id)} / {player.maxHp}</span></div>
+            <div className="pixel-battle__meter mp" role="progressbar" aria-label="Mana" aria-valuenow={player.mp} aria-valuemin={0} aria-valuemax={player.maxMp}><i style={{ width: clampPercent(player.mp, player.maxMp) + '%' }} /><span>MANA {player.mp} / {player.maxMp}</span></div>
           </div>
         </div>
         <BattleEquipmentHud save={save} />
       </section>
       <section className="pixel-battle__panel pixel-battle__actions" aria-label="Ações de combate" data-turn-gate={actionGate}>
         <h2>{diceAwaitingClick ? 'LANCE SEU DADO' : battle.phase === 'AwaitingInitiative' ? 'ROLAGEM DE INICIATIVA' : battle.phase === 'AwaitingAction' ? 'ESCOLHA SUA AÇÃO' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'COMBATE'}</h2>
-        {diceAwaitingClick && activeDice && <DraggableBattleDie key={activeDice.id} sides={activeDice.sides}
-          onThrow={releasePlayerDie} ariaLabel={`Arrastar dado d${activeDice.sides} para cima para rolar`} />}
+        {diceAwaitingClick && activeDice && <div className="pixel-battle__roll-choice">
+          <DraggableBattleDie key={activeDice.id} sides={activeDice.sides}
+            onThrow={releasePlayerDie} ariaLabel={`Arrastar dado d${activeDice.sides} para cima para rolar`} />
+          <button type="button" className="pixel-battle__roll-back" onClick={cancelPendingRoll}
+            aria-label="Voltar antes de lançar o dado">VOLTAR</button>
+        </div>}
         {battle.phase === 'AwaitingInitiative' ? <div className="pixel-battle__initiative" aria-label="Preparar rolagem de iniciativa">
           <strong>{initiativeReady ? 'ROLAGEM DE INICIATIVA' : 'TURNO ' + battle.round}</strong>
           <DraggableBattleDie sides={player.initiativeDie ?? 4}
@@ -462,38 +489,38 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             onThrow={() => send({ type: 'rollInitiative' })} />
           <small>Seu dado de Agilidade define a ordem junto à iniciativa-base. Monstros rolam automaticamente.</small>
         </div> : battle.phase === 'AwaitingAction' ? <>
-          <div className="pixel-battle__commands">
-            {button('ATAQUE · MAGIAS · HABILIDADES', <Swords />, () => openMenu('combat'),
-              !isPlayerTurn || !target.alive, menu === 'combat')}
-            {button('ARREMESSÁVEIS', <Bomb />, () => openMenu('throwables'),
-              !isPlayerTurn || !hasUsefulSupplies('throwable'), menu === 'throwables')}
-            {button('RUNAS', <Gem />, () => openMenu('runes'),
-              !isPlayerTurn || !hasUsefulSupplies('rune'), menu === 'runes')}
-            {button('ESSÊNCIAS', <Zap />, () => openMenu('essences'),
-              !isPlayerTurn || !hasUsefulSupplies('essence'), menu === 'essences')}
-            {button('ITENS / POÇÕES', <Backpack />, () => openMenu('items'),
-              !isPlayerTurn || !hasUsableConsumable, menu === 'items')}
-            {button('DEFENDER', <Shield />, () => send({ type: 'defend' }), !isPlayerTurn)}
-            {/* The domain explicitly returns FLEE_NOT_IMPLEMENTED; never display it as actionable. */}
-            {button('FUGIR', <Footprints />, () => {}, true)}
+          <div className="pixel-battle__commands" aria-label="Barra de ações">
+            {button('ATAQUE', <Swords />, () => send({ type: 'attack', targetId: target.id }), !isPlayerTurn || !target.alive)}
+            {button('HABILIDADES', <BookOpen />, () => openMenu('skills'), !isPlayerTurn || skills.filter((skill) => !isMagicSkill(skill.id)).length === 0, menu === 'skills')}
+            {button('MAGIAS', <Sparkles />, () => openMenu('magic'), !isPlayerTurn || skills.filter((skill) => isMagicSkill(skill.id)).length === 0, menu === 'magic')}
+            {button('DEFENDER', <Shield />, () => { setConfirmDefense(true); setMenu(null) }, !isPlayerTurn, confirmDefense)}
+            {button('POÇÕES', <Backpack />, () => openMenu('items'), !isPlayerTurn || !hasUsableConsumable, menu === 'items')}
+            {button('ARREMESSÁVEIS', <Bomb />, () => openMenu('throwables'), !isPlayerTurn || !hasUsefulSupplies('throwable'), menu === 'throwables')}
+            {button('RUNAS', <Gem />, () => openMenu('runes'), !isPlayerTurn || !hasUsefulSupplies('rune'), menu === 'runes')}
+            {button('ESSÊNCIAS', <Zap />, () => openMenu('essences'), !isPlayerTurn || !hasUsefulSupplies('essence'), menu === 'essences')}
           </div>
+          {confirmDefense && <div className="pixel-battle__submenu pixel-battle__submenu--confirm" role="group" aria-label="Confirmar defesa">
+            <strong>DEFESA · próximo turno</strong>
+            <button type="button" onClick={() => setConfirmDefense(false)} aria-label="Voltar sem defender">VOLTAR</button>
+            <button type="button" onClick={() => send({ type: 'defend' })}>CONFIRMAR DEFESA</button>
+          </div>}
           {menu && <div className="pixel-battle__submenu">
             <button type="button" aria-label="Voltar sem executar a ação" onClick={() => setMenu(null)}>VOLTAR</button>
-            {menu === 'combat' && <>
-              <strong className="pixel-battle__submenu-heading">ATAQUE · MAGIAS · HABILIDADES</strong>
-              <button type="button" disabled={!isPlayerTurn || !target.alive}
-                onClick={() => send({ type: 'attack', targetId: target.id })}><Swords size={17} /> ATAQUE BÁSICO · 0 MP</button>
-              {skills.map((skill) => {
+            {(menu === 'skills' || menu === 'magic') && <>
+              <strong className="pixel-battle__submenu-heading">{menu === 'magic' ? 'MAGIAS' : 'HABILIDADES'}</strong>
+              <div className="pixel-battle__skill-grid">
+              {skills.filter((skill) => menu === 'magic' ? isMagicSkill(skill.id) : !isMagicSkill(skill.id)).map((skill) => {
                 const remaining = player.skillCooldowns?.[skill.id] ?? 0
-                return <button key={skill.id}
+                return <button key={skill.id} className="pixel-battle__skill" type="button"
                   disabled={!isPlayerTurn || remaining > 0 || player.mp < skill.mpCost || (skill.target === 'enemy' && !target.alive)}
-                  title={remaining > 0 ? `${skill.name}: ${remaining} turno(s) para reutilizar` : `${skill.name}: ${skill.mpCost} MP, recarga ${skill.cooldownTurns ?? 0} turno(s)`}
+                  title={remaining > 0 ? `${skill.name}: recarga ${remaining}` : `${skill.name}: ${skill.mpCost} MP`}
+                  aria-label={`Usar ${skill.name}`}
                   onClick={() => send({ type: 'skill', skillId: skill.id, targetId: skill.target === 'self' ? player.id : target.id })}>
-                  {isMagicSkill(skill.id) ? 'MAGIA' : 'HABILIDADE'} · {skill.name} · {skill.mpCost} MP ·
-                  {remaining > 0 ? ` Recarga: ${remaining} turno(s)` : ` d+${skill.damageDieSteps ?? 0} · recarga ${skill.cooldownTurns ?? 0}`}
+                  {isMagicSkill(skill.id) ? <Sparkles size={22} /> : <Swords size={22} />}
+                  <span>{skill.name}</span><small>{remaining > 0 ? `${remaining}T` : `${skill.mpCost} MP`}</small>
                 </button>
               })}
-              {skills.length === 0 && <small>Habilidades e magias serão liberadas pela progressão e pelo Vínculo.</small>}
+              </div>
             </>}
             {menu === 'items' ? consumables.length ? <><select aria-label="Selecionar consumível" value={selectedItem?.instanceId ?? ''}
               onChange={(event) => setSelectedConsumableId(event.target.value)}>
@@ -533,8 +560,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           {battle.log.slice(-8).map((entry) => <p key={entry.id}>R{entry.round} · {entry.message}</p>)}
         </div> : <div className="pixel-battle__target-info">
           <AssetImage assetId={content.enemies[target.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} alt="" />
-          <div><strong>{target.name}</strong><span>{visualHp(target.id)} / {target.maxHp} PV</span>
-            <div className="pixel-battle__meter hp"><i style={{ width: clampPercent(visualHp(target.id), target.maxHp) + '%' }} /></div></div>
+          <div><strong>{target.name}</strong>
+            <div className="pixel-battle__meter hp" role="progressbar" aria-label="Vida do alvo" aria-valuenow={visualHp(target.id)} aria-valuemin={0} aria-valuemax={target.maxHp}><i style={{ width: clampPercent(visualHp(target.id), target.maxHp) + '%' }} /><span>VIDA {visualHp(target.id)} / {target.maxHp}</span></div></div>
         </div>}
         <p className="pixel-battle__hint"><Crosshair size={14} /> {battle.phase === 'Victory' ? 'Recolha tudo de uma vez e continue.' : battle.phase === 'Defeat' ? 'A expedição foi interrompida.' : 'Selecione um inimigo e escolha sua ação.'}</p>
       </section>
