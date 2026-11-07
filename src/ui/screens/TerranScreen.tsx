@@ -112,6 +112,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [rosettaOpen, setRosettaOpen] = useState(false)
   const [rosettaPathsPinned, setRosettaPathsPinned] = useState(false)
   const [backpackOpen, setBackpackOpen] = useState(false)
+  const [leftPanelOpen, setLeftPanelOpen] = useState(false)
+  const [rightPanelOpen, setRightPanelOpen] = useState(false)
   const [dialogue, setDialogue] = useState<Presence | null>(null)
   const [localQuestId, setLocalQuestId] = useState<string | null>(null)
   const [marketNpc, setMarketNpc] = useState<Presence | null>(null)
@@ -283,7 +285,13 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
           </div>}
         </header>
         <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
-          <div className="terran-game__frame" data-testid="terran-centered-gameplay">
+          <div className={`terran-game__frame ${leftPanelOpen ? 'is-left-open' : ''} ${rightPanelOpen ? 'is-right-open' : ''}`} data-testid="terran-centered-gameplay">
+          <button type="button" className="terran-game__panel-switch terran-game__panel-switch--left"
+            aria-label="Abrir ou fechar aba de missões" aria-expanded={leftPanelOpen}
+            onClick={() => { setLeftPanelOpen((open) => !open); setRightPanelOpen(false) }}>Missões</button>
+          <button type="button" className="terran-game__panel-switch terran-game__panel-switch--right"
+            aria-label="Abrir ou fechar aba de status" aria-expanded={rightPanelOpen}
+            onClick={() => { setRightPanelOpen((open) => !open); setLeftPanelOpen(false) }}>Status</button>
           <aside className="terran-game__fixed-left" aria-label="Diário de missões">
             <TerranQuickJournal save={save} />
           </aside>

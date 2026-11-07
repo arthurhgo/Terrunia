@@ -18,6 +18,7 @@ export function PrologueScreen() {
   const bindWeapon = useGameStore((state) => state.bindPrologueWeapon)
   const navigate = useNavigate()
   const [selectedWeaponId, setSelectedWeaponId] = useState<string | null>(null)
+  const [allocating, setAllocating] = useState(false)
 
   if (!save) return <Navigate to="/character/create" replace />
   if (save.character.bondedEquipment.weapon) return <Navigate to="/terran" replace />
@@ -27,7 +28,9 @@ export function PrologueScreen() {
   const preview = selectedWeapon ? deriveWeaponPreview(save, content, selectedWeapon) : null
 
   const complete = () => {
-    if (!selectedWeapon || !eligibility?.eligible) return
+    if (!selectedWeapon) return
+    if (!allocating) { setAllocating(true); return }
+    if (!eligibility?.eligible || save.character.unspentAttributePoints > 0) return
     if (bindWeapon(selectedWeapon.id)) navigate('/terran')
   }
 
@@ -36,14 +39,15 @@ export function PrologueScreen() {
     <section className="prologue-copy">
       <p className="eyebrow">PRÓLOGO · TERRÚNIA</p>
       <h1>O primeiro Vínculo</h1>
-      <p>Seus pontos iniciais foram distribuídos na criação. Reveja-os individualmente se necessário; dois pontos no mesmo atributo elevam o dado.</p>
-      <AttributeAllocator save={save} compact layout="vertical" />
+      <p>Escolha sua arma. Ao iniciar o Vínculo, distribua os seis pontos de atributo para atender aos requisitos da arma e definir sua fundação.</p>
+      {allocating ? <AttributeAllocator save={save} compact layout="vertical" /> :
+        <p className="prologue-allocation-hint">Os {save.character.unspentAttributePoints} pontos iniciais permanecem livres até você escolher vincular uma arma.</p>}
     </section>
 
     <ArcanePanel title="Escolha da Arma Vinculada"
       subtitle="Sete arquétipos · todos alcançáveis com os seis pontos iniciais"
       className="prologue-bindings prologue-arsenal">
-      <WeaponGallery save={save} selectedId={selectedWeaponId} onSelect={setSelectedWeaponId} />
+      <WeaponGallery save={save} selectedId={selectedWeaponId} onSelect={(id) => { setSelectedWeaponId(id); setAllocating(false) }} />
       <div className="prologue-choice-summary">
         <BoundWeaponCharacterPreview save={save}
           weapon={selectedWeapon ? { id: selectedWeapon.id, name: selectedWeapon.name, assetId: selectedWeapon.assetIdByGrade[1] ?? '' } : null} />
@@ -70,11 +74,14 @@ export function PrologueScreen() {
         <span>{eligibility?.eligible ? 'Requisitos atendidos' : 'Arma disponível: ajuste os atributos individualmente para cumprir os requisitos.'}</span>
 
       </div>}
-      <GameButton variant="primary" full onClick={complete} disabled={!selectedWeapon || !eligibility?.eligible}>
-        {selectedWeapon && eligibility?.eligible ? <Waypoints size={18} /> : <LockKeyhole size={18} />}
-        {!selectedWeapon ? 'Selecione uma arma' : eligibility?.eligible
-          ? `Vincular ${selectedWeapon.name} — Grau I`
-          : 'Atributos insuficientes para o Vínculo'}
+      <GameButton variant="primary" full onClick={complete} disabled={!selectedWeapon || (allocating && (!eligibility?.eligible || save.character.unspentAttributePoints > 0))}>
+        {selectedWeapon && (!allocating || (eligibility?.eligible && save.character.unspentAttributePoints === 0)) ? <Waypoints size={18} /> : <LockKeyhole size={18} />}
+        {!selectedWeapon ? 'Selecione uma arma' : !allocating
+          ? `Distribuir pontos e vincular ${selectedWeapon.name}`
+          : save.character.unspentAttributePoints > 0
+            ? `Distribua ${save.character.unspentAttributePoints} ponto(s) restantes`
+            : eligibility?.eligible ? `Confirmar Vínculo de ${selectedWeapon.name} — Grau I`
+              : 'Atributos insuficientes para o Vínculo'}
       </GameButton>
     </ArcanePanel>
   </main>

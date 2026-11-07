@@ -83,7 +83,7 @@
   position: relative; min-width: 0; height: 54px; padding: 2px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
   border: 1px solid #445762; color: #b8c3c5; background: radial-gradient(ellipse,#18313a,#090d15 80%);
-  cursor: pointer; animation: weapon-bob 3.5s ease-in-out infinite;
+  cursor: pointer; animation: none; /* Stable hitbox; only sprite floats. */
   transition: border-color .15s,box-shadow .15s;
 }
 .prologue-screen--enhanced .weapon-gallery__choice:is(:hover,:focus-visible), .prologue-screen--enhanced .weapon-gallery__choice.is-selected {

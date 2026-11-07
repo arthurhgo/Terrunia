@@ -9,13 +9,14 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await page.goto('/login')
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
   await page.getByPlaceholder('Ex.: Aron').fill('Lysa')
-  // Allocate all six neutral creation points before entering the prologue.
-  for (const attribute of ['Força', 'Força', 'Astúcia', 'Agilidade', 'Vigor', 'Espírito']) {
-    await page.getByRole('button', { name: `Adicionar ponto de ${attribute}` }).click()
-  }
+  // Pontos iniciais só são distribuídos ao vincular a arma.
   await page.getByRole('button', { name: 'Confirmar e continuar' }).click()
   await page.getByRole('button', { name: 'Escolher Espada Longa', exact: true }).press('Enter')
-  await page.getByRole('button', { name: 'Vincular Espada Longa — Grau I', exact: true }).click()
+  await page.getByRole('button', { name: 'Distribuir pontos e vincular Espada Longa', exact: true }).click()
+  for (const attribute of ['Força', 'Força', 'Astúcia', 'Agilidade', 'Vigor', 'Espírito']) {
+    await page.getByRole('button', { name: 'Aumentar ' + attribute }).click()
+  }
+  await page.getByRole('button', { name: 'Confirmar Vínculo de Espada Longa — Grau I', exact: true }).click()
   await page.evaluate(async () => {
     const { useGameStore } = await import('/src/state/gameStore.ts')
     const { content } = await import('/src/content/catalog.ts')
@@ -128,8 +129,16 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await page.setViewportSize({ width: 390, height: 844 })
   await expect(page.getByRole('combobox', { name: 'Destino em Terran' })).toBeInViewport()
   await expect(page.getByLabel('Minimapa de Terran')).toBeInViewport()
+  // In compact viewport the status rail is intentionally collapsed into a
+  // side tab; opening the tab must place the full HUD inside the viewport.
+  const statusToggle = page.getByRole('button', { name: 'Abrir ou fechar aba de status' })
+  await expect(statusToggle).toBeVisible()
+  await statusToggle.click()
   const hudBounds = await page.getByRole('complementary', { name: 'Status permanente do personagem' }).boundingBox()
+  expect(hudBounds).not.toBeNull()
+  expect(hudBounds!.x).toBeGreaterThanOrEqual(0)
   expect(hudBounds!.x + hudBounds!.width).toBeLessThanOrEqual(390)
+  await statusToggle.click()
   const fieldBounds = await field.boundingBox()
   expect(fieldBounds!.x + fieldBounds!.width).toBeLessThanOrEqual(390)
   await page.screenshot({ path: testInfo.outputPath('terrunia-town-mobile.png') })

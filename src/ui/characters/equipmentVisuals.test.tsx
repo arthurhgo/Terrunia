@@ -28,7 +28,7 @@ describe('visual do equipamento vinculado: fonte única', () => {
     expect(VISUAL_EQUIPMENT_ORDER).toEqual(['armor','necklace','bracelet','shield','weapon'])
   })
 
-  it('arma é presa à mão correta nas quatro direções e fica atrás nas costas', () => {
+  it('arma é presa à mão correta nas quatro direções e aparece SOBRE as costas', () => {
     const weapon = getVisualEquipment(armed())[0]
     const down = getEquipmentAnchor(weapon, 'down')
     const left = getEquipmentAnchor(weapon, 'left')
@@ -37,7 +37,7 @@ describe('visual do equipamento vinculado: fonte única', () => {
     expect(right.x).toBeGreaterThan(16)
     expect(left.x).toBeLessThan(16)
     expect(down.y).toBeGreaterThan(20)
-    expect(up.layer).toBe('back')
+    expect(up.layer).toBe('front')
     expect(right.layer).toBe('front')
     expect([up, left, right, down].every((a) => a.size > 0 && a.handleY > 0 && a.handleY <= 1)).toBe(true)
   })
@@ -50,7 +50,12 @@ describe('visual do equipamento vinculado: fonte única', () => {
     expect(weapon.style.left).toBe(String(getEquipmentAnchor(getVisualEquipment(save)[0], 'right').x / 32 * 100) + '%')
     expect(screen.getByRole('img', { name: 'Player equipado' })).toHaveAttribute('src', expect.stringContaining('data:image/svg+xml'))
     rerender(<EquippedCharacter save={save} facing="up" />)
-    expect(container.querySelector('.equipped-character__layer--back')).toHaveAttribute('data-slot', 'weapon')
+    expect(container.querySelector('.equipped-character__layer--front[data-slot="weapon"]')).toBeInTheDocument()
+    const sheathed = getVisualEquipment(save, true)[0]
+    expect(getEquipmentAnchor(sheathed, 'up').layer).toBe('front')
+    expect(getEquipmentAnchor(sheathed, 'down').layer).toBe('back')
+    rerender(<EquippedCharacter save={save} facing="up" sheathed />)
+    expect(container.querySelector('.equipped-character__layer--weapon')).toHaveClass('equipped-character__layer--front')
   })
 
   it('usa proteção simples no slot de armadura e nunca duplica com a armadura vinculada', () => {
