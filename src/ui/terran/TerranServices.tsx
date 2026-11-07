@@ -191,48 +191,57 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded 
   const npc = content.npcs[definition.giverNpcId]
   const conversations = getNpcActionableQuests(save, npc.id, content)
   const details = <section className="terran-drawer__section terran-quest-dialog" aria-label={`Missão de ${npc.name}`}>
-    {onSelectQuest && conversations.length > 1 && <nav className="npc-quest-choices" aria-label={`Missões de ${npc.name}`}>
-      {(['main', 'secondary', 'other'] as const).map((group) => {
-        const quests = conversations.filter((quest) => group === 'main' ? quest.category === 'main'
-          : group === 'secondary' ? quest.category === 'secondary' || quest.category === 'bounty'
-          : quest.category === 'clan' || quest.category === 'class')
-        return quests.length > 0 && <div className={`npc-quest-group npc-quest-group--${group}`} key={group}>
-          <h3>{group === 'main' ? 'Missão principal' : group === 'secondary' ? 'Secundárias' : 'Clã e Classe'}</h3>
-          {quests.map((quest) => <button type="button" key={quest.id} aria-pressed={quest.id === questId} data-quest-status={save.quests[quest.id].status}
-            onClick={() => onSelectQuest(quest.id)}><strong>{quest.category === 'secondary' || quest.category === 'bounty' ? '◇' : '!'} {quest.title}</strong>
-            <small>{getQuestStatusLabel(save.quests[quest.id].status)}</small></button>)}
+    <div className="terran-quest-dialog__brief">
+      {onSelectQuest && conversations.length > 1 && <nav className="npc-quest-choices" aria-label={`Missões de ${npc.name}`}>
+        {conversations.map((quest) => <button type="button" key={quest.id}
+          aria-pressed={quest.id === questId} data-quest-status={save.quests[quest.id].status}
+          onClick={() => onSelectQuest(quest.id)}>{playerCopy(quest.title)}</button>)}
+      </nav>}
+      {(!onSelectQuest || conversations.length < 2) && <h3>{definition.category === 'secondary' || definition.category === 'bounty' ? '◇ ' : ''}{playerCopy(definition.title)}</h3>}
+      <div className="terran-quest-dialog__objectives">
+        {definition.objectives.slice(0, 2).map((objective) => <p key={objective.id}>
+          {playerCopy(objective.label)} · <strong>{progress.objectives[objective.id] ?? 0}/{objective.required}</strong>
+        </p>)}
+      </div>
+      {rewardPreview.length > 0 && <div className="terran-quest-dialog__reward-list" aria-label="Recompensas da missão">
+        <strong>Recompensas</strong>
+        <ul>{rewardPreview.map((reward) => <li key={reward.id}>{playerCopy(reward.label)}</li>)}</ul>
+      </div>}
+      {definition.turnInItems && <div className="quest-delivery-items">
+        {definition.turnInItems.map((input) => <span key={input.itemId}>
+          <AssetImage assetId={content.items[input.itemId].iconAssetId} />
+          {content.items[input.itemId].name}<strong>{getDeliverableCount(save, input.itemId, content)}/{input.quantity}</strong>
+        </span>)}
+      </div>}
+      <details className="terran-quest-dialog__analysis">
+        <summary>Analisar missão</summary>
+        <div>
+          <p>{playerCopy(definition.summary)}</p>
+          {definition.objectives.length > 2 && definition.objectives.slice(2).map((objective) => <p key={objective.id}>
+            {playerCopy(objective.label)} · {progress.objectives[objective.id] ?? 0}/{objective.required}
+          </p>)}
+          <QuestContextNote note={definition.contextNote} />
         </div>
-      })}
-    </nav>}
-    {(!onSelectQuest || conversations.length < 2) && <h3>{definition.category === 'secondary' || definition.category === 'bounty' ? '◇ ' : ''}{playerCopy(definition.title)}</h3>}
-    {definition.objectives.map((objective) => <p key={objective.id}>{playerCopy(objective.label)} · {progress.objectives[objective.id] ?? 0}/{objective.required}</p>)}
-    <QuestContextNote note={definition.contextNote} />
-    {rewardPreview.length > 0 && <div className="terran-quest-dialog__reward-list" aria-label="Recompensas da missão">
-      <strong>Recompensas ao entregar</strong>
-      <ul>{rewardPreview.map((reward) => <li key={reward.id}>{playerCopy(reward.label)}</li>)}</ul>
-    </div>}
-    {definition.turnInItems && <div className="quest-delivery-items">
-      {definition.turnInItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />
-        {content.items[input.itemId].name}<strong>{getDeliverableCount(save, input.itemId, content)}/{input.quantity}</strong></span>)}
-      <small>Materiais na mochila (ainda não entregues).</small>
-    </div>}
-    {['available', 'offered'].includes(progress.status) && <div className="terran-quest-dialog__actions"
-      role="group" aria-label={`Confirmar missão: ${definition.title}`}>
-      <button type="button" className="terran-quest-dialog__later"
-        onClick={() => { if (progress.status === 'offered') decline(questId); onClose() }}>Agora não</button>
-      <button type="button" className="terran-quest-dialog__accept"
-        onClick={() => accept(questId)}><Check size={16} /> Aceitar missão</button>
-    </div>}
-    {progress.status === 'ready_to_turn_in' && <button type="button" className="terran-service-action" onClick={() => { complete(questId, definition.turnInNpcId); onClose() }}><Check size={17} /> Entregar missão</button>}
-    {progress.status === 'active' && (definition.category === 'clan' || definition.category === 'class') &&
-      <button type="button" className="terran-service-action" onClick={() => performTrial(questId)}>
-        Realizar prova com representante
-      </button>}
-    {progress.status === 'active' && isQuestObjectActivityId(questId) &&
-      <p className="terran-quest-dialog__object-hint">
-        <strong>Objetivo interativo:</strong> aproxime-se de <strong>{questObjectActivities[questId].title}</strong> neste local.
-        Interaja com o objeto, resolva a atividade e depois retorne para entregar a missão.
-      </p>}
+      </details>
+    </div>
+    <div className="terran-quest-dialog__decisions">
+      {['available', 'offered'].includes(progress.status) && <div className="terran-quest-dialog__actions"
+        role="group" aria-label={`Confirmar missão: ${definition.title}`}>
+        <button type="button" className="terran-quest-dialog__later"
+          onClick={() => { if (progress.status === 'offered') decline(questId); onClose() }}>Agora não</button>
+        <button type="button" className="terran-quest-dialog__accept"
+          onClick={() => accept(questId)}><Check size={16} /> Aceitar missão</button>
+      </div>}
+      {progress.status === 'ready_to_turn_in' && <button type="button" className="terran-service-action" onClick={() => { complete(questId, definition.turnInNpcId); onClose() }}><Check size={17} /> Entregar missão</button>}
+      {progress.status === 'active' && (definition.category === 'clan' || definition.category === 'class') &&
+        <button type="button" className="terran-service-action" onClick={() => performTrial(questId)}>
+          Realizar prova com representante
+        </button>}
+      {progress.status === 'active' && isQuestObjectActivityId(questId) &&
+        <p className="terran-quest-dialog__object-hint">
+          Interaja com <strong>{questObjectActivities[questId].title}</strong> neste local e retorne para entregar.
+        </p>}
+    </div>
   </section>
   return embedded ? details : <DialogueWindow save={save} title={npc.name} eyebrow={npc.title}
     portraitAssetId={npc.portraitAssetId} lines={npc.dialogue} quest={definition} onClose={onClose}>{details}</DialogueWindow>
