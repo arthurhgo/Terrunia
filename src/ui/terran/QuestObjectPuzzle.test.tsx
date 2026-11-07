@@ -60,7 +60,7 @@ describe('minigames vinculados a móveis de Terran', () => {
     const save = game('main_lithwynn_signs', 'location_terran_bond_workshop')
     const original = structuredClone(save.inventory)
     render(<QuestObjectPuzzle save={save} questId="main_lithwynn_signs" onClose={vi.fn()}/>)
-    expect(screen.getByText(/Hipótese investigativa/)).toBeInTheDocument()
+    expect(screen.queryByText(/Hipótese investigativa|OWNER_DECISION/)).not.toBeInTheDocument()
     chooseAndConfirm('Identificar a procedência', 'Confirmar análise')
     chooseAndConfirm('Comparar padrões', 'Confirmar análise')
     chooseAndConfirm('Registrar como indício', 'Confirmar análise')

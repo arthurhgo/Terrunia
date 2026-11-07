@@ -87,7 +87,7 @@ export function PortalHubScreen() {
       </nav>
       <section className={`portal-hub__primary ${compactSection === "primary" ? "is-active-compact" : ""}`} aria-label="Aventuras principais do Portal">
         <div className="portal-hub__section-title">
-          <BookOpen size={18} aria-hidden="true" /><h2>Jornada e desafios</h2>
+          <BookOpen size={18} aria-hidden="true" /><h2>Jornadas e desafios</h2>
         </div>
         <div className="portal-hub__primary-grid">
           {activities.filter((activity) => activity.kind !== 'hunt').map(activityButton)}

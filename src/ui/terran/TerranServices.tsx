@@ -204,7 +204,7 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded 
         </p>)}
       </div>
       {rewardPreview.length > 0 && <div className="terran-quest-dialog__reward-list" aria-label="Recompensas da missão">
-        <strong>Recompensas</strong>
+        <strong>Recompensas ao entregar</strong>
         <ul>{rewardPreview.map((reward) => <li key={reward.id}>{playerCopy(reward.label)}</li>)}</ul>
       </div>}
       {definition.turnInItems && <div className="quest-delivery-items">
