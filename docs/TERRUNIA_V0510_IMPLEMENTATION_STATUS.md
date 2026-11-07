@@ -29,11 +29,19 @@
 
 ## Gates de validação
 
-- [ ] `npm run check`: lint + TypeScript + Vitest + build.
-- [ ] Playwright: criação, Base, inventário, NPCs, Portal 0, Astravél, combate/timeline, save/load.
+- [x] `npm run check`: lint + TypeScript + Vitest + build (`5541a8e`, [CI aprovado](https://github.com/arthurhgo/Terrunia/actions/runs/42383264465)).
+- [x] Playwright na branch: [E2E aprovado](https://github.com/arthurhgo/Terrunia/actions/runs/42383264484) em `5541a8e`; cobertura de criação, Base, inventário, NPCs, Portal, Astravél, combate e save/load.
 - [ ] Revisão visual 1366×768, 1920×1080, 1440×900, 1024×768, 2560×1080, 844×390 e 390×844.
 - [ ] Arte final: atlas de movimento das dez espécies sem folha nativa, cama/baú/estante e fauna adicional.
 - [ ] Revisão de balanceamento das novas habilidades, runas e probabilidades com o proprietário.
 - [ ] Merge/deploy de produção somente após aprovação explícita.
 
 **Processo:** nenhum segredo adicionado; commits em branch isolada e reversível; evitar builds repetidas no Vercel.
+
+## Continuação de QA pós-merge (2026-11-07)
+
+- A PR #61 foi integrada à `main` em `79b23c1` por operação externa a esta revisão; a indicação anterior de DRAFT não bloqueou o merge.
+- Correção: o rodapé institucional não deve ser montado dentro do `GameShell` imersivo. A cena retém a altura total do viewport e deixa o rodapé somente nas páginas de menu/status.
+- E2E de Terran agora valida posicionamento do canvas e controles nas sete dimensões da lista e salva sete capturas PNG por execução; as evidências são arquivadas no GitHub Actions inclusive quando o teste passa.
+- A captura automatizada NÃO equivale a aprovação estética: inspecionar as sete imagens antes de aprovar a interface.
+- Chance de drops raros, efeitos das runas, outras quatro regiões e dez atlas de animação final permanecem bloqueados ou em produção como `OWNER_DECISION` / `BALANCE_DRAFT` / `CONTENT_DRAFT`.
