@@ -114,7 +114,7 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
   expect(Math.abs(feet.heroGround - feet.enemyGround)).toBeLessThan(18)
   // The arena can first await a manual initiative roll: actions only appear
   // after that phase completes. Test the hotbar in the actual player turn.
-  const initiative = page.getByRole('button', { name: /^Arrastar dado de iniciativa d\\d+ para cima para rolar$/ })
+  const initiative = page.getByRole('button', { name: /^Arrastar dado de iniciativa d\d+ para cima para rolar$/ })
   if (await initiative.isVisible().catch(() => false)) {
     await expect(initiative).toBeEnabled({ timeout: 10_000 })
     await initiative.press('Enter')
