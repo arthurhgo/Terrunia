@@ -116,7 +116,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
     }
   }
 
-  const title = drawer === 'node' ? selectedNode?.label ?? 'Trilha' : drawer === 'inventory' ? 'Mochila' : drawer === 'character' ? 'Personagem' : drawer === 'quests' ? 'Missões' : 'Rota de ' + trail.name
+  const title = drawer === 'node' ? selectedNode?.label ?? 'Trilha' : drawer === 'inventory' ? 'Mochila' : drawer === 'character' ? 'Personagem' : drawer === 'quests' ? 'Missões' : isAstravel ? 'Rota de Astravél' : 'Rota de ' + trail.name
 
   const sceneContent = <div className="terran-game expedition-game">
       <header className="terran-game__topbar">

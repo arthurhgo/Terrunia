@@ -38,7 +38,7 @@ test('Portal v0.5.9: buttons, level gates and progressive enemy sprite', async (
   await expect(page.getByRole('button', { name: /Modo Ondas · Iniciar/ })).toBeEnabled()
   await expect(page.getByRole('button', { name: /Rastro Micelial · Bloqueada/ })).toBeDisabled()
   await expect(page.getByRole('button', { name: /Guardiões do Limiar · Bloqueada/ })).toBeDisabled()
-  await expect(page.locator('.portal-hub__choice')).toHaveCount(7)
+  await expect(page.locator('.portal-hub__choice')).toHaveCount(9) // +2 biomas da v0.5.10
   await expect(page.locator('.portal-hub__chapters .portal-hub__chapter')).toHaveCount(3)
   await page.screenshot({ path: 'test-results/portal-v059-desktop.png' })
 
