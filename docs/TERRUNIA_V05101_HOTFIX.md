@@ -25,3 +25,5 @@ Três defeitos relatados por captura de tela: painéis esquerdo/direito extrapol
 - 2026-11-07: correção de regressão pós-teste: regras da grade limitadas à cena de Terran, sem alterar z-index do backdrop/janela da expedição; cabeçalho translúcido deixa os cliques passarem; botões de seleção de arma possuem hitboxes estáveis (animação só no ícone).
 
 - Última regressão mobile: painéis recolhidos usam seletores com especificidade para vencer regras legadas de até 720px. Painel oculto não recebe pointer events, permitindo Ocultar caminhos de Rosetta.
+
+- Atualização de teste histórico: em 390×844, status deve abrir pela aba recolhível antes de medir suas dimensões e fechar antes de voltar à cena. O teste antigo presumia HUD permanentemente visível, contrário ao novo layout.

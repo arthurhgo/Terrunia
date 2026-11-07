@@ -129,8 +129,16 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await page.setViewportSize({ width: 390, height: 844 })
   await expect(page.getByRole('combobox', { name: 'Destino em Terran' })).toBeInViewport()
   await expect(page.getByLabel('Minimapa de Terran')).toBeInViewport()
+  // In compact viewport the status rail is intentionally collapsed into a
+  // side tab; opening the tab must place the full HUD inside the viewport.
+  const statusToggle = page.getByRole('button', { name: 'Abrir ou fechar aba de status' })
+  await expect(statusToggle).toBeVisible()
+  await statusToggle.click()
   const hudBounds = await page.getByRole('complementary', { name: 'Status permanente do personagem' }).boundingBox()
+  expect(hudBounds).not.toBeNull()
+  expect(hudBounds!.x).toBeGreaterThanOrEqual(0)
   expect(hudBounds!.x + hudBounds!.width).toBeLessThanOrEqual(390)
+  await statusToggle.click()
   const fieldBounds = await field.boundingBox()
   expect(fieldBounds!.x + fieldBounds!.width).toBeLessThanOrEqual(390)
   await page.screenshot({ path: testInfo.outputPath('terrunia-town-mobile.png') })
