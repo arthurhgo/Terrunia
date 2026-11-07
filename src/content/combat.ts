@@ -82,6 +82,112 @@ export const combatSkillDefinitions = [
     effects: [{ type: 'damage', powerBonus: 2 }],
     status: 'BALANCE_DRAFT',
   },
+  // v0.5.10: two bonus techniques per family at weapon Grades II and III.
+  {
+    id: 'skill_longsword_guard', name: 'Guarda da Lâmina', description: 'Golpe controlado que rompe temporariamente a defesa.',
+    target: 'enemy', mpCost: 2, cooldownTurns: 2, damageDieSteps: 0,
+    effects: [{ type: 'damage', powerBonus: 1 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_longsword_cross', name: 'Cruzamento da Espada', description: 'Segundo corte de Vínculo com potência concentrada.',
+    target: 'enemy', mpCost: 3, cooldownTurns: 3, damageDieSteps: 1,
+    effects: [{ type: 'damage', powerBonus: 3 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_axe_cleave', name: 'Corte de Eixo', description: 'Golpe pesado que pressiona a armadura inimiga.',
+    target: 'enemy', mpCost: 2, cooldownTurns: 2, damageDieSteps: 0,
+    effects: [{ type: 'damage', powerBonus: 2 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_axe_earthbreak', name: 'Quebra-Chão', description: 'Impacto concentrado de Grau III.',
+    target: 'enemy', mpCost: 4, cooldownTurns: 3, damageDieSteps: 1,
+    effects: [{ type: 'damage', powerBonus: 4 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_bow_focus', name: 'Flecha Guiada', description: 'Disparo que pressiona a guarda adversária.',
+    target: 'enemy', mpCost: 2, cooldownTurns: 2, damageDieSteps: 0,
+    effects: [{ type: 'damage', powerBonus: 1 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_bow_volley', name: 'Rajada da Trilha', description: 'Rajada de precisão contra o alvo escolhido.',
+    target: 'enemy', mpCost: 4, cooldownTurns: 3, damageDieSteps: 1,
+    effects: [{ type: 'damage', powerBonus: 3 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_dagger_feint', name: 'Finta da Adaga', description: 'Ataque rápido que expõe a defesa inimiga.',
+    target: 'enemy', mpCost: 1, cooldownTurns: 2, damageDieSteps: 0,
+    effects: [{ type: 'damage', powerBonus: 1 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_dagger_shadowstep', name: 'Passo Cortante', description: 'Ataque veloz com sincronia de Vínculo.',
+    target: 'enemy', mpCost: 3, cooldownTurns: 2, damageDieSteps: 1,
+    effects: [{ type: 'damage', powerBonus: 2 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_scepter_channel', name: 'Canal Arcano', description: 'Pulso arcano que rompe a mitigação.',
+    target: 'enemy', mpCost: 2, cooldownTurns: 2, damageDieSteps: 0,
+    effects: [{ type: 'damage', powerBonus: 1 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_scepter_prism', name: 'Prisma do Cetro', description: 'Concentração arcana de Grau III.',
+    target: 'enemy', mpCost: 4, cooldownTurns: 3, damageDieSteps: 1,
+    effects: [{ type: 'damage', powerBonus: 3 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_grimoire_seal', name: 'Selo das Páginas', description: 'Inscrição ofensiva que desestabiliza um inimigo.',
+    target: 'enemy', mpCost: 3, cooldownTurns: 2, damageDieSteps: 0,
+    effects: [{ type: 'damage', powerBonus: 1 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_grimoire_inscription', name: 'Inscrição Ressonante', description: 'Projeção reforçada pelas páginas do Vínculo.',
+    target: 'enemy', mpCost: 4, cooldownTurns: 3, damageDieSteps: 1,
+    effects: [{ type: 'damage', powerBonus: 4 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_staff_flow', name: 'Fluxo do Cajado', description: 'Onda mágica que enfraquece a guarda.',
+    target: 'enemy', mpCost: 2, cooldownTurns: 2, damageDieSteps: 0,
+    effects: [{ type: 'damage', powerBonus: 1 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_staff_rift', name: 'Fenda Canalizada', description: 'Conjuração ampliada de Grau III.',
+    target: 'enemy', mpCost: 4, cooldownTurns: 3, damageDieSteps: 1,
+    effects: [{ type: 'damage', powerBonus: 3 }],
+    status: 'BALANCE_DRAFT',
+  },
+  // Clan techniques unlock only after in-world initiation; not at character creation.
+  {
+    id: 'skill_clan_dunavar_guard', name: 'Voto da Barreira', description: 'Postura Dûn'Avar que recupera a força do portador.', target: 'self',
+    mpCost: 0, cooldownTurns: 3, damageDieSteps: 0,
+    effects: [{ type: 'restoreHp', value: 2 }], status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_clan_rustal_glyph', name: 'Glifo de Rustal', description: 'Inscrição de combate reservada ao iniciado em Rustal.', target: 'enemy',
+    mpCost: 3, cooldownTurns: 3, damageDieSteps: 0,
+    effects: [{ type: 'damage', powerBonus: 2 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }], status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_clan_cebios_orb', name: 'Orbe de Cebios', description: 'Descarga celeste de um iniciado em Cebios Esti.', target: 'enemy',
+    mpCost: 3, cooldownTurns: 3, damageDieSteps: 0,
+    effects: [{ type: 'damage', powerBonus: 3 }], status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_clan_estres_flux', name: 'Fluxo do Ét', description: 'Surto arcano exclusivo do Clã Estres do Ét.', target: 'enemy',
+    mpCost: 3, cooldownTurns: 3, damageDieSteps: 0,
+    effects: [{ type: 'damage', powerBonus: 2 }], status: 'BALANCE_DRAFT',
+  },
   {
     id: 'skill_resonant_strike',
     name: 'Golpe Ressonante',

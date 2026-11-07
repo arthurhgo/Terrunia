@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
+import { useWorldViewport } from '../world/useWorldViewport'
 import { content } from '../../content/catalog'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { CharacterAppearance } from '../../domain/character/appearance'
@@ -9,7 +10,7 @@ import type { TrailNodeStatus } from '../../domain/game/types'
 import type { ActorFacing } from '../terran/pixelActorArt'
 import type { WorldPoint } from '../terran/pixelCityArt'
 import { drawAstravel } from './astravelArt'
-import { ASTRAVEL_HEIGHT, ASTRAVEL_WIDTH, ASTRAVEL_VIEW_WIDTH, ASTRAVEL_VIEW_HEIGHT, getAstravelCamera, findAstravelPath, getAstravelPoint, isAstravelWalkable } from './astravelNavigation'
+import { ASTRAVEL_HEIGHT, ASTRAVEL_WIDTH, getAstravelCamera, findAstravelPath, getAstravelPoint, isAstravelWalkable } from './astravelNavigation'
 
 type Destination = { path: WorldPoint[]; nodeId: string | null }
 type Props = {
@@ -52,6 +53,10 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
     ?? [...trail.nodes].reverse().find((node) => statuses[node.id] === 'completed')
     ?? trail.nodes[0]
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
+  const viewport = useWorldViewport(stageRef, ASTRAVEL_WIDTH, ASTRAVEL_HEIGHT)
+  const viewportRef = useRef(viewport)
+  viewportRef.current = viewport
   const [view, setView] = useState(() => ({ ...getAstravelCamera(getAstravelPoint(start)), player: getAstravelPoint(start) }))
   const viewRef = useRef(view)
   const [nearbyActiveBattleId, setNearbyActiveBattleId] = useState<string | null>(null)
@@ -175,7 +180,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
           setNearbyActiveBattleId(battleId)
         }
       }
-      const camera = getAstravelCamera(playerRef.current)
+      const camera = getAstravelCamera(playerRef.current, viewportRef.current)
       const player = { x: Math.round(playerRef.current.x), y: Math.round(playerRef.current.y) }
       if (viewRef.current.x !== camera.x || viewRef.current.y !== camera.y
         || viewRef.current.player.x !== player.x || viewRef.current.player.y !== player.y) {
@@ -203,14 +208,14 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
     if (!enabled) return
     const bounds = event.currentTarget.getBoundingClientRect()
     if (!bounds.width || !bounds.height) return
-    const point = { x: Math.round((event.clientX - bounds.left) / bounds.width * ASTRAVEL_VIEW_WIDTH + viewRef.current.x), y: Math.round((event.clientY - bounds.top) / bounds.height * ASTRAVEL_VIEW_HEIGHT + viewRef.current.y) }
+    const point = { x: Math.round((event.clientX - bounds.left) / bounds.width * viewportRef.current.width + viewRef.current.x), y: Math.round((event.clientY - bounds.top) / bounds.height * viewportRef.current.height + viewRef.current.y) }
     const node = nearestReachableNode(point, 16, trail, statusesRef.current)
     if (node) walkToNode(node)
     else walkTo(point, null)
   }
 
-  return <div className="pixel-city astravel-field" aria-label="Exploração pixelada da Floresta de Astravél">
-    <canvas ref={canvasRef} width={ASTRAVEL_VIEW_WIDTH} height={ASTRAVEL_VIEW_HEIGHT} className="pixel-city__canvas"
+  return <div ref={stageRef} className="pixel-city astravel-field" aria-label="Exploração pixelada da Floresta de Astravél">
+    <canvas ref={canvasRef} width={viewport.width} height={viewport.height} className="pixel-city__canvas"
       role="img" tabIndex={0} aria-label="Astravél em pixels, vista superior 3/4; caminhe por WASD, setas ou toque" onPointerDown={pointerWalk} />
     <div className="astravel-field__nodes">
       {trail.nodes.map((node) => {
@@ -219,9 +224,9 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
         return <button key={node.id} type="button" disabled={!enabled || !reachable(status)}
           aria-label={`Aproximar-se de ${node.label}`} title={`${node.label} — ${status === 'current' && node.type === 'battle' ? 'encontro de combate' : status}`}
           className={`astravel-field__node astravel-field__node--${status}`}
-          style={{ left: `${(point.x - view.x) / ASTRAVEL_VIEW_WIDTH * 100}%`, top: `${(point.y - view.y - 35) / ASTRAVEL_VIEW_HEIGHT * 100}%`,
-            display: point.x < view.x + 12 || point.x > view.x + ASTRAVEL_VIEW_WIDTH - 12
-              || point.y < view.y + 42 || point.y > view.y + ASTRAVEL_VIEW_HEIGHT ? 'none' : undefined }}
+          style={{ left: `${(point.x - view.x) / viewport.width * 100}%`, top: `${(point.y - view.y - 35) / viewport.height * 100}%`,
+            display: point.x < view.x + 12 || point.x > view.x + viewport.width - 12
+              || point.y < view.y + 42 || point.y > view.y + viewport.height ? 'none' : undefined }}
           onClick={() => walkToNode(node)}>
           <strong>{node.index}</strong><span>{node.label}</span>
         </button>
@@ -232,7 +237,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
         <polyline points={trail.nodes.map((node) => { const point = getAstravelPoint(node); return `${point.x},${point.y}` }).join(' ')} fill="none" stroke="#6d8078" strokeWidth="5" />
         {trail.nodes.map((node) => { const point = getAstravelPoint(node); const status = statuses[node.id]; return <circle key={node.id} cx={point.x} cy={point.y} r={node.type === 'boss' ? 11 : 8}
           fill={status === 'completed' ? '#88c8a4' : ['current', 'bossCurrent'].includes(status ?? '') ? '#f4d38d' : '#475a59'} /> })}
-        <rect x={view.x} y={view.y} width={ASTRAVEL_VIEW_WIDTH} height={ASTRAVEL_VIEW_HEIGHT} fill="none" stroke="#a8c7bc" strokeWidth="3" />
+        <rect x={view.x} y={view.y} width={viewport.width} height={viewport.height} fill="none" stroke="#a8c7bc" strokeWidth="3" />
         <circle cx={view.player.x} cy={view.player.y} r="9" fill="#fff2c8" stroke="#162323" strokeWidth="3" />
       </svg><span>ASTRAVÉL · 15 ENCONTROS</span>
     </div>

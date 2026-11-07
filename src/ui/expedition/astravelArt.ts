@@ -6,7 +6,7 @@ import { getAstravelSector } from '../../content/astravel'
 import type { TrailNodeStatus } from '../../domain/game/types'
 import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, WORLD_ACTOR_SCALE, type ActorFacing } from '../terran/pixelActorArt'
 import type { WorldPoint } from '../terran/pixelCityArt'
-import { ASTRAVEL_HEIGHT, ASTRAVEL_WIDTH, ASTRAVEL_VIEW_WIDTH, ASTRAVEL_VIEW_HEIGHT, getAstravelDecorations, getAstravelPoint } from './astravelNavigation'
+import { ASTRAVEL_HEIGHT, ASTRAVEL_WIDTH, getAstravelDecorations, getAstravelPoint } from './astravelNavigation'
 
 type Statuses = Record<string, TrailNodeStatus>
 
@@ -80,12 +80,12 @@ export function drawAstravel(
   equipped: readonly VisualItem[] = [],
 ) {
   ctx.imageSmoothingEnabled = false
-  ctx.clearRect(0, 0, ASTRAVEL_VIEW_WIDTH, ASTRAVEL_VIEW_HEIGHT)
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   ctx.save()
   ctx.translate(-camera.x, -camera.y)
   pixel(ctx, '#152f31', 0, 0, ASTRAVEL_WIDTH, ASTRAVEL_HEIGHT)
-  for (let y = Math.floor(camera.y / 16) * 16; y < camera.y + ASTRAVEL_VIEW_HEIGHT; y += 16) {
-    for (let x = Math.floor(camera.x / 16) * 16; x < camera.x + ASTRAVEL_VIEW_WIDTH; x += 16) {
+  for (let y = Math.floor(camera.y / 16) * 16; y < camera.y + ctx.canvas.height; y += 16) {
+    for (let x = Math.floor(camera.x / 16) * 16; x < camera.x + ctx.canvas.width; x += 16) {
       const seed = (x * 17 + y * 31 + x * y) % 13
       const colors = y < 194 ? ['#1d3b38', '#264a3e'] : y < 315 ? ['#293243', '#343b47'] : ['#262c35', '#34373c']
       pixel(ctx, colors[seed < 5 ? 0 : 1], x, y, 16, 16)
@@ -141,7 +141,7 @@ export function drawAstravel(
   pixel(ctx, '#11282b', player.x - 5, player.y - 2, 10, 3)
   const stride = walking ? Math.floor(frame / 8) % 3 : 0
   drawEquipmentLayer(ctx, equipped, 'back', facing, player.x, player.y)
-  if (!drawActorImage(ctx, sprite, player.x, player.y, facing, stride)) drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[variant], WORLD_ACTOR_SCALE)
+  if (!drawActorImage(ctx, sprite, player.x, player.y, facing, stride, 28)) drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[variant], WORLD_ACTOR_SCALE)
   drawEquipmentLayer(ctx, equipped, 'front', facing, player.x, player.y)
   ctx.restore()
 }

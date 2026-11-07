@@ -1,0 +1,199 @@
+/* VISUAL_DRAFT v0.5.10 — immersive, responsive world UI; zero gameplay rules. */
+.game-shell--immersive {
+  position: relative; width: 100%; height: 100dvh; min-height: 0; overflow: hidden;
+}
+.game-shell--immersive .game-main--fluid {
+  flex: 1 1 auto; width: 100%; min-height: 0; height: 100%;
+  margin: 0; padding: 0; overflow: hidden;
+}
+.immersive-controls {
+  position: absolute; z-index: 200;
+  top: max(7px, env(safe-area-inset-top)); right: max(9px, env(safe-area-inset-right));
+  display: flex; align-items: center; gap: 5px;
+  background: #081923db; border: 1px solid #80653d; padding: 4px 5px;
+  box-shadow: 0 4px 16px #02080cb3; backdrop-filter: blur(5px);
+}
+.immersive-controls > a {
+  display: flex; min-width: 38px; min-height: 38px; align-items: center; justify-content: center;
+  gap: 6px; border: 1px solid #735c38; background: #102934; padding: 5px 8px;
+  color: #e4cca0; font: 700 .6rem var(--display);
+}
+.immersive-controls > a:hover, .immersive-controls > a:focus-visible {
+  border-color: #edc47d; outline: 2px solid #edc47d; outline-offset: 1px;
+}
+.immersive-controls .save-state {
+  display: inline-flex; align-items: center; gap: 6px; padding: 0 6px;
+  font: 600 .56rem var(--display); color: #b9c6b7; white-space: nowrap;
+}
+.game-shell--immersive .world-scene, .game-shell--immersive .world-scene__content {
+  width: 100%; height: 100%; min-height: 0;
+}
+.game-shell--immersive .terran-game {
+  position: relative; height: 100%; min-height: 0; display: flex;
+  flex-direction: column; overflow: hidden;
+}
+.game-shell--immersive .terran-game__topbar {
+  position: absolute; z-index: 16; top: max(7px, env(safe-area-inset-top));
+  left: max(54px, env(safe-area-inset-left)); right: 175px;
+  width: auto; min-height: 0; height: auto; max-height: 37px;
+  margin: 0; padding: 4px 9px; box-sizing: border-box; pointer-events: none;
+  background: linear-gradient(90deg, #081824e0, #08182470, transparent);
+  border: 0; box-shadow: none;
+}
+.game-shell--immersive .terran-game__topbar h1 { font-size: clamp(.65rem, 1.1vw, .85rem); margin: 0; }
+.game-shell--immersive .terran-game__topbar .eyebrow { display: none; }
+.game-shell--immersive .terran-game__topbar .terran-game__readout {
+  font-size: .62rem; line-height: 1.3; min-width: 0; gap: 6px;
+}
+.game-shell--immersive .terran-game__layout,
+.game-shell--immersive .terran-game__layout.has-drawer {
+  position: relative; display: flex; flex: 1 1 auto; align-items: stretch;
+  justify-content: center; width: 100%; height: 100%; min-height: 0;
+  padding: 0; margin: 0; overflow: visible; gap: 0;
+}
+.game-shell--immersive .terran-game__frame {
+  --terran-canvas-width: calc(100% - 104px);
+  flex: 1 1 auto; width: calc(100% - 104px); max-width: calc(100% - 104px);
+  height: 100%; max-height: 100%; min-height: 0; margin: 0 52px; aspect-ratio: auto;
+}
+.game-shell--immersive .terran-game__stage,
+.game-shell--immersive .terran-game__layout.has-drawer .terran-game__stage {
+  position: relative; display: block; flex: 1 1 auto;
+  width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+  margin: 0; border: 0; border-radius: 0; aspect-ratio: auto;
+}
+.game-shell--immersive .pixel-city { width: 100%; height: 100%; }
+.game-shell--immersive .pixel-city__canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+.game-shell--immersive .terran-game__drawer {
+  left: auto; right: 0; top: 0; bottom: 0; width: min(365px, 88vw);
+  height: 100%; max-height: 100%; z-index: 45; overflow-y: auto;
+  box-shadow: -9px 0 25px #000a;
+}
+.game-shell--immersive .terran-game__hud { right: 100%; left: auto; z-index: 32; }
+.game-shell--immersive .terran-game__right-rail { left: 100%; right: auto; z-index: 32; }
+
+/* Expedition keeps health in the lower-left rather than covering the route. */
+.game-shell--immersive .expedition-status-hud {
+  left: max(8px, env(safe-area-inset-left)); top: auto;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  width: min(232px, 50vw); padding: 5px 7px;
+}
+.game-shell--immersive .expedition-status-hud__actions { margin-bottom: 5px; }
+.game-shell--immersive .expedition-status-hud__portrait {
+  flex-basis: 34px; width: 34px; height: 34px;
+}
+.game-shell--immersive .expedition-game__route-open {
+  top: max(49px, calc(env(safe-area-inset-top) + 43px)); left: 8px;
+}
+
+/* Arena: no cropped commands, predictable floors, staggered vertical monsters. */
+.game-shell--immersive .pixel-battle {
+  box-sizing: border-box; height: 100%; min-height: 0; max-height: 100%;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.game-shell--immersive .pixel-battle__header {
+  flex: 0 0 40px; min-height: 40px; height: 40px;
+  padding: 3px 12px; gap: 7px;
+}
+.game-shell--immersive .pixel-battle__header h1 { font-size: clamp(.72rem, 1.1vw, 1rem); }
+.game-shell--immersive .combat-timeline.combat-timeline--portraits {
+  flex: 0 0 57px; height: 57px; min-height: 57px; padding: 3px 8px;
+}
+.game-shell--immersive .pixel-battle__arena {
+  flex: 1 1 auto; min-height: 195px; overflow: hidden; position: relative;
+}
+.game-shell--immersive .pixel-battle__foot {
+  flex: 0 0 auto; height: clamp(188px, 28dvh, 245px); min-height: 0;
+  max-height: 36%; padding: 5px 7px; gap: 7px;
+  overflow: hidden; display: grid; grid-template-columns: 1fr minmax(280px, 1.6fr) 1fr;
+}
+.game-shell--immersive .pixel-battle__panel {
+  min-width: 0; min-height: 0; overflow-y: auto; padding: 8px 10px;
+}
+.game-shell--immersive .pixel-battle__actions { overflow: visible; }
+.game-shell--immersive .pixel-battle__panel h2 {
+  margin-bottom: 6px; padding-bottom: 5px; font-size: clamp(.8rem, 1.3vw, 1.1rem);
+}
+.game-shell--immersive .pixel-battle__stat-body { grid-template-columns: minmax(40px, 62px) 1fr; gap: 7px; }
+.game-shell--immersive .pixel-battle__target-info { grid-template-columns: minmax(44px, 62px) 1fr; }
+.game-shell--immersive .pixel-battle__commands { align-content: start; grid-auto-rows: minmax(34px, auto); gap: 4px; }
+.game-shell--immersive .pixel-battle__command { min-height: 37px; font-size: clamp(.62rem, .85vw, .76rem); }
+.game-shell--immersive .pixel-battle__command.is-primary { min-height: 41px; }
+.game-shell--immersive .pixel-battle__submenu { inset: 36px 5px 5px; overflow-y: auto; }
+.game-shell--immersive .pixel-battle__hero {
+  left: 9%; bottom: 13%; width: clamp(74px, 11vw, 138px);
+}
+.game-shell--immersive .pixel-battle__enemies {
+  left: auto; right: 5%; top: 8%; bottom: 13%;
+  width: clamp(135px, 29%, 290px); height: auto;
+  display: flex; flex-direction: column; align-items: flex-end;
+  justify-content: space-around; gap: 6px;
+}
+.game-shell--immersive .pixel-battle__enemy {
+  flex: 1 1 0; min-height: 0; width: min(100%, 165px);
+  max-width: 165px; max-height: 135px; gap: 1px;
+}
+.game-shell--immersive .pixel-battle__enemy img {
+  width: clamp(40px, 8vw, 104px); max-height: min(14dvh, 92px);
+}
+.game-shell--immersive .pixel-battle__enemy small {
+  font-size: clamp(8px, .68vw, 10px); line-height: 1.1;
+}
+.game-shell--immersive .pixel-battle__actor-cue {
+  position: absolute; z-index: 12; top: 10%; left: 34%; right: 28%;
+  padding: 5px 9px; text-align: center;
+  color: #ffe4a6; background: #0b1c2bdc;
+  border: 1px solid #b8945d; font: 700 clamp(.64rem, 1vw, .82rem) var(--display);
+  pointer-events: none;
+}
+
+@media (max-width: 920px) {
+  .game-shell--immersive .terran-game__topbar { right: 125px; }
+  .game-shell--immersive .pixel-battle__foot {
+    grid-template-columns: minmax(120px, 1fr) minmax(210px, 1.5fr) minmax(120px, 1fr);
+  }
+  .immersive-controls .save-state { font-size: 0; padding: 0 2px; }
+  .immersive-controls .save-state i { font-size: initial; }
+}
+@media (max-width: 650px), (max-height: 510px) {
+  .game-shell--immersive .terran-game__frame {
+    --terran-canvas-width: calc(100% - 82px);
+    width: calc(100% - 82px); max-width: calc(100% - 82px); margin: 0 41px;
+  }
+  .game-shell--immersive .terran-game__topbar { display: none; }
+  .game-shell--immersive .terran-game__hud { width: 40px; }
+  .game-shell--immersive .expedition-status-hud { width: min(195px, 65vw); }
+  .game-shell--immersive .world-scene--combat { overflow-y: auto; }
+  .game-shell--immersive .world-scene--combat .world-scene__content {
+    height: auto; min-height: 100%; overflow: visible;
+  }
+  .game-shell--immersive .pixel-battle {
+    height: auto; max-height: none; min-height: max(100%, 670px); overflow: visible;
+  }
+  .game-shell--immersive .pixel-battle__arena { min-height: 195px; height: 235px; flex: 0 0 auto; }
+  .game-shell--immersive .pixel-battle__foot {
+    height: auto; max-height: none; overflow: visible;
+    display: flex; flex-direction: column;
+  }
+  .game-shell--immersive .pixel-battle__panel { overflow: visible; min-height: 96px; }
+  .game-shell--immersive .pixel-battle__actions { min-height: 190px; }
+  .game-shell--immersive .pixel-battle__enemies { top: 5%; bottom: 6%; }
+  .game-shell--immersive .pixel-battle__enemy img { width: 46px; max-height: 48px; }
+  .game-shell--immersive .pixel-battle__actor-cue { left: 29%; right: 25%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .immersive-controls *, .game-shell--immersive .pixel-battle__actor-cue { animation: none !important; }
+}
+
+
+/* The Base tutorial appears only once; the furniture remains directly clickable. */
+.terran-base-functions__actions > span {
+  display: flex; align-items: center; justify-content: flex-start;
+  gap: 8px; min-height: 43px; border: 1px solid #756343;
+  padding: 8px 10px; background: #142c32; color: #dbd7bc;
+  font: 11px/1.4 Georgia,serif;
+}
+.terran-base-functions__actions > span strong { color: #e6c585; }
+.terran-base-functions .terran-service-action {
+  display: block; margin: 12px 0 0 auto; min-height: 40px;
+}

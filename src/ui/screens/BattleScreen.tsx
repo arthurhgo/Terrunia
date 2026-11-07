@@ -347,6 +347,13 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   )
 
   const visualHp = (id: string) => stagedHp?.[id] ?? battle.combatants[id]?.hp ?? 0
+  // VISUAL_DRAFT: announce the real timeline actor, including enemy initiative.
+  // This reads domain turns/rolls; it never alters action order or HP.
+  const actorCueName = activeDice?.kind === 'damage'
+    ? activeDice.actorName
+    : battle.phase === 'AwaitingAction' && !roundCurtain
+      ? battle.combatants[battle.actorId]?.name ?? player.name
+      : null
   const actingId = activeDice?.actorId ?? battle.actorId
   const receivingId = activeDice?.kind === 'damage' ? activeDice.targetId : undefined
   const damageRevealed = activeDice?.id === impactEventId
@@ -355,7 +362,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     <header className="pixel-battle__header" aria-label="Encontro de combate">
       <strong>TERRÚNIA</strong>
       <div className="pixel-battle__encounter-label"><span>{battle.waveIndex ? 'PORTAL · ONDAS DA RUÍNA' : encounter?.locationLabel ?? 'ASTRAVÉL'}</span><h1>{encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}</h1></div>
-      <small>{battle.waveIndex ? 'ONDA ' + battle.waveIndex + ' · ' : ''}RODADA {battle.round} · {turnCue ? 'TURNO DOS INIMIGOS' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : battle.phase === 'AwaitingInitiative' ? 'INICIATIVA PENDENTE' : 'TURNO DO JOGADOR'}</small>
+      <small>{battle.waveIndex ? 'ONDA ' + battle.waveIndex + ' · ' : ''}RODADA {battle.round} · {activeDice?.actorName ? 'VEZ DE ' + activeDice.actorName.toLocaleUpperCase('pt-BR') : turnCue ? 'REAÇÃO INIMIGA' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : battle.phase === 'AwaitingInitiative' ? 'INICIATIVA PENDENTE' : 'TURNO DO JOGADOR'}</small>
     </header>
     <BattleTimeline battle={initiativePreview ?? battle} activeActorId={actingId} stagedHp={stagedHp} playerAppearance={save.character.appearance} playerPortraitAssetId={save.character.portraitAssetId} />
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
@@ -394,6 +401,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           </span>}
         </button>)}
       </div>
+      {actorCueName && <div className="pixel-battle__actor-cue" role="status" aria-live="polite">
+        TURNO DE {actorCueName.toLocaleUpperCase('pt-BR')}
+      </div>}
       {roundCurtain && !activeDice && <div className="pixel-battle__round-curtain" role="status" aria-label="Separador de turno">
         <span>✧</span><strong>{roundCurtain}</strong>
       </div>}

@@ -113,6 +113,15 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     .filter((effect): effect is Extract<typeof effect, { type: 'unlockSkill' }> => effect.type === 'unlockSkill')
     .map((effect) => effect.skillId)
   const equipmentSkillIds = getBoundItemSkillIds(save, catalog, 'weapon')
+  // Clan skills are earned on affiliation, never granted to raw Terrírians.
+  // BALANCE_DRAFT: the four Clans have distinct first disciplines in v0.5.10.
+  const clanSkills: Record<string, string> = {
+    dunavar: 'skill_clan_dunavar_guard',
+    rustal: 'skill_clan_rustal_glyph',
+    cebios_esti: 'skill_clan_cebios_orb',
+    estres_do_et: 'skill_clan_estres_flux',
+  }
+  const clanSkillId = save.character.clan.clanId ? clanSkills[save.character.clan.clanId] : undefined
   const stats = deriveCharacterStats(save, catalog)
   const maxHp = stats.life.value
   const maxMp = stats.mana.value
@@ -132,7 +141,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     initiativeDie: character.attributes.agility.die,
     alive: true,
     defending: false,
-    skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds])],
+    skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds, ...(clanSkillId ? [clanSkillId] : [])])],
     attackDie: character.attributes[catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.scalingAttribute ?? 'strength'].die,
     statusEffects: [],
   }

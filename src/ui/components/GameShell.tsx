@@ -4,8 +4,8 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../state/authStore'
 import { useGameStore } from '../../state/gameStore'
 import { QuestTracker } from './QuestTracker'
-import { WorldJourneyBar } from '../world/WorldJourneyBar'
 import { rememberCosmeticAvatar } from '../characters/deviceAvatar'
+import './immersiveV0510.css'
 
 type GameShellProps = {
   children: ReactNode
@@ -41,39 +41,40 @@ export function GameShell({ children, fluid = false, immersive = false }: GameSh
 
   return (
     <div className={`game-shell ${immersive ? 'game-shell--immersive' : ''}`}>
-      <header className="game-header">
-        <NavLink to="/play" className="brand" aria-label="Terrúnia — Terran">
-          <img src="/assets/ui/terrunia-mark.svg" alt="" />
-          <span>
-            <strong>Terrúnia</strong>
-            <small>Resquícios das Ruínas</small>
-          </span>
-        </NavLink>
-        {!immersive && <nav className="main-nav" aria-label="Navegação principal">
-          {navItems.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>
-              <Icon size={16} aria-hidden="true" />
-              <span>{label}</span>
-            </NavLink>
-          ))}
-        </nav>}
-        {immersive && save ? <div className="world-header-nav">
-          <WorldJourneyBar save={save} />
-          <NavLink to="/menu" className="world-header-nav__menu" aria-label="Abrir Menu">
-            <Grid2X2 size={17} aria-hidden="true" />
-            <span>MENU</span>
-          </NavLink>
-        </div> : null}
-        <div className="header-actions">
-          <span className={`save-state save-state--${syncStatus}`} title={`Persistência ${syncMode ?? 'local'}`}>
+      {immersive ? (
+        <nav className="immersive-controls" aria-label="Controles rápidos do jogo">
+          <span className={`save-state save-state--${syncStatus}`} role="status"
+            title={`Persistência ${syncMode ?? 'local'}`}>
             <i aria-hidden="true" />
             {syncStatus === 'saving' ? 'Salvando…' : syncStatus === 'error' ? 'Erro no save' : 'Salvo'}
           </span>
-          <button type="button" className="icon-button" onClick={handleLogout} aria-label="Sair">
-            <LogOut size={17} />
-          </button>
-        </div>
-      </header>
+          <NavLink to="/quests" aria-label="Abrir Missões" title="Missões"><BookOpen size={17} /></NavLink>
+          <NavLink to="/menu" aria-label="Abrir Menu" title="Menu"><Grid2X2 size={18} /><span>MENU</span></NavLink>
+        </nav>
+      ) : (
+        <header className="game-header">
+          <NavLink to="/play" className="brand" aria-label="Terrúnia — Terran">
+            <img src="/assets/ui/terrunia-mark.svg" alt="" />
+            <span><strong>Terrúnia</strong><small>Resquícios das Ruínas</small></span>
+          </NavLink>
+          <nav className="main-nav" aria-label="Navegação principal">
+            {navItems.map(({ to, label, icon: Icon }) => (
+              <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>
+                <Icon size={16} aria-hidden="true" /><span>{label}</span>
+              </NavLink>
+            ))}
+          </nav>
+          <div className="header-actions">
+            <span className={`save-state save-state--${syncStatus}`} title={`Persistência ${syncMode ?? 'local'}`}>
+              <i aria-hidden="true" />
+              {syncStatus === 'saving' ? 'Salvando…' : syncStatus === 'error' ? 'Erro no save' : 'Salvo'}
+            </span>
+            <button type="button" className="icon-button" onClick={handleLogout} aria-label="Sair">
+              <LogOut size={17} />
+            </button>
+          </div>
+        </header>
+      )}
       <main className={fluid ? 'game-main game-main--fluid' : 'game-main'}>{children}</main>
       {save && !immersive ? <QuestTracker save={save} /> : null}
       <footer className="game-footer">
@@ -86,3 +87,4 @@ export function GameShell({ children, fluid = false, immersive = false }: GameSh
     </div>
   )
 }
+
