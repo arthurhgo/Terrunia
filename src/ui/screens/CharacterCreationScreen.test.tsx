@@ -32,6 +32,6 @@ describe('criação: a distribuição pertence ao primeiro Vínculo', () => {
     expect(screen.getByRole('button', { name: 'Costas' })).toHaveAttribute('aria-pressed', 'true')
     fireEvent.click(screen.getByRole('button', { name: /Confirmar e continuar/ }))
     await waitFor(() => expect(createGame).toHaveBeenCalledOnce())
-    expect(createGame.mock.calls[0][0]).toBe('Lysa')
+    expect(createGame).toHaveBeenCalledWith('Lysa', 'character.terririan.default', expect.any(Object))
   })
 })
