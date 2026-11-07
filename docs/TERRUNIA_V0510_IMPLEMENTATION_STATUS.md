@@ -37,3 +37,18 @@
 - [ ] Merge/deploy de produção somente após aprovação explícita.
 
 **Processo:** nenhum segredo adicionado; commits em branch isolada e reversível; evitar builds repetidas no Vercel.
+
+## Continuação: dois biomas jogáveis (branch feat/v0510-cerrado-elduran)
+
+**Conteúdo solicitado:** Cerrado Místico e Deserto de Elduran. Cada um recebeu 0 Entrada + 4 encontros progressivos (incluindo uma batalha final), 9 espécies compartilhadas pelos dois biomas e 8 materiais comuns. Os nomes das espécies seguem o documento de biomas de Terrúnia.
+
+- Exploração pixelada: visuais distintos (cactos/vegetação seca no Cerrado; dunas e estruturas soterradas em Elduran), câmera e hitboxes do motor de Astravél.
+- Portal: ações separadas por ID; entrada voluntária sem batalha automática.
+- Combate: máquina de estados existente, com o mesmo fluxo de loot/claim/save, sem novos equipamentos vinculados.
+- Progressão provisória: Colosso de Astravél concluído → Cerrado; chefe da rota do Cerrado concluído → Elduran. **OWNER_DECISION** quanto à ordem e gates finais.
+- Acesso de saves v0.5.9/v0.5.10: os novos nós são inicializados apenas na primeira entrada, sem alterar save schema nem resetar progresso antigo.
+- **BALANCE_DRAFT:** HP, ataque, XP, Ouro, Ressonância, valores de venda/conversão de materiais, níveis e seleção de guardiões finais.
+- **Não ativado:** 25 fontes de drops raros, 13 runas, regiões Glacial e Korduun, novas missões de NPC e sprites finais.
+- Sprites futuros são mapeados por asset IDs; a ausência de PNG usa placeholder.
+
+**QA exigido:** check local/CI, E2E de navegação Portal → Cerrado/Elduran, entrada antiga, progressão de nodes, combate, itens, retorno e reentrada, validação visual em desktop/mobile. Nenhum merge automático autorizado.

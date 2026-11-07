@@ -38,6 +38,11 @@ describe('seletor da viewport imersiva', () => {
     save.world.currentLocationId = 'astravel_fungorro_01'
     expect(getWorldScene(save, content).kind).toBe('expedition')
 
+    save.world.currentLocationId = 'cerrado_shadow_01'
+    expect(getWorldScene(save, content).kind).toBe('expedition')
+    save.world.currentLocationId = 'elduran_golem_04'
+    expect(getWorldScene(save, content).kind).toBe('expedition')
+
     save.world.currentLocationId = 'dungeon_fungal_chambers'
     expect(getWorldScene(save, content).kind).toBe('dungeon')
   })
