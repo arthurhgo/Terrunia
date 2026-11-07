@@ -169,7 +169,7 @@ export const combatSkillDefinitions = [
   },
   // Clan techniques unlock only after in-world initiation; not at character creation.
   {
-    id: 'skill_clan_dunavar_guard', name: 'Voto da Barreira', description: 'Postura Dûn'Avar que recupera a força do portador.', target: 'self',
+    id: 'skill_clan_dunavar_guard', name: 'Voto da Barreira', description: "Postura Dûn'Avar que recupera a força do portador.", target: 'self',
     mpCost: 0, cooldownTurns: 3, damageDieSteps: 0,
     effects: [{ type: 'restoreHp', value: 2 }], status: 'BALANCE_DRAFT',
   },
