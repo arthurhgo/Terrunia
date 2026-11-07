@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen, within } from '@testing-library/react'
+import { act, cleanup, render, screen } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -34,17 +34,17 @@ describe('viewport unificada', () => {
     render(<MemoryRouter initialEntries={['/play']}><UnifiedWorldScreen /><LocationProbe /></MemoryRouter>)
     expect(screen.getByRole('heading', { name: 'Astravél' })).toBeInTheDocument()
     expect(screen.getByLabelText('Rota atual')).toHaveTextContent('/play')
-    const journey = screen.getByRole('navigation', { name: 'Caminho da base até o personagem' })
-    expect(within(journey).getByText('Terran')).toBeInTheDocument()
-    expect(within(journey).getByText('Portal')).toBeInTheDocument()
-    expect(within(journey).getByText('Astravél')).toBeInTheDocument()
+    const controls = screen.getByRole('navigation', { name: 'Controles rápidos do jogo' })
+    expect(screen.getByRole('link', { name: 'Abrir Missões' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Abrir Menu' })).toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Caminho da base até o personagem' })).toBeNull()
 
     act(() => useGameStore.getState().startBattle('astravel_fungorro_01'))
 
     expect(screen.getByRole('heading', { name: 'Primeira Presença Fungorra' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Viewport unificada de combate' })).toBeInTheDocument()
     expect(screen.getByLabelText('Rota atual')).toHaveTextContent('/play')
-    expect(within(journey).getByText('Batalha').closest('li')).toHaveAttribute('aria-current', 'step')
+    expect(screen.getByRole('navigation', { name: 'Controles rápidos do jogo' })).toBe(controls)
     expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_fungorro_01')
   })
 })

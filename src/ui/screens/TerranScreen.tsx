@@ -95,6 +95,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const restAtHome = useGameStore((state) => state.restAtHome)
   const enterBase = useGameStore((state) => state.enterBase)
   const unlockBaseWithKey = useGameStore((state) => state.unlockBaseWithKey)
+  const acknowledgeBaseIntroduction = useGameStore((state) => state.acknowledgeBaseIntroduction)
   const acceptQuest = useGameStore((state) => state.acceptQuest)
   const leaveBase = useGameStore((state) => state.leaveBase)
   const [drawer, setDrawer] = useState<Drawer>(null)
@@ -167,7 +168,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const showHomeInterior = () => {
     setStreetSpawn({ ...PLAYER_HOME_DOOR })
     setInteriorId(PLAYER_HOME_INTERIOR_ID)
-    setHomeMenuOpen(true)
+    setHomeMenuOpen(!useGameStore.getState().save?.world.worldFlags.includes('base_intro_viewed_v0510'))
     setLocationId('location_terran_portal_plaza')
     setDrawer(null)
     setInspected(null)
@@ -332,20 +333,17 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 : <p>A porta está trancada. Conclua <strong>Um Lugar em Terran</strong> com Daeryn para receber a chave.</p>}
             </Modal>
             <Modal open={homeMenuOpen && interiorId === PLAYER_HOME_INTERIOR_ID}
-              title="Base do Terrírian" eyebrow="SUA CASA · SERVIÇOS" onClose={() => setHomeMenuOpen(false)}
+              title="Sua Base foi desbloqueada" eyebrow="TUTORIAL · PRIMEIRA ENTRADA"
+              onClose={() => { acknowledgeBaseIntroduction(); setHomeMenuOpen(false) }}
               className="terran-base-functions">
-              <p>O acesso à Base foi liberado. Escolha uma função ou feche esta janela para explorar o cômodo.</p>
+              <p>Esta casa agora é sua. Caminhe pelo interior e interaja diretamente com os objetos.</p>
               <div className="terran-base-functions__actions">
-                <button type="button" onClick={() => { restAtHome(); setDrawer('home'); setHomeMenuOpen(false) }}>
-                  <BedDouble size={18} /> Descansar na Cama
-                </button>
-                <button type="button" onClick={() => { setDrawer('chest'); setHomeMenuOpen(false) }}>
-                  <Archive size={18} /> Abrir Baú
-                </button>
-                <button type="button" onClick={() => { setDrawer('homeRecords'); setHomeMenuOpen(false) }}>
-                  <ScrollText size={18} /> Consultar Registros
-                </button>
+                <span><BedDouble size={18} /> <strong>Cama</strong> · recuperar Vida e Mana</span>
+                <span><Archive size={18} /> <strong>Baú</strong> · armazenar seus recursos</span>
+                <span><ScrollText size={18} /> <strong>Estante</strong> · consultar memórias e registros</span>
               </div>
+              <button type="button" className="terran-service-action"
+                onClick={() => { acknowledgeBaseIntroduction(); setHomeMenuOpen(false) }}>Entendi · explorar a Base</button>
             </Modal>
             {waking && interiorId === PLAYER_HOME_INTERIOR_ID && <div className="terran-base__waking" role="status">Você acorda na Base. Descanse para recuperar Vida e Mana.</div>}
             {inspected && <div className="pixel-interior__inspection" role="dialog" aria-label={`Inspecionar ${inspected.name}`}>

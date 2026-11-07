@@ -117,3 +117,28 @@
 .portal-hub__chapter--active, .portal-hub__chapter--ready_to_turn_in { border-color: #e0b369; }
 .portal-hub__chapter--completed { border-color: #84c39b; }
 @media (max-width: 760px) { .portal-hub__chapters { grid-template-columns: minmax(0,1fr); } }
+
+
+/* v0.5.10 VISUAL_DRAFT — route buttons dock on the LEFT, map progression on the RIGHT.
+ * The already-approved start action still enters Astravél at node 0. */
+@media (min-width: 821px) {
+  .portal-hub__content {
+    display: grid; grid-template-columns: minmax(280px, 32%) minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr; gap: 15px 20px;
+    align-content: start;
+  }
+  .portal-hub__primary { grid-column: 1; grid-row: 1; }
+  .portal-hub__hunts { grid-column: 1; grid-row: 2 / 4; }
+  .portal-hub__chapters { grid-column: 2; grid-row: 1 / 3; align-self: start; }
+  .portal-hub__primary-grid { grid-template-columns: minmax(0, 1fr); }
+  .portal-hub__hunt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 820px) {
+  .portal-hub__content { display: flex; flex-direction: column; }
+  .portal-hub__primary { order: 1; }
+  .portal-hub__hunts { order: 2; }
+  .portal-hub__chapters { order: 3; }
+}
+.portal-hub__choice { min-height: 88px; padding: 10px; }
+.portal-hub__choice strong { font-size: 12px; }
+.portal-hub__choice em { font-size: 9px; }

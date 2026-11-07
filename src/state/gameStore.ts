@@ -112,6 +112,7 @@ type GameState = {
   restAtHome: () => void
   enterBase: () => boolean
   unlockBaseWithKey: () => boolean
+  acknowledgeBaseIntroduction: () => void
   leaveBase: () => void
   transferBaseItem: (direction: 'deposit' | 'withdraw', instanceId: string, quantity: number) => void
   receiveDaerynAid: () => void
@@ -528,6 +529,14 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(next)
       show('Base destrancada · missão concluída', 'Chave usada uma vez. O acesso à sua Base e às três funções foi liberado.', 'success')
       return true
+    },
+
+    acknowledgeBaseIntroduction: () => {
+      const save = get().save
+      if (!save || save.world.worldFlags.includes('base_intro_viewed_v0510')) return
+      const next = structuredClone(save)
+      next.world.worldFlags.push('base_intro_viewed_v0510')
+      commit(next)
     },
 
     leaveBase: () => {

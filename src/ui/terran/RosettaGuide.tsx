@@ -64,6 +64,12 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
           </button>}
         </div>
       </section> : <p className="rosetta-tutorial__done"><CheckCircle2 size={16} /> As três lições principais foram concluídas. Sua proteção escolhida evolui com você; novas peças são opcionais.</p>}
+      {save.character.level >= 3 && !save.character.clan.clanId && <article className="rosetta-guide__next" aria-label="Orientação de Clã no nível 3">
+        <h3><Compass size={16}/> Caminho dos Clãs · Nível 3</h3>
+        <p>Você já pode investigar as iniciações dos Clãs. Visite o Salão dos Clãs, conheça seus mestres e conclua as provas de filiação.</p>
+        <small>A escolha acontece dentro do mundo, após as missões; não altera a criação inicial do Terrírian.</small>
+        <button type="button" onClick={onOpenQuests}>Consultar provas e missões</button>
+      </article>}
       {onShowPaths && <button type="button" className="rosetta-guide__paths" onClick={onShowPaths}><Route size={16} /> Mostrar caminhos dourados para novas missões</button>}
       {guidance.next && guidance.next.id !== lesson?.id && <article className="rosetta-guide__next">
         <h3><Compass size={16}/> O que fazer agora</h3>

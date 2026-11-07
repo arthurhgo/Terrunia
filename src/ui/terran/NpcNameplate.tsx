@@ -16,16 +16,19 @@ export function getNpcSubtitle(presence: TerranNpcPresence): string {
 export function NpcNameplate({ presence }: { presence: TerranNpcPresence }) {
   const subtitle = getNpcSubtitle(presence)
   const save = useGameStore((state) => state.save)
-  const totals = save && presence.npcId ? getNpcQuestCounts(save, presence.npcId, content) : null
+  // Rosetta is the tutorial guide, not a quest acceptance terminal.
+  // Never advertise unacceptably locked/future quests as an available offer.
+  const totals = save && presence.npcId && presence.npcId !== 'npc_rosetta'
+    ? getNpcQuestCounts(save, presence.npcId, content) : null
   const hasQuests = totals && (totals.available + totals.active + totals.ready > 0)
   return <span className="npc-nameplate" aria-hidden="true" data-npc-title={subtitle}
     title={subtitle ? `${presence.label} · ${subtitle}` : presence.label}>
     <strong className="npc-nameplate__name">{presence.label}</strong>
     {subtitle && <small className="npc-nameplate__subtitle">{subtitle}</small>}
     {hasQuests && <span className="npc-nameplate__quest-counts" title={`${totals.available} disponíveis, ${totals.active} em andamento, ${totals.ready} para entregar`}>
-      {totals.available > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--available">+{totals.available} disponíveis</small>}
-      {totals.active > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--active">{totals.active} andamento</small>}
-      {totals.ready > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--ready">{totals.ready} entregar</small>}
+      {totals.available > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--available" title={`${totals.available} disponíveis`}>{totals.available}</small>}
+      {totals.active > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--active" title={`${totals.active} em andamento`}>{totals.active}</small>}
+      {totals.ready > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--ready" title={`${totals.ready} para entregar`}>{totals.ready}</small>}
     </span>}
   </span>
 }

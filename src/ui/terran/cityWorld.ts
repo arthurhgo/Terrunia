@@ -1,4 +1,5 @@
 import { content } from '../../content/catalog'
+import { cameraAt, type WorldViewport } from '../world/worldViewport'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import { terranLandmarks, type TerranLandmark } from '../../content/terranExploration'
 
@@ -20,10 +21,8 @@ export const getCityDoor = (id: TerranLocationId): WorldPoint => {
   const point = getCityPoint(id)
   return { x: point.x, y: point.y + 36 }
 }
-export const getCityCamera = (point: WorldPoint): WorldPoint => ({
-  x: Math.max(0, Math.min(CITY_WIDTH - CITY_VIEW_WIDTH, Math.round(point.x - CITY_VIEW_WIDTH / 2))),
-  y: Math.max(0, Math.min(CITY_HEIGHT - CITY_VIEW_HEIGHT, Math.round(point.y - CITY_VIEW_HEIGHT / 2))),
-})
+export const getCityCamera = (point: WorldPoint, viewport: WorldViewport = { width: CITY_VIEW_WIDTH, height: CITY_VIEW_HEIGHT }): WorldPoint =>
+  cameraAt(point, viewport, { width: CITY_WIDTH, height: CITY_HEIGHT })
 export const cityScreenToWorld = (point: WorldPoint, camera: WorldPoint): WorldPoint => ({ x: point.x + camera.x, y: point.y + camera.y })
 export const getLandmarkApproach = (landmark: TerranLandmark): WorldPoint => ({ x: landmark.point.x, y: landmark.point.y + landmark.bottom + 12 })
 

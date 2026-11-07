@@ -123,7 +123,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
       <div className={`terran-game__layout expedition-game__layout ${drawer ? 'has-drawer' : ''}`}>
         <section className="terran-game__stage" aria-label="Cena contínua de Astravél">
           <AstravelPixelCanvas key={save.world.currentLocationId} trail={trail} statuses={save.world.trailNodeStates}
-            currentLocationId={save.world.currentLocationId} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save)}
+            currentLocationId={save.world.currentLocationId} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save, true)}
             reducedMotion={save.settings.reducedMotion} enabled={!scene} onInspect={inspect} onEngage={engage}
             onTravelStart={() => { if (drawer === 'node') { setDrawer(null); setSelectedId(null) } }} />
           <ExpeditionStatusHud save={save} selected={drawer}

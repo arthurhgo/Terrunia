@@ -9,7 +9,7 @@ import type { MovingCityActor } from './cityLife'
 import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, WORLD_ACTOR_SCALE, type ActorFacing } from './pixelActorArt'
 import { PLAYER_HOME_CENTER, PLAYER_HOME_DOOR } from './roomContent'
 import { terranLandmarks, type TerranLandmark } from '../../content/terranExploration'
-import { CITY_WIDTH, CITY_HEIGHT, CITY_VIEW_WIDTH, CITY_VIEW_HEIGHT, CITY_BUILDING_SCALE, CITY_NPC_SIZE, getCityCamera, getCityPoint, getCityDoor, type WorldPoint } from './cityWorld'
+import { CITY_WIDTH, CITY_HEIGHT, CITY_BUILDING_SCALE, CITY_NPC_SIZE, getCityCamera, getCityPoint, getCityDoor, type WorldPoint } from './cityWorld'
 
 export { CITY_WIDTH, CITY_HEIGHT, getCityPoint, getCityDoor, type WorldPoint } from './cityWorld'
 
@@ -153,7 +153,7 @@ export const drawPixelCity = (
   equipped: readonly VisualItem[] = [],
 ) => {
   ctx.imageSmoothingEnabled = false
-  ctx.clearRect(0, 0, CITY_VIEW_WIDTH, CITY_VIEW_HEIGHT)
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   ctx.save(); ctx.translate(-camera.x, -camera.y)
   ctx.fillStyle = colors.grass; ctx.fillRect(0, 0, CITY_WIDTH, CITY_HEIGHT)
   for (let ty = 0; ty < CITY_HEIGHT; ty += 16) {
@@ -207,7 +207,7 @@ export const drawPixelCity = (
     drawPlayerAura(ctx, player.x, player.y, frame)
     ctx.fillStyle = '#162728'; ctx.fillRect(Math.round(player.x - 5), Math.round(player.y - 2), 10, 3)
     drawEquipmentLayer(ctx, equipped, 'back', facing, player.x, player.y)
-    if (!drawActorImage(ctx, playerSprite, player.x, player.y, facing, stride)) {
+    if (!drawActorImage(ctx, playerSprite, player.x, player.y, facing, stride, CITY_NPC_SIZE)) {
       drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[playerPalette] ?? ACTOR_PALETTES.terririan, WORLD_ACTOR_SCALE)
     }
     drawEquipmentLayer(ctx, equipped, 'front', facing, player.x, player.y)

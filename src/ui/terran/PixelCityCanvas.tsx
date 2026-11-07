@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
+import { useWorldViewport } from '../world/useWorldViewport'
 import { NpcMarker } from './NpcMarker'
 import { NpcNameplate } from './NpcNameplate'
 import { resolveAsset } from '../../assets/assetRegistry'
@@ -14,7 +15,7 @@ import { getNpcPatrol, type MovingCityActor } from './cityLife'
 import { CITY_HEIGHT, CITY_WIDTH, drawPixelCity, getCityDoor, getCityPoint, type WorldPoint } from './pixelCityArt'
 import type { ActorFacing } from './pixelActorArt'
 import { PLAYER_HOME_DOOR, PLAYER_HOME_CENTER } from './roomContent'
-import { CITY_NPC_SIZE, CITY_VIEW_WIDTH, CITY_VIEW_HEIGHT, getCityCamera, getCityDistrict, cityScreenToWorld, getLandmarkApproach } from './cityWorld'
+import { CITY_NPC_SIZE, getCityCamera, getCityDistrict, cityScreenToWorld, getLandmarkApproach } from './cityWorld'
 import { terranLandmarks, cityLandmarkFlag, type TerranLandmark } from '../../content/terranExploration'
 import type { RosettaQuestRoute, TrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 import './questTrackingPaths.css'
@@ -101,6 +102,10 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
   const routePathsRef = useRef(new Map<string, SVGPathElement>())
   const routeCacheRef = useRef(new Map<string, { key: string; d: string }>())
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
+  const viewport = useWorldViewport(stageRef, CITY_WIDTH, CITY_HEIGHT)
+  const viewportRef = useRef(viewport)
+  viewportRef.current = viewport
   const keysRef = useRef(new Set<Direction>())
   const destinationRef = useRef<Destination | null>(null)
   const initialId = TERRAN_LOCATION_IDS.find((id) => id === currentLocationId) ?? 'location_terran_portal_plaza'
@@ -271,11 +276,11 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
           else if (destinationRef.current) destinationRef.current = null
         }
       }
-      const camera = getCityCamera(playerRef.current)
+      const camera = getCityCamera(playerRef.current, viewportRef.current)
       cameraRef.current = camera
       if (worldRef.current) worldRef.current.style.transform = `translate(${-camera.x / CITY_WIDTH * 100}%, ${-camera.y / CITY_HEIGHT * 100}%)`
-      const inView = (point: WorldPoint) => point.x >= camera.x - 25 && point.x <= camera.x + CITY_VIEW_WIDTH + 25
-        && point.y >= camera.y - 10 && point.y <= camera.y + CITY_VIEW_HEIGHT + 30
+      const inView = (point: WorldPoint) => point.x >= camera.x - 25 && point.x <= camera.x + viewportRef.current.width + 25
+        && point.y >= camera.y - 10 && point.y <= camera.y + viewportRef.current.height + 30
       for (const actor of liveCast) {
         const button = npcButtonsRef.current.get(actor.id)
         if (!button) continue
@@ -301,6 +306,8 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
       mapPlayerRef.current?.setAttribute('cy', String(playerRef.current.y))
       mapViewRef.current?.setAttribute('x', String(camera.x))
       mapViewRef.current?.setAttribute('y', String(camera.y))
+      mapViewRef.current?.setAttribute('width', String(viewportRef.current.width))
+      mapViewRef.current?.setAttribute('height', String(viewportRef.current.height))
       if (districtRef.current) districtRef.current.textContent = getCityDistrict(playerRef.current)
       if (canvas) {
         canvas.dataset.cameraX = String(camera.x); canvas.dataset.cameraY = String(camera.y)
@@ -332,7 +339,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
     if (!enabled) return
     const bounds = event.currentTarget.getBoundingClientRect()
     if (!bounds.width || !bounds.height) return
-    const point = cityScreenToWorld({ x: Math.round((event.clientX - bounds.left) / bounds.width * CITY_VIEW_WIDTH), y: Math.round((event.clientY - bounds.top) / bounds.height * CITY_VIEW_HEIGHT) }, cameraRef.current)
+    const point = cityScreenToWorld({ x: Math.round((event.clientX - bounds.left) / bounds.width * viewportRef.current.width), y: Math.round((event.clientY - bounds.top) / bounds.height * viewportRef.current.height) }, cameraRef.current)
     const actor = nearestNpc(point, liveActorsRef.current, 14)
     if (actor) { walkToActor(actor); return }
     const landmark = terranLandmarks.find((entry) => Math.hypot(point.x - entry.point.x, point.y - entry.point.y) < 26)
@@ -344,11 +351,11 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
   }
 
   return (
-    <div className="pixel-city" aria-label="Terran — mundo pixelado explorável">
-      <canvas ref={canvasRef} width={CITY_VIEW_WIDTH} height={CITY_VIEW_HEIGHT} onPointerDown={pointerWalk}
+    <div ref={stageRef} className="pixel-city" aria-label="Terran — mundo pixelado explorável">
+      <canvas ref={canvasRef} width={viewport.width} height={viewport.height} onPointerDown={pointerWalk}
         className="pixel-city__canvas" role="img" tabIndex={0}
         aria-label="Terran vista superior 3/4; caminhe por WASD, setas ou toque" />
-      <div ref={worldRef} className="pixel-city__sites pixel-city__world" style={{ width: `${CITY_WIDTH / CITY_VIEW_WIDTH * 100}%`, height: `${CITY_HEIGHT / CITY_VIEW_HEIGHT * 100}%`, transform: `translate(${-cameraRef.current.x / CITY_WIDTH * 100}%, ${-cameraRef.current.y / CITY_HEIGHT * 100}%)` }}>
+      <div ref={worldRef} className="pixel-city__sites pixel-city__world" style={{ width: `${CITY_WIDTH / viewport.width * 100}%`, height: `${CITY_HEIGHT / viewport.height * 100}%`, transform: `translate(${-cameraRef.current.x / CITY_WIDTH * 100}%, ${-cameraRef.current.y / CITY_HEIGHT * 100}%)` }}>
         {routesVisible && <svg className="rosetta-quest-lines" viewBox={`0 0 ${CITY_WIDTH} ${CITY_HEIGHT}`} role="img"
           aria-label={showingTracked ? 'Caminho pontilhado da missão rastreada' : 'Caminhos dourados de Rosetta'}
           data-route-mode={showingTracked ? 'tracked' : 'rosetta'}
@@ -443,7 +450,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
             data-route-tone={showingTracked ? trackedQuestRoute?.tone : 'white'}>{visibleRoutes.map((route) => <path key={route.id}
             data-route-tone={route.tone ?? 'white'} data-route-opacity={route.opacity ?? 1}
             ref={(path) => { if (path) routePathsRef.current.set('map:' + route.id, path); else routePathsRef.current.delete('map:' + route.id) }} />)}</g>}
-          <rect ref={mapViewRef} x={cameraRef.current.x} y={cameraRef.current.y} width={CITY_VIEW_WIDTH} height={CITY_VIEW_HEIGHT} fill="none" stroke="#e5d6ad" strokeWidth="5" pointerEvents="none" />
+          <rect ref={mapViewRef} x={cameraRef.current.x} y={cameraRef.current.y} width={viewport.width} height={viewport.height} fill="none" stroke="#e5d6ad" strokeWidth="5" pointerEvents="none" />
           <circle ref={mapPlayerRef} cx={playerRef.current.x} cy={playerRef.current.y} r="11" fill="#ffe6a1" stroke="#17272d" strokeWidth="4" pointerEvents="none" />
         </svg>
         <small>! Missão · ◇ Sidequest · cinza: aceita</small>
