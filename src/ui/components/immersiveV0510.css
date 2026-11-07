@@ -73,6 +73,12 @@
 .game-shell--immersive .terran-game__hud { right: 100%; left: auto; z-index: 32; }
 .game-shell--immersive .terran-game__right-rail { left: 100%; right: auto; z-index: 32; }
 
+/* When a node's details are open, use its primary action rather than
+   leaving a second fight control visually underneath the modal drawer. */
+.game-shell--immersive .expedition-game__layout.has-drawer .astravel-field__fight-action {
+  display: none;
+}
+
 /* Expedition keeps health in the lower-left rather than covering the route. */
 .game-shell--immersive .expedition-status-hud {
   left: max(8px, env(safe-area-inset-left)); top: auto;

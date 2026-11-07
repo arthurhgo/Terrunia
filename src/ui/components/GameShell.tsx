@@ -46,7 +46,7 @@ export function GameShell({ children, fluid = false, immersive = false }: GameSh
           <span className={`save-state save-state--${syncStatus}`} role="status"
             title={`Persistência ${syncMode ?? 'local'}`}>
             <i aria-hidden="true" />
-            {syncStatus === 'saving' ? 'Salvando…' : syncStatus === 'error' ? 'Erro no save' : 'Salvo'}
+            {syncStatus === 'saving' ? 'Salvando…' : syncStatus === 'error' ? 'Erro no save' : syncStatus === 'saved' ? 'Salvo' : 'Aguardando save'}
           </span>
           <NavLink to="/quests" aria-label="Abrir Missões" title="Missões"><BookOpen size={17} /></NavLink>
           <NavLink to="/menu" aria-label="Abrir Menu" title="Menu"><Grid2X2 size={18} /><span>MENU</span></NavLink>
@@ -67,7 +67,7 @@ export function GameShell({ children, fluid = false, immersive = false }: GameSh
           <div className="header-actions">
             <span className={`save-state save-state--${syncStatus}`} title={`Persistência ${syncMode ?? 'local'}`}>
               <i aria-hidden="true" />
-              {syncStatus === 'saving' ? 'Salvando…' : syncStatus === 'error' ? 'Erro no save' : 'Salvo'}
+              {syncStatus === 'saving' ? 'Salvando…' : syncStatus === 'error' ? 'Erro no save' : syncStatus === 'saved' ? 'Salvo' : 'Aguardando save'}
             </span>
             <button type="button" className="icon-button" onClick={handleLogout} aria-label="Sair">
               <LogOut size={17} />
@@ -77,13 +77,13 @@ export function GameShell({ children, fluid = false, immersive = false }: GameSh
       )}
       <main className={fluid ? 'game-main game-main--fluid' : 'game-main'}>{children}</main>
       {save && !immersive ? <QuestTracker save={save} /> : null}
-      <footer className="game-footer">
+      {!immersive && <footer className="game-footer">
         <span>PERSONAGEM É O NEXO</span>
         <i aria-hidden="true" />
         <span>LOOT É POTENCIAL</span>
         <i aria-hidden="true" />
         <span>NÃO SUBSTITUA. EVOLUA.</span>
-      </footer>
+      </footer>}
     </div>
   )
 }

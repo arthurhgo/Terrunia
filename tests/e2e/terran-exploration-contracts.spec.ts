@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { fightAndCollect } from './helpers/combatUi'
 
-test('Terran: câmera, exploração, marcadores, drops reais e entrega de encomenda por ouro', async ({ page }) => {
+test('Terran: câmera, exploração, marcadores, drops reais e entrega de encomenda por ouro', async ({ page }, testInfo) => {
   test.setTimeout(240_000)
   page.setDefaultTimeout(20_000)
   const errors: string[] = []
@@ -45,7 +45,7 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await expect(page.locator('.npc-question-bubble')).toHaveCount(1)
   await expect(page.getByRole('button', { name: 'Conversar com Rosetta', exact: true }).locator('.npc-question-bubble')).toHaveText('?')
   const originCamera = Number(await field.getAttribute('data-camera-x'))
-  await page.screenshot({ path: '/tmp/terrunia-expanded-city.png' })
+  await page.screenshot({ path: testInfo.outputPath('terrunia-expanded-city.png') })
   await page.getByRole('combobox', { name: 'Destino em Terran' }).selectOption('npc:presence_street_arlen')
   const arlen = page.getByRole('dialog', { name: 'Arlen', exact: true })
   await expect(arlen).toBeVisible({ timeout: 20_000 })
@@ -62,7 +62,7 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   const boardBounds = await board.boundingBox()
   expect(boardBounds!.y + boardBounds!.height).toBeLessThanOrEqual(720)
   await expect(board.getByRole('button', { name: 'Continuar explorando', exact: true })).toBeInViewport()
-  await page.screenshot({ path: '/tmp/terrunia-town-contract-board.png' })
+  await page.screenshot({ path: testInfo.outputPath('terrunia-town-contract-board.png') })
   await page.keyboard.press('Escape')
   await page.getByRole('button', { name: 'Ir para Posto de Vorren', exact: true }).click()
   await expect(page.getByRole('img', { name: /Interior pixelado de Posto de Vorren/ })).toBeVisible({ timeout: 20_000 })
@@ -70,7 +70,7 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await expect(vorren.locator('.npc-quest-marker')).toHaveText('!')
   await expect(vorren.locator('.npc-quest-marker')).toHaveCSS('color', 'rgb(255, 218, 99)')
   await expect(page.locator('.pixel-interior__npc .npc-question-bubble')).toHaveCount(0)
-  await page.screenshot({ path: '/tmp/terrunia-town-npc-markers.png' })
+  await page.screenshot({ path: testInfo.outputPath('terrunia-town-npc-markers.png') })
   await page.getByRole('button', { name: 'Sair do interior para as ruas de Terran', exact: true }).click()
   // Movement/camera are covered above. For repeatable combat, enter the Portal
   // through a domain travel fixture and SPA route, never a full-page reload.
@@ -110,7 +110,7 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   await page.getByRole('combobox', { name: 'Destino em Terran' }).selectOption('npc:presence_street_arlen')
   await expect(arlen).toBeVisible({ timeout: 20_000 })
   await expect(page.locator('[aria-label="Conversar com Arlen"] .npc-quest-marker')).toHaveText('◆')
-  await page.screenshot({ path: '/tmp/terrunia-town-ready-delivery.png' })
+  await page.screenshot({ path: testInfo.outputPath('terrunia-town-ready-delivery.png') })
   await arlen.getByRole('button', { name: 'Entregar missão', exact: true }).click()
   await expect(page.locator('[aria-label="Conversar com Arlen"] .npc-quest-marker')).toHaveCount(0)
   await page.reload()
@@ -132,6 +132,28 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
   expect(hudBounds!.x + hudBounds!.width).toBeLessThanOrEqual(390)
   const fieldBounds = await field.boundingBox()
   expect(fieldBounds!.x + fieldBounds!.width).toBeLessThanOrEqual(390)
-  await page.screenshot({ path: '/tmp/terrunia-town-mobile.png' })
+  await page.screenshot({ path: testInfo.outputPath('terrunia-town-mobile.png') })
+  // v0.5.10: full-screen layout contract and visual snapshots at all seven
+  // supported review sizes. Real guest campaign & persisted save established above.
+  for (const { width, height } of [
+    { width: 1366, height: 768 }, { width: 1920, height: 1080 },
+    { width: 1440, height: 900 }, { width: 1024, height: 768 },
+    { width: 2560, height: 1080 }, { width: 844, height: 390 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize({ width, height })
+    await expect(page.locator('.immersive-controls')).toBeVisible()
+    await expect(page.locator('.game-footer')).toHaveCount(0)
+    await expect(field).toBeVisible()
+    // Wait for the ResizeObserver to settle before inspecting camera geometry.
+    await expect.poll(() => field.evaluate((node) => (node as HTMLCanvasElement).width)).toBeGreaterThan(0)
+    const bounds = await field.boundingBox()
+    expect(bounds).not.toBeNull()
+    expect(bounds!.x).toBeGreaterThanOrEqual(-1)
+    expect(bounds!.y).toBeGreaterThanOrEqual(-1)
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width + 1)
+    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(height + 1)
+    await page.screenshot({ path: testInfo.outputPath(`terran-${width}x${height}.png`), animations: 'disabled' })
+  }
   expect(errors).toEqual([])
 })

@@ -39,13 +39,13 @@ jobs:
         run: npm run e2e -- --project=chromium
         env:
           VITE_ALLOW_DEV_GUEST: 'true'
-      - name: Browser evidence (failures only)
-        if: failure()
+      - name: Browser evidence (screenshots and failures)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-failure-evidence
+          name: playwright-viewport-evidence
           path: |
             test-results/
             playwright-report/
           if-no-files-found: ignore
-          retention-days: 3
+          retention-days: 7
