@@ -56,6 +56,12 @@ test('conversas interativas, aceite cinza, diário em linhas e mochila antes dos
   await expect(arlen.locator('.vn-speech')).toContainText('confira a mochila antes de voltar')
   await arlen.locator('.npc-mission-hub__topics button').first().click()
   await expect(arlen.locator('.terran-quest-dialog__reward-list')).toBeVisible()
+  await expect(arlen.getByText('Analisar missão')).toBeVisible()
+  const decision = await arlen.getByRole('button', { name: 'Aceitar missão', exact: true }).boundingBox()
+  expect(decision).not.toBeNull()
+  expect(decision!.y + decision!.height).toBeLessThanOrEqual(page.viewportSize()!.height)
+  await expect(arlen.getByText(/OWNER_DECISION|BALANCE_DRAFT/)).toHaveCount(0)
+
   await arlen.getByRole('button', { name: 'Aceitar missão', exact: true }).click()
   const marker = page.locator('[aria-label="Conversar com Arlen"] .npc-quest-marker')
   // When another Arlen offer remains available, the marker correctly highlights the next offer.

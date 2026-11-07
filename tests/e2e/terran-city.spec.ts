@@ -26,6 +26,13 @@ test('Terran conserva os atalhos laterais; somente MENU abre a tela de progress�
   const hud = page.getByRole('complementary', { name: 'Status permanente do personagem' })
   await expect(hud).toBeVisible()
   await expect(page.getByRole('complementary', { name: 'Diário de missões' })).toBeVisible()
+  const rosettaNameplate = page.getByRole('button', { name: 'Conversar com Rosetta', exact: true })
+  const icon = await rosettaNameplate.locator('.npc-question-bubble').boundingBox()
+  const npcName = await rosettaNameplate.locator('.npc-nameplate__name').boundingBox()
+  expect(icon).not.toBeNull()
+  expect(npcName).not.toBeNull()
+  expect(icon!.x + icon!.width).toBeLessThanOrEqual(npcName!.x + 2)
+
   const location = page.getByRole('button', { name: 'MENU / LOCAL', exact: true })
   await location.click()
   await expect(page.locator('#terran-location-menu')).toBeVisible()

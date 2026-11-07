@@ -6,7 +6,7 @@ export async function fightAndCollect(page: Page, expectedDropCount: number) {
   let phase: string | null = null
   const initiative = page.getByRole('button', { name: /^Arrastar dado de iniciativa d\d+ para cima para rolar$/ })
   const playerDie = page.getByRole('button', { name: /^Arrastar dado d\d+ para cima para rolar$/ })
-  const menu = page.getByRole('button', { name: 'ATAQUE · MAGIAS · HABILIDADES', exact: true })
+  const attack = page.getByRole('button', { name: 'ATAQUE', exact: true })
 
   while (Date.now() - started < 65_000) {
     phase = await page.evaluate(async () => {
@@ -28,9 +28,8 @@ export async function fightAndCollect(page: Page, expectedDropCount: number) {
       await page.waitForTimeout(120)
       continue
     }
-    if (phase === 'AwaitingAction' && await menu.isEnabled().catch(() => false)) {
-      await menu.click()
-      await page.getByRole('button', { name: 'ATAQUE BÁSICO · 0 MP', exact: true }).click()
+    if (phase === 'AwaitingAction' && await attack.isEnabled().catch(() => false)) {
+      await attack.click()
       await page.waitForTimeout(120)
       continue
     }
