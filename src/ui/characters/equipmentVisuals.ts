@@ -50,7 +50,12 @@ const point = (x: number, y: number, size: number, handleX = .5, handleY = .5, a
 export function getEquipmentAnchor(item: VisualItem, facing: ActorFacing): VisualAnchor {
   const left = facing === 'left'
   const back = facing === 'up'
-  if (item.slot === 'weapon' && item.sheathed) return point(18, 15, 22, .5, .7, -42, 'back')
+  if (item.slot === 'weapon' && item.sheathed) {
+    // Facing up exposes the actor's BACK: render the sheathed weapon on top of
+    // the torso (strap/shoulder), not behind the entire character silhouette.
+    return back ? point(17, 19, 22, .5, .55, -38, 'front')
+      : point(18, 15, 22, .5, .7, -42, 'back')
+  }
   if (item.slot === 'weapon') {
     const grip = getWeaponGripProfile(item.itemId)
     const handX = left ? 6 : 26
@@ -60,7 +65,8 @@ export function getEquipmentAnchor(item: VisualItem, facing: ActorFacing): Visua
     const handleX = grip.handleX / 100
     const handleY = grip.handleY / 100
     const angle = left ? -grip.rotation : back ? grip.rotation - 30 : grip.rotation
-    return point(handX, handY, size, left ? 1 - handleX : handleX, handleY, angle, back ? 'back' : 'front')
+    if (back) return point(17, 19, Math.max(16, size), .5, .55, -38, 'front')
+    return point(handX, handY, size, left ? 1 - handleX : handleX, handleY, angle, 'front')
   }
   if (item.slot === 'shield') return left
     ? point(26, 24, 14, .5, .7, -8, 'front')
