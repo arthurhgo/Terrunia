@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { useWorldViewport } from '../world/useWorldViewport'
-import { NpcMarker } from './NpcMarker'
 import { NpcNameplate } from './NpcNameplate'
 import { resolveAsset } from '../../assets/assetRegistry'
 import type { CharacterAppearance } from '../../domain/character/appearance'
@@ -409,8 +408,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
           onFocus={() => { if (actor.presence.npcId === 'npc_rosetta') setRosettaFocused(true) }}
           onBlur={() => { if (actor.presence.npcId === 'npc_rosetta') setRosettaFocused(false) }}
           disabled={!enabled} onClick={() => walkToActor(actor)}>
-          <NpcNameplate presence={actor.presence} />
-          <NpcMarker state={actor.marker} phase={actor.markerPhase} />
+          <NpcNameplate presence={actor.presence} marker={actor.marker} markerPhase={actor.markerPhase} />
         </button>)}
         {terranLandmarks.map((landmark) => <button key={landmark.id} type="button" className="pixel-city__landmark"
           data-interaction-glow={!landmarkFlags.includes(cityLandmarkFlag(landmark.id)) ? 'inspect' : undefined}

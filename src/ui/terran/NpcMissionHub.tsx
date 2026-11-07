@@ -8,6 +8,7 @@ import { getNpcActionableQuests, getQuestStatusLabel } from '../../domain/quests
 import type { GameSave } from '../../domain/game/types'
 import { npcQuestActiveBriefs, npcQuestBriefs } from '../../content/npcConversations'
 import { AssetImage } from '../components/AssetImage'
+import { playerCopy } from '../text/playerCopy'
 import { DialogueWindow } from './DialogueWindow'
 import { QuestNpcPanel } from './TerranServices'
 import './npcMissionHub.css'
@@ -67,7 +68,7 @@ export function NpcMissionHub({ save, presence, initialQuestId, onClose, onServi
       {!talking && selected && <div className="npc-mission-hub__detail" data-quest-status={progress?.status}>
         <div className="npc-mission-hub__quote">
           <AssetImage assetId={portrait} alt={presence.label}/>
-          <p>{message}</p>
+          <p>{playerCopy(message)}</p>
         </div>
         <QuestNpcPanel embedded save={save} questId={selected.id} onClose={onClose}/>
       </div>}

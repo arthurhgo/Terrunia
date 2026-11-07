@@ -153,7 +153,6 @@ export function QuestObjectPuzzle({ save, questId, onClose }: {
         <p>{selected.text}</p>
       </article>}
       {feedback && <p className="quest-activity__feedback" role="status">{feedback}</p>}
-      {activity.kind === 'inscription' && <small className="quest-activity__hypothesis">Hipótese investigativa. A origem definitiva da marca continua não determinada (OWNER_DECISION).</small>}
       {activity.kind === 'bookshelf' && <small>Livro selecionado: examine a página e confirme a leitura correspondente à etapa.</small>}
     </section>
   </Modal>

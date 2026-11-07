@@ -168,3 +168,30 @@
 .pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) { top: -57px; }
 .pixel-city__npc:has(.npc-nameplate__quest-counts) > .npc-quest-marker,
 .pixel-interior__npc:has(.npc-nameplate__quest-counts) > .npc-quest-marker { top: -96px; }
+
+/* v0.5.10.2 — ? / ! / ◇ / ◆ belong left of the NPC name, never above. */
+.pixel-city__npc > .npc-nameplate,
+.pixel-interior__npc > .npc-nameplate,
+.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-counts),
+.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) {
+  top:-48px;min-height:31px;max-width:160px;
+}
+.pixel-city__npc .npc-nameplate__heading,
+.pixel-interior__npc .npc-nameplate__heading {
+  position:relative;display:flex;flex-direction:row;align-items:center;
+  justify-content:center;gap:4px;width:100%;min-width:0;min-height:18px;
+}
+.pixel-city__npc .npc-nameplate__heading > .npc-quest-marker,
+.pixel-interior__npc .npc-nameplate__heading > .npc-quest-marker,
+.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble,
+.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble {
+  position:static;inset:auto;transform:none;flex:0 0 17px;
+  width:17px;height:17px;min-width:17px;min-height:17px;
+  font-size:15px;line-height:1;text-align:center;z-index:3;
+}
+.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble,
+.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble {border-width:1px;font-size:12px;}
+.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble::after,
+.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble::after {display:none;}
+.pixel-city__npc .npc-nameplate__heading > .npc-nameplate__name,
+.pixel-interior__npc .npc-nameplate__heading > .npc-nameplate__name {width:auto;flex:1 1 auto;min-width:0;text-align:left;}

@@ -340,3 +340,29 @@
 .game-shell--immersive .terran-game:not(.expedition-game):not(.dungeon-game) .terran-game__topbar > * {
   pointer-events: auto;
 }
+
+/* 0.5.10.2 — resource bars to the right of the sheathed back-facing portrait. */
+.terran-character-hud__header {padding:7px 8px 6px;}
+.terran-character-hud__header > h2 {margin:2px 0 5px;font-size:12px;}
+.terran-character-hud__identity {display:grid;grid-template-columns:61px minmax(0,1fr);align-items:start;gap:8px;}
+.terran-character-hud__portrait {width:61px;height:74px;}
+.terran-character-hud__portrait .equipped-character {width:58px;height:58px;}
+.terran-character-hud__portrait img {width:100%;height:100%;}
+.terran-character-hud__identity-main {min-width:0;display:grid;gap:4px;}
+.terran-character-hud__identity-meta {min-width:0;display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 5px;}
+.terran-character-hud__identity-meta strong {font-size:11px;overflow-wrap:anywhere;}
+.terran-character-hud__identity-meta small {font-size:8px;line-height:1.1;margin:0;}
+.terran-character-hud__resource-bars {display:grid;gap:3px;min-width:0;}
+.terran-character-hud__resource-bars .progress {min-width:0;margin:0;}
+.terran-character-hud__resource-bars .progress__track {height:19px;border:1px solid #927047;background:#14212a;overflow:hidden;isolation:isolate;}
+.terran-character-hud__resource-bars .progress__fill {position:absolute;inset:0 auto 0 0;height:100%;z-index:-1;}
+.progress--inbar .progress__inbar {
+ position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;
+ min-width:0;gap:2px;padding:0 3px;color:#fff1d8;text-shadow:0 1px 2px #000,1px 0 1px #000;
+ font:700 clamp(8px,.66vw,10px)/1 var(--display);white-space:nowrap;pointer-events:none;
+}
+.progress--inbar .progress__inbar strong {font:inherit;text-transform:uppercase;}
+.progress--inbar .progress__inbar > span {font:inherit;}
+.terran-character-hud__resource-meta {display:flex;flex-wrap:wrap;gap:4px 9px;justify-content:space-between;margin-top:6px;font:9px var(--display);color:#dfc68e;}
+.terran-character-hud__resource-meta > span {display:flex;align-items:center;gap:3px;}
+@media(max-width:1200px){.terran-character-hud__resource-bars .progress__track {height:17px;}.progress--inbar .progress__inbar {font-size:8px;}}

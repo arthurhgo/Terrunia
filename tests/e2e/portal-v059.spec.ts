@@ -40,7 +40,18 @@ test('Portal v0.5.9: buttons, level gates and progressive enemy sprite', async (
   await expect(page.getByRole('button', { name: /Rastro Micelial · Bloqueada/ })).toBeDisabled()
   await expect(page.getByRole('button', { name: /Guardiões do Limiar · Bloqueada/ })).toBeDisabled()
   await expect(page.locator('.portal-hub__choice')).toHaveCount(9) // +2 biomas da v0.5.10
-  await expect(page.locator('.portal-hub__chapters .portal-hub__chapter')).toHaveCount(3)
+  await expect(page.locator('.portal-hub__chapters .portal-hub__chapter')).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Caçadas do Portal' })).toBeVisible()
+  const layout = await page.locator('.portal-hub__content').evaluate((content) => {
+    const journeys = content.querySelector('.portal-hub__primary')!.getBoundingClientRect()
+    const hunts = content.querySelector('.portal-hub__hunts')!.getBoundingClientRect()
+    return { journeysRight: journeys.right, huntsLeft: hunts.left,
+      scroll: content.scrollHeight > content.clientHeight + 2 }
+  })
+  expect(layout.journeysRight).toBeLessThan(layout.huntsLeft)
+  expect(layout.scroll).toBe(false)
+  await expect(page.locator('.portal-hub__primary')).toBeVisible()
+  await expect(page.locator('.portal-hub__hunts')).toBeVisible()
   await page.screenshot({ path: 'test-results/portal-v059-desktop.png' })
 
   await page.evaluate(async () => {

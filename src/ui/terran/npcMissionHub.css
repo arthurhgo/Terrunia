@@ -70,3 +70,53 @@
 }
 .npc-mission-hub__topics button[data-quest-status="available"],
 .npc-mission-hub__topics button[data-quest-status="offered"]{border-left-color:#d4ac64}
+
+/* 0.5.10.2 — fast mission decision: compact overview, optional analysis and
+   always-visible accept/turn-in controls. The dialogue itself is the lore view. */
+.npc-mission-hub .vn-textbox {height:min(520px,calc(100dvh - 24px));}
+.npc-mission-hub .vn-details {min-height:0;max-height:none;padding:6px 8px;overflow:hidden;}
+.npc-mission-hub__content {height:100%;max-height:100%;min-height:0;gap:7px;grid-template-columns:minmax(145px,28%) minmax(0,1fr);}
+.npc-mission-hub__topics {max-height:100%;min-height:0;overflow-y:auto;gap:3px;padding:4px;}
+.npc-mission-hub__topics button {min-height:32px;padding:5px 6px;gap:5px;}
+.npc-mission-hub__topics button span {gap:2px;}
+.npc-mission-hub__topics button small {font-size:9px;}
+.npc-mission-hub__detail {min-height:0;max-height:100%;overflow:hidden;padding:0;display:flex;flex-direction:column;gap:4px;}
+.npc-mission-hub__quote {flex:0 0 auto;padding:5px;gap:6px;align-items:center;}
+.npc-mission-hub__quote img {width:32px;height:32px;}
+.npc-mission-hub__quote p {font-size:11px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.npc-mission-hub__detail .terran-quest-dialog {display:flex;flex:1 1 0;flex-direction:column;min-height:0;max-height:100%;padding:4px 5px;gap:4px;overflow:hidden;}
+.terran-quest-dialog__brief {flex:1 1 0;min-height:0;display:grid;align-content:start;gap:5px;overflow:hidden;}
+.terran-quest-dialog__brief > h3 {margin:0;font-size:13px;}
+.terran-quest-dialog__objectives {display:grid;gap:3px;}
+.terran-quest-dialog__objectives p {font-size:11px;line-height:1.2;margin:0;color:#d7d3bb;}
+.terran-quest-dialog__objectives strong {color:#e9cb91;}
+.terran-quest-dialog__reward-list {display:flex;align-items:baseline;gap:6px;margin:0;max-height:46px;overflow:hidden;}
+.terran-quest-dialog__reward-list > strong {flex:0 0 auto;font:700 10px var(--display);color:#efca85;}
+.terran-quest-dialog__reward-list ul {display:flex;align-items:center;gap:4px 9px;flex-wrap:wrap;margin:0;padding:0;list-style:none;min-width:0;}
+.terran-quest-dialog__reward-list li {font-size:10px;line-height:1.15;}
+.terran-quest-dialog__analysis {min-width:0;align-self:start;border:1px solid #53656a;background:#112633;width:100%;}
+.terran-quest-dialog__analysis > summary {padding:5px 7px;font:700 10px var(--display);color:#e9cf9a;cursor:pointer;}
+.terran-quest-dialog__analysis > div {max-height:108px;padding:5px 7px;overflow:auto;font:11px/1.25 Georgia,serif;}
+.terran-quest-dialog__analysis p {margin:0 0 4px;}
+.terran-quest-dialog__decisions {flex:0 0 auto;position:relative;z-index:2;background:#0b1a24;padding:4px 1px 1px;border-top:1px solid #786241;}
+.npc-mission-hub__detail .terran-quest-dialog__actions {position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0;padding:0;gap:5px;background:transparent;border:0;}
+.npc-mission-hub__detail .terran-quest-dialog__actions button {min-height:33px;padding:5px;font-size:11px;}
+.terran-quest-dialog__decisions > .terran-service-action {width:100%;min-height:35px;}
+.terran-quest-dialog__decisions .terran-quest-dialog__object-hint {margin:0;padding:5px;font-size:10px;line-height:1.2;}
+.npc-quest-choices {display:flex;flex-wrap:wrap;gap:3px;margin:0;}
+.npc-quest-choices button {min-height:23px;padding:4px 6px;border:1px solid #655537;background:#1a3038;color:#d6c9a3;font:700 10px var(--display);cursor:pointer;}
+@media(max-width:580px){
+ .npc-mission-hub .vn-textbox {height:calc(100dvh - 20px);min-height:0;}
+ .npc-mission-hub .vn-details {height:auto;max-height:none;overflow:hidden;padding:5px;}
+ .npc-mission-hub__content {display:flex;flex-direction:column;height:100%;min-height:0;max-height:100%;gap:5px;}
+ .npc-mission-hub__topics {flex:0 0 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(27px,auto);max-height:min(110px,20dvh);overflow:auto;padding:3px;}
+ .npc-mission-hub__topics button {min-height:27px;padding:3px;}
+ .npc-mission-hub__topics button strong {font-size:10px;}
+ .npc-mission-hub__topics button small {display:none;}
+ .npc-mission-hub__detail {flex:1 1 0;max-height:none;min-height:0;overflow:hidden;}
+ .npc-mission-hub__quote {padding:3px;}
+ .npc-mission-hub__quote img {width:24px;height:24px;}
+ .npc-mission-hub__quote p {-webkit-line-clamp:1;line-clamp:1;}
+ .npc-mission-hub__detail .terran-quest-dialog {flex:1 1 0;min-height:0;max-height:none;}
+ .terran-quest-dialog__reward-list {max-height:44px;}
+}

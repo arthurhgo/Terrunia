@@ -29,6 +29,14 @@ describe('Identidade dos NPCs no cenário', () => {
     expect(label.children).toHaveLength(2)
   })
 
+  it('posiciona marcador de missão antes do nome, na mesma linha', () => {
+    const presence = streetNpcPresences.find((entry) => entry.npcId === 'npc_street_arlen')!
+    const { container } = render(createElement(NpcNameplate, { presence, marker: '◇' }))
+    const heading = container.querySelector('.npc-nameplate__heading')!
+    expect(heading.firstElementChild).toHaveClass('npc-quest-marker')
+    expect(heading.lastElementChild).toHaveClass('npc-nameplate__name')
+  })
+
   it('exibe Rosetta / Guardiã do Portal em duas linhas, sem concatenar a função do NPC', () => {
     const presence = content.terranLocations.location_terran_portal_plaza.npcPresences
       .find((entry) => entry.id === 'presence_rosetta')!
