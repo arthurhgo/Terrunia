@@ -1,5 +1,6 @@
 import type { TrailDefinition } from './types'
 import { astravelCombatNodes } from './astravel'
+import { biomeTrailDefinitions } from './biomeExpeditions'
 
 export const trailDefinitions = [{
   id: 'trail_astravel_entry', name: 'Floresta de Astravél', regionId: 'astravel',
@@ -8,4 +9,4 @@ export const trailDefinitions = [{
     description: 'O Portal conecta Terran à Borda Luminescente de Astravél.', position: { x: 12, y: 13 } },
     ...astravelCombatNodes],
   status: 'CONTENT_DRAFT',
-}] satisfies TrailDefinition[]
+}, ...biomeTrailDefinitions] satisfies TrailDefinition[]
