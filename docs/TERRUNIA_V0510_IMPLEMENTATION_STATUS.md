@@ -18,7 +18,7 @@
 - NPCs: nome maior, função menor, placa mais estreita; números de disponíveis/ativas/entregáveis alinhados abaixo à esquerda. Rosetta, que apresenta orientação e não aceita quests pela placa, não exibe falso contador de oferta.
 - Base: entra diretamente no interior; modal orientativo somente na primeira entrada após desbloqueio. Confirmação grava `base_intro_viewed_v0510` em `worldFlags`, sem migrar schema. Cama, baú e estante continuam interativos.
 - Portal: destinos e atividades na coluna esquerda em desktop; a atividade Astravél usa `enterAstravel` e o marco `astravel_entry` (0), sem inventar mapas navegáveis.
-- `biomeRegistry`: cinco biomas referenciados. Apenas Astravél está jogável; Cerrado Místico, Elduran, Glacial e Korduun são `CONTENT_DRAFT` bloqueados. Ordem pós-Astravél = `OWNER_DECISION`.
+- `biomeRegistry`: cinco biomas referenciados. **Estado anterior à expansão:** apenas Astravél era jogável. A continuação abaixo introduz Cerrado Místico e Elduran; Glacial e Korduun permanecem fechados. Ordem pós-Astravél = `OWNER_DECISION`.
 
 ## Conteúdo preparado, **não ativado** por segurança de canon e save
 
@@ -29,14 +29,22 @@
 
 ## Gates de validação
 
-- [ ] `npm run check`: lint + TypeScript + Vitest + build.
-- [ ] Playwright: criação, Base, inventário, NPCs, Portal 0, Astravél, combate/timeline, save/load.
+- [x] `npm run check`: lint + TypeScript + Vitest + build (`5541a8e`, [CI aprovado](https://github.com/arthurhgo/Terrunia/actions/runs/42383264465)).
+- [x] Playwright na branch: [E2E aprovado](https://github.com/arthurhgo/Terrunia/actions/runs/42383264484) em `5541a8e`; cobertura de criação, Base, inventário, NPCs, Portal, Astravél, combate e save/load.
 - [ ] Revisão visual 1366×768, 1920×1080, 1440×900, 1024×768, 2560×1080, 844×390 e 390×844.
 - [ ] Arte final: atlas de movimento das dez espécies sem folha nativa, cama/baú/estante e fauna adicional.
 - [ ] Revisão de balanceamento das novas habilidades, runas e probabilidades com o proprietário.
 - [ ] Merge/deploy de produção somente após aprovação explícita.
 
 **Processo:** nenhum segredo adicionado; commits em branch isolada e reversível; evitar builds repetidas no Vercel.
+
+## Continuação de QA pós-merge (2026-11-07)
+
+- A PR #61 foi integrada à `main` em `79b23c1` por operação externa a esta revisão; a indicação anterior de DRAFT não bloqueou o merge.
+- Correção: o rodapé institucional não deve ser montado dentro do `GameShell` imersivo. A cena retém a altura total do viewport e deixa o rodapé somente nas páginas de menu/status.
+- E2E de Terran agora valida posicionamento do canvas e controles nas sete dimensões da lista e salva sete capturas PNG por execução; as evidências são arquivadas no GitHub Actions inclusive quando o teste passa.
+- A captura automatizada NÃO equivale a aprovação estética: inspecionar as sete imagens antes de aprovar a interface.
+- Chance de drops raros, efeitos das runas, Glacial, Korduun e dez atlas de animação final permanecem bloqueados ou em produção como `OWNER_DECISION` / `BALANCE_DRAFT` / `CONTENT_DRAFT`.
 
 ## Continuação: dois biomas jogáveis (branch feat/v0510-cerrado-elduran)
 
@@ -51,4 +59,4 @@
 - **Não ativado:** 25 fontes de drops raros, 13 runas, regiões Glacial e Korduun, novas missões de NPC e sprites finais.
 - Sprites futuros são mapeados por asset IDs; a ausência de PNG usa placeholder.
 
-**QA exigido:** check local/CI, E2E de navegação Portal → Cerrado/Elduran, entrada antiga, progressão de nodes, combate, itens, retorno e reentrada, validação visual em desktop/mobile. Nenhum merge automático autorizado.
+**QA automatizado:** CI, 98 suítes unitárias, e Playwright 11/11 testes aprovados no commit `9779b24` da expansão. **QA pendente:** inspeção estética manual em desktop/mobile, sprites finais e balanceamento com o proprietário. Integração condicionada à autorização explícita do proprietário.
