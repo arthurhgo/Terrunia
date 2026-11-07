@@ -296,6 +296,17 @@
     grid-column: 1; grid-row: 1; z-index: 92;
     box-shadow: -8px 0 22px #000b;
   }
+  /* Older max-width:720px UI CSS can otherwise re-display the HUD.
+     Closed sidebars must be non-interactive, not merely positioned offscreen. */
+  .game-shell--immersive .terran-game:not(.expedition-game):not(.dungeon-game) .terran-game__frame:not(.is-left-open) > .terran-game__fixed-left {
+    display: none; pointer-events: none;
+  }
+  .game-shell--immersive .terran-game:not(.expedition-game):not(.dungeon-game) .terran-game__frame:not(.is-right-open) > .terran-character-hud {
+    display: none; pointer-events: none;
+  }
+  .game-shell--immersive .terran-game:not(.expedition-game):not(.dungeon-game) .terran-game__frame.is-right-open > .terran-character-hud {
+    display: flex; pointer-events: auto;
+  }
   .game-shell--immersive .terran-game:not(.expedition-game):not(.dungeon-game) .terran-game__frame.is-left-open .terran-game__fixed-left { display: grid; }
   .game-shell--immersive .terran-game:not(.expedition-game):not(.dungeon-game) .terran-game__frame.is-right-open .terran-character-hud { display: flex; }
   .game-shell--immersive .terran-game:not(.expedition-game):not(.dungeon-game) .terran-game__panel-switch {
