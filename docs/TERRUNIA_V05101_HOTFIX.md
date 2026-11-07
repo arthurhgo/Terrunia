@@ -21,3 +21,5 @@ Três defeitos relatados por captura de tela: painéis esquerdo/direito extrapol
 - TypeScript, lint, unit tests, build, E2E: execução via GitHub Actions após o commit final.
 
 **Pendências não relacionadas:** arte definitiva e ajustes BALANCE_DRAFT/OWNER_DECISION dos biomas.
+
+- 2026-11-07: correção de regressão pós-teste: regras da grade limitadas à cena de Terran, sem alterar z-index do backdrop/janela da expedição; cabeçalho translúcido deixa os cliques passarem; botões de seleção de arma possuem hitboxes estáveis (animação só no ícone).
