@@ -36,7 +36,8 @@
   position: absolute; z-index: 16; top: max(7px, env(safe-area-inset-top));
   left: max(54px, env(safe-area-inset-left)); right: 175px;
   width: auto; min-height: 0; height: auto; max-height: 37px;
-  margin: 0; padding: 4px 9px; box-sizing: border-box; pointer-events: none;
+  margin: 0; padding: 4px 9px; box-sizing: border-box;
+  pointer-events: auto; z-index: 100;
   background: linear-gradient(90deg, #081824e0, #08182470, transparent);
   border: 0; box-shadow: none;
 }
@@ -196,4 +197,9 @@
 .terran-base-functions__actions > span strong { color: #e6c585; }
 .terran-base-functions .terran-service-action {
   display: block; margin: 12px 0 0 auto; min-height: 40px;
+}
+
+/* Keep world interaction behind the compact location toggle, including touch. */
+.game-shell--immersive .terran-game__topbar .terran-game__location-toggle {
+  position: relative; z-index: 101; pointer-events: auto;
 }

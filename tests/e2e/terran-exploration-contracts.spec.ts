@@ -37,8 +37,10 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
     useGameStore.setState({ save })
   })
   const field = page.locator('.pixel-city__canvas')
-  await expect(field).toHaveAttribute('width', '384')
-  await expect(field).toHaveAttribute('height', '256')
+  // The responsive camera expands its logical world area rather than stretching
+  // the old 384×256 view. Pointer mapping and minimap use this same canvas.
+  await expect.poll(() => field.evaluate((node) => (node as HTMLCanvasElement).width)).toBeGreaterThan(384)
+  await expect.poll(() => field.evaluate((node) => (node as HTMLCanvasElement).height)).toBeGreaterThan(256)
   await expect(page.getByLabel('Minimapa de Terran')).toBeVisible()
   await expect(page.locator('.npc-question-bubble')).toHaveCount(1)
   await expect(page.getByRole('button', { name: 'Conversar com Rosetta', exact: true }).locator('.npc-question-bubble')).toHaveText('?')
