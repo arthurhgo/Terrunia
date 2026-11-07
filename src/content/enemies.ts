@@ -179,4 +179,4 @@ export const enemyDefinitions = [
     skillIds: ['skill_blackroot_crush'], aiSkillEveryRounds: 3,
     weaknessTags: ['light', 'fire'], assetId: 'enemy.blackroot-titan', status: 'BALANCE_DRAFT',
   },
-, ...biomeEnemyDefinitions] satisfies EnemyDefinition[]
+  ...biomeEnemyDefinitions] satisfies EnemyDefinition[]
