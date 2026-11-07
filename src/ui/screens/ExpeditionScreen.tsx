@@ -2,11 +2,11 @@ import { ArrowLeft, Compass, MapPin, Swords, Trees, X } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
-import type { TrailNodeDefinition } from '../../content/types'
+import type { TrailDefinition, TrailNodeDefinition } from '../../content/types'
 import { ASTRAVEL_SECTORS, getAstravelSector } from '../../content/astravel'
 import type { GameSave } from '../../domain/game/types'
 import { getQuestJournalEntries, getQuestStatusLabel } from '../../domain/quests/questSelectors'
-import { checkTrailQuestGate, getActiveTrailNode } from '../../domain/exploration/trailEngine'
+import { checkTrailQuestGate, getActiveTrailNode, getTrailByNodeId } from '../../domain/exploration/trailEngine'
 import { getNextCutscene } from '../../domain/terran/cutscenes'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
@@ -22,17 +22,15 @@ import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import { isFieldConsumable } from '../../domain/exploration/fieldConsumables'
 
 type Drawer = 'trail' | 'node' | 'inventory' | 'character' | 'quests' | null
-const trail = content.trails.trail_astravel_entry
-
-function NodeDrawer({ node, status, save, onAction, onReturn }: {
-  node: TrailNodeDefinition; status: string; save: GameSave; onAction: () => void; onReturn: () => void
+function NodeDrawer({ node, trail, status, save, onAction, onReturn }: {
+  node: TrailNodeDefinition; trail: TrailDefinition; status: string; save: GameSave; onAction: () => void; onReturn: () => void
 }) {
-  const actionable = status === 'current' || status === 'bossCurrent' || (status === 'completed' && node.type === 'boss')
+  const actionable = status === 'current' || status === 'bossCurrent' || (status === 'completed' && node.type === 'boss' && trail.regionId === 'astravel')
   const gate = status === 'completed' ? { ok: true as const } : checkTrailQuestGate(save, node, content)
   const encounter = node.encounterId ? content.encounters[node.encounterId] : null
   const drops = encounter ? [...new Set(encounter.rewards.lootDefinitionIds)].map((id) => content.items[id]) : []
   return <article className="expedition-node-detail">
-    <span className="eyebrow">ENCONTRO {node.index}/15 · {getAstravelSector(node.index).name.toUpperCase()}</span>
+    <span className="eyebrow">ENCONTRO {node.index}/{trail.nodes.length - 1} · {(trail.regionId === 'astravel' ? getAstravelSector(node.index).name : trail.name).toUpperCase()}</span>
     <h3>{node.label}</h3><p>{node.description}</p>
     {node.tacticalHint && <p className="expedition-tactic">{node.tacticalHint}</p>}
     {encounter && <>
@@ -71,14 +69,19 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   if (!save) return <Navigate to="/character/create" replace />
   if (save.battle) return <Navigate to="/battle" replace />
   if (save.world.currentLocationId === content.dungeons.dungeon_fungal_chambers.id) return <Navigate to="/dungeon" replace />
-  if (!trail.nodes.some((node) => node.id === save.world.currentLocationId)) return <Navigate to="/terran" replace />
+  const trail = getTrailByNodeId(content, save.world.currentLocationId)
+  if (!trail) return <Navigate to="/terran" replace />
+  const isAstravel = trail.regionId === 'astravel'
+  const sections = isAstravel ? ASTRAVEL_SECTORS : [{
+    id: trail.regionId, name: trail.name, from: 1, to: trail.nodes.length - 1,
+  }]
 
   const activeNode = getActiveTrailNode(save, trail)
-  const scene = getNextCutscene(save)
+  const scene = isAstravel ? getNextCutscene(save) : null
   const selectedNode = trail.nodes.find((node) => node.id === selectedId) ?? null
   const completed = trail.nodes.filter((node) => node.type !== 'entry' && save.world.trailNodeStates[node.id] === 'completed').length
   const quests = getQuestJournalEntries(save, content).filter(({ progress }) => progress.status !== 'completed')
-  const sector = getAstravelSector(activeNode?.index ?? 15)
+  const sector = isAstravel ? getAstravelSector(activeNode?.index ?? 15) : null
   const activeGate = activeNode ? checkTrailQuestGate(save, activeNode, content) : null
   const stats = deriveCharacterStats(save, content)
   const fieldSupplies = save.inventory.filter((entry) => isFieldConsumable(save, entry.instanceId, content))
@@ -101,10 +104,10 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const act = () => {
     if (!selectedNode || !['current', 'bossCurrent'].includes(save.world.trailNodeStates[selectedNode.id] ?? '')
       && !(selectedNode.type === 'boss' && save.world.trailNodeStates[selectedNode.id] === 'completed')) return
-    if (selectedNode.type === 'boss') {
+    if (selectedNode.type === 'boss' && isAstravel) {
       enterFungalChambers()
       if (!unified) navigate('/dungeon')
-    } else if (selectedNode.type === 'battle') {
+    } else if (selectedNode.type === 'battle' || selectedNode.type === 'boss') {
       engage(selectedNode.id)
     } else if (selectedNode.type === 'camp' || selectedNode.type === 'event') {
       resolveCurrentTrailNode()
@@ -113,15 +116,15 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
     }
   }
 
-  const title = drawer === 'node' ? selectedNode?.label ?? 'Trilha' : drawer === 'inventory' ? 'Mochila' : drawer === 'character' ? 'Personagem' : drawer === 'quests' ? 'Missões' : 'Rota de Astravél'
+  const title = drawer === 'node' ? selectedNode?.label ?? 'Trilha' : drawer === 'inventory' ? 'Mochila' : drawer === 'character' ? 'Personagem' : drawer === 'quests' ? 'Missões' : 'Rota de ' + trail.name
 
   const sceneContent = <div className="terran-game expedition-game">
       <header className="terran-game__topbar">
-        <div><span className="eyebrow">EXPEDIÇÃO · INSTÂNCIA EXTERNA</span><h1>Astravél</h1></div>
-        <div className="terran-game__readout"><MapPin size={16} /> FLORESTA &gt; {activeNode?.label.toUpperCase() ?? 'CÂMARAS FÚNGICAS'}<span>{completed}/15 combates · {sector.name}</span></div>
+        <div><span className="eyebrow">EXPEDIÇÃO · INSTÂNCIA EXTERNA</span><h1>{trail.name}</h1></div>
+        <div className="terran-game__readout"><MapPin size={16} /> BIOMA &gt; {activeNode?.label.toUpperCase() ?? 'PERCURSO CONCLUÍDO'}<span>{completed}/{trail.nodes.length - 1} encontros · {sector?.name ?? trail.name}</span></div>
       </header>
       <div className={`terran-game__layout expedition-game__layout ${drawer ? 'has-drawer' : ''}`}>
-        <section className="terran-game__stage" aria-label="Cena contínua de Astravél">
+        <section className="terran-game__stage" aria-label={"Cena contínua de " + trail.name}>
           <AstravelPixelCanvas key={save.world.currentLocationId} trail={trail} statuses={save.world.trailNodeStates}
             currentLocationId={save.world.currentLocationId} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save, true)}
             reducedMotion={save.settings.reducedMotion} enabled={!scene} onInspect={inspect} onEngage={engage}
@@ -144,14 +147,14 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
           <button type="button" className="expedition-game__drawer-backdrop"
             aria-label="Fechar janela da instância" onClick={() => { setDrawer(null); setSelectedId(null) }} />
           <aside className="terran-game__drawer expedition-game__window" aria-label={`Painel lateral: ${title}`}>
-          <header><span className="eyebrow">ASTRAVÉL · REGISTROS DA EXPEDIÇÃO</span><h2>{title}</h2>
+          <header><span className="eyebrow">{trail.name.toUpperCase()} · REGISTROS DA EXPEDIÇÃO</span><h2>{title}</h2>
             <button type="button" aria-label="Fechar painel" onClick={() => { setDrawer(null); setSelectedId(null) }}><X size={19} /></button>
           </header>
           <div className="terran-game__drawer-content">
-            {drawer === 'node' && selectedNode && <NodeDrawer node={selectedNode} status={save.world.trailNodeStates[selectedNode.id] ?? 'locked'} save={save} onAction={act} onReturn={leave} />}
+            {drawer === 'node' && selectedNode && <NodeDrawer node={selectedNode} trail={trail} status={save.world.trailNodeStates[selectedNode.id] ?? 'locked'} save={save} onAction={act} onReturn={leave} />}
             {drawer === 'trail' && <div className="expedition-route-list">
               <p>Caminhe pelo terreno para alcançar o marco disponível. Locais bloqueados não ativam encontros nem recompensas.</p>
-              {ASTRAVEL_SECTORS.map((section) => <section key={section.id} className="expedition-route-sector">
+              {sections.map((section) => <section key={section.id} className="expedition-route-sector">
                 <h3>{section.name} <small>{section.from}–{section.to}</small></h3>
                 {trail.nodes.filter((node) => node.sectorId === section.id).map((node) => <button type="button" key={node.id}
                   onClick={() => inspect(node.id)} className={`expedition-route-list__item expedition-route-list__item--${save.world.trailNodeStates[node.id] ?? 'locked'}`}>
@@ -160,7 +163,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
                 </button>)}
               </section>)}
             </div>}
-            {drawer === 'character' && <section className="expedition-field-character" aria-label="Ficha de personagem em Astravél">
+            {drawer === 'character' && <section className="expedition-field-character" aria-label={"Ficha de personagem em " + trail.name}>
               <div className="expedition-field-character__identity">
                 <EquippedCharacter save={save} alt={save.character.name} />
                 <div><strong>{save.character.name}</strong><p>Nível {save.character.level} · {save.character.xp} XP</p>

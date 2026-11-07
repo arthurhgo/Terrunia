@@ -1,3 +1,4 @@
+import { biomeEnemyDefinitions } from '../../content/biomeExpeditions'
 import type { CSSProperties } from 'react'
 import { resolveAsset } from '../../assets/assetRegistry'
 import { AssetImage } from '../components/AssetImage'
@@ -19,6 +20,10 @@ export const legacyEnemyMotion: Record<string, { idleMs: number; lunge: number; 
   'enemy.spore-mantis': { idleMs: 680, lunge: 12, sway: 2, tint: '#d4b676' },
   'enemy.ruin-sentinel': { idleMs: 1620, lunge: 5, sway: 1, tint: '#8ad6dc' },
   'enemy.blackroot-titan': { idleMs: 2100, lunge: 6, sway: 1, tint: '#c7a57b' },
+  ...Object.fromEntries(biomeEnemyDefinitions.map((enemy, i) => [enemy.assetId, {
+    idleMs: 800 + (i % 4) * 260, lunge: 6 + (i % 4) * 2, sway: 2 + (i % 3),
+    tint: i < 5 ? '#d9c777' : '#e5bb8b',
+  }])),
 }
 
 /** Presentation-only animation: domain controls damage, attack timing and death. */

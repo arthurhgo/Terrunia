@@ -5,6 +5,7 @@ import { content } from '../../content/catalog'
 import { submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
 import type { BattleState } from '../../domain/combat/types'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
+import { getTrailByNodeId } from '../../domain/exploration/trailEngine'
 import { useGameStore } from '../../state/gameStore'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { CharacterPortrait } from '../characters/CharacterSprite'
@@ -249,6 +250,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           : diceQueue.length ? 'queued-dice'
             : resolvingRolls ? 'resolving-rolls'
               : target.alive ? 'ready' : 'no-live-target'
+  const biome = getTrailByNodeId(content, battle.trailNodeId)?.regionId
+  const battleBiome = biome === 'cerrado' || biome === 'elduran' ? biome : 'astravel'
   const drops = battle.rewards.lootDefinitionIds
   const lootGroups = groupBattleLoot(drops)
 
@@ -366,7 +369,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     </header>
     <BattleTimeline battle={initiativePreview ?? battle} activeActorId={actingId} stagedHp={stagedHp} playerAppearance={save.character.appearance} playerPortraitAssetId={save.character.portraitAssetId} />
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
-      <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} />
+      <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} biome={battleBiome} />
       <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''} ${strikeFx?.actorId === player.id ? 'is-striking' : ''} ${strikeFx?.targetId === player.id ? 'is-strike-target' : ''} ${activeDice && actingId === player.id ? 'is-acting' : ''} ${receivingId === player.id ? 'is-receiving' : ''}`}>
         {damageRevealed && receivingId === player.id && <b className="pixel-battle__damage-number" role="status">−{activeDice?.damage}</b>}
         <EquippedCharacter save={save} facing="right" alt={player.alive ? 'Terrírian voltado para os inimigos' : 'Terrírian derrotado'} />

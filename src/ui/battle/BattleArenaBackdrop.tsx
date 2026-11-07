@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react'
 
 /** Original 384×216 scene painted with integer-sized pixels; replaceable by a biome asset later. */
-export function BattleArenaBackdrop({ dungeon = false }: { dungeon?: boolean }) {
+export function BattleArenaBackdrop({ dungeon = false, biome = 'astravel' }: {
+  dungeon?: boolean; biome?: 'astravel' | 'cerrado' | 'elduran'
+}) {
   const ref = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const ctx = ref.current?.getContext('2d')
@@ -10,6 +12,39 @@ export function BattleArenaBackdrop({ dungeon = false }: { dungeon?: boolean }) 
     const rect = (x: number, y: number, w: number, h: number, color: string) => {
       ctx.fillStyle = color
       ctx.fillRect(x, y, w, h)
+    }
+    if (!dungeon && biome !== 'astravel') {
+      const cerrado = biome === 'cerrado'
+      rect(0, 0, 384, 216, cerrado ? '#514936' : '#85704e')
+      const sky = cerrado ? ['#4a5141', '#586347', '#6e7552'] : ['#86634b', '#9e8059', '#bea071']
+      for (let y = 0; y < 136; y += 8) {
+        for (let x = 0; x < 384; x += 8) {
+          const n = (x * 5 + y * 11 + x * y) % 9
+          rect(x, y, 8, 8, sky[n % 3])
+        }
+      }
+      for (let i = 0; i < 9; i++) {
+        const x = (i * 53 + 19) % 384
+        const h = 13 + (i * 7) % 26
+        if (cerrado) {
+          rect(x, 132 - h, 7, h, '#324c3e')
+          rect(x + 2, 130 - h, 3, h, '#87a172')
+          rect(x - 6, 118 - h / 2, 6, 5, '#4c7857')
+          rect(x + 7, 121 - h / 2, 6, 6, '#4c7857')
+        } else {
+          rect(x - 4, 130 - h, 17, h, '#715440')
+          rect(x - 1, 126 - h, 11, 5, '#d4b488')
+          rect(x + 4, 130 - h, 3, h, '#ad8d68')
+        }
+      }
+      rect(0, 139, 384, 77, cerrado ? '#69593c' : '#ac8d61')
+      for (let y = 139; y < 216; y += 8) {
+        for (let x = 0; x < 384; x += 16) {
+          const n = Math.abs(x * 7 + y * 13) % 5
+          rect(x + n, y + 4, 6, 2, cerrado ? '#80734a' : '#d0b07b')
+        }
+      }
+      return
     }
     const floorY = 139
     rect(0, 0, 384, 216, dungeon ? '#080e1c' : '#0a1931')
@@ -64,6 +99,6 @@ export function BattleArenaBackdrop({ dungeon = false }: { dungeon?: boolean }) 
       const y = 142 + (i * 37) % 72
       rect(x, y, 3 + i % 5, 2, i % 6 ? '#426348' : '#299ba1')
     }
-  }, [dungeon])
+  }, [dungeon, biome])
   return <canvas ref={ref} width={384} height={216} className="pixel-battle__canvas" aria-hidden="true" />
 }
