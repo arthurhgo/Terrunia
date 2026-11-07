@@ -124,7 +124,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
         <div className="terran-game__readout"><MapPin size={16} /> BIOMA &gt; {activeNode?.label.toUpperCase() ?? 'PERCURSO CONCLUÍDO'}<span>{completed}/{trail.nodes.length - 1} encontros · {sector?.name ?? trail.name}</span></div>
       </header>
       <div className={`terran-game__layout expedition-game__layout ${drawer ? 'has-drawer' : ''}`}>
-        <section className="terran-game__stage" aria-label={"Cena contínua de " + trail.name}>
+        <section className="terran-game__stage" aria-label={"Cena contínua de " + (isAstravel ? "Astravél" : trail.name)}>
           <AstravelPixelCanvas key={save.world.currentLocationId} trail={trail} statuses={save.world.trailNodeStates}
             currentLocationId={save.world.currentLocationId} portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save, true)}
             reducedMotion={save.settings.reducedMotion} enabled={!scene} onInspect={inspect} onEngage={engage}
