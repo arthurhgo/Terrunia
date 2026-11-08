@@ -3,6 +3,7 @@ import type { TerranNpcPresence } from '../../content/types'
 import { useGameStore } from '../../state/gameStore'
 import { getNpcQuestBadgeCounts, type NpcWorldMarker, type NpcMarkerPhase } from '../../domain/quests/questSelectors'
 import { NpcMarker } from './NpcMarker'
+import { NpcQuestBadges } from './NpcQuestBadges'
 import './npcNameplate.css'
 
 /** Labels use existing catalog/presence fields, never invented character lore. */
@@ -21,7 +22,6 @@ export function NpcNameplate({ presence, marker, markerPhase }: { presence: Terr
   // Never advertise unacceptably locked/future quests as an available offer.
   const totals = save && presence.npcId && presence.npcId !== 'npc_rosetta'
     ? getNpcQuestBadgeCounts(save, presence.npcId, content) : null
-  const hasQuests = totals && (totals.main + totals.secondary + totals.active + totals.ready > 0)
   return <span className="npc-nameplate" aria-hidden="true" data-npc-title={subtitle}
     title={subtitle ? `${presence.label} · ${subtitle}` : presence.label}>
     <span className="npc-nameplate__heading">
@@ -29,16 +29,6 @@ export function NpcNameplate({ presence, marker, markerPhase }: { presence: Terr
       <strong className="npc-nameplate__name">{presence.label}</strong>
     </span>
     {subtitle && <small className="npc-nameplate__subtitle">{subtitle}</small>}
-    {hasQuests && <span className="npc-nameplate__quest-counts"
-      title={`${totals.main} principais, ${totals.secondary} secundárias, ${totals.active} aceitas, ${totals.ready} para entregar`}>
-      {totals.main > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--main"
-        data-quest-state="main" title={`${totals.main} missões principais disponíveis`}>! {totals.main}</small>}
-      {totals.secondary > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--secondary"
-        data-quest-state="secondary" title={`${totals.secondary} missões secundárias disponíveis`}>! {totals.secondary}</small>}
-      {totals.active > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--active"
-        data-quest-state="active" title={`${totals.active} missões aceitas`}>··· {totals.active}</small>}
-      {totals.ready > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--ready"
-        data-quest-state="ready" title={`${totals.ready} missões prontas para entregar`}>✓ {totals.ready}</small>}
-    </span>}
+    <NpcQuestBadges counts={totals} />
   </span>
 }
