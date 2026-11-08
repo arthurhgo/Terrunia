@@ -227,3 +227,10 @@
 }
 .pixel-city__npc .npc-nameplate__name,
 .pixel-interior__npc .npc-nameplate__name {text-align:center;}
+
+/* Preserve Rosetta's tutorial marker color even when positioned outside the box. */
+.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble,
+.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble {
+  background-color:#ac303d;
+  border-color:#df9aa4;
+}
