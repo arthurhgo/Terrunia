@@ -29,6 +29,20 @@ import './gameplayV057.css'
 type Menu = 'skills' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
 
+const getBattleStrikeFx = (event: BattleDiceEvent) => {
+  const action = event.action.toLowerCase()
+  const style = /arco|bow|flecha|arremess|projectile/i.test(action) ? 'projectile' as const
+    : /arcano|magic|magia|arcane|runa|scepter|staff|grimoire|spell/i.test(action) ? 'arcane' as const
+      : 'slash' as const
+  return {
+    actorId: event.actorId ?? (event.actorSide === 'enemy' ? '' : 'combatant_player'),
+    targetId: event.targetId ?? (event.actorSide === 'enemy' ? 'combatant_player' : ''),
+    style,
+  }
+}
+
+/** Presentation timers are independent of React re-renders so repeated rolls
+ * continue in sequence even when effects, tests or rendering are batched. */
 export function BattleScene({ unified = false }: { unified?: boolean }) {
   const save = useGameStore((state) => state.save)
   const submit = useGameStore((state) => state.submitBattleCommand)
@@ -53,6 +67,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const announcedRound = useRef<{ battleId: string; round: number } | null>(null)
   const [showLog, setShowLog] = useState(false)
   const [activeDice, setActiveDice] = useState<BattleDiceEvent | null>(null)
+  const [diceStage, setDiceStage] = useState<'focus' | 'impact'>('focus')
   const [stagedHp, setStagedHp] = useState<Record<string, number> | null>(null)
   const [initiativePreview, setInitiativePreview] = useState<BattleState | null>(null)
   const [impactEventId, setImpactEventId] = useState<string | null>(null)
@@ -66,6 +81,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const previewTimer = useRef<number | null>(null)
   const seenDiceLog = useRef<{ id: string; count: number } | null>(null)
   const previous = useRef<{ id: string; hp: Record<string, number> } | null>(null)
+  const skipPreviewCommitHit = useRef(false)
   const reducedMotion = Boolean(save?.settings.reducedMotion)
   const defeated = battle?.phase === 'Defeat' && player?.hp === 0
 
@@ -85,6 +101,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     setConfirmDefense(false)
     setRollReturnMenu(null)
     setActiveDice(null)
+    setDiceStage('focus')
     setStagedHp(null)
     setInitiativePreview(null)
     setImpactEventId(null)
@@ -107,6 +124,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     const hp = Object.fromEntries(Object.values(battle.combatants).map((actor) => [actor.id, actor.hp]))
     const old = previous.current
     previous.current = { id: battle.id, hp }
+    if (skipPreviewCommitHit.current) { skipPreviewCommitHit.current = false; return }
     if (reducedMotion || old?.id !== battle.id) return
     const playerHit = player && player.hp < (old.hp[player.id] ?? player.hp)
     const enemyHit = enemies.some((enemy) => enemy.hp < (old.hp[enemy.id] ?? enemy.hp))
@@ -143,30 +161,34 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }, [battle])
 
   useEffect(() => {
-    if (activeDice || !diceQueue.length) return
+    if (activeDice || resolvingRolls || !diceQueue.length) return
+    setDiceStage('focus')
     setActiveDice(diceQueue[0])
     setDiceQueue((queue) => queue.slice(1))
-  }, [activeDice, diceQueue])
+  }, [activeDice, diceQueue, resolvingRolls])
 
+  // Committed/legacy dice have no staged domain command. Keep their presentation
+  // separate from the explicit player/enemy roll queue below.
   useEffect(() => {
-    if (!activeDice || resolvingRolls) return
-    const timer = window.setTimeout(() => setActiveDice(null), reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs : BATTLE_PRESENTATION.queuedDieMs)
-    return () => window.clearTimeout(timer)
-  }, [activeDice, reducedMotion, resolvingRolls])
-
-  // Reveal each impact and defeat before the next actor animates.
-  useEffect(() => {
-    if (!resolvingRolls || !activeDice || activeDice.kind !== 'damage' ||
-        diceAwaitingClick || !activeDice.targetId) return
+    if (!activeDice || resolvingRolls || diceAwaitingClick) return
     const event = activeDice
-    const timer = window.setTimeout(() => {
-      setStagedHp((current) => current ? {
-        ...current,
-        [event.targetId!]: Math.max(0, (current[event.targetId!] ?? 0) - event.damage),
-      } : current)
-      setImpactEventId(event.id)
-    }, reducedMotion ? 100 : BATTLE_PRESENTATION.dieSpinMs + 180)
-    return () => window.clearTimeout(timer)
+    const focusMs = reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs
+      : BATTLE_PRESENTATION.dieSpinMs + BATTLE_PRESENTATION.dieResultHoldMs
+    const impactMs = event.kind === 'damage' ? (reducedMotion ? 160 : 450) : 80
+    const reveal = window.setTimeout(() => {
+      setDiceStage('impact')
+      if (event.kind === 'damage') {
+        setImpactEventId(event.id)
+        if (!reducedMotion) setStrikeFx(getBattleStrikeFx(event))
+      }
+    }, focusMs)
+    const finish = window.setTimeout(() => {
+      setActiveDice(null)
+      setDiceStage('focus')
+      setImpactEventId(null)
+      setStrikeFx(null)
+    }, focusMs + impactMs)
+    return () => { window.clearTimeout(reveal); window.clearTimeout(finish) }
   }, [activeDice, diceAwaitingClick, reducedMotion, resolvingRolls])
 
   // Round separators belong to the presentation layer. One banner per real round
@@ -181,22 +203,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       reducedMotion ? BATTLE_PRESENTATION.reducedMotionBannerMs : BATTLE_PRESENTATION.roundBannerMs)
     return () => window.clearTimeout(timer)
   }, [battle?.id, battle?.round, reducedMotion])
-
-  // Visual strikes are keyed to the actual logged roll, never to invented damage.
-  useEffect(() => {
-    setStrikeFx(null)
-    if (!activeDice || activeDice.kind !== 'damage' || diceAwaitingClick || reducedMotion) return
-    const action = activeDice.action.toLowerCase()
-    const style = /arco|bow|flecha|arremess|projectile/i.test(action) ? 'projectile'
-      : /arcano|magic|magia|arcane|runa|scepter|staff|grimoire|spell/i.test(action) ? 'arcane'
-      : 'slash'
-    const fx = { actorId: activeDice.actorId ?? (activeDice.actorSide === 'enemy' ? '' : 'combatant_player'),
-      targetId: activeDice.targetId ?? (activeDice.actorSide === 'enemy' ? 'combatant_player' : ''),
-      style } as const
-    const start = window.setTimeout(() => setStrikeFx(fx), BATTLE_PRESENTATION.dieSpinMs)
-    const stop = window.setTimeout(() => setStrikeFx(null), BATTLE_PRESENTATION.dieSpinMs + 710)
-    return () => { window.clearTimeout(start); window.clearTimeout(stop) }
-  }, [activeDice, diceAwaitingClick, reducedMotion])
 
   // First announce the round, then invite the player to roll real initiative.
   useEffect(() => {
@@ -260,35 +266,55 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const drops = battle.rewards.lootDefinitionIds
   const lootGroups = groupBattleLoot(drops)
 
-  // Queue visual rolls before committing the pure deterministic preview to the save.
-  const scheduleRollStep = () => {
+  const playVisualRoll = (event: BattleDiceEvent) => {
+    const focusMs = reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs
+      : BATTLE_PRESENTATION.dieSpinMs + BATTLE_PRESENTATION.dieResultHoldMs
+    const impactMs = event.kind === 'damage' ? (reducedMotion ? 160 : 450) : 80
     previewTimer.current = window.setTimeout(() => {
-      const sequence = pendingRollsRef.current
-      if (!sequence) return
-      sequence.cursor += 1
-      if (sequence.cursor >= sequence.rolls.length) {
-        pendingRollsRef.current = null
-        previewTimer.current = null
-        setActiveDice(null)
-        setDiceAwaitingClick(false)
-        setResolvingRolls(false)
-        setStagedHp(null)
-        setInitiativePreview(null)
-        setImpactEventId(null)
-        sequence.commit()
-        return
+      // The die is removed from focus BEFORE the attack and HP are revealed.
+      setDiceStage('impact')
+      if (event.kind === 'damage') {
+        if (event.targetId) {
+          setStagedHp((current) => current ? {
+            ...current,
+            [event.targetId!]: Math.max(0, (current[event.targetId!] ?? 0) - event.damage),
+          } : current)
+        }
+        setImpactEventId(event.id)
+        if (!reducedMotion) setStrikeFx(getBattleStrikeFx(event))
       }
-      const next = sequence.rolls[sequence.cursor]
-      setActiveDice(next)
-      const playerMustClick = next.actorSide === 'player' && next.kind !== 'initiative'
-      setDiceAwaitingClick(playerMustClick)
-      if (!playerMustClick) scheduleRollStep()
-    }, reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs : BATTLE_PRESENTATION.queuedDieMs)
+      previewTimer.current = window.setTimeout(() => {
+        setStrikeFx(null)
+        setImpactEventId(null)
+        setDiceStage('focus')
+        const sequence = pendingRollsRef.current
+        if (!sequence) { setActiveDice(null); previewTimer.current = null; return }
+        sequence.cursor += 1
+        if (sequence.cursor >= sequence.rolls.length) {
+          pendingRollsRef.current = null
+          previewTimer.current = null
+          setActiveDice(null)
+          setDiceAwaitingClick(false)
+          setResolvingRolls(false)
+          setInitiativePreview(null)
+          skipPreviewCommitHit.current = true
+          sequence.commit()
+          setStagedHp(null)
+          return
+        }
+        const next = sequence.rolls[sequence.cursor]
+        setActiveDice(next)
+        const awaitingPlayerThrow = next.actorSide === 'player' && next.kind !== 'initiative'
+        setDiceAwaitingClick(awaitingPlayerThrow)
+        if (!awaitingPlayerThrow) playVisualRoll(next)
+      }, impactMs)
+    }, focusMs)
   }
+
   const releasePlayerDie = () => {
     if (!diceAwaitingClick || !pendingRollsRef.current) return
     setDiceAwaitingClick(false)
-    scheduleRollStep()
+    playVisualRoll(pendingRollsRef.current.rolls[pendingRollsRef.current.cursor])
   }
   // The domain preview has NOT been committed while the player's die is awaiting
   // input. Canceling must discard the preview atomically, not spend MP or a turn.
@@ -298,6 +324,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     previewTimer.current = null
     pendingRollsRef.current = null
     setActiveDice(null)
+    setDiceStage('focus')
     setDiceQueue([])
     setStagedHp(null)
     setInitiativePreview(null)
@@ -343,6 +370,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     setInitiativePreview(initiative ? preview.value : null)
     setImpactEventId(null)
     setResolvingRolls(true)
+    setDiceStage('focus')
     setActiveDice(rolls[0])
     const requireClick = !initiative && rolls[0].actorSide === 'player'
     setDiceAwaitingClick(requireClick)
@@ -355,7 +383,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         submit(command)
       },
     }
-    if (!requireClick) scheduleRollStep()
+    if (!requireClick) playVisualRoll(rolls[0])
   }
   const openMenu = (next: Menu) => {
     setConfirmDefense(false)
@@ -376,7 +404,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   )
 
   // During the visual die preview, show only the HP committed to the save.
-  const visualHp = (id: string) => activeDice ? (battle.combatants[id]?.hp ?? 0) : (stagedHp?.[id] ?? battle.combatants[id]?.hp ?? 0)
+  const visualHp = (id: string) => stagedHp?.[id] ?? battle.combatants[id]?.hp ?? 0
   // VISUAL_DRAFT: announce the real timeline actor, including enemy initiative.
   // This reads domain turns/rolls; it never alters action order or HP.
   const actorCueName = activeDice?.kind === 'damage'
@@ -385,10 +413,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       ? battle.combatants[battle.actorId]?.name ?? player.name
       : null
   const actingId = activeDice?.actorId ?? battle.actorId
-  const receivingId = activeDice?.kind === 'damage' ? activeDice.targetId : undefined
-  const damageRevealed = activeDice?.id === impactEventId
+  const receivingId = diceStage === 'impact' && activeDice?.kind === 'damage' ? activeDice.targetId : undefined
+  const damageRevealed = diceStage === 'impact' && activeDice?.id === impactEventId
 
-  const scene = <section className={`pixel-battle ${activeDice ? "pixel-battle--dice-pending" : ""} ${diceAwaitingClick ? "pixel-battle--dice-awaiting" : ""}`} role="region" aria-label="Viewport unificada de combate">
+  const scene = <section className={`pixel-battle ${activeDice && diceStage === 'focus' ? "pixel-battle--dice-pending" : ""} ${diceAwaitingClick ? "pixel-battle--dice-awaiting" : ""}`} role="region" aria-label="Viewport unificada de combate">
     <header className="pixel-battle__header" aria-label="Encontro de combate">
       <strong>TERRÚNIA</strong>
       <div className="pixel-battle__encounter-label"><span>{battle.waveIndex ? 'PORTAL · ONDAS DA RUÍNA' : encounter?.locationLabel ?? 'ASTRAVÉL'}</span><h1>{encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}</h1></div>
@@ -397,7 +425,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     <BattleTimeline battle={initiativePreview ?? battle} activeActorId={actingId} stagedHp={stagedHp} playerAppearance={save.character.appearance} playerPortraitAssetId={save.character.portraitAssetId} />
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
       <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} biome={battleBiome} />
-      <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''} ${strikeFx?.actorId === player.id ? 'is-striking' : ''} ${strikeFx?.targetId === player.id ? 'is-strike-target' : ''} ${activeDice && actingId === player.id ? 'is-acting' : ''} ${receivingId === player.id ? 'is-receiving' : ''}`}>
+      <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''} ${strikeFx?.actorId === player.id ? 'is-striking' : ''} ${strikeFx?.targetId === player.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === player.id ? 'is-acting' : ''} ${receivingId === player.id ? 'is-receiving' : ''}`}>
         {damageRevealed && receivingId === player.id && <b className="pixel-battle__damage-number" role="status">−{activeDice?.damage}</b>}
         <EquippedCharacter save={save} facing="right" alt={player.alive ? 'Terrírian voltado para os inimigos' : 'Terrírian derrotado'} />
       </div>
@@ -407,7 +435,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             '--enemy-depth': `${getEnemyFormationSlot(i, enemies.length).depthPx}px`,
             '--enemy-width': `${getEnemyFormationSlot(i, enemies.length).widthPercent}%`,
             zIndex: getEnemyFormationSlot(i, enemies.length).layer } as React.CSSProperties}
-          className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
+          className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
           onClick={() => enemy.alive && setTargetId(enemy.id)} disabled={!enemy.alive}
           onMouseEnter={() => setHoveredEnemyId(enemy.id)} onMouseLeave={() => setHoveredEnemyId(null)}
           onFocus={() => setHoveredEnemyId(enemy.id)} onBlur={() => setHoveredEnemyId(null)}
@@ -445,7 +473,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       {roundCurtain && !activeDice && <div className="pixel-battle__round-curtain" role="status" aria-label="Separador de turno">
         <span>✧</span><strong>{roundCurtain}</strong>
       </div>}
-      {activeDice && <BattleDicePlatform key={activeDice.id} roll={activeDice} reducedMotion={reducedMotion}
+      {activeDice && diceStage === 'focus' && <BattleDicePlatform key={activeDice.id} roll={activeDice} reducedMotion={reducedMotion}
           awaitingClick={diceAwaitingClick} playerAppearance={save.character.appearance}
           playerPortraitAssetId={save.character.portraitAssetId}
           enemyPortraitAssetId={activeDice.actorId && battle.combatants[activeDice.actorId]

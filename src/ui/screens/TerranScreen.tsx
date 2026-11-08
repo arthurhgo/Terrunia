@@ -28,6 +28,7 @@ import { getNpcSubtitle } from '../terran/NpcNameplate'
 import { EldamarRecords } from '../terran/EldamarRecords'
 import { RosettaGuide } from '../terran/RosettaGuide'
 import { TerranCharacterHud } from '../terran/TerranCharacterHud'
+import { HomeRestConfirmation } from '../terran/HomeRestConfirmation'
 import { TerranQuickJournal } from '../terran/TerranQuickJournal'
 import { hasTerranInterior } from '../terran/interiorLayout'
 import { PLAYER_HOME_DOOR, PLAYER_HOME_INTERIOR_ID, roomFurniture, type RoomFurniture, type TerranInteriorId } from '../terran/roomContent'
@@ -122,6 +123,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [cityLandmark, setCityLandmark] = useState<TerranLandmark | null>(null)
   const [baseDoorPrompt, setBaseDoorPrompt] = useState(false)
   const [homeMenuOpen, setHomeMenuOpen] = useState(false)
+  const [restPromptOpen, setRestPromptOpen] = useState(false)
   const [activeQuestObjectId, setActiveQuestObjectId] = useState<string | null>(null)
   const [missionNpc, setMissionNpc] = useState<{ presence: Presence; questId: string; sourceId: TerranLocationId } | null>(null)
 
@@ -147,7 +149,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const guidance = getTerranQuestDestination(save, content)
   const trackedRoute = getTrackedQuestRoute(save, content) ?? getReadyDeliveryQuestRoute(save, content)
   const location = content.terranLocations[locationId]
-  const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !dialogue && !inspected && !cityLandmark && !baseDoorPrompt && !homeMenuOpen && !activeQuestObjectId && !missionNpc && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
+  const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !dialogue && !inspected && !cityLandmark && !baseDoorPrompt && !homeMenuOpen && !restPromptOpen && !activeQuestObjectId && !missionNpc && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
 
   const openLocation = (id: TerranLocationId) => {
     setStreetSpawn(null)
@@ -199,8 +201,8 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     } else if (furniture.behavior === 'storage') {
       setDrawer('chest')
     } else if (furniture.behavior === 'rest') {
-      restAtHome()
-      setDrawer('home')
+      // Approaching a bed opens a choice; only the explicit confirm heals.
+      if (interiorId === PLAYER_HOME_INTERIOR_ID) setRestPromptOpen(true)
     } else if (furniture.behavior === 'services') {
       if (interiorId) openRoomServices(interiorId)
     } else {
@@ -210,6 +212,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const exitInterior = () => {
     if (interiorId === PLAYER_HOME_INTERIOR_ID) leaveBase()
     setHomeMenuOpen(false)
+    setRestPromptOpen(false)
     setInteriorId(null)
     setDrawer(null)
     setDialogue(null)
@@ -342,6 +345,9 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               <button type="button" className="terran-service-action"
                 onClick={() => { acknowledgeBaseIntroduction(); setHomeMenuOpen(false) }}>Entendi · explorar a Base</button>
             </Modal>
+            <HomeRestConfirmation open={restPromptOpen && interiorId === PLAYER_HOME_INTERIOR_ID}
+              onClose={() => setRestPromptOpen(false)}
+              onRest={() => { restAtHome(); setRestPromptOpen(false) }} />
             {waking && interiorId === PLAYER_HOME_INTERIOR_ID && <div className="terran-base__waking" role="status">Você acorda na Base. Descanse para recuperar Vida e Mana.</div>}
             {inspected && <div className="pixel-interior__inspection" role="dialog" aria-label={`Inspecionar ${inspected.name}`}>
               <strong>{inspected.name}</strong><p>{inspected.description}</p>

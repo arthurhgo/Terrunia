@@ -1,7 +1,7 @@
 import { content } from '../../content/catalog'
 import type { TerranNpcPresence } from '../../content/types'
 import { useGameStore } from '../../state/gameStore'
-import { getNpcQuestCounts, type NpcWorldMarker, type NpcMarkerPhase } from '../../domain/quests/questSelectors'
+import { getNpcQuestBadgeCounts, type NpcWorldMarker, type NpcMarkerPhase } from '../../domain/quests/questSelectors'
 import { NpcMarker } from './NpcMarker'
 import './npcNameplate.css'
 
@@ -20,8 +20,8 @@ export function NpcNameplate({ presence, marker, markerPhase }: { presence: Terr
   // Rosetta is the tutorial guide, not a quest acceptance terminal.
   // Never advertise unacceptably locked/future quests as an available offer.
   const totals = save && presence.npcId && presence.npcId !== 'npc_rosetta'
-    ? getNpcQuestCounts(save, presence.npcId, content) : null
-  const hasQuests = totals && (totals.available + totals.active + totals.ready > 0)
+    ? getNpcQuestBadgeCounts(save, presence.npcId, content) : null
+  const hasQuests = totals && (totals.main + totals.secondary + totals.active + totals.ready > 0)
   return <span className="npc-nameplate" aria-hidden="true" data-npc-title={subtitle}
     title={subtitle ? `${presence.label} · ${subtitle}` : presence.label}>
     <span className="npc-nameplate__heading">
@@ -29,10 +29,12 @@ export function NpcNameplate({ presence, marker, markerPhase }: { presence: Terr
       <strong className="npc-nameplate__name">{presence.label}</strong>
     </span>
     {subtitle && <small className="npc-nameplate__subtitle">{subtitle}</small>}
-    {hasQuests && <span className="npc-nameplate__quest-counts" title={`${totals.available} disponíveis, ${totals.active} em andamento, ${totals.ready} para entregar`}>
-      {totals.available > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--available" title={`${totals.available} disponíveis`}>{totals.available}</small>}
-      {totals.active > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--active" title={`${totals.active} em andamento`}>{totals.active}</small>}
-      {totals.ready > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--ready" title={`${totals.ready} para entregar`}>{totals.ready}</small>}
+    {hasQuests && <span className="npc-nameplate__quest-counts"
+      title={`${totals.main} principais, ${totals.secondary} secundárias, ${totals.active} aceitas, ${totals.ready} para entregar`}>
+      {totals.main > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--main" title="Missões principais disponíveis">Principal {totals.main}</small>}
+      {totals.secondary > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--secondary" title="Missões secundárias disponíveis">Secundária {totals.secondary}</small>}
+      {totals.active > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--active" title="Missões aceitas">Aceita {totals.active}</small>}
+      {totals.ready > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--ready" title="Missões prontas para entregar">Entrega {totals.ready}</small>}
     </span>}
   </span>
 }

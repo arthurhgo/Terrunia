@@ -234,3 +234,37 @@
   background-color:#ac303d;
   border-color:#df9aa4;
 }
+
+
+/* v0.5.12 — quest ribbons emerge from behind the LEFT side of the nameplate.
+   Available mission families are separate; accepted and deliverable statuses
+   use distinct tones. Absent categories render no ribbon at all. */
+.pixel-city__npc > .npc-nameplate,
+.pixel-interior__npc > .npc-nameplate,
+.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-counts),
+.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) {top:-51px;}
+.pixel-city__npc .npc-nameplate__heading,
+.pixel-interior__npc .npc-nameplate__heading {z-index:2;}
+.pixel-city__npc .npc-nameplate__quest-counts,
+.pixel-interior__npc .npc-nameplate__quest-counts {
+  position:absolute;top:calc(100% - 6px);left:12px;right:auto;
+  width:max-content;max-width:min(130px,43vw);min-height:0;
+  display:flex;flex-flow:column nowrap;align-items:flex-end;justify-content:flex-start;
+  gap:2px;padding:0;transform:translateX(-100%);z-index:1;
+}
+.pixel-city__npc .npc-nameplate__quest-count,
+.pixel-interior__npc .npc-nameplate__quest-count {
+  position:relative;display:block;flex:none;
+  width:max-content;max-width:100%;height:auto;min-height:15px;
+  padding:3px 6px 2px;border-radius:2px 0 0 2px;
+  text-align:right;white-space:nowrap;font:700 8px/1.2 var(--display);
+  box-shadow:0 2px 3px #0008;text-shadow:0 1px #050d11;
+}
+.npc-nameplate__quest-count--main {color:#ffe0a0;background:#52391a;border:1px solid #ad8843;}
+.npc-nameplate__quest-count--secondary {color:#b7edff;background:#153e54;border:1px solid #75bedb;}
+.npc-nameplate__quest-count--active {color:#e1e5e9;background:#303b43;border:1px solid #8796a1;}
+.npc-nameplate__quest-count--ready {color:#d9f9dc;background:#234937;border:1px solid #679c78;}
+@media(max-width:720px) {
+  .pixel-city__npc .npc-nameplate__quest-count,
+  .pixel-interior__npc .npc-nameplate__quest-count {font-size:7px;padding:2px 4px;min-height:13px;}
+}

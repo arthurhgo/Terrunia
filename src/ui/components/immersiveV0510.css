@@ -394,3 +394,39 @@
     left:4px;
   }
 }
+
+
+/* v0.5.12: the single Menu control now occupies the free corner of Nexo. */
+.game-shell--immersive:has(.terran-character-hud) .immersive-controls {
+  top:max(8px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));
+  width:27px;height:27px;
+}
+.game-shell--immersive:has(.terran-character-hud) .immersive-controls > a {
+  width:27px;height:27px;min-width:27px;min-height:27px;padding:0;
+}
+.game-shell--immersive:has(.terran-character-hud) .immersive-controls svg {width:15px;height:15px;}
+.terran-character-hud__header {position:relative;}
+.terran-character-hud__header > .eyebrow {display:block;padding-right:28px;white-space:nowrap;letter-spacing:.05em;}
+.terran-character-hud__portrait-column {display:flex;flex-direction:column;align-items:stretch;min-width:0;width:61px;}
+.terran-character-hud__view-switches {display:flex;flex-direction:column;gap:4px;margin-top:5px;}
+.terran-character-hud__view-button {
+  position:relative;display:flex;justify-content:center;align-items:center;gap:2px;
+  width:100%;min-width:0;min-height:21px;padding:4px 1px;
+  background:#122a36;border:1px solid #987443;color:#e7cca1;
+  font:700 7px/1.1 var(--display);letter-spacing:-.12px;
+  text-transform:uppercase;white-space:nowrap;cursor:pointer;
+}
+.terran-character-hud__view-button[aria-pressed="true"] {border-color:#eac787;background:#344332;color:#fff0bd;}
+.terran-character-hud__view-button:focus-visible {outline:2px solid #f8db92;outline-offset:1px;}
+.terran-character-hud__point-badge {
+  position:absolute;top:-4px;right:-4px;display:grid;place-items:center;
+  width:13px;height:13px;background:#244a36;border:1px solid #c3df98;
+  color:#eaffd7;font:700 8px/1 var(--display);
+}
+.terran-character-hud__attribute-view {max-height:min(46dvh,360px);overflow-y:auto;scrollbar-width:thin;gap:5px;}
+.terran-character-hud__attribute-view .terran-character-hud__attributes {grid-template-columns:repeat(2,minmax(0,1fr));}
+.terran-character-hud__attribute-view .terran-character-hud__attributes > div {padding:3px;min-width:0;font-size:9px;}
+.terran-character-hud__attribute-view .terran-character-hud__attributes strong {font-size:9px;}
+@media(max-width:720px) {
+  .terran-character-hud__attribute-view {max-height:190px;}
+}
