@@ -5,6 +5,7 @@ import { content } from '../../content/catalog'
 import { bindPrologueWeapon, createNewSave } from '../../domain/game/createSave'
 import { useGameStore } from '../../state/gameStore'
 import { PortalHubScreen } from './PortalHubScreen'
+import { PortalPanel } from '../dashboard/PortalPanel'
 
 const seed = () => {
   const initial = createNewSave('portal-buttons-ui', 'Lysa', 'character.terririan.default', content)
@@ -17,10 +18,8 @@ const seed = () => {
   useGameStore.setState({ ownerId: save.ownerId, save, status: 'ready', syncStatus: 'saved', syncMode: 'local' })
   return save
 }
-const view = () => render(<MemoryRouter initialEntries={['/portal-hub']}><Routes>
-  <Route path="/portal-hub" element={<PortalHubScreen />} />
-  <Route path="/play" element={<p>Exploração iniciada</p>} />
-</Routes></MemoryRouter>)
+const view = () => render(<MemoryRouter><PortalPanel save={useGameStore.getState().save!}
+  onGoToEldamar={() => undefined} navigateOnEnter={false} /></MemoryRouter>)
 
 afterEach(() => { cleanup(); useGameStore.getState().resetSession() })
 
@@ -28,15 +27,15 @@ describe('Portal de Terran — escolhas diretas por botões', () => {
   it('abre no marco 0 sem iniciar combate e entra em Astravél com um clique consciente', () => {
     seed()
     view()
-    expect(screen.getByText(/0 · ENTRADA/)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Escolha seu destino' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Atividades da Praça do Portal' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Jornadas e desafios' })).toBeInTheDocument()
     expect(useGameStore.getState().save?.battle).toBeNull()
     const button = screen.getByRole('button', { name: /Floresta de Astravél · Iniciar/ })
     expect(button).toBeEnabled()
     fireEvent.click(button)
     expect(useGameStore.getState().save?.world.currentLocationId).toBe('astravel_entry')
     expect(useGameStore.getState().save?.battle).toBeNull()
-    expect(screen.getByText('Exploração iniciada')).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Atividades da Praça do Portal' })).toBeInTheDocument()
   })
 
   it('exibe requisitos de Ondas e Caçadas ainda bloqueadas, sem modificar o save', () => {
@@ -60,7 +59,7 @@ describe('Portal de Terran — escolhas diretas por botões', () => {
     expect(waves).toBeEnabled()
     fireEvent.click(waves)
     expect(useGameStore.getState().save?.battle?.waveIndex).toBe(1)
-    expect(screen.getByText('Exploração iniciada')).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Atividades da Praça do Portal' })).toBeInTheDocument()
   })
 
   it('abre Cerrado e Elduran por confirmação explícita, com saves separados por ID', () => {
@@ -100,5 +99,17 @@ describe('Portal de Terran — escolhas diretas por botões', () => {
     view()
     expect(screen.getByRole('button', { name: /Rastro Micelial · Iniciar/ })).toBeEnabled()
     expect(screen.getByRole('button', { name: /Guardiões do Limiar · Bloqueada/ })).toBeDisabled()
+  })
+})
+
+describe('rota legada do Portal', () => {
+  it('redireciona sem exibir menu intermediário nem iniciar combate', () => {
+    seed()
+    render(<MemoryRouter initialEntries={['/portal-hub']}><Routes>
+      <Route path="/portal-hub" element={<PortalHubScreen />} />
+      <Route path="/play" element={<p>Praça do Portal</p>} />
+    </Routes></MemoryRouter>)
+    expect(screen.getByText('Praça do Portal')).toBeInTheDocument()
+    expect(useGameStore.getState().save?.battle).toBeNull()
   })
 })
