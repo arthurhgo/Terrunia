@@ -37,7 +37,7 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
   await expect(paths.locator('path[data-quest-ids~="vs_astravel_first_contact"]')).toHaveAttribute('d', /L /)
   await expect(paths).toHaveCSS('pointer-events', 'none')
   await page.screenshot({ path: '/tmp/terrunia-rosetta-gold-paths.png' })
-  await page.getByRole('button', { name: 'MENU / LOCAL', exact: true }).hover()
+  await page.getByRole('link', { name: 'Abrir Menu', exact: true }).hover()
   await expect(paths).toHaveCount(0)
   await rosetta.focus()
   await expect(paths).toBeVisible()

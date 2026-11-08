@@ -81,7 +81,7 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
     window.history.pushState({}, '', '/portal-hub')
     window.dispatchEvent(new PopStateEvent('popstate'))
   })
-  await expect(page.getByRole('heading', { name: 'Escolha seu destino' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Atividades da Praça do Portal' })).toBeVisible()
   await page.getByRole('button', { name: /Modo Ondas · Iniciar/ }).click()
   for (let wave = 1; wave <= 3; wave++) {
     await fightAndCollect(page, wave === 3 ? 2 : 1)
@@ -96,7 +96,7 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
     window.history.pushState({}, '', '/portal-hub')
     window.dispatchEvent(new PopStateEvent('popstate'))
   })
-  await expect(page.getByRole('heading', { name: 'Escolha seu destino' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Atividades da Praça do Portal' })).toBeVisible()
   await page.getByRole('button', { name: /Vigília da Ruína · Iniciar/ }).click()
   await fightAndCollect(page, 3)
   await page.getByRole('button', { name: 'VOLTAR AO PORTAL', exact: true }).click()
