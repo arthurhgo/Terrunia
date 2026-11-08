@@ -382,3 +382,15 @@
   position:absolute;width:1px;height:1px;clip:rect(0,0,0,0);
   clip-path:inset(50%);overflow:hidden;white-space:nowrap;
 }
+
+/* v0.5.11 — Portal details use available center area and never sit offscreen. */
+.game-shell--immersive .terran-game:not(.expedition-game):not(.dungeon-game) .terran-game__drawer--portal {
+  width:min(660px,calc(100% - var(--terran-panel-left) - var(--terran-panel-right) - 6px));
+  max-width:calc(100% - var(--terran-panel-left) - var(--terran-panel-right));
+}
+@media(max-width:1040px){
+  .game-shell--immersive .terran-game:not(.expedition-game):not(.dungeon-game) .terran-game__drawer--portal {
+    width:min(660px,calc(100% - 8px));max-width:calc(100% - 8px);
+    left:4px;
+  }
+}
