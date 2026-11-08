@@ -304,6 +304,11 @@ export const gameSaveSchema = z.object({
   skillTrees: z.record(z.string(), treeProgressSchema.omit({ treeId: true })),
   inventory: z.array(inventoryItemSchema),
   equippedBasicArmor: inventoryItemSchema.nullable(),
+  equippedComplementary: z.object({
+    helmet: inventoryItemSchema.optional(), pants: inventoryItemSchema.optional(),
+    boots: inventoryItemSchema.optional(), accessoryA: inventoryItemSchema.optional(),
+    accessoryB: inventoryItemSchema.optional(),
+  }).optional(),
   baseStorage: z.array(inventoryItemSchema),
   wallet: z.object({ gold: nonnegativeNumber }),
   vitals: z.object({ hp: nonnegativeNumber, mp: nonnegativeNumber }),
@@ -341,6 +346,14 @@ export const gameSaveSchema = z.object({
       message: 'Proteção vestida deve existir somente no slot, com ID correspondente e sem Armadura vinculada.' })
   }
   if (equippedArmor) inventoryIds.add(equippedArmor.instanceId)
+  for (const [slot, item] of Object.entries(save.equippedComplementary ?? {})) {
+    if (!item) continue
+    if (item.quantity !== 1 || content.items[item.definitionId]?.complementarySlot !== slot || inventoryIds.has(item.instanceId)) {
+      context.addIssue({ code: 'custom', path: ['equippedComplementary', slot],
+        message: 'Peça comum equipada deve ser única, individual e corresponder ao seu slot.' })
+    }
+    inventoryIds.add(item.instanceId)
+  }
   for (const [index, item] of save.inventory.entries()) {
     if (inventoryIds.has(item.instanceId)) {
       context.addIssue({
@@ -350,7 +363,7 @@ export const gameSaveSchema = z.object({
       })
     }
     inventoryIds.add(item.instanceId)
-    if ((content.items[item.definitionId]?.basicArmor && item.quantity !== 1) || (item.refinementLevel && !content.items[item.definitionId]?.basicArmor)) {
+    if (((content.items[item.definitionId]?.basicArmor || content.items[item.definitionId]?.complementarySlot) && item.quantity !== 1) || (item.refinementLevel && !content.items[item.definitionId]?.basicArmor)) {
       context.addIssue({ code: 'custom', path: ['inventory', index], message: 'Proteções simples são peças individuais; somente elas recebem reforço.' })
     }
     if (!content.items[item.definitionId]) {
@@ -363,7 +376,7 @@ export const gameSaveSchema = z.object({
   }
 
   for (const [index, item] of save.baseStorage.entries()) {
-    if ((content.items[item.definitionId]?.basicArmor && item.quantity !== 1) || (item.refinementLevel && !content.items[item.definitionId]?.basicArmor)) {
+    if (((content.items[item.definitionId]?.basicArmor || content.items[item.definitionId]?.complementarySlot) && item.quantity !== 1) || (item.refinementLevel && !content.items[item.definitionId]?.basicArmor)) {
       context.addIssue({ code: 'custom', path: ['baseStorage', index], message: 'A proteção guardada deve preservar uma peça e seu reforço válido.' })
     }
     if (inventoryIds.has(item.instanceId)) {

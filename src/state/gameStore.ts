@@ -2,6 +2,7 @@ import { enterBiomeTrail } from '../domain/exploration/biomeAccess'
 import { BACKPACK_UPGRADES, routeNewItemOverflow } from '../domain/inventory/backpacks'
 import { executeForgeRecipe, executeGoldForgeUpgrade } from '../domain/terran/forge'
 import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmor'
+import { equipComplementaryItem } from '../domain/inventory/complementaryEquipment'
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
 import { create } from 'zustand'
 import { content } from '../content/catalog'
@@ -29,7 +30,7 @@ import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { prepareStarterWeapon } from '../domain/bond/starterWeaponPlan'
 import { requestCampaignReset } from '../domain/game/campaignReset'
 import { ATTRIBUTE_IDS, type AttributeId, type GameSave } from '../domain/game/types'
-import type { BoundSlot } from '../domain/shared/types'
+import type { BoundSlot, ComplementarySlot } from '../domain/shared/types'
 import type { CharacterAppearance } from '../domain/character/appearance'
 import { convertInventoryItems, sellInventoryItems } from '../domain/inventory/inventory'
 import { addBattleLootToInventory } from '../domain/inventory/battleLoot'
@@ -121,6 +122,7 @@ type GameState = {
   forge: (recipeId: string) => void
   goldForge: (slot: BoundSlot) => void
   equipArmor: (instanceId: string | null) => void
+  equipComplementary: (slot: ComplementarySlot, instanceId: string | null) => void
   refineArmor: (instanceId: string) => void
   buyFromMarket: (npcId: string, itemId: string, quantity?: number) => void
   recordCutsceneViewed: (sceneId: CutsceneId) => void
@@ -600,6 +602,16 @@ export const useGameStore = create<GameState>((set, get) => {
       if (result.value === save) return
       commit(result.value)
       show(instanceId ? 'Proteção equipada' : 'Proteção retirada', instanceId ? 'Sua defesa foi atualizada. A peça aparece no slot equipado, fora da grade da mochila.' : 'Você pode escolher outra proteção na mochila.', 'success')
+    },
+
+    equipComplementary: (slot, instanceId) => {
+      const save = get().save
+      if (!save) return
+      const result = equipComplementaryItem(save, slot, instanceId, content, nowIso())
+      if (!result.ok) return failAction(result.message)
+      if (result.value === save) return
+      commit(result.value)
+      show('Equipamentos', instanceId ? 'Peça equipada sem modificar seus Vínculos.' : 'Peça devolvida à mochila.', 'success')
     },
 
     refineArmor: (instanceId) => {
