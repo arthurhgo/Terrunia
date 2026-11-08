@@ -1,4 +1,4 @@
-import { Backpack, Coins, Shield, Sparkles, Swords } from 'lucide-react'
+import { Backpack, ChevronDown, Coins, Shield, Sparkles, Swords } from 'lucide-react'
 import { useState } from 'react'
 import { content } from '../../content/catalog'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
