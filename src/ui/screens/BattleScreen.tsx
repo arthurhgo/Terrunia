@@ -29,6 +29,20 @@ import './gameplayV057.css'
 type Menu = 'skills' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
 
+const getBattleStrikeFx = (event: BattleDiceEvent) => {
+  const action = event.action.toLowerCase()
+  const style = /arco|bow|flecha|arremess|projectile/i.test(action) ? 'projectile' as const
+    : /arcano|magic|magia|arcane|runa|scepter|staff|grimoire|spell/i.test(action) ? 'arcane' as const
+      : 'slash' as const
+  return {
+    actorId: event.actorId ?? (event.actorSide === 'enemy' ? '' : 'combatant_player'),
+    targetId: event.targetId ?? (event.actorSide === 'enemy' ? 'combatant_player' : ''),
+    style,
+  }
+}
+
+/** Presentation timers are independent of React re-renders so repeated rolls
+ * continue in sequence even when effects, tests or rendering are batched. */
 export function BattleScene({ unified = false }: { unified?: boolean }) {
   const save = useGameStore((state) => state.save)
   const submit = useGameStore((state) => state.submitBattleCommand)
@@ -153,60 +167,28 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     setDiceQueue((queue) => queue.slice(1))
   }, [activeDice, diceQueue, resolvingRolls])
 
-  // v0.5.12: complete focus/settled-result first; only afterwards reveal
-  // the strike, HP change and combat reaction, then advance to the next die.
-  // The domain preview is still committed only after the full visual sequence.
+  // Committed/legacy dice have no staged domain command. Keep their presentation
+  // separate from the explicit player/enemy roll queue below.
   useEffect(() => {
-    if (!activeDice || diceAwaitingClick) return
+    if (!activeDice || resolvingRolls || diceAwaitingClick) return
     const event = activeDice
     const focusMs = reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs
       : BATTLE_PRESENTATION.dieSpinMs + BATTLE_PRESENTATION.dieResultHoldMs
     const impactMs = event.kind === 'damage' ? (reducedMotion ? 160 : 450) : 80
     const reveal = window.setTimeout(() => {
       setDiceStage('impact')
-      if (event.kind !== 'damage') return
-      if (event.targetId && resolvingRolls) {
-        setStagedHp((current) => current ? {
-          ...current,
-          [event.targetId!]: Math.max(0, (current[event.targetId!] ?? 0) - event.damage),
-        } : current)
-      }
-      setImpactEventId(event.id)
-      if (!reducedMotion) {
-        const action = event.action.toLowerCase()
-        const style = /arco|bow|flecha|arremess|projectile/i.test(action) ? 'projectile'
-          : /arcano|magic|magia|arcane|runa|scepter|staff|grimoire|spell/i.test(action) ? 'arcane'
-            : 'slash'
-        setStrikeFx({
-          actorId: event.actorId ?? (event.actorSide === 'enemy' ? '' : 'combatant_player'),
-          targetId: event.targetId ?? (event.actorSide === 'enemy' ? 'combatant_player' : ''),
-          style,
-        })
+      if (event.kind === 'damage') {
+        setImpactEventId(event.id)
+        if (!reducedMotion) setStrikeFx(getBattleStrikeFx(event))
       }
     }, focusMs)
-    const advance = window.setTimeout(() => {
-      setStrikeFx(null)
-      setImpactEventId(null)
+    const finish = window.setTimeout(() => {
+      setActiveDice(null)
       setDiceStage('focus')
-      const sequence = pendingRollsRef.current
-      if (!sequence) { setActiveDice(null); return }
-      sequence.cursor += 1
-      if (sequence.cursor >= sequence.rolls.length) {
-        pendingRollsRef.current = null
-        setActiveDice(null)
-        setDiceAwaitingClick(false)
-        setResolvingRolls(false)
-        setInitiativePreview(null)
-        skipPreviewCommitHit.current = true
-        sequence.commit()
-        setStagedHp(null)
-        return
-      }
-      const next = sequence.rolls[sequence.cursor]
-      setActiveDice(next)
-      setDiceAwaitingClick(next.actorSide === 'player' && next.kind !== 'initiative')
+      setImpactEventId(null)
+      setStrikeFx(null)
     }, focusMs + impactMs)
-    return () => { window.clearTimeout(reveal); window.clearTimeout(advance) }
+    return () => { window.clearTimeout(reveal); window.clearTimeout(finish) }
   }, [activeDice, diceAwaitingClick, reducedMotion, resolvingRolls])
 
   // Round separators belong to the presentation layer. One banner per real round
@@ -284,9 +266,55 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const drops = battle.rewards.lootDefinitionIds
   const lootGroups = groupBattleLoot(drops)
 
+  const playVisualRoll = (event: BattleDiceEvent) => {
+    const focusMs = reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs
+      : BATTLE_PRESENTATION.dieSpinMs + BATTLE_PRESENTATION.dieResultHoldMs
+    const impactMs = event.kind === 'damage' ? (reducedMotion ? 160 : 450) : 80
+    previewTimer.current = window.setTimeout(() => {
+      // The die is removed from focus BEFORE the attack and HP are revealed.
+      setDiceStage('impact')
+      if (event.kind === 'damage') {
+        if (event.targetId) {
+          setStagedHp((current) => current ? {
+            ...current,
+            [event.targetId!]: Math.max(0, (current[event.targetId!] ?? 0) - event.damage),
+          } : current)
+        }
+        setImpactEventId(event.id)
+        if (!reducedMotion) setStrikeFx(getBattleStrikeFx(event))
+      }
+      previewTimer.current = window.setTimeout(() => {
+        setStrikeFx(null)
+        setImpactEventId(null)
+        setDiceStage('focus')
+        const sequence = pendingRollsRef.current
+        if (!sequence) { setActiveDice(null); previewTimer.current = null; return }
+        sequence.cursor += 1
+        if (sequence.cursor >= sequence.rolls.length) {
+          pendingRollsRef.current = null
+          previewTimer.current = null
+          setActiveDice(null)
+          setDiceAwaitingClick(false)
+          setResolvingRolls(false)
+          setInitiativePreview(null)
+          skipPreviewCommitHit.current = true
+          sequence.commit()
+          setStagedHp(null)
+          return
+        }
+        const next = sequence.rolls[sequence.cursor]
+        setActiveDice(next)
+        const awaitingPlayerThrow = next.actorSide === 'player' && next.kind !== 'initiative'
+        setDiceAwaitingClick(awaitingPlayerThrow)
+        if (!awaitingPlayerThrow) playVisualRoll(next)
+      }, impactMs)
+    }, focusMs)
+  }
+
   const releasePlayerDie = () => {
     if (!diceAwaitingClick || !pendingRollsRef.current) return
     setDiceAwaitingClick(false)
+    playVisualRoll(pendingRollsRef.current.rolls[pendingRollsRef.current.cursor])
   }
   // The domain preview has NOT been committed while the player's die is awaiting
   // input. Canceling must discard the preview atomically, not spend MP or a turn.
@@ -355,6 +383,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         submit(command)
       },
     }
+    if (!requireClick) playVisualRoll(rolls[0])
   }
   const openMenu = (next: Menu) => {
     setConfirmDefense(false)
