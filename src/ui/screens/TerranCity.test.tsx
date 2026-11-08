@@ -281,7 +281,7 @@ describe('interfaces de Terran', () => {
     loadSave()
     render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Praça do Portal' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Falar com Rosetta' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Conversar com Rosetta' }))
     expect(screen.getByRole('dialog', { name: 'Orientações de Rosetta' })).toBeInTheDocument()
     expect(screen.getAllByRole('status').some((node) => node.textContent?.includes('Vou lhe entregar duas túnicas simples.'))).toBe(true)
     expect(screen.queryByText('Estante dos Registros')).not.toBeInTheDocument()
