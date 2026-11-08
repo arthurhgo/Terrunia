@@ -12,7 +12,7 @@ describe('v0.5.12 — descanso explícito na Base', () => {
     expect(screen.queryByRole('button', { name: 'Descansar' })).not.toBeInTheDocument()
     rerender(<HomeRestConfirmation open onRest={rest} onClose={close} />)
     expect(rest).not.toHaveBeenCalled()
-    fireEvent.click(screen.getByRole('button', { name: 'Fechar' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Fechar' }).at(-1)!)
     expect(close).toHaveBeenCalledTimes(1)
     expect(rest).not.toHaveBeenCalled()
   })
