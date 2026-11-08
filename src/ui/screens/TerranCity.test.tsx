@@ -284,7 +284,7 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('region', { name: 'Atividades da Praça do Portal' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Jornadas e desafios' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Caçadas do Portal' })).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: /Terran vista superior 3\\/4/ })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
     expect(useGameStore.getState().save?.battle).toBeNull()
   })
 
