@@ -366,3 +366,19 @@
 .terran-character-hud__resource-meta {display:flex;flex-wrap:wrap;gap:4px 9px;justify-content:space-between;margin-top:6px;font:9px var(--display);color:#dfc68e;}
 .terran-character-hud__resource-meta > span {display:flex;align-items:center;gap:3px;}
 @media(max-width:1200px){.terran-character-hud__resource-bars .progress__track {height:17px;}.progress--inbar .progress__inbar {font-size:8px;}}
+
+/* v0.5.11: exactly one menu button, anchored to the upper-right viewport edge. */
+.game-shell--immersive .immersive-controls {
+  top:max(6px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));
+  width:42px;height:42px;box-sizing:border-box;padding:0;
+  display:grid;place-items:center;background:transparent;border:0;
+  box-shadow:none;backdrop-filter:none;z-index:210;
+}
+.game-shell--immersive .immersive-controls > a {
+  width:42px;height:42px;min-width:42px;min-height:42px;padding:0;
+  background:#0e222df5;border:1px solid #b6914f;color:#f6d6a3;
+}
+.game-shell--immersive .immersive-controls .sr-only {
+  position:absolute;width:1px;height:1px;clip:rect(0,0,0,0);
+  clip-path:inset(50%);overflow:hidden;white-space:nowrap;
+}

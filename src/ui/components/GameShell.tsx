@@ -1,4 +1,4 @@
-import { BookOpen, CircleUserRound, Grid2X2, Landmark, LogOut, Map, MapPin, Settings, Sparkles } from 'lucide-react'
+import { BookOpen, CircleUserRound, Grid2X2, Landmark, LogOut, Map, MapPin, Menu as MenuIcon, Settings, Sparkles } from 'lucide-react'
 import { useEffect, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../state/authStore'
@@ -42,14 +42,11 @@ export function GameShell({ children, fluid = false, immersive = false }: GameSh
   return (
     <div className={`game-shell ${immersive ? 'game-shell--immersive' : ''}`}>
       {immersive ? (
-        <nav className="immersive-controls" aria-label="Controles rápidos do jogo">
-          <span className={`save-state save-state--${syncStatus}`} role="status"
-            title={`Persistência ${syncMode ?? 'local'}`}>
-            <i aria-hidden="true" />
-            {syncStatus === 'saving' ? 'Salvando…' : syncStatus === 'error' ? 'Erro no save' : syncStatus === 'saved' ? 'Salvo' : 'Aguardando save'}
-          </span>
-          <NavLink to="/quests" aria-label="Abrir Missões" title="Missões"><BookOpen size={17} /></NavLink>
-          <NavLink to="/menu" aria-label="Abrir Menu" title="Menu"><Grid2X2 size={18} /><span>MENU</span></NavLink>
+        <nav className="immersive-controls" aria-label="Menu geral">
+          <NavLink to="/menu" aria-label="Abrir Menu" title={`Menu · ${syncStatus === 'saved' ? 'Salvo' : syncStatus === 'saving' ? 'Salvando' : 'Estado do save: ' + syncStatus}`}>
+            <MenuIcon size={23} aria-hidden="true" />
+            <span className="sr-only" role="status">{syncStatus === 'saved' ? 'Salvo' : syncStatus === 'saving' ? 'Salvando' : 'Verifique o save nas Configurações'}</span>
+          </NavLink>
         </nav>
       ) : (
         <header className="game-header">

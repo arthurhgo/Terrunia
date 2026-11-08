@@ -32,7 +32,6 @@ export function TerranCharacterHud({ save, backpackOpen = false, onToggleBackpac
   const [attributesExpanded, setAttributesExpanded] = useState(true)
   const [equipmentView, setEquipmentView] = useState(false)
   const derived = deriveCharacterStats(save, content)
-  const basicArmor = getEquippedBasicArmor(save, content)
   return <aside className="terran-character-hud" aria-label="Status permanente do personagem">
     <header className="terran-character-hud__header">
       <span className="eyebrow">NEXO DO PERSONAGEM</span>

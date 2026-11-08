@@ -195,3 +195,35 @@
 .pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble::after {display:none;}
 .pixel-city__npc .npc-nameplate__heading > .npc-nameplate__name,
 .pixel-interior__npc .npc-nameplate__heading > .npc-nameplate__name {width:auto;flex:1 1 auto;min-width:0;text-align:left;}
+
+/* v0.5.11: marker OUTSIDE the left edge; quest-state dots BELOW the nameplate.
+   The name, occupation and counts never compete for the same line. */
+.pixel-city__npc > .npc-nameplate,
+.pixel-interior__npc > .npc-nameplate,
+.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-counts),
+.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) {
+  top:-53px;min-width:80px;max-width:150px;padding:4px 7px;
+  overflow:visible;gap:1px;
+}
+.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-counts),
+.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) {top:-58px;}
+.pixel-city__npc .npc-nameplate__heading,
+.pixel-interior__npc .npc-nameplate__heading {width:100%;min-width:0;position:relative;min-height:13px;}
+.pixel-city__npc .npc-nameplate__heading > .npc-quest-marker,
+.pixel-interior__npc .npc-nameplate__heading > .npc-quest-marker,
+.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble,
+.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble {
+  position:absolute;left:-27px;top:0;right:auto;bottom:auto;
+  transform:none;flex:none;z-index:6;
+  width:19px;height:19px;min-width:19px;min-height:19px;display:grid;place-items:center;
+  background:#16242ee9;border:1px solid #aa854c;
+  font-size:14px;line-height:1;box-shadow:0 0 4px #0008;
+}
+.pixel-city__npc .npc-nameplate__quest-counts,
+.pixel-interior__npc .npc-nameplate__quest-counts {
+  position:absolute;top:calc(100% + 4px);left:0;right:0;width:100%;
+  min-height:14px;padding:0;display:flex;flex-flow:row nowrap;
+  align-items:center;justify-content:center;gap:3px;z-index:3;
+}
+.pixel-city__npc .npc-nameplate__name,
+.pixel-interior__npc .npc-nameplate__name {text-align:center;}

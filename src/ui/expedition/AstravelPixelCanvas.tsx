@@ -213,6 +213,7 @@ export function AstravelPixelCanvas({ trail, statuses, currentLocationId, portra
     if (node) walkToNode(node)
     else walkTo(point, null)
   }
+  const regionLabel = trail.regionId === 'astravel' ? 'Astravél' : trail.name
   return <div ref={stageRef} className="pixel-city astravel-field" aria-label={'Exploração pixelada de ' + regionLabel}>
     <canvas ref={canvasRef} width={viewport.width} height={viewport.height} className="pixel-city__canvas"
       role="img" tabIndex={0} aria-label={regionLabel + ' em pixels, vista superior 3/4; caminhe por WASD, setas ou toque'} onPointerDown={pointerWalk} />
