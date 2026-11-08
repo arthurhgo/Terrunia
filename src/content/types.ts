@@ -1,5 +1,5 @@
 import type { DraftStatus, Effect, Rarity } from '../domain/shared/types'
-import type { BoundSlot } from '../domain/shared/types'
+import type { BoundSlot, ComplementarySlot } from '../domain/shared/types'
 import type { AttributeDie, AttributeId } from '../domain/game/types'
 
 export type CombatEffectDefinition =
@@ -27,6 +27,8 @@ export type ItemDefinition = {
   combatKind?: 'throwable' | 'rune' | 'essence'
   combatTarget?: 'self' | 'enemy'
   /** Starter protection worn before the permanent armor bond; never replaces a bound piece. */
+  /** Ordinary wearable, separate from all permanent Bonds. */
+  complementarySlot?: ComplementarySlot
   basicArmor?: { tier: 1 | 2 | 3 | 4 | 5; mitigation: number; initiative: number; maxRefinement: number }
   affinityTags: string[]
   iconAssetId: string

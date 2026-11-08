@@ -1,4 +1,5 @@
 import { biomeMaterialDefinitions, biomeEnemyDefinitions } from '../content/biomeExpeditions'
+import { complementaryItemDefinitions } from '../content/complementaryItems'
 import type { BoundSlot } from '../domain/shared/types'
 import { visualEquipmentCatalog } from '../content/visualEquipment'
 import { gemComponentDefinitions } from '../content/gems'
@@ -26,6 +27,10 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
+  ...complementaryItemDefinitions.map((item) => ({
+    id: item.iconAssetId, path: '/assets/items/complementary/' + item.id + '.png',
+    fallback: '/assets/placeholders/item.svg', alt: item.name, pixelArt: true, draftPlaceholder: true as const,
+  })),
   ...biomeMaterialDefinitions.map((item) => ({
     id: item.iconAssetId, path: '/assets/items/biomes/' + item.id + '.png',
     fallback: '/assets/placeholders/item.svg', alt: item.name, pixelArt: true, draftPlaceholder: true,
