@@ -28,6 +28,7 @@ import { getNpcSubtitle } from '../terran/NpcNameplate'
 import { EldamarRecords } from '../terran/EldamarRecords'
 import { RosettaGuide } from '../terran/RosettaGuide'
 import { TerranCharacterHud } from '../terran/TerranCharacterHud'
+import { HomeRestConfirmation } from '../terran/HomeRestConfirmation'
 import { TerranQuickJournal } from '../terran/TerranQuickJournal'
 import { hasTerranInterior } from '../terran/interiorLayout'
 import { PLAYER_HOME_DOOR, PLAYER_HOME_INTERIOR_ID, roomFurniture, type RoomFurniture, type TerranInteriorId } from '../terran/roomContent'
@@ -344,19 +345,9 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               <button type="button" className="terran-service-action"
                 onClick={() => { acknowledgeBaseIntroduction(); setHomeMenuOpen(false) }}>Entendi · explorar a Base</button>
             </Modal>
-            <Modal open={restPromptOpen && interiorId === PLAYER_HOME_INTERIOR_ID}
-              title="Descansar na cama" eyebrow="BASE DO TERRÍRIAN"
-              onClose={() => setRestPromptOpen(false)} className="terran-base-rest-confirm">
-              <p>Deseja descansar e recuperar Vida e Mana?</p>
-              <div className="terran-base-functions__actions">
-                <button type="button" className="terran-service-action"
-                  onClick={() => { restAtHome(); setRestPromptOpen(false) }}>
-                  <BedDouble size={17} /> Descansar
-                </button>
-                <button type="button" className="terran-service-action"
-                  onClick={() => setRestPromptOpen(false)}>Fechar</button>
-              </div>
-            </Modal>
+            <HomeRestConfirmation open={restPromptOpen && interiorId === PLAYER_HOME_INTERIOR_ID}
+              onClose={() => setRestPromptOpen(false)}
+              onRest={() => { restAtHome(); setRestPromptOpen(false) }} />
             {waking && interiorId === PLAYER_HOME_INTERIOR_ID && <div className="terran-base__waking" role="status">Você acorda na Base. Descanse para recuperar Vida e Mana.</div>}
             {inspected && <div className="pixel-interior__inspection" role="dialog" aria-label={`Inspecionar ${inspected.name}`}>
               <strong>{inspected.name}</strong><p>{inspected.description}</p>
