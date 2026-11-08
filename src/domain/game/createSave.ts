@@ -99,6 +99,7 @@ export const createNewSave = (
     },
     inventory: [],
     equippedBasicArmor: null,
+    equippedComplementary: {},
     baseStorage: [],
     wallet: { gold: BALANCE.initialGold },
     vitals: { hp: 0, mp: 0 },

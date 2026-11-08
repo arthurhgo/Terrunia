@@ -29,6 +29,11 @@ export type Effect =
 
 export const BOUND_SLOTS = ['weapon', 'shield', 'armor', 'necklace', 'bracelet'] as const
 export type BoundSlot = (typeof BOUND_SLOTS)[number]
+export const COMPLEMENTARY_SLOTS = ['helmet', 'pants', 'boots', 'accessoryA', 'accessoryB'] as const
+export type ComplementarySlot = (typeof COMPLEMENTARY_SLOTS)[number]
+export const COMPLEMENTARY_SLOT_LABELS: Record<ComplementarySlot, string> = {
+  helmet: 'Capacete', pants: 'Calça', boots: 'Bota', accessoryA: 'Acessório I', accessoryB: 'Acessório II',
+}
 
 export const BOUND_SLOT_LABELS: Record<BoundSlot, string> = {
   weapon: 'Arma',

@@ -11,6 +11,7 @@ import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { CharacterPortrait } from '../characters/CharacterSprite'
 import { AssetImage } from '../components/AssetImage'
 import { EnemyMotionSprite } from '../battle/EnemyMotionSprite'
+import { getEnemyFormationSlot } from '../battle/enemyFormation'
 import { GameShell } from '../components/GameShell'
 import { BattleArenaBackdrop } from '../battle/BattleArenaBackdrop'
 import { BattleEquipmentHud } from '../battle/BattleEquipmentHud'
@@ -374,7 +375,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     </button>
   )
 
-  const visualHp = (id: string) => stagedHp?.[id] ?? battle.combatants[id]?.hp ?? 0
+  // During the visual die preview, show only the HP committed to the save.
+  const visualHp = (id: string) => activeDice ? (battle.combatants[id]?.hp ?? 0) : (stagedHp?.[id] ?? battle.combatants[id]?.hp ?? 0)
   // VISUAL_DRAFT: announce the real timeline actor, including enemy initiative.
   // This reads domain turns/rolls; it never alters action order or HP.
   const actorCueName = activeDice?.kind === 'damage'
@@ -401,6 +403,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       </div>
       <div className={`pixel-battle__enemies pixel-battle__enemies--${enemies.length}`}>
         {enemies.map((enemy, i) => <button type="button" key={enemy.id}
+          style={{ '--enemy-x': `${getEnemyFormationSlot(i, enemies.length).xPercent}%`,
+            '--enemy-depth': `${getEnemyFormationSlot(i, enemies.length).depthPx}px`,
+            '--enemy-width': `${getEnemyFormationSlot(i, enemies.length).widthPercent}%`,
+            zIndex: getEnemyFormationSlot(i, enemies.length).layer } as React.CSSProperties}
           className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
           onClick={() => enemy.alive && setTargetId(enemy.id)} disabled={!enemy.alive}
           onMouseEnter={() => setHoveredEnemyId(enemy.id)} onMouseLeave={() => setHoveredEnemyId(null)}
@@ -409,7 +415,11 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           aria-label={`Selecionar ${enemy.name} ${i + 1}, ${visualHp(enemy.id)} de ${enemy.maxHp} de Vida`}
           aria-pressed={enemy.id === target.id}>
           {enemy.alive && enemy.id === target.id && <span className="pixel-battle__target-arrow" aria-hidden="true">◆</span>}
-          <span className="pixel-battle__enemy-bar"><i style={{ width: clampPercent(visualHp(enemy.id), enemy.maxHp) + '%' }} /></span>
+          <span className="pixel-battle__enemy-bar" role="progressbar" aria-label={`Vida de ${enemy.name} ${i + 1}`}
+            aria-valuenow={visualHp(enemy.id)} aria-valuemin={0} aria-valuemax={enemy.maxHp}>
+            <i style={{ width: clampPercent(visualHp(enemy.id), enemy.maxHp) + '%' }} />
+            <b>{visualHp(enemy.id)} / {enemy.maxHp}</b>
+          </span>
           <EnemyMotionSprite
             assetId={content.enemies[enemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'}
             reducedMotion={reducedMotion}

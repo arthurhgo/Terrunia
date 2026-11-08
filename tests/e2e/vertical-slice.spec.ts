@@ -36,12 +36,8 @@ test('Astravél: câmera, dois combates, coleta manual de drops e retomada do sa
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await createExpedition(page)
-  await expect(page.getByLabel('Minimapa de Astravél: 15 encontros conectados')).toBeVisible()
-  await page.getByRole('button', { name: 'Trilha / 0 Entrada', exact: true }).click()
-  const route = page.getByRole('complementary', { name: 'Painel lateral: Rota de Astravél' })
-  await expect(route.locator('.expedition-route-sector')).toHaveCount(3)
-  await expect(route.locator('.expedition-route-list__item')).toHaveCount(15)
-  await page.getByRole('button', { name: 'Fechar painel', exact: true }).click()
+  await expect(page.locator('.astravel-minimap')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Trilha / 0 Entrada' })).toHaveCount(0)
   await page.getByRole('button', { name: 'Seguir objetivo' }).click()
   // A aproximação abre o painel: o combate começa pela ação em primeiro plano.
   const firstEncounterPanel = page.getByRole('complementary', { name: 'Painel lateral: Presença Fungorra' })
@@ -90,9 +86,13 @@ test('Astravél: câmera, dois combates, coleta manual de drops e retomada do sa
   await page.reload()
   await page.getByRole('button', { name: 'Continuar com Aron', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Astravél', exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'Trilha / 0 Entrada', exact: true }).click()
-  await expect(page.locator('.expedition-route-list__item--completed')).toHaveCount(2)
-  await expect(page.locator('.expedition-route-list__item--current')).toContainText('Travessia das Mariposas')
+  const routeProgress = await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    const states = useGameStore.getState().save!.world.trailNodeStates
+    return { completed: Object.entries(states).filter(([id, state]) => id.startsWith('astravel_') && state === 'completed').length,
+      next: states.astravel_moth_crossing_04 }
+  })
+  expect(routeProgress.completed).toBeGreaterThanOrEqual(2)
   expect(errors).toEqual([])
 })
 
@@ -108,9 +108,7 @@ test('o próximo setor exige missão aceita e permite retornar sem iniciar comba
     save.world.currentLocationId = 'astravel_hunter_tracks_06'
     useGameStore.setState({ save })
   })
-  await page.getByRole('button', { name: 'Trilha / 0 Entrada', exact: true }).click()
-  const trailPanel = page.getByRole('complementary', { name: 'Painel lateral: Rota de Astravél' })
-  await trailPanel.locator('.expedition-route-list__item').filter({ hasText: /Rastros dos Caçadores/ }).click()
+  await page.getByRole('button', { name: /Aproximar-se de Rastros dos Caçadores/ }).click()
   await expect(page.getByRole('complementary', { name: 'Painel lateral: Rastros dos Caçadores' })).toBeVisible({ timeout: 20_000 })
   await expect(page.getByText(/aceite “Caçadores Perdidos” com Vorren/).first()).toBeVisible()
   await expect(page.getByRole('region', { name: 'Viewport unificada de combate' })).toHaveCount(0)

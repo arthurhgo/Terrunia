@@ -131,10 +131,6 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
             onTravelStart={() => { if (drawer === 'node') { setDrawer(null); setSelectedId(null) } }} />
           <ExpeditionStatusHud save={save} selected={drawer}
             onOpen={(tab) => { setDrawer(drawer === tab ? null : tab); setSelectedId(null); setPendingFieldItemId(null) }} />
-          <button type="button" className="expedition-game__route-open"
-            onClick={() => { setDrawer(drawer === 'trail' ? null : 'trail'); setSelectedId(null) }}>
-            <Compass size={14}/> Trilha / 0 Entrada
-          </button>
           <button type="button" className="expedition-game__retreat" onClick={leave} aria-label="Retornar a Terran pelo Portal">
             <ArrowLeft size={15} /> Terran
           </button>

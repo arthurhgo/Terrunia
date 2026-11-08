@@ -1,115 +1,72 @@
-import {
-  BookOpen,
-  LockKeyhole,
-  MapPinned,
-  Skull,
-  Trees,
-} from 'lucide-react'
+import { useState } from 'react'
+import { BookOpen, Compass, LockKeyhole, Swords, Trees } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
-import { ASTRAVEL_SECTORS } from '../../content/astravel'
-import { checkTrailQuestGate, getActiveTrailNode } from '../../domain/exploration/trailEngine'
-import { canStartPortalHunt, PORTAL_HUNT_IDS } from '../../domain/combat/portalHunts'
+import { getPortalActivities, type PortalActivity } from '../../domain/exploration/portalActivities'
 import type { GameSave } from '../../domain/game/types'
-import { ArcanePanel } from '../components/ArcanePanel'
-import { GameButton } from '../components/GameButton'
+import { useGameStore } from '../../state/gameStore'
+import { playerCopy } from '../text/playerCopy'
+import './portalPanelEmbedded.css'
 
-export function PortalPanel({ save, onGoToEldamar }: {
-  save: GameSave
-  onGoToEldamar: () => void
-  navigateOnEnter?: boolean
+/** v0.5.11: one action surface inside the Praça do Portal. No intermediate menu.
+ * Activities and gates are provided by the existing domain selectors.
+ */
+export function PortalPanel({ save, onGoToEldamar, navigateOnEnter = true }: {
+  save: GameSave; onGoToEldamar: () => void; navigateOnEnter?: boolean
 }) {
+  const enterAstravel = useGameStore((s) => s.enterAstravel)
+  const enterBiome = useGameStore((s) => s.enterBiome)
+  const startPortalWaves = useGameStore((s) => s.startPortalWaves)
+  const startPortalHunt = useGameStore((s) => s.startPortalHunt)
   const navigate = useNavigate()
-  const trail = content.trails.trail_astravel_entry
-  const quest = save.quests.vs_astravel_first_contact
-  const currentNode = getActiveTrailNode(save, trail)
-  const gate = currentNode ? checkTrailQuestGate(save, currentNode, content) : null
-  const cleared = trail.nodes.filter((node) => node.type !== 'entry' && save.world.trailNodeStates[node.id] === 'completed').length
-
-  const enter = () => navigate('/portal-hub')
-
-  const action = (() => {
-    if (save.world.trailNodeStates.astravel_entry === 'completed' && currentNode) {
-      return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Escolher destino no Portal</GameButton>
-    }
-    if (['available', 'offered'].includes(quest.status)) {
-      return <GameButton variant="secondary" full onClick={onGoToEldamar}><BookOpen size={17} /> Ir à Casa de Eldamar</GameButton>
-    }
-    if (quest.status === 'active' && currentNode?.type === 'entry') {
-      return <GameButton variant="primary" full onClick={enter}><Trees size={17} /> Escolher destino no Portal</GameButton>
-    }
-    if (save.world.trailNodeStates.astravel_boss_preview === 'completed') {
-      return <GameButton variant="secondary" full onClick={enter}><Skull size={17} /> Selecionar retorno a Astravél</GameButton>
-    }
-    return <GameButton variant="ghost" full disabled><LockKeyhole size={17} /> Aceite a missão para partir</GameButton>
-  })()
-
-  return (
-    <ArcanePanel title="Instância disponível" eyebrow="ACESSO DE EXPEDIÇÃO" className="portal-panel" as="aside">
-      <div className="portal-heading">
-        <MapPinned size={20} />
-        <div><p className="eyebrow">EXPLORAÇÃO DE TERRÚNIA</p><h3>{trail.name}</h3><small>{trail.actLabel}</small></div>
-      </div>
-
-      <div className="portal-sectors" aria-label="Progressão dos três trechos de Astravél">
-        {ASTRAVEL_SECTORS.map((sector) => <div key={sector.id} style={{ borderColor: sector.color }}>
-          <strong>{sector.name}</strong><small>Encontros {sector.from}–{sector.to}</small>
-          <span>{trail.nodes.filter((node) => node.sectorId === sector.id && save.world.trailNodeStates[node.id] === 'completed').length}/5</span>
-        </div>)}
-      </div>
-      <div className="portal-route-progress"><span>{cleared}/15 combates concluídos</span><progress max={15} value={cleared} aria-label="Combates concluídos em Astravél" /></div>
-      {gate && !gate.ok && <p className="expedition-tactic">{gate.message}</p>}
-      <div className="trail-map trail-map--astravel" aria-label="Mapa de nós da Floresta de Astravél">
-        <div className="trail-map__texture" aria-hidden="true" />
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" className="trail-paths">
-          <polyline points={trail.nodes.map((node) => `${node.position.x},${node.position.y}`).join(' ')} fill="none" vectorEffect="non-scaling-stroke" />
-        </svg>
-        {trail.nodes.map((node, index) => {
-          const status = save.world.trailNodeStates[node.id] ?? 'locked'
-          const className = `trail-node trail-node--${status} trail-node--${node.type}`
-          return (
-            <div
-              key={node.id}
-              className={className}
-              style={{
-                '--node-index': index,
-                left: `${node.position.x}%`,
-                top: `${node.position.y}%`,
-              } as React.CSSProperties}
-            >
-              {node.type === 'boss' ? <Skull size={15} /> : node.type === 'entry' ? <Trees size={13} /> : node.index}
-              <span>{node.label}</span>
-            </div>
-          )
-        })}
-        <span className="map-label map-label--terran">Terran</span>
-      </div>
-
-      <div className="trail-legend">
-        <span><i className="completed" /> Concluído</span>
-        <span><i className="current" /> Atual</span>
-        <span><i className="locked" /> Bloqueado</span>
-        <span><i className="boss" /> Chefe</span>
-      </div>
-
-      <div className="portal-rewards">
-        <p className="eyebrow">RECOMPENSAS POSSÍVEIS</p>
-        <div>
-          <span title="Essência"><i className="reward-crystal" /></span>
-          <span title="Ouro">◉</span>
-          <span title="Drop fúngico">✦</span>
-          <span title="Conteúdo futuro" className="locked">?</span>
-        </div>
-      </div>
-      {action}
-      {save.world.trailNodeStates.astravel_fungorro_01 === 'completed' && !save.battle && (
-        <section className="portal-wave-mode" aria-label="Atividades opcionais do Portal">
-          <p className="eyebrow">ONDAS E CAÇADAS</p>
-          <p>Recorde de Ondas: <strong>{save.world.portalWaveBest ?? 0}</strong>.</p>
-          <p>Caçadas disponíveis: <strong>{PORTAL_HUNT_IDS.filter((id) => canStartPortalHunt(save, id, content).ok).length}/{PORTAL_HUNT_IDS.length}</strong>.</p>
-          <small>Abra a seleção do Portal para escolher diretamente a campanha, as ondas ou uma caçada. Requisitos e recompensas aparecem nos botões.</small>
-        </section>
-      )}
-    </ArcanePanel>
-  )
+  const [message, setMessage] = useState('')
+  const activities = getPortalActivities(save, content)
+  const selectActivity = (activity: PortalActivity) => {
+    if (!activity.unlocked) return
+    if (activity.kind === 'trail') {
+      if (activity.id === 'astravel') enterAstravel()
+      else enterBiome(activity.id)
+    } else if (activity.kind === 'waves') startPortalWaves()
+    else startPortalHunt(activity.id)
+    const next = useGameStore.getState().save
+    if (next?.battle || Object.values(content.trails).some((trail) =>
+      trail.nodes[0]?.id === next?.world.currentLocationId ||
+      trail.nodes.some((node) => node.id === next?.world.currentLocationId))) {
+      if (navigateOnEnter) navigate('/play')
+    } else setMessage('Não foi possível iniciar. Confira os requisitos da atividade.')
+  }
+  const render = (activity: PortalActivity) => {
+    const Icon = activity.kind === 'trail' ? Trees : activity.kind === 'waves' ? Swords : Compass
+    const detail = playerCopy(activity.detail.replace(/\s*·\s*(?:CONTENT_DRAFT|BALANCE_DRAFT|OWNER_DECISION)/g, ''))
+    const requirement = playerCopy(activity.requirement)
+    return <button type="button" key={activity.id} className="portal-actions__activity"
+      disabled={!activity.unlocked}
+      aria-label={`${activity.title} · ${activity.unlocked ? 'Iniciar' : 'Bloqueada: ' + requirement}`}
+      title={activity.unlocked ? `Entrar em ${activity.title}` : requirement}
+      onClick={() => selectActivity(activity)}>
+      <span className="portal-actions__symbol">{activity.unlocked ? <Icon size={17}/> : <LockKeyhole size={15}/>}</span>
+      <span className="portal-actions__information"><strong>{activity.title}</strong>
+        <small>{activity.unlocked ? detail : requirement}</small></span>
+    </button>
+  }
+  return <section className="portal-actions" aria-label="Atividades da Praça do Portal">
+    <header className="portal-actions__header">
+      <span className="eyebrow">ACESSO DE EXPEDIÇÃO</span>
+      <strong>Escolha sua jornada</strong>
+      <small>Selecione uma atividade para entrar. O Portal não inicia combates automaticamente.</small>
+    </header>
+    <div className="portal-actions__columns">
+      <section aria-label="Jornadas e desafios">
+        <h3><BookOpen size={15}/> Jornadas e desafios</h3>
+        <div>{activities.filter((activity) => activity.kind !== 'hunt').map(render)}</div>
+      </section>
+      <section aria-label="Caçadas do Portal">
+        <h3><Swords size={15}/> Caçadas do Portal</h3>
+        <div>{activities.filter((activity) => activity.kind === 'hunt').map(render)}</div>
+      </section>
+    </div>
+    {!activities.some((activity) => activity.unlocked) && <button className="portal-actions__eldamar"
+      type="button" onClick={onGoToEldamar}>Conversar com Eldamar sobre a primeira expedição</button>}
+    {message && <p role="status">{message}</p>}
+  </section>
 }

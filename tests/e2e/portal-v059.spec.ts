@@ -34,24 +34,23 @@ test('Portal v0.5.9: buttons, level gates and progressive enemy sprite', async (
     window.history.pushState({}, '', '/portal-hub')
     window.dispatchEvent(new PopStateEvent('popstate'))
   })
-  await expect(page.getByRole('heading', { name: 'Escolha seu destino' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Atividades da Praça do Portal' })).toBeVisible()
+  await expect(page.getByText('Escolha sua jornada')).toBeVisible()
   await expect(page.getByRole('button', { name: /Floresta de Astravél · Iniciar/ })).toBeEnabled()
   await expect(page.getByRole('button', { name: /Modo Ondas · Iniciar/ })).toBeEnabled()
   await expect(page.getByRole('button', { name: /Rastro Micelial · Bloqueada/ })).toBeDisabled()
   await expect(page.getByRole('button', { name: /Guardiões do Limiar · Bloqueada/ })).toBeDisabled()
-  await expect(page.locator('.portal-hub__choice')).toHaveCount(9) // +2 biomas da v0.5.10
+  await expect(page.locator('.portal-actions__activity')).toHaveCount(9) // +2 biomas da v0.5.10
   await expect(page.locator('.portal-hub__chapters .portal-hub__chapter')).toHaveCount(0)
-  await expect(page.getByRole('heading', { name: 'Caçadas do Portal' })).toBeVisible()
-  const layout = await page.locator('.portal-hub__content').evaluate((content) => {
-    const journeys = content.querySelector('.portal-hub__primary')!.getBoundingClientRect()
-    const hunts = content.querySelector('.portal-hub__hunts')!.getBoundingClientRect()
-    return { journeysRight: journeys.right, huntsLeft: hunts.left,
-      scroll: content.scrollHeight > content.clientHeight + 2 }
+  await expect(page.getByRole('region', { name: 'Caçadas do Portal' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Jornadas e desafios' })).toBeVisible()
+  const layout = await page.locator('.portal-actions__columns').evaluate((content) => {
+    const regions = content.querySelectorAll(':scope > section')
+    const journeys = regions[0].getBoundingClientRect()
+    const hunts = regions[1].getBoundingClientRect()
+    return { journeysRight: journeys.right, huntsLeft: hunts.left }
   })
   expect(layout.journeysRight).toBeLessThan(layout.huntsLeft)
-  expect(layout.scroll).toBe(false)
-  await expect(page.locator('.portal-hub__primary')).toBeVisible()
-  await expect(page.locator('.portal-hub__hunts')).toBeVisible()
   await page.screenshot({ path: 'test-results/portal-v059-desktop.png' })
 
   await page.evaluate(async () => {

@@ -20,6 +20,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
   const sell = useGameStore((state) => state.sellItems)
   const toggleFavorite = useGameStore((state) => state.toggleFavorite)
   const equipArmor = useGameStore((state) => state.equipArmor)
+  const equipComplementary = useGameStore((state) => state.equipComplementary)
   const [selected, setSelected] = useState<string | null>(null)
   const [hovered, setHovered] = useState<{ instanceId: string; x: number; y: number } | null>(null)
   const [action, setAction] = useState<Action>(null)
@@ -27,6 +28,8 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
   const [page, setPage] = useState(0)
   const selectedArmorInstance = selected ? save.inventory.find((item) => selected === item.instanceId) : null
   const selectedArmorDefinition = selectedArmorInstance && content.items[selectedArmorInstance.definitionId]
+  const selectedComplementary = selectedArmorInstance && selectedArmorDefinition?.complementarySlot
+    ? { instance: selectedArmorInstance, definition: selectedArmorDefinition, slot: selectedArmorDefinition.complementarySlot } : null
   const selectedArmor = selectedArmorInstance && selectedArmorDefinition?.basicArmor
     ? { instance: selectedArmorInstance, definition: selectedArmorDefinition, armor: selectedArmorDefinition.basicArmor } : null
 
@@ -34,7 +37,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
     // Equipped starter protection stays in the save but is shown in its worn slot, not twice.
     if (instance.instanceId === save.character.basicArmorInstanceId) return false
     const definition = content.items[instance.definitionId]
-    if (filter === 'equipment') return Boolean(definition?.basicArmor)
+    if (filter === 'equipment') return Boolean(definition?.basicArmor || definition?.complementarySlot)
     if (filter === 'convertible') return definition?.convertToEssence
     if (filter === 'sellable') return definition?.sellable
     return true
@@ -167,6 +170,17 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
             {`Equipar ${selectedArmor.definition.name}`}</button>}
         </section>}
 
+
+        {tradeMode === 'browse' && selectedComplementary && <section className="inventory-equipment-detail"
+          aria-label={`Equipamento: ${selectedComplementary.definition.name}`}>
+          <AssetImage assetId={selectedComplementary.definition.iconAssetId} />
+          <div><strong>{selectedComplementary.definition.name}</strong>
+            <small>Peça complementar, sem bônus de atributos.</small></div>
+          <button type="button" disabled={Boolean(save.battle) || selectedComplementary.instance.locked}
+            onClick={() => { equipComplementary(selectedComplementary.slot, selectedComplementary.instance.instanceId); setSelected(null); setHovered(null) }}>
+            Equipar {selectedComplementary.definition.name}
+          </button>
+        </section>}
 
         {tradeMode !== 'browse' && <div className="inventory-actions">
           <span>{selectedForBoundProgression ? <><Gem size={14} /> Componente reservado para o Vínculo</> : selected ? '1 item selecionado' : 'Selecione um item'}</span>

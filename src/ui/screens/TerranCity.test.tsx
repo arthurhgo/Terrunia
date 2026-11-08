@@ -218,11 +218,14 @@ describe('interfaces de Terran', () => {
     expect(hud).toHaveTextContent('AST')
     expect(hud).toHaveTextContent('VIG')
     expect(hud).not.toHaveTextContent('DEX')
-    expect(hud.querySelectorAll('.terran-character-hud__slot')).toHaveLength(5)
-    expect(hud.querySelectorAll('.terran-character-hud__slot.is-bound img')).toHaveLength(1)
-    expect(hud.querySelectorAll('.terran-character-hud__slot.is-empty')).toHaveLength(4)
-    expect(hud.querySelectorAll('.terran-character-hud__slot.is-empty img')).toHaveLength(0)
-    expect(hud.querySelectorAll('.terran-character-hud__slot.is-empty svg')).toHaveLength(4)
+    expect(hud.querySelector('.terran-character-hud__resource-bars')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar Equipamentos' }))
+    expect(hud.querySelectorAll('.equipment-grid__slot')).toHaveLength(9)
+    expect(hud.querySelectorAll('.equipment-grid__slot.is-equipped')).toHaveLength(1)
+    expect(hud).toHaveTextContent('Pulseira')
+    expect(hud.querySelector('.terran-character-hud__resource-bars')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar Status' }))
+    expect(hud.querySelector('.terran-character-hud__resource-bars')).toBeInTheDocument()
     const toggle = screen.getByRole('button', { name: 'ATRIBUTOS' })
     expect(toggle).toHaveAttribute('aria-expanded', 'true')
     fireEvent.click(toggle)
@@ -274,19 +277,17 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
   })
 
-  it('abre o diálogo de um NPC sem remover o canvas da cidade', () => {
+  it('abre as atividades do Portal sem desmontar a cena de Terran nem entrar automaticamente', () => {
     loadSave()
     render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Praça do Portal' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Falar com Rosetta' }))
-    expect(screen.getByRole('dialog', { name: 'Orientações de Rosetta' })).toBeInTheDocument()
-    expect(screen.getAllByRole('status').some((node) => node.textContent?.includes('Vou lhe entregar duas túnicas simples.'))).toBe(true)
-    expect(screen.queryByText('Estante dos Registros')).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Missões que pode receber' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Consultar diário de missões' }))
-    expect(screen.getByRole('complementary', { name: 'Diário de missões' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Atividades da Praça do Portal' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Jornadas e desafios' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Caçadas do Portal' })).toBeInTheDocument()
     expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+    expect(useGameStore.getState().save?.battle).toBeNull()
   })
+
 
   for (const locationId of TERRAN_LOCATION_IDS) {
     const location = content.terranLocations[locationId]

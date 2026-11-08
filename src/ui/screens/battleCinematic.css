@@ -288,3 +288,50 @@
  .pixel-battle__commands {grid-template-columns:repeat(4,minmax(0,1fr));}
  .pixel-battle__command,.pixel-battle__command.is-primary {min-height:0;}
 }
+
+/* v0.5.11 — enemy actors placed along a rightward diagonal with grounded feet.
+   Horizontal slots never overlap; text and individual HP bars stay inside each.
+   Match the hero's baseline for the first creature, then stagger downward. */
+.pixel-battle__arena > .pixel-battle__enemies {
+  display:block; overflow:visible; pointer-events:none; z-index:3;
+}
+.pixel-battle__arena > .pixel-battle__enemies > .pixel-battle__enemy {
+  position:absolute; left:var(--enemy-x); bottom:calc(-1 * var(--enemy-depth));
+  top:auto; width:var(--enemy-width); height:auto; aspect-ratio:1;
+  max-width:160px; max-height:none; min-width:0; flex:none; margin:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:end;
+  gap:0; padding:0; pointer-events:auto;
+  transform-origin:50% 100%;
+}
+.pixel-battle__enemies .pixel-battle__enemy .enemy-motion-sprite,
+.pixel-battle__enemies .pixel-battle__enemy .enemy-motion-legacy,
+.pixel-battle__enemies .pixel-battle__enemy > img {max-height:none;width:100%;height:100%;object-fit:contain;}
+.pixel-battle__arena .pixel-battle__enemy-bar {
+  position:absolute; left:0; top:-24px; width:100%; max-width:none; min-width:0;
+  height:19px; box-sizing:border-box; z-index:4; isolation:isolate;
+  border:1px solid #d3a46d; overflow:hidden; background:#1d1520;
+  box-shadow:0 0 0 1px #090b10,0 2px 3px #0008;
+}
+.pixel-battle__enemy-bar i {position:absolute;inset:0 auto 0 0;height:100%;z-index:-1;}
+.pixel-battle__enemy-bar b {position:absolute;inset:0;display:grid;place-items:center;
+  font:700 clamp(8px,.7vw,11px)/1 var(--display);text-shadow:0 1px 2px #000,1px 0 2px #000;
+  color:#fff7dc;white-space:nowrap;pointer-events:none;filter:none!important;}
+.pixel-battle__arena .pixel-battle__enemy .pixel-battle__target-arrow {top:-45px;}
+.pixel-battle__arena .pixel-battle__enemy > small {
+  position:absolute;top:calc(100% + 3px);bottom:auto;
+  left:-10%;width:120%;max-width:none;min-width:0;z-index:5;
+  font:700 clamp(8px,.75vw,12px)/1.15 var(--display);
+  text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.pixel-battle__arena .pixel-battle__enemy.is-target {transform:none;}
+/* Previous reveal effect was visually blurring real HP and Mana during dice. */
+.pixel-battle--dice-pending .pixel-battle__meter > span,
+.pixel-battle--dice-pending .pixel-battle__stats label span {filter:none!important;opacity:1!important;user-select:text;}
+.pixel-battle--dice-pending .pixel-battle__meter i,
+.pixel-battle--dice-pending .pixel-battle__enemy-bar i {opacity:1!important;}
+@media(max-width:720px) {
+  .pixel-battle__arena > .pixel-battle__enemies {left:36%;right:2%;}
+  .pixel-battle__arena .pixel-battle__enemy-bar {top:-20px;height:17px;}
+  .pixel-battle__enemy-bar b {font-size:8px;}
+  .pixel-battle__arena .pixel-battle__enemy .pixel-battle__target-arrow {top:-38px;}
+}

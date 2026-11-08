@@ -1,0 +1,21 @@
+/* v0.5.11 — all Portal decisions are inside the Praça do Portal drawer. */
+.portal-actions {display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0;max-height:100%;color:#ead6aa;font-family:var(--display)}
+.portal-actions__header {display:grid;gap:3px;flex:0 0 auto;}
+.portal-actions__header > strong {font-size:15px;color:#f4d48e;}
+.portal-actions__header > small {font:10px/1.35 Georgia,serif;color:#bfd0cd;}
+.portal-actions__columns {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-height:0;gap:9px;align-items:start;}
+.portal-actions__columns > section {min-width:0;min-height:0;border:1px solid #725b39;background:#101f27e3;padding:5px;}
+.portal-actions__columns h3 {margin:0 0 6px;padding:0 0 5px;border-bottom:1px solid #8d754b;display:flex;align-items:center;gap:5px;font:700 11px var(--display);color:#f6d39b;}
+.portal-actions__columns section > div {display:grid;grid-template-columns:minmax(0,1fr);gap:5px;}
+.portal-actions__activity {display:flex;align-items:center;gap:5px;width:100%;min-width:0;min-height:39px;padding:4px 5px;border:1px solid #7e895b;background:#1c3438;color:#e9dbc2;text-align:left;cursor:pointer;}
+.portal-actions__activity:disabled {opacity:.67;cursor:not-allowed;border-color:#5f6166;background:#14252d;}
+.portal-actions__activity:enabled:hover,.portal-actions__activity:enabled:focus-visible {border-color:#ffdb8d;background:#31534b;}
+.portal-actions__symbol {flex:0 0 20px;display:grid;place-items:center;color:#f2c975;}
+.portal-actions__information {display:grid;gap:2px;min-width:0;}
+.portal-actions__information strong {font:700 10px/1.15 var(--display);overflow-wrap:anywhere;}
+.portal-actions__information small {color:#acc4c3;font:9px/1.15 var(--display);display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.portal-actions__eldamar {border:1px solid #9a794a;background:#233c40;color:#f7dfa8;padding:8px;font:700 10px var(--display);cursor:pointer;}
+.terran-game__drawer--portal .terran-game__drawer-content {padding:6px;overflow-y:auto;}
+.terran-game__drawer--portal .terran-drawer__section {padding:0;margin:0;}
+@media(max-width:850px){.portal-actions__columns{gap:4px}.portal-actions__columns h3{font-size:10px}.portal-actions__activity{min-height:35px}.portal-actions__information strong{font-size:9px}}
+@media(max-width:500px){.portal-actions__header>small{display:none}.portal-actions__columns{gap:3px}.portal-actions__information small{font-size:8px}}

@@ -1,6 +1,6 @@
 import type { BattleState } from '../combat/types'
 import type { CharacterAppearance } from '../character/appearance'
-import type { BoundSlot, Rarity } from '../shared/types'
+import type { BoundSlot, ComplementarySlot, Rarity } from '../shared/types'
 
 export const ATTRIBUTE_IDS = ['cunning', 'agility', 'strength', 'vigor', 'spirit'] as const
 export type AttributeId = (typeof ATTRIBUTE_IDS)[number]
@@ -180,6 +180,8 @@ export type GameSave = {
   inventory: InventoryItemInstance[]
   /** Distinct worn slot: an equipped temporary armor is NOT backpack inventory. */
   equippedBasicArmor: InventoryItemInstance | null
+  /** Optional for pre-v0.5.11 saves; no bonuses from complementary pieces. */
+  equippedComplementary?: Partial<Record<ComplementarySlot, InventoryItemInstance>>
   baseStorage: InventoryItemInstance[]
   wallet: { gold: number }
   // Vida/Mana atuais persistem; máximos continuam derivados do personagem.

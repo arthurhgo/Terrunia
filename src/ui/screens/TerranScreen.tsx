@@ -1,13 +1,13 @@
-import { Archive, BedDouble, MapPin, ScrollText, X } from 'lucide-react'
+import { Archive, BedDouble, ScrollText, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { TerranLocationDefinition } from '../../content/types'
-import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
+import { type TerranLocationId } from '../../content/terran'
 import { getNextCutscene } from '../../domain/terran/cutscenes'
 import { getTerranDialogue } from '../../domain/terran/cityDialogue'
 import { getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
-import { getDiscoveredTerranLocationIds, getTerranQuestDestination } from '../../domain/terran/cityEngine'
+import { getTerranQuestDestination } from '../../domain/terran/cityEngine'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { ClanHallPanel } from '../dashboard/ClanHallPanel'
@@ -30,7 +30,7 @@ import { RosettaGuide } from '../terran/RosettaGuide'
 import { TerranCharacterHud } from '../terran/TerranCharacterHud'
 import { TerranQuickJournal } from '../terran/TerranQuickJournal'
 import { hasTerranInterior } from '../terran/interiorLayout'
-import { getRoomName, PLAYER_HOME_DOOR, PLAYER_HOME_INTERIOR_ID, roomFurniture, type RoomFurniture, type TerranInteriorId } from '../terran/roomContent'
+import { PLAYER_HOME_DOOR, PLAYER_HOME_INTERIOR_ID, roomFurniture, type RoomFurniture, type TerranInteriorId } from '../terran/roomContent'
 import { streetNpcPlacements } from '../../content/streetNpcs'
 import type { WorldPoint } from '../terran/pixelCityArt'
 import { getCityCast } from '../terran/cityCast'
@@ -62,10 +62,12 @@ function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
   onVisit: (id: TerranLocationId) => void
   unified?: boolean
 }) {
+  if (location.viewKind === 'portal') {
+    return <PortalPanel save={save} navigateOnEnter={!unified} onGoToEldamar={() => onVisit('location_terran_eldamar_house')} />
+  }
   return (
     <div className="terran-drawer__section">
       <p>{location.description}</p>
-      {location.viewKind === 'portal' && <PortalPanel save={save} navigateOnEnter={!unified} onGoToEldamar={() => onVisit('location_terran_eldamar_house')} />}
       {location.viewKind === 'workshop' && <p>O Mercado de Terran distribui os serviços entre os moradores: Valmira e Edran vendem itens; Feril paga Ouro; Lorian transforma drops em Essência; Lithwynn e Talia aplicam melhorias aos Vínculos. Aproxime-se e converse com cada NPC.</p>}
       {location.viewKind === 'clanHall' && <ClanHallPanel save={save} />}
       {location.viewKind === 'daeryn' && <DaerynServices save={save} />}
@@ -89,6 +91,7 @@ function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
 
 export function TerranScene({ unified = false }: { unified?: boolean }) {
   const navigate = useNavigate()
+  const routerLocation = useLocation()
   const save = useGameStore((state) => state.save)
   const travel = useGameStore((state) => state.travelInTerran)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
@@ -98,8 +101,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const acknowledgeBaseIntroduction = useGameStore((state) => state.acknowledgeBaseIntroduction)
   const acceptQuest = useGameStore((state) => state.acceptQuest)
   const leaveBase = useGameStore((state) => state.leaveBase)
-  const [drawer, setDrawer] = useState<Drawer>(null)
-  const [showLocationDetails, setShowLocationDetails] = useState(false)
+  const [drawer, setDrawer] = useState<Drawer>(routerLocation.state?.openPortal ? 'location' : null)
   const drawerRef = useRef<HTMLElement>(null)
   const [locationId, setLocationId] = useState<TerranLocationId>('location_terran_portal_plaza')
   const [interiorId, setInteriorId] = useState<TerranInteriorId | null>(
@@ -144,7 +146,6 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const cityCast = getCityCast(save)
   const guidance = getTerranQuestDestination(save, content)
   const trackedRoute = getTrackedQuestRoute(save, content) ?? getReadyDeliveryQuestRoute(save, content)
-  const discovered = getDiscoveredTerranLocationIds(save).length
   const location = content.terranLocations[locationId]
   const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !dialogue && !inspected && !cityLandmark && !baseDoorPrompt && !homeMenuOpen && !activeQuestObjectId && !missionNpc && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
 
@@ -265,7 +266,6 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     else setDrawer('location')
     setDialogue(presence)
   }
-  const currentLabel = interiorId ? getRoomName(interiorId) : content.terranLocations[save.world.currentLocationId]?.name ?? 'Terran'
   const forgeQuest = getNpcActionableQuests(save, 'npc_durnan', content)[0]
   const activeTitle = drawer === 'forge' ? 'Casa do Ferreiro' : drawer === 'location' ? (
     localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
@@ -273,17 +273,6 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
 
   const sceneContent = (
     <div className="terran-game">
-        <header className="terran-game__topbar terran-game__topbar--minimal">
-          <button type="button" className="terran-game__location-toggle"
-            aria-expanded={showLocationDetails} aria-controls="terran-location-menu"
-            onClick={() => setShowLocationDetails((open) => !open)}>
-            <MapPin size={16} /> MENU / LOCAL
-          </button>
-          {showLocationDetails && <div id="terran-location-menu" className="terran-game__location-menu">
-            <strong>Terran — {currentLabel}</strong>
-            <small>{discovered}/{TERRAN_LOCATION_IDS.length} locais descobertos</small>
-          </div>}
-        </header>
         <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
           <div className={`terran-game__frame ${leftPanelOpen ? 'is-left-open' : ''} ${rightPanelOpen ? 'is-right-open' : ''}`} data-testid="terran-centered-gameplay">
           <button type="button" className="terran-game__panel-switch terran-game__panel-switch--left"
@@ -378,7 +367,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               questId={activeQuestObjectId} onClose={() => setActiveQuestObjectId(null)} />}
           </section>
           <TerranCharacterHud save={save} backpackOpen={backpackOpen} onToggleBackpack={() => setBackpackOpen((open) => !open)} />
-          {drawer && <aside ref={drawerRef} className={`terran-game__drawer ${eldamarOpen || localQuestId || dialogue || drawer === 'market' || drawer === 'forge' ? 'terran-game__drawer--dialogue' : ''}`} aria-label={`Painel lateral: ${activeTitle}`}>
+          {drawer && <aside ref={drawerRef} className={`terran-game__drawer ${drawer === 'location' && !localQuestId && location.viewKind === 'portal' ? 'terran-game__drawer--portal' : ''} ${eldamarOpen || localQuestId || dialogue || drawer === 'market' || drawer === 'forge' ? 'terran-game__drawer--dialogue' : ''}`} aria-label={`Painel lateral: ${activeTitle}`}>
             <header><span className="eyebrow">NEXO · INTERAÇÃO CONTÍNUA</span><h2>{activeTitle}</h2>
               <button type="button" onClick={() => { setDrawer(null); setLocalQuestId(null) }} aria-label="Fechar painel"><X size={19} /></button>
             </header>
