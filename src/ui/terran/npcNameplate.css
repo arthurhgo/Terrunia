@@ -1,270 +1,298 @@
-/* Terrúnia NPC nameplate: two independently sized lines, never the old 12px marker box. */
+/* Terrúnia v0.5.12.1 — VISUAL_DRAFT: one floating NPC plate and tucked-under
+   mission badges. These rules intentionally override the historical
+   .pixel-city__npc span / .pixel-interior__npc span selectors in index.css,
+   which otherwise draw a separate horizontal strip behind the NPC name. */
+
+/* The plate is one visual frame. Its pseudo-element paints IN FRONT of the
+   first pixels of the badges, creating the requested attached/behind effect. */
 .pixel-city__npc > .npc-nameplate,
 .pixel-interior__npc > .npc-nameplate {
   position: absolute;
-  z-index: 2;
-  top: -49px;
+  z-index: 6;
+  top: -50px;
   left: 50%;
   right: auto;
   bottom: auto;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  box-sizing: border-box;
+  gap: 1px;
   width: max-content;
-  min-width: 86px;
-  max-width: 230px;
+  min-width: 96px;
+  max-width: min(172px, 64vw);
   height: auto;
-  min-height: 0;
-  padding: 5px 8px;
+  min-height: 29px;
+  padding: 5px 8px 6px;
   transform: translateX(-50%);
   overflow: visible;
   white-space: nowrap;
-  border: 1px solid #977646;
-  border-radius: 2px;
-  background: #0c202bef;
-  box-shadow: 0 2px 0 #060e14ac;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   color: #f9e6b9;
   font: 700 10px/1.15 var(--display);
-  letter-spacing: .1px;
   text-shadow: 1px 1px 0 #04070b;
   pointer-events: none;
   user-select: none;
+  isolation: isolate;
 }
 
-/* Explicit title/role line; the parent NPC's generic <span> marker rules must not apply. */
-.pixel-city__npc .npc-nameplate__name,
-.pixel-interior__npc .npc-nameplate__name {
-  position: static;
-  display: block;
-  width: 100%;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  color: #f9e6b9;
-  font: inherit;
-  font-weight: 700;
-  line-height: 12px;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* The whole frame moves up when badges are present so they never hide the NPC. */
+.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-counts),
+.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) {
+  top: -57px;
+}
+.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-count:nth-child(3)),
+.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-count:nth-child(3)) {
+  min-width: 116px;
+}
+.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-count:nth-child(4)),
+.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-count:nth-child(4)) {
+  min-width: 143px;
 }
 
-.pixel-city__npc .npc-nameplate__subtitle,
-.pixel-interior__npc .npc-nameplate__subtitle {
-  position: static;
-  display: block;
+/* Single ornamented backplate: NO secondary band behind the name. */
+.pixel-city__npc > .npc-nameplate::before,
+.pixel-interior__npc > .npc-nameplate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(165deg, #15363e 0%, #0b2029 76%);
+  border: 1px solid #ad874d;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px #2b5152, 0 3px 0 #050d14bb;
+  pointer-events: none;
+}
+
+/* The old generic "NPC span" rule sets a 12px absolute GRID with its own
+   background and border. Reset both heading AND the badge container explicitly. */
+.pixel-city__npc .npc-nameplate .npc-nameplate__heading,
+.pixel-interior__npc .npc-nameplate .npc-nameplate__heading {
+  position: relative;
+  z-index: 3;
+  inset: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  gap: 0;
   width: 100%;
   min-width: 0;
-  max-width: 100%;
   height: auto;
-  min-height: 12px;
+  min-height: 13px;
   margin: 0;
   padding: 0;
   border: 0;
   background: transparent;
-  color: #d0d9d8;
-  font: italic 400 10px/12px Georgia, serif;
-  letter-spacing: 0;
-  text-shadow: 1px 1px 0 #02060b;
-  text-align: center;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  line-height: 13px;
+}
+
+.pixel-city__npc .npc-nameplate__heading > .npc-nameplate__name,
+.pixel-interior__npc .npc-nameplate__heading > .npc-nameplate__name {
+  position: static;
+  z-index: 3;
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
+  color: #f9e6b9;
+  font: 800 11px/13px var(--display);
+  text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.pixel-city__npc .npc-nameplate__subtitle,
+.pixel-interior__npc .npc-nameplate__subtitle {
+  position: relative;
+  z-index: 3;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  min-height: 10px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: #d0d9d8;
+  font: italic 400 9px/11px Georgia, serif;
+  letter-spacing: 0;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-shadow: 1px 1px 0 #02060b;
+  white-space: nowrap;
+}
+
+/* Mission icon outside the left side of the single name/title plate. */
+.pixel-city__npc .npc-nameplate__heading > .npc-quest-marker,
+.pixel-interior__npc .npc-nameplate__heading > .npc-quest-marker,
+.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble,
+.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble {
+  position: absolute;
+  z-index: 5;
+  top: -2px;
+  bottom: auto;
+  left: -30px;
+  right: auto;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 19px;
+  min-width: 19px;
+  height: 19px;
+  min-height: 19px;
+  margin: 0;
+  padding: 0;
+  transform: none;
+  border: 1px solid #aa854c;
+  border-radius: 50%;
+  background: #16242ee9;
+  box-shadow: 0 1px 4px #0009;
+  font: 900 14px/1 Georgia, serif;
+  text-align: center;
+}
+.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble,
+.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble {
+  background: #ac303d;
+  border-color: #df9aa4;
+  color: #fff1d1;
+  font-size: 13px;
+}
+.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble::after,
+.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble::after {
+  display: none;
+}
+
+/* Ribbons are siblings of the identity lines, not a second line/bar.
+   Position absolute prevents badges from affecting frame height. Their
+   upper 5px sit UNDER ::before, so they emerge from behind the plaque. */
+.pixel-city__npc .npc-nameplate .npc-nameplate__quest-counts,
+.pixel-interior__npc .npc-nameplate .npc-nameplate__quest-counts {
+  position: absolute;
+  z-index: 1;
+  top: calc(100% - 5px);
+  bottom: auto;
+  left: 8px;
+  right: auto;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  gap: 3px;
+  width: max-content;
+  max-width: none;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  transform: none;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+.pixel-city__npc .npc-nameplate .npc-nameplate__quest-count,
+.pixel-interior__npc .npc-nameplate .npc-nameplate__quest-count {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  gap: 2px;
+  width: auto;
+  min-width: 22px;
+  max-width: none;
+  height: 19px;
+  min-height: 19px;
+  margin: 0;
+  padding: 4px 5px 2px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 0 0 2px 2px;
+  box-shadow: inset 0 -2px 0 #0004, 0 2px 2px #0009;
+  color: #f8f4e4;
+  font: 800 9px/1 var(--display);
+  letter-spacing: 0;
+  text-align: center;
+  text-shadow: 0 1px #050d11;
+  white-space: nowrap;
+}
+.pixel-city__npc .npc-nameplate__quest-count--main,
+.pixel-interior__npc .npc-nameplate__quest-count--main {
+  border-color: #ad8843;
+  background: #66461e;
+  color: #ffe0a0;
+}
+.pixel-city__npc .npc-nameplate__quest-count--secondary,
+.pixel-interior__npc .npc-nameplate__quest-count--secondary {
+  border-color: #75bedb;
+  background: #205470;
+  color: #d3f4ff;
+}
+.pixel-city__npc .npc-nameplate__quest-count--active,
+.pixel-interior__npc .npc-nameplate__quest-count--active {
+  border-color: #8796a1;
+  background: #384750;
+  color: #e1e5e9;
+}
+.pixel-city__npc .npc-nameplate__quest-count--ready,
+.pixel-interior__npc .npc-nameplate__quest-count--ready {
+  border-color: #76b98a;
+  background: #285940;
+  color: #e1ffe9;
+}
+
+/* Generic parent-hover rules must not create an extra horizontal name strip. */
 .pixel-city__npc:hover > .npc-nameplate,
 .pixel-city__npc:focus-visible > .npc-nameplate,
 .pixel-interior__npc:hover > .npc-nameplate,
 .pixel-interior__npc:focus-visible > .npc-nameplate {
-  border-color: #ffe0a4;
-  background: #203641f5;
-  color: #fff4d8;
+  border: 0;
+  background: transparent;
 }
-.pixel-city__npc:hover .npc-nameplate__subtitle,
-.pixel-city__npc:focus-visible .npc-nameplate__subtitle,
-.pixel-interior__npc:hover .npc-nameplate__subtitle,
-.pixel-interior__npc:focus-visible .npc-nameplate__subtitle {
+.pixel-city__npc:is(:hover, :focus-visible) > .npc-nameplate::before,
+.pixel-interior__npc:is(:hover, :focus-visible) > .npc-nameplate::before {
+  border-color: #ffe0a4;
+  background: linear-gradient(165deg, #20464b, #142d38);
+}
+.pixel-city__npc:is(:hover, :focus-visible) .npc-nameplate__subtitle,
+.pixel-interior__npc:is(:hover, :focus-visible) .npc-nameplate__subtitle {
   color: #eef4ed;
 }
+.pixel-city__npc:is(:hover, :focus-visible) .npc-nameplate__heading > .npc-question-bubble,
+.pixel-interior__npc:is(:hover, :focus-visible) .npc-nameplate__heading > .npc-question-bubble {
+  background: #cf4950;
+  border-color: #ffe0ac;
+}
+.pixel-city__npc:is(:hover, :focus-visible),
+.pixel-interior__npc:is(:hover, :focus-visible) { z-index: 12; }
 
-/* Keep ? / ! / side-quest symbols above the full two-line plate. */
-.pixel-city__npc > .npc-nameplate + .npc-quest-marker,
-.pixel-interior__npc > .npc-nameplate + .npc-quest-marker {
-  z-index: 3;
-  top: -83px;
-}
-.pixel-city__npc > .npc-nameplate + .npc-question-bubble,
-.pixel-interior__npc > .npc-nameplate + .npc-question-bubble {
-  z-index: 3;
-  top: -80px;
-}
-
-/* Avoid clipping long in-world jobs while keeping name + title in distinct lines. */
-.pixel-city__npc .npc-nameplate__subtitle,
-.pixel-interior__npc .npc-nameplate__subtitle {
-  white-space: normal;
-  overflow-wrap: normal;
-  text-wrap: balance;
-  overflow: visible;
-  text-overflow: clip;
-  max-width: 214px;
-}
-.pixel-city__npc > .npc-nameplate,
-.pixel-interior__npc > .npc-nameplate { max-width: min(230px, 65vw); }
-
-/* v0.5.9: per-NPC quest counts beneath the existing title. */
-.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-counts),
-.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) {top:-63px}
-.npc-nameplate__quest-counts {
- display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:3px;
- max-width:200px;padding-top:2px;
-}
-.npc-nameplate .npc-nameplate__quest-count {
- position:static;display:inline-block;width:auto;max-width:none;height:auto;
- padding:2px 4px;border-radius:2px;white-space:nowrap;
- font:700 7px/1.2 var(--display);letter-spacing:0;text-shadow:0 1px #071016;
-}
-.npc-nameplate__quest-count--available{border:1px solid #a88443;color:#ffe0a0;background:#52391a}
-.npc-nameplate__quest-count--active{border:1px solid #677d85;color:#d0dce0;background:#283840}
-.npc-nameplate__quest-count--ready{border:1px solid #679c78;color:#d9f9dc;background:#234937}
-.pixel-city__npc:has(.npc-nameplate__quest-counts) > .npc-quest-marker,
-.pixel-interior__npc:has(.npc-nameplate__quest-counts) > .npc-quest-marker {top:-103px}
-.pixel-city__npc:has(.npc-nameplate__quest-counts) > .npc-question-bubble,
-.pixel-interior__npc:has(.npc-nameplate__quest-counts) > .npc-question-bubble {top:-100px}
-
-/* v0.5.10 VISUAL_DRAFT — compact labels, distinct readable hierarchy. */
-.pixel-city__npc > .npc-nameplate,
-.pixel-interior__npc > .npc-nameplate {
-  min-width: 65px; max-width: 155px; gap: 1px; padding: 4px 6px;
-  background: #0a1c26ec; letter-spacing: 0;
-}
-.pixel-city__npc .npc-nameplate__name,
-.pixel-interior__npc .npc-nameplate__name {
-  font-size: 11px; line-height: 13px; font-weight: 800;
-}
-.pixel-city__npc .npc-nameplate__subtitle,
-.pixel-interior__npc .npc-nameplate__subtitle {
-  font-size: 8px; line-height: 9px; min-height: 9px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-width: 143px;
-}
-.pixel-city__npc .npc-nameplate__quest-counts,
-.pixel-interior__npc .npc-nameplate__quest-counts {
-  display: flex; flex-flow: row nowrap; justify-content: flex-start;
-  align-items: center; align-self: flex-start; gap: 3px;
-  width: 100%; max-width: 100%; padding-top: 3px;
-}
-.pixel-city__npc .npc-nameplate__quest-count,
-.pixel-interior__npc .npc-nameplate__quest-count {
-  flex: 0 0 17px; width: 17px; min-width: 0; height: 14px;
-  display: inline-grid; place-items: center; padding: 1px 2px;
-  border-radius: 2px; font: 800 8px/1 var(--display);
-}
-.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-counts),
-.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) { top: -57px; }
-.pixel-city__npc:has(.npc-nameplate__quest-counts) > .npc-quest-marker,
-.pixel-interior__npc:has(.npc-nameplate__quest-counts) > .npc-quest-marker { top: -96px; }
-
-/* v0.5.10.2 — ? / ! / ◇ / ◆ belong left of the NPC name, never above. */
-.pixel-city__npc > .npc-nameplate,
-.pixel-interior__npc > .npc-nameplate,
-.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-counts),
-.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) {
-  top:-48px;min-height:31px;max-width:160px;
-}
-.pixel-city__npc .npc-nameplate__heading,
-.pixel-interior__npc .npc-nameplate__heading {
-  position:relative;display:flex;flex-direction:row;align-items:center;
-  justify-content:center;gap:4px;width:100%;min-width:0;min-height:18px;
-}
-.pixel-city__npc .npc-nameplate__heading > .npc-quest-marker,
-.pixel-interior__npc .npc-nameplate__heading > .npc-quest-marker,
-.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble,
-.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble {
-  position:static;inset:auto;transform:none;flex:0 0 17px;
-  width:17px;height:17px;min-width:17px;min-height:17px;
-  font-size:15px;line-height:1;text-align:center;z-index:3;
-}
-.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble,
-.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble {border-width:1px;font-size:12px;}
-.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble::after,
-.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble::after {display:none;}
-.pixel-city__npc .npc-nameplate__heading > .npc-nameplate__name,
-.pixel-interior__npc .npc-nameplate__heading > .npc-nameplate__name {width:auto;flex:1 1 auto;min-width:0;text-align:left;}
-
-/* v0.5.11: marker OUTSIDE the left edge; quest-state dots BELOW the nameplate.
-   The name, occupation and counts never compete for the same line. */
-.pixel-city__npc > .npc-nameplate,
-.pixel-interior__npc > .npc-nameplate,
-.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-counts),
-.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) {
-  top:-53px;min-width:80px;max-width:150px;padding:4px 7px;
-  overflow:visible;gap:1px;
-}
-.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-counts),
-.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) {top:-58px;}
-.pixel-city__npc .npc-nameplate__heading,
-.pixel-interior__npc .npc-nameplate__heading {width:100%;min-width:0;position:relative;min-height:13px;}
-.pixel-city__npc .npc-nameplate__heading > .npc-quest-marker,
-.pixel-interior__npc .npc-nameplate__heading > .npc-quest-marker,
-.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble,
-.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble {
-  position:absolute;left:-27px;top:0;right:auto;bottom:auto;
-  transform:none;flex:none;z-index:6;
-  width:19px;height:19px;min-width:19px;min-height:19px;display:grid;place-items:center;
-  background:#16242ee9;border:1px solid #aa854c;
-  font-size:14px;line-height:1;box-shadow:0 0 4px #0008;
-}
-.pixel-city__npc .npc-nameplate__quest-counts,
-.pixel-interior__npc .npc-nameplate__quest-counts {
-  position:absolute;top:calc(100% + 4px);left:0;right:0;width:100%;
-  min-height:14px;padding:0;display:flex;flex-flow:row nowrap;
-  align-items:center;justify-content:center;gap:3px;z-index:3;
-}
-.pixel-city__npc .npc-nameplate__name,
-.pixel-interior__npc .npc-nameplate__name {text-align:center;}
-
-/* Preserve Rosetta's tutorial marker color even when positioned outside the box. */
-.pixel-city__npc .npc-nameplate__heading > .npc-question-bubble,
-.pixel-interior__npc .npc-nameplate__heading > .npc-question-bubble {
-  background-color:#ac303d;
-  border-color:#df9aa4;
-}
-
-
-/* v0.5.12 — quest ribbons emerge from behind the LEFT side of the nameplate.
-   Available mission families are separate; accepted and deliverable statuses
-   use distinct tones. Absent categories render no ribbon at all. */
-.pixel-city__npc > .npc-nameplate,
-.pixel-interior__npc > .npc-nameplate,
-.pixel-city__npc > .npc-nameplate:has(.npc-nameplate__quest-counts),
-.pixel-interior__npc > .npc-nameplate:has(.npc-nameplate__quest-counts) {top:-51px;}
-.pixel-city__npc .npc-nameplate__heading,
-.pixel-interior__npc .npc-nameplate__heading {z-index:2;}
-.pixel-city__npc .npc-nameplate__quest-counts,
-.pixel-interior__npc .npc-nameplate__quest-counts {
-  position:absolute;top:calc(100% - 6px);left:12px;right:auto;
-  width:max-content;max-width:min(130px,43vw);min-height:0;
-  display:flex;flex-flow:column nowrap;align-items:flex-end;justify-content:flex-start;
-  gap:2px;padding:0;transform:translateX(-100%);z-index:1;
-}
-.pixel-city__npc .npc-nameplate__quest-count,
-.pixel-interior__npc .npc-nameplate__quest-count {
-  position:relative;display:block;flex:none;
-  width:max-content;max-width:100%;height:auto;min-height:15px;
-  padding:3px 6px 2px;border-radius:2px 0 0 2px;
-  text-align:right;white-space:nowrap;font:700 8px/1.2 var(--display);
-  box-shadow:0 2px 3px #0008;text-shadow:0 1px #050d11;
-}
-.npc-nameplate__quest-count--main {color:#ffe0a0;background:#52391a;border:1px solid #ad8843;}
-.npc-nameplate__quest-count--secondary {color:#b7edff;background:#153e54;border:1px solid #75bedb;}
-.npc-nameplate__quest-count--active {color:#e1e5e9;background:#303b43;border:1px solid #8796a1;}
-.npc-nameplate__quest-count--ready {color:#d9f9dc;background:#234937;border:1px solid #679c78;}
-@media(max-width:720px) {
-  .pixel-city__npc .npc-nameplate__quest-count,
-  .pixel-interior__npc .npc-nameplate__quest-count {font-size:7px;padding:2px 4px;min-height:13px;}
+@media (max-width: 720px) {
+  .pixel-city__npc > .npc-nameplate,
+  .pixel-interior__npc > .npc-nameplate { max-width: min(160px, 66vw); }
+  .pixel-city__npc .npc-nameplate .npc-nameplate__quest-count,
+  .pixel-interior__npc .npc-nameplate .npc-nameplate__quest-count {
+    min-width: 20px;
+    height: 18px;
+    min-height: 18px;
+    padding: 4px 4px 2px;
+    font-size: 8px;
+  }
 }
