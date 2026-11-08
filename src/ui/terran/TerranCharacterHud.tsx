@@ -1,4 +1,4 @@
-import { Backpack, ChevronDown, Coins, Shield, Sparkles, Swords } from 'lucide-react'
+import { Backpack, Coins, Shield, Sparkles, Swords } from 'lucide-react'
 import { useState } from 'react'
 import { content } from '../../content/catalog'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
@@ -29,8 +29,7 @@ const attributeFullNames = {
 /** Fixed, read-only classic RPG HUD. All numerical values come from the actual save. */
 export function TerranCharacterHud({ save, backpackOpen = false, onToggleBackpack }: { save: GameSave; backpackOpen?: boolean; onToggleBackpack?: () => void }) {
   const { character, essence } = save
-  const [attributesExpanded, setAttributesExpanded] = useState(true)
-  const [equipmentView, setEquipmentView] = useState(false)
+  const [view, setView] = useState<'status' | 'equipment' | 'attributes'>('status')
   const derived = deriveCharacterStats(save, content)
   return <aside className="terran-character-hud" aria-label="Status permanente do personagem">
     <header className="terran-character-hud__header">
@@ -42,40 +41,26 @@ export function TerranCharacterHud({ save, backpackOpen = false, onToggleBackpac
             <EquippedCharacter save={save} facing="up" sheathed alt={'Arma guardada nas costas de ' + character.name} />
             <span>LV {character.level}</span>
           </div>
-          <button type="button" className="terran-character-hud__view-button"
-            aria-pressed={equipmentView} aria-label={equipmentView ? 'Mostrar Status' : 'Mostrar Equipamentos'}
-            onClick={() => setEquipmentView((open) => !open)}>
-            {equipmentView ? 'Status' : 'Equipamentos'}
-          </button>
+          <div className="terran-character-hud__view-switches" role="group" aria-label="Painel do personagem">
+            <button type="button" className="terran-character-hud__view-button"
+              aria-pressed={view === 'equipment'} aria-label={view === 'equipment' ? 'Mostrar Status' : 'Mostrar Equipamentos'}
+              onClick={() => setView((current) => current === 'equipment' ? 'status' : 'equipment')}>
+              {view === 'equipment' ? 'Status' : 'Equipamentos'}
+            </button>
+            <button type="button" className="terran-character-hud__view-button"
+              aria-pressed={view === 'attributes'} aria-label={view === 'attributes' ? 'Mostrar Status' : 'Mostrar Atributos'}
+              onClick={() => setView((current) => current === 'attributes' ? 'status' : 'attributes')}>
+              {view === 'attributes' ? 'Status' : 'Atributos'}
+              {character.unspentAttributePoints > 0 && <span className="terran-character-hud__point-badge" aria-label={character.unspentAttributePoints + ' pontos disponíveis'}>{character.unspentAttributePoints}</span>}
+            </button>
+          </div>
         </div>
         <div className="terran-character-hud__identity-main">
           <div className="terran-character-hud__identity-meta">
             <strong>{character.name}</strong>
             <small>{character.clan.clanId ? content.clans[character.clan.clanId]?.name ?? 'Clã' : 'Sem Clã'} · {character.classProgression.classId ? content.classes[character.classProgression.classId]?.name ?? 'Classe' : 'Sem Classe'}</small>
           </div>
-          {equipmentView ? <EquipmentGrid save={save} /> : <section className="terran-character-hud__resource-bars" aria-label="Recursos atuais">
-            <ProgressBar label="Vida" value={save.vitals.hp} max={derived.life.value} tone="health" compact inside />
-            <ProgressBar label="Mana" value={save.vitals.mp} max={derived.mana.value} compact inside />
-            <ProgressBar label="Essência" value={essence.current} max={essence.required} tone="essence" compact inside />
-            <ProgressBar label="XP" value={character.xp} max={character.xpRequired} compact inside />
-          </section>
-}
-        </div>
-      </div>
-      {!equipmentView && <div className="terran-character-hud__resource-meta">
-        <span><Coins size={12} aria-hidden="true" /> {save.wallet.gold.toLocaleString('pt-BR')} Ouro</span>
-        <span><Sparkles size={12} aria-hidden="true" /> {essence.essencePoints} ponto(s) de Essência</span>
-      </div>}
-    </header>
-
-    <section className="terran-character-hud__section" aria-label="Atributos e combate">
-      <button className="terran-character-hud__section-heading terran-character-hud__toggle" type="button"
-        aria-expanded={attributesExpanded} aria-controls="terran-character-attributes"
-        onClick={() => setAttributesExpanded((expanded) => !expanded)}>
-        <Shield size={14} aria-hidden="true" /> ATRIBUTOS
-        <ChevronDown size={16} aria-hidden="true" className={attributesExpanded ? 'is-expanded' : ''} />
-      </button>
-      {attributesExpanded && <div id="terran-character-attributes" className="terran-character-hud__details">
+          {view === 'equipment' ? <EquipmentGrid save={save} /> : view === 'attributes' ? <section className="terran-character-hud__details terran-character-hud__attribute-view" aria-label="Atributos e distribuição de pontos">
       <div className="terran-character-hud__attributes">
         {Object.entries(character.attributes).map(([key, value]) => {
           const id = key as keyof typeof attributeLabels
@@ -90,8 +75,21 @@ export function TerranCharacterHud({ save, backpackOpen = false, onToggleBackpac
         <span><Swords size={13} aria-hidden="true" /> Ataque <strong>{derived.primaryAttack.value}</strong></span>
         <span><Shield size={13} aria-hidden="true" /> Defesa <strong>{derived.defense.value}</strong></span>
       </div>
+          </section> : <section className="terran-character-hud__resource-bars" aria-label="Recursos atuais">
+            <ProgressBar label="Vida" value={save.vitals.hp} max={derived.life.value} tone="health" compact inside />
+            <ProgressBar label="Mana" value={save.vitals.mp} max={derived.mana.value} compact inside />
+            <ProgressBar label="Essência" value={essence.current} max={essence.required} tone="essence" compact inside />
+            <ProgressBar label="XP" value={character.xp} max={character.xpRequired} compact inside />
+          </section>
+}
+        </div>
+      </div>
+      {view === 'status' && <div className="terran-character-hud__resource-meta">
+        <span><Coins size={12} aria-hidden="true" /> {save.wallet.gold.toLocaleString('pt-BR')} Ouro</span>
+        <span><Sparkles size={12} aria-hidden="true" /> {essence.essencePoints} ponto(s) de Essência</span>
       </div>}
-    </section>
+    </header>
+
     <section className="terran-character-hud__section terran-character-hud__backpack" aria-label="Mochila do personagem" id="terran-backpack-panel">
       <button type="button" className="terran-character-hud__section-heading terran-character-hud__toggle" aria-expanded={backpackOpen}
         onClick={onToggleBackpack}><Backpack size={15} /> MOCHILA <span>{save.inventory.length}/{getBackpackCapacity(save)}</span>
