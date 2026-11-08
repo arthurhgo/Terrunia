@@ -31,10 +31,14 @@ export function NpcNameplate({ presence, marker, markerPhase }: { presence: Terr
     {subtitle && <small className="npc-nameplate__subtitle">{subtitle}</small>}
     {hasQuests && <span className="npc-nameplate__quest-counts"
       title={`${totals.main} principais, ${totals.secondary} secundárias, ${totals.active} aceitas, ${totals.ready} para entregar`}>
-      {totals.main > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--main" title="Missões principais disponíveis">Principal {totals.main}</small>}
-      {totals.secondary > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--secondary" title="Missões secundárias disponíveis">Secundária {totals.secondary}</small>}
-      {totals.active > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--active" title="Missões aceitas">Aceita {totals.active}</small>}
-      {totals.ready > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--ready" title="Missões prontas para entregar">Entrega {totals.ready}</small>}
+      {totals.main > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--main"
+        data-quest-state="main" title={`${totals.main} missões principais disponíveis`}>! {totals.main}</small>}
+      {totals.secondary > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--secondary"
+        data-quest-state="secondary" title={`${totals.secondary} missões secundárias disponíveis`}>! {totals.secondary}</small>}
+      {totals.active > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--active"
+        data-quest-state="active" title={`${totals.active} missões aceitas`}>··· {totals.active}</small>}
+      {totals.ready > 0 && <small className="npc-nameplate__quest-count npc-nameplate__quest-count--ready"
+        data-quest-state="ready" title={`${totals.ready} missões prontas para entregar`}>✓ {totals.ready}</small>}
     </span>}
   </span>
 }
