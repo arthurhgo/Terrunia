@@ -89,6 +89,35 @@ describe('combate visual v0.17', () => {
     expect(useGameStore.getState().save?.battle?.combatants.combatant_player.hp).toBeLessThanOrEqual(initialHp)
   })
 
+  it('encerra o foco do dado antes da animação, dos números de dano e da próxima jogada', () => {
+    vi.useFakeTimers()
+    const save = createBattleSave()
+    const originalLog = save.battle!.log.length
+    const { container } = render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    act(() => { vi.advanceTimersByTime(1950) })
+    fireEvent.click(screen.getByRole('button', { name: 'ATAQUE' }))
+    const die = screen.getByRole('button', { name: /Arrastar dado d/ })
+    fireEvent.pointerDown(die, { pointerId: 11, pointerType: 'mouse', isPrimary: true, button: 0, clientY: 160 })
+    fireEvent.pointerMove(die, { pointerId: 11, pointerType: 'mouse', isPrimary: true, clientY: 78 })
+    fireEvent.pointerUp(die, { pointerId: 11, pointerType: 'mouse', isPrimary: true, clientY: 78 })
+
+    act(() => { vi.advanceTimersByTime(3000) })
+    expect(container.querySelector('.battle-dice-platform')).toBeInTheDocument()
+    expect(container.querySelector('.pixel-battle__strike-fx')).not.toBeInTheDocument()
+    expect(container.querySelector('.pixel-battle__damage-number')).not.toBeInTheDocument()
+    expect(useGameStore.getState().save!.battle!.log).toHaveLength(originalLog)
+
+    act(() => { vi.advanceTimersByTime(300) })
+    expect(container.querySelector('.battle-dice-platform')).not.toBeInTheDocument()
+    expect(container.querySelector('.pixel-battle__strike-fx')).toBeInTheDocument()
+    expect(container.querySelector('.pixel-battle__damage-number')).toBeInTheDocument()
+    expect(useGameStore.getState().save!.battle!.log).toHaveLength(originalLog)
+
+    act(() => { vi.advanceTimersByTime(8500) })
+    expect(container.querySelector('.pixel-battle__strike-fx')).not.toBeInTheDocument()
+    expect(useGameStore.getState().save!.battle!.log.length).toBeGreaterThan(originalLog)
+  })
+
   it('anuncia Turno 1 e só resolve iniciativa depois de arremessar o dado para cima', () => {
     vi.useFakeTimers()
     const save = createBattleSave()
