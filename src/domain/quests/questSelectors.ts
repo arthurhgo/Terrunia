@@ -101,6 +101,22 @@ export const getNpcQuestCounts = (save: GameSave, npcId: string, catalog: Conten
   return totals
 }
 
+/** v0.5.12: independent visual categories; never merge secondary offers with main quests. */
+export const getNpcQuestBadgeCounts = (save: GameSave, npcId: string, catalog: ContentCatalog) => {
+  const counts = { main: 0, secondary: 0, active: 0, ready: 0 }
+  for (const quest of Object.values(catalog.quests)) {
+    const status = save.quests[quest.id]?.status
+    if (quest.giverNpcId === npcId && (status === 'available' || status === 'offered')) {
+      if (quest.category === 'secondary' || quest.category === 'bounty') counts.secondary += 1
+      else counts.main += 1
+    } else if (quest.giverNpcId === npcId && status === 'active') {
+      counts.active += 1
+    }
+    if (quest.turnInNpcId === npcId && status === 'ready_to_turn_in') counts.ready += 1
+  }
+  return counts
+}
+
 export type NpcMarkerPhase = 'guide' | 'available' | 'active' | 'turn-in'
 
 export const getNpcQuestNotice = (save: GameSave, npcId: string, catalog: ContentCatalog): { marker: NpcWorldMarker; phase: NpcMarkerPhase } => {
