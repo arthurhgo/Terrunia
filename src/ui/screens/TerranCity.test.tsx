@@ -277,19 +277,17 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
   })
 
-  it('abre o diálogo de um NPC sem remover o canvas da cidade', () => {
+  it('abre as atividades do Portal sem desmontar a cena de Terran nem entrar automaticamente', () => {
     loadSave()
     render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Praça do Portal' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Conversar com Rosetta' }))
-    expect(screen.getByRole('dialog', { name: 'Orientações de Rosetta' })).toBeInTheDocument()
-    expect(screen.getAllByRole('status').some((node) => node.textContent?.includes('Vou lhe entregar duas túnicas simples.'))).toBe(true)
-    expect(screen.queryByText('Estante dos Registros')).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Missões que pode receber' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Consultar diário de missões' }))
-    expect(screen.getByRole('complementary', { name: 'Diário de missões' })).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Atividades da Praça do Portal' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Jornadas e desafios' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Caçadas do Portal' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran vista superior 3\\/4/ })).toBeInTheDocument()
+    expect(useGameStore.getState().save?.battle).toBeNull()
   })
+
 
   for (const locationId of TERRAN_LOCATION_IDS) {
     const location = content.terranLocations[locationId]
