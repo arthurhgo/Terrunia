@@ -1,17 +1,14 @@
-import { Backpack, ChevronDown, Coins, Gem, Shield, Shirt, Sparkles, Sword, Swords, Watch } from 'lucide-react'
+import { Backpack, ChevronDown, Coins, Shield, Sparkles, Swords } from 'lucide-react'
 import { useState } from 'react'
 import { content } from '../../content/catalog'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
-import { BOUND_SLOTS, BOUND_SLOT_LABELS } from '../../domain/shared/types'
 import type { GameSave } from '../../domain/game/types'
-import { AssetImage } from '../components/AssetImage'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { ProgressBar } from '../components/ProgressBar'
-import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
 import { getBackpackCapacity } from '../../domain/inventory/backpacks'
 import { AttributeAllocator } from '../character/AttributeAllocator'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
-import { useGameStore } from '../../state/gameStore'
+import { EquipmentGrid } from './EquipmentGrid'
 
 const attributeLabels = {
   cunning: 'AST',
@@ -29,81 +26,48 @@ const attributeFullNames = {
   spirit: 'Espírito',
 } as const
 
-const emptySlotIcons = { weapon: Sword, shield: Shield, armor: Shirt, necklace: Gem, bracelet: Watch } as const
-
 /** Fixed, read-only classic RPG HUD. All numerical values come from the actual save. */
 export function TerranCharacterHud({ save, backpackOpen = false, onToggleBackpack }: { save: GameSave; backpackOpen?: boolean; onToggleBackpack?: () => void }) {
-  const equipArmor = useGameStore((state) => state.equipArmor)
   const { character, essence } = save
   const [attributesExpanded, setAttributesExpanded] = useState(true)
+  const [equipmentView, setEquipmentView] = useState(false)
   const derived = deriveCharacterStats(save, content)
   const basicArmor = getEquippedBasicArmor(save, content)
-  const equippedCount = BOUND_SLOTS.filter((slot) => {
-    const itemId = character.bondedEquipment[slot]
-    const instance = itemId ? save.boundItems[itemId] : null
-    return Boolean(instance && content.boundItemBases[instance.baseItemId])
-  }).length
   return <aside className="terran-character-hud" aria-label="Status permanente do personagem">
     <header className="terran-character-hud__header">
       <span className="eyebrow">NEXO DO PERSONAGEM</span>
       <h2>PERSONAGEM</h2>
       <div className="terran-character-hud__identity">
-        <div className="terran-character-hud__portrait">
-          <EquippedCharacter save={save} facing="up" sheathed alt={'Arma guardada nas costas de ' + character.name} />
-          <span>LV {character.level}</span>
+        <div className="terran-character-hud__portrait-column">
+          <div className="terran-character-hud__portrait">
+            <EquippedCharacter save={save} facing="up" sheathed alt={'Arma guardada nas costas de ' + character.name} />
+            <span>LV {character.level}</span>
+          </div>
+          <button type="button" className="terran-character-hud__view-button"
+            aria-pressed={equipmentView} aria-label={equipmentView ? 'Mostrar Status' : 'Mostrar Equipamentos'}
+            onClick={() => setEquipmentView((open) => !open)}>
+            {equipmentView ? 'Status' : 'Equipamentos'}
+          </button>
         </div>
         <div className="terran-character-hud__identity-main">
           <div className="terran-character-hud__identity-meta">
             <strong>{character.name}</strong>
             <small>{character.clan.clanId ? content.clans[character.clan.clanId]?.name ?? 'Clã' : 'Sem Clã'} · {character.classProgression.classId ? content.classes[character.classProgression.classId]?.name ?? 'Classe' : 'Sem Classe'}</small>
           </div>
-          <section className="terran-character-hud__resource-bars" aria-label="Recursos atuais">
+          {equipmentView ? <EquipmentGrid save={save} /> : <section className="terran-character-hud__resource-bars" aria-label="Recursos atuais">
             <ProgressBar label="Vida" value={save.vitals.hp} max={derived.life.value} tone="health" compact inside />
             <ProgressBar label="Mana" value={save.vitals.mp} max={derived.mana.value} compact inside />
             <ProgressBar label="Essência" value={essence.current} max={essence.required} tone="essence" compact inside />
             <ProgressBar label="XP" value={character.xp} max={character.xpRequired} compact inside />
           </section>
+}
         </div>
       </div>
-      <div className="terran-character-hud__resource-meta">
+      {!equipmentView && <div className="terran-character-hud__resource-meta">
         <span><Coins size={12} aria-hidden="true" /> {save.wallet.gold.toLocaleString('pt-BR')} Ouro</span>
         <span><Sparkles size={12} aria-hidden="true" /> {essence.essencePoints} ponto(s) de Essência</span>
-      </div>
+      </div>}
     </header>
-
-    <section className="terran-character-hud__section" aria-label="Cinco equipamentos vinculados">
-      <div className="terran-character-hud__section-heading"><Gem size={14} aria-hidden="true" /> VÍNCULOS <span>{equippedCount}/5</span></div>
-      <div className="terran-character-hud__slots">
-        {BOUND_SLOTS.map((slot) => {
-          const id = character.bondedEquipment[slot]
-          const instance = id ? save.boundItems[id] : null
-          const definition = instance ? content.boundItemBases[instance.baseItemId] : null
-          const EmptyIcon = emptySlotIcons[slot]
-          const equipped = Boolean(instance && definition)
-          const basic = slot === 'armor' ? basicArmor : null
-          const spriteId = instance && definition
-            ? definition.assetIdByGrade[instance.grade] ?? definition.assetIdByGrade[1]
-            : basic?.definition.iconAssetId
-          return <div className={`terran-character-hud__slot ${equipped ? 'is-bound' : basic ? 'is-starter' : 'is-empty'}`} key={slot}
-            data-rarity={equipped ? undefined : basic?.definition.rarity} data-grade={equipped ? instance?.grade : undefined}
-            title={`${BOUND_SLOT_LABELS[slot]} · ${equipped ? definition!.name : basic?.definition.name ?? 'Não vinculado'}`}>
-            <span>{BOUND_SLOT_LABELS[slot]}</span>
-            <div className="terran-character-hud__slot-art">
-              {spriteId
-                ? <AssetImage assetId={spriteId} alt={definition?.name ?? basic?.definition.name} />
-                : <span className="terran-character-hud__empty-icon" aria-hidden="true">
-                    <EmptyIcon size={26} strokeWidth={1.7} />
-                  </span>}
-            </div>
-            <small>{equipped ? `G${instance!.grade}` : basic ? basic.instance.refinementLevel ? 'Simples +1' : 'Simples' : 'Vazio'}</small>
-          </div>
-        })}
-      </div>
-      {basicArmor && <button type="button" className="terran-character-hud__unequip" onClick={() => equipArmor(null)} disabled={Boolean(save.battle)}>
-        Desequipar {basicArmor.definition.name}
-      </button>}
-      {character.bondedEquipment.weapon && <small className="terran-character-hud__bound-note">Arma vinculada permanente · guardada nas costas em Terran.</small>}
-    </section>
 
     <section className="terran-character-hud__section" aria-label="Atributos e combate">
       <button className="terran-character-hud__section-heading terran-character-hud__toggle" type="button"
