@@ -4,9 +4,10 @@ import { deriveCharacterStats } from '../character/derivedStats'
 import { createNewSave } from '../game/createSave'
 import { resolveQuestDefinition } from '../quests/questSelectors'
 import { joinClan, unlockClass } from './progressionEngine'
+import { clanTableQuestId, clanGolemQuestId } from '../../content/clanProgressionV05142'
 
 describe('progressão de Clã e Classe', () => {
-  it('exige Rosetta no nível 4, três provas e confirmação de um único Clã', () => {
+  it('exige Rosetta, onda 14, Emblema entregue e confirmação de um único Clã', () => {
     const save = createNewSave('social-user', 'Nara', 'character.terririan.default', content)
     expect(joinClan(save, 'dunavar', content, '2026-08-12T15:00:00.000Z'))
       .toMatchObject({ok:false,code:'CLAN_GUIDANCE_REQUIRED'})
@@ -17,10 +18,13 @@ describe('progressão de Clã e Classe', () => {
     save.character.clan.candidateClanId='dunavar'
     save.character.clan.knownClanIds.push('dunavar')
     const unfinished=joinClan(save,'dunavar',content,now)
-    expect(unfinished).toMatchObject({ok:false,code:'CLAN_NOT_ELIGIBLE'})
-    for(const questId of content.clans.dunavar.recruitmentQuestIds)
-      save.quests[questId].status='completed'
-    save.character.clan.eligibleClanIds.push('dunavar')
+    expect(unfinished).toMatchObject({ok:false,code:'CLAN_EMBLEM_REQUIRED'})
+    save.quests[clanTableQuestId('dunavar')].status = 'completed'
+    save.world.portalWaveBest = 13
+    expect(joinClan(save,'dunavar',content,now)).toMatchObject({ok:false,code:'CLAN_EMBLEM_REQUIRED'})
+    save.world.portalWaveBest = 14
+    expect(joinClan(save,'dunavar',content,now)).toMatchObject({ok:false,code:'CLAN_EMBLEM_REQUIRED'})
+    save.quests[clanGolemQuestId('dunavar')].status = 'completed'
     const joined=joinClan(save,'dunavar',content,now)
     expect(joined.ok).toBe(true)
     if(!joined.ok)return
