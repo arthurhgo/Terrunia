@@ -102,6 +102,8 @@ export type BattleState = {
   /** v0.5.14 stage identity; keeps trail boss progression separate from stage victories. */
   dungeonEncounterId?: string
   dungeonRunId?: string
+  clanTrialQuestId?: string
+  clanTrialRunId?: string
   bossMechanics?: {
     bossId: string
     guardDefinitionIds: string[]
@@ -130,7 +132,7 @@ export type BattleState = {
 export type BattleCommand =
   | { type: 'rollInitiative' }
   | { type: 'attack'; targetId: string }
-  | { type: 'areaAttack' }
+  | { type: 'areaAttack'; targetId?: string }
   | { type: 'defend' }
   | { type: 'skill'; skillId: string; targetId: string }
   | { type: 'item'; itemInstanceId: string; targetId: string }

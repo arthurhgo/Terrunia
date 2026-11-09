@@ -111,6 +111,12 @@ export const acceptQuest = (
   }
   const capacity = canAcceptQuest(save)
   if (!capacity.ok) return capacity
+  if (!prerequisitesMet(save,definition)) return fail('QUEST_PREREQUISITES_NOT_MET','Requisitos não atendidos.')
+  if (definition.category === 'clan') {
+    const clanId = Object.values(catalog.clans).find(clan=>clan.recruitmentQuestIds.some(id=>id===questId))?.id
+    if (!clanId || save.character.level<4 || save.character.clan.candidateClanId!==clanId || save.character.clan.clanId)
+      return fail('CLAN_CANDIDACY_REQUIRED','Escolha sua candidatura no Salão dos Clãs, após Rosetta.')
+  }
   if (definition.giverNpcId === 'npc_rosetta' && (save.battle || save.world.currentLocationId !== 'location_terran_portal_plaza')) {
     return fail('TUTORIAL_LOCATION', 'Converse com Rosetta na Praça do Portal para começar esta lição.')
   }

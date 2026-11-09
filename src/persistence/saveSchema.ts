@@ -265,6 +265,8 @@ const battleSchema = z.object({
   portalHuntId: idSchema.optional(),
   dungeonEncounterId: idSchema.optional(),
   dungeonRunId: idSchema.optional(),
+  clanTrialQuestId: idSchema.optional(),
+  clanTrialRunId: idSchema.optional(),
   bossMechanics: z.object({
     bossId: idSchema,
     guardDefinitionIds: z.array(idSchema),

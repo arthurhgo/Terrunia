@@ -2,6 +2,7 @@ import type { ContentCatalog } from '../../content/catalog'
 import type { GameSave } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
 import { refreshQuestAvailability } from '../quests/questEngine'
+import { ROSETTA_CLAN_QUEST } from './clanOrientation'
 
 const stamp = (save: GameSave, now: string, event: string) => {
   save.updatedAt = now
@@ -29,6 +30,10 @@ export const discoverClan = (
 export const canJoinClan = (save: GameSave, clanId: string, catalog: ContentCatalog): Result<true> => {
   if (!catalog.clans[clanId]) return fail('UNKNOWN_CLAN', 'Clã desconhecido.')
   if (save.character.clan.clanId) return fail('CLAN_ALREADY_JOINED', 'Seu Terrírian já possui um Vínculo de Clã.')
+  if (save.character.level < 4 || save.quests[ROSETTA_CLAN_QUEST]?.status !== 'completed')
+    return fail('CLAN_GUIDANCE_REQUIRED','Inicie Os Quatro Caminhos com Rosetta no nível 4.')
+  if (save.character.clan.candidateClanId && save.character.clan.candidateClanId !== clanId)
+    return fail('CLAN_CANDIDACY_LOCKED','Sua candidatura pertence a outro Clã.')
   if (!save.character.clan.eligibleClanIds.includes(clanId)) {
     return fail('CLAN_NOT_ELIGIBLE', 'Conclua as três provas e receba o convite antes do rito.')
   }
@@ -51,6 +56,8 @@ export const joinClan = (
   next.character.clan.eligibleClanIds = [clanId]
   next.character.clan.rank = 1
   next.character.clan.joinedAt = now
+  next.character.clan.candidateClanId = clanId
+  next.character.clan.selectedClanSkillId = null
   for (const [questId, progress] of Object.entries(next.quests)) {
     const definition = catalog.quests[questId]
     const recruitmentClanId = definition?.prerequisites?.find((entry) => entry.type === 'clanKnown')
