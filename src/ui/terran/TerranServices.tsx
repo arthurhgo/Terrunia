@@ -14,6 +14,7 @@ import { ProgressBar } from '../components/ProgressBar'
 import { getNpcActionableQuests } from '../../domain/quests/questSelectors'
 import { getDeliverableCount } from '../../domain/quests/questInventory'
 import { isQuestObjectActivityId, questObjectActivities } from '../../domain/terran/questActivities'
+import { clanGolemQuestId } from '../../content/clanProgressionV05142'
 
 // VISUAL_DRAFT: mapa de pixels 20×12, sem dependência entre arte e lógica.
 const homePixels = [
@@ -184,6 +185,8 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded 
   const decline = useGameStore((state) => state.declineQuest)
   const complete = useGameStore((state) => state.turnInQuest)
   const performTrial = useGameStore((state) => state.performSocialTrial)
+  const startClanTrialWave = useGameStore((state) => state.startClanTrialWave)
+  const startClanGolemBattle = useGameStore((state) => state.startClanGolemBattle)
   const definition = content.quests[questId]
   const progress = save.quests[questId]
   if (!definition || !progress) return null
@@ -233,9 +236,17 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded 
           onClick={() => accept(questId)}><Check size={16} /> Aceitar missão</button>
       </div>}
       {progress.status === 'ready_to_turn_in' && <button type="button" className="terran-service-action" onClick={() => { complete(questId, definition.turnInNpcId); onClose() }}><Check size={17} /> Entregar missão</button>}
-      {progress.status === 'active' && (definition.category === 'clan' || definition.category === 'class') &&
+      {progress.status === 'active' && definition.category === 'class' &&
         <button type="button" className="terran-service-action" onClick={() => performTrial(questId)}>
           Realizar prova com representante
+        </button>}
+      {progress.status === 'active' && definition.category === 'clan' && !isQuestObjectActivityId(questId) &&
+        <button type="button" className="terran-service-action" onClick={() =>
+          questId === clanGolemQuestId(save.character.clan.clanId ?? '')
+            ? startClanGolemBattle(questId) : startClanTrialWave(questId)}>
+          {questId === clanGolemQuestId(save.character.clan.clanId ?? '')
+            ? 'Enfrentar Golem de Granito'
+            : `Iniciar onda ${save.clanTrialRun?.questId === questId ? save.clanTrialRun.waveIndex : 1}/3`}
         </button>}
       {progress.status === 'active' && isQuestObjectActivityId(questId) &&
         <p className="terran-quest-dialog__object-hint">

@@ -1,5 +1,7 @@
 import { BookOpenCheck, CheckCheck, Circle, ShieldCheck, X } from 'lucide-react'
 import { content } from '../../content/catalog'
+import { isQuestObjectActivityId } from '../../domain/terran/questActivities'
+import { clanGolemQuestId } from '../../content/clanProgressionV05142'
 import type { GameSave } from '../../domain/game/types'
 import { resolveQuestDefinition } from '../../domain/quests/questSelectors'
 import { useGameStore } from '../../state/gameStore'
@@ -18,6 +20,7 @@ export function SocialQuestDialog({ questId, save, onClose }: Props) {
   const acceptQuest = useGameStore((state) => state.acceptQuest)
   const performTrial = useGameStore((state) => state.performSocialTrial)
   const startClanTrialWave = useGameStore((state) => state.startClanTrialWave)
+  const startClanGolemBattle = useGameStore((state) => state.startClanGolemBattle)
   const turnInQuest = useGameStore((state) => state.turnInQuest)
   const baseDefinition = questId ? content.quests[questId] : null
   const definition = baseDefinition ? resolveQuestDefinition(save, baseDefinition) : null
@@ -37,7 +40,17 @@ export function SocialQuestDialog({ questId, save, onClose }: Props) {
         : progress.status === 'offered'
           ? <div className="quest-offer-actions"><GameButton variant="ghost" onClick={decline}><X size={17} /> Ainda não</GameButton><GameButton variant="primary" onClick={accept}><BookOpenCheck size={17} /> Aceitar prova</GameButton></div>
           : progress.status === 'active'
-            ? <GameButton variant="primary" onClick={() => definition.category==='clan' ? startClanTrialWave(definition.id) : performTrial(definition.id)}><ShieldCheck size={17} /> {definition.category==='clan'?`Iniciar onda ${(save.clanTrialRun?.questId===definition.id?save.clanTrialRun.waveIndex:1)}/3`:'Realizar prova'}</GameButton>
+            ? isQuestObjectActivityId(definition.id)
+              ? <p>Interaja com a Mesa de Iniciação e retorne ao seu líder.</p>
+              : <GameButton variant="primary" onClick={() =>
+                definition.category !== 'clan' ? performTrial(definition.id)
+                : definition.id === clanGolemQuestId(save.character.clan.clanId ?? '')
+                  ? startClanGolemBattle(definition.id) : startClanTrialWave(definition.id)
+              }><ShieldCheck size={17} /> {definition.id === clanGolemQuestId(save.character.clan.clanId ?? '')
+                ? 'Enfrentar Golem de Granito'
+                : definition.category === 'clan'
+                  ? `Iniciar onda ${save.clanTrialRun?.questId === definition.id ? save.clanTrialRun.waveIndex : 1}/3`
+                  : 'Realizar prova'}</GameButton>
             : progress.status === 'ready_to_turn_in'
               ? <GameButton variant="primary" onClick={complete}><CheckCheck size={17} /> Concluir prova</GameButton>
               : <GameButton variant="ghost" onClick={onClose}>Encerrar conversa</GameButton>

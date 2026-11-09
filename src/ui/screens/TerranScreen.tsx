@@ -40,6 +40,7 @@ import { MarketNpcPanel } from '../terran/MarketServices'
 import { isMarketNpc } from '../../domain/terran/market'
 import { BASE_LOCATION_ID, hasPlayerHomeKey, isPlayerHomeDoorOpen } from '../../domain/terran/base'
 import { getNpcActionableQuests } from '../../domain/quests/questSelectors'
+import { clanTableQuestId, CLAN_INITIATION_TABLE_ID } from '../../content/clanProgressionV05142'
 import { type TerranLandmark } from '../../content/terranExploration'
 import { CityLandmarkDialog } from '../terran/CityLandmarkDialog'
 import { Modal } from '../components/Modal'
@@ -192,7 +193,12 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setLocalQuestId(null)
   }
   const inspectFurniture = (furniture: RoomFurniture) => {
-    if (furniture.behavior === 'quest' && furniture.questId) {
+    if (furniture.id === CLAN_INITIATION_TABLE_ID) {
+      const clanId = save.character.clan.candidateClanId
+      const questId = clanId ? clanTableQuestId(clanId) : null
+      if (questId && save.quests[questId]?.status === 'active') setActiveQuestObjectId(questId)
+      else setInspected(furniture)
+    } else if (furniture.behavior === 'quest' && furniture.questId) {
       setActiveQuestObjectId(furniture.questId)
     } else if (furniture.id === 'home_memories' && interiorId === PLAYER_HOME_INTERIOR_ID) {
       setDrawer('homeRecords')
