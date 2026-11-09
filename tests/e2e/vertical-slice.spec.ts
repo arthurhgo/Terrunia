@@ -144,7 +144,10 @@ test('v0.5.13.1: revisitar Astravél pelo Portal preserva acesso ao encontro 15/
       save.world.trailNodeStates[node.id] = node.type === 'boss' ? 'bossCurrent' : 'completed'
     }
     save.character.clan.clanId = 'dunavar' // Affiliated character can re-enter the dungeon.
-    save.eventLog.push('CutsceneViewed:clan_oath')
+    // Re-entry test skips prior narrative presentation, not the actual dungeon gate.
+    save.eventLog.push('CutsceneViewed:clan_oath', 'CutsceneViewed:ruins_threshold',
+      'CutsceneViewed:fungal_descent', 'CutsceneViewed:home_claimed',
+      'CutsceneViewed:class_awakening', 'CutsceneViewed:colossus_aftermath')
     save.world.currentLocationId = 'astravel_entry' // retorno pelo Portal
     save.quests.main_astravel_corruption.status = 'active'
     useGameStore.setState({ save })
