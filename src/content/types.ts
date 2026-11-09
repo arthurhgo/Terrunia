@@ -121,6 +121,8 @@ export type CombatSkillDefinition = {
   cooldownTurns?: number
   /** BALANCE_DRAFT: +1 represents an upgrade d4→d6 (capped at d12). */
   damageDieSteps?: number
+  /** Asset registry ID, optional so earlier content remains compatible. */
+  iconAssetId?: string
   effects: CombatEffectDefinition[]
   status: DraftStatus
 }

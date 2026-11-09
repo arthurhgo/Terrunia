@@ -16,6 +16,10 @@
     "boss": [
       48,
       48
+    ],
+    "skill": [
+      16,
+      16
     ]
   },
   "entries": [
@@ -2261,6 +2265,230 @@
       "perspective": "3/4 superior",
       "pixelArt": true,
       "status": "VISUAL_DRAFT",
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_blackroot_crush",
+      "path": "/assets/skills/skill_blackroot_crush.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_longsword_arc",
+      "path": "/assets/skills/skill_longsword_arc.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_axe_sunder",
+      "path": "/assets/skills/skill_axe_sunder.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_bow_piercing_shot",
+      "path": "/assets/skills/skill_bow_piercing_shot.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_dagger_quick_cut",
+      "path": "/assets/skills/skill_dagger_quick_cut.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_scepter_arc_pulse",
+      "path": "/assets/skills/skill_scepter_arc_pulse.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_grimoire_projectiles",
+      "path": "/assets/skills/skill_grimoire_projectiles.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_staff_convergence",
+      "path": "/assets/skills/skill_staff_convergence.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_longsword_guard",
+      "path": "/assets/skills/skill_longsword_guard.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_longsword_cross",
+      "path": "/assets/skills/skill_longsword_cross.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_axe_cleave",
+      "path": "/assets/skills/skill_axe_cleave.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_axe_earthbreak",
+      "path": "/assets/skills/skill_axe_earthbreak.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_bow_focus",
+      "path": "/assets/skills/skill_bow_focus.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_bow_volley",
+      "path": "/assets/skills/skill_bow_volley.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_dagger_feint",
+      "path": "/assets/skills/skill_dagger_feint.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_dagger_shadowstep",
+      "path": "/assets/skills/skill_dagger_shadowstep.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_scepter_channel",
+      "path": "/assets/skills/skill_scepter_channel.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_scepter_prism",
+      "path": "/assets/skills/skill_scepter_prism.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_grimoire_seal",
+      "path": "/assets/skills/skill_grimoire_seal.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_grimoire_inscription",
+      "path": "/assets/skills/skill_grimoire_inscription.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_staff_flow",
+      "path": "/assets/skills/skill_staff_flow.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_staff_rift",
+      "path": "/assets/skills/skill_staff_rift.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_clan_dunavar_guard",
+      "path": "/assets/skills/skill_clan_dunavar_guard.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_clan_rustal_glyph",
+      "path": "/assets/skills/skill_clan_rustal_glyph.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_clan_cebios_orb",
+      "path": "/assets/skills/skill_clan_cebios_orb.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_clan_estres_flux",
+      "path": "/assets/skills/skill_clan_estres_flux.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_resonant_strike",
+      "path": "/assets/skills/skill_resonant_strike.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_spore_burst",
+      "path": "/assets/skills/skill_spore_burst.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
       "atlas": null
     }
   ]

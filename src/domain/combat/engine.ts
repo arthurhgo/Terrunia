@@ -100,7 +100,7 @@ export const calculateRolledDamage = (
     guardPrevented: Math.max(0, withoutGuard - finalDamage), finalDamage }
 }
 
-const selectDamageDie = (actor: Combatant, skill?: CombatSkillDefinition): CombatDie => {
+export const selectDamageDie = (actor: Combatant, skill?: CombatSkillDefinition): CombatDie => {
   const base = actor.attackDie ?? 4
   const index = BALANCE.attributeDieOrder.indexOf(base)
   const steps = Math.max(0, Math.floor(skill?.damageDieSteps ?? 0))

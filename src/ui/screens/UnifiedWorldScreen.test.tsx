@@ -41,7 +41,7 @@ describe('viewport unificada', () => {
 
     act(() => useGameStore.getState().startBattle('astravel_fungorro_01'))
 
-    expect(screen.getByRole('heading', { name: 'Primeira Presença Fungorra' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Borda Luminescente: Primeira Presença Fungorra' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Viewport unificada de combate' })).toBeInTheDocument()
     expect(screen.getByLabelText('Rota atual')).toHaveTextContent('/play')
     expect(screen.getByRole('navigation', { name: 'Menu geral' })).toBe(controls)

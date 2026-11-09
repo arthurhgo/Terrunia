@@ -36,4 +36,21 @@ describe('timeline visual minimalista', () => {
     expect(container.querySelectorAll('.combat-timeline__initiative')).toHaveLength(0)
     expect(screen.getByLabelText('Ordem de turnos').querySelectorAll('li')).toHaveLength(battle.initiativeOrder.length)
   })
+  it('revela iniciativas individualmente sem vazar as demais nos atributos acessíveis', () => {
+    const save = createNewSave('owner','Ter','character.terririan.default',content)
+    const battle = createBattle(save, content.encounters.encounter_fungorro_01, content, 'pending-reveal',
+      { manualInitiative: true })
+    const enemy = Object.values(battle.combatants).find((actor) => actor.side === 'enemy')!
+    const { rerender, container } = render(<BattleTimeline battle={battle} revealedInitiative={{}} />)
+    expect(container.querySelectorAll('.combat-timeline__initiative')).toHaveLength(0)
+    rerender(<BattleTimeline battle={battle} revealedInitiative={{ [enemy.id]: 9 }} />)
+    expect(container.querySelectorAll('.combat-timeline__initiative')).toHaveLength(1)
+    const enemyNode = screen.getByTitle(new RegExp(enemy.name + '.*Iniciativa 9'))
+    expect(enemyNode.getAttribute('aria-label')).toContain('iniciativa 9')
+    expect([...container.querySelectorAll('.combat-timeline__portrait')].filter((node) =>
+      node.getAttribute('title')?.includes('Aguardando iniciativa')).length).toBe(
+        battle.initiativeOrder.length - 1,
+      )
+  })
+
 })

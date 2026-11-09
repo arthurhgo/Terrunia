@@ -101,7 +101,7 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
   await expect(encounterDrawer).toBeVisible({ timeout: 20_000 })
   await expect(page.getByRole('button', { name: 'Enfrentar Fungorro próximo' })).toBeHidden()
   await encounterDrawer.locator('.expedition-node-detail__action').click()
-  await expect(page.getByRole('heading', { name: 'Primeira Presença Fungorra', exact: true })).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByRole('heading', { name: 'Borda Luminescente: Primeira Presença Fungorra', exact: true })).toBeVisible({ timeout: 20_000 })
   const actor = page.locator('.pixel-battle__hero .equipped-character')
   await expect(actor).toHaveAttribute('data-facing', 'right')
   const feet = await page.locator('.pixel-battle__arena').evaluate((arena) => {
