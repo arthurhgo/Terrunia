@@ -104,7 +104,7 @@ test('v0.5.13.1: cards de habilidade visíveis e quadrados sem scroll', async ({
   const drawer = page.getByRole('complementary', { name: 'Painel lateral: Presença Fungorra' })
   await expect(drawer).toBeVisible()
   await drawer.locator('.expedition-node-detail__action').click()
-  const initiative = page.getByRole('button', { name: /^Arrastar dado de iniciativa d\\d+ para cima para rolar$/ })
+  const initiative = page.getByRole('button', { name: /^Arrastar dado de iniciativa d\d+ para cima para rolar$/ })
   await expect(initiative).toBeEnabled({ timeout: 15_000 })
   await initiative.press('Enter')
   const action = page.getByRole('button', { name: 'HABILIDADES', exact: true })
