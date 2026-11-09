@@ -42,11 +42,32 @@ Os interiores têm silhueta de castelo com muralhas, torres, salão e pontos de 
 **Counterplay obrigatoriamente real:**
 - **Poção Restauradora:** ação gratuita já existente, recupera 10% de Vida ao longo de dois turnos e respeita cooldown/inventário, sem alterar a regra geral.
 - **Defender:** o Golem passa a **preparar a rocha na segunda rodada** de cada ciclo de três, sem causar dano naquele turno. O jogador tem uma oportunidade de defender antes do arremesso na terceira rodada, independentemente da iniciativa. A defesa adiciona mais 2 de mitigação, além dos 2 normais, apenas contra a pedra, e bloqueia `Abalado pelo Granito`.
-- **Crítico real:** ao atacar o Golem, o jogador tem uma rolagem determinística de chance de crítico (20%, `BALANCE_DRAFT`) com dano final ×1,5 arredondado para cima (`BALANCE_DRAFT`). O dano efetivo e a mensagem **ACERTO CRÍTICO** vêm da máquina de estados, não do componente React. O dano crítico não se aplica a combates comuns.
+- **Crítico global:** em qualquer combate, para jogador e inimigos, `face === lados` do dado principal de dano aplica `ceil(dano final × 1,5)` (`BALANCE_DRAFT`). Não há segunda rolagem de chance. A iniciativa e dados secundários de arma **não ativam** críticos adicionais. A tela apresenta a mesma face e o mesmo dano do motor, após resolver a animação.
 
 **Visual:** sprite provisório em `public/assets/enemies/bosses/enemy_granite_golem_idle.svg`, registrado por `enemy.granite-golem`; silhueta grande de pedra rachada, musgo, sigilos e olhos azul-cintilante. O lançamento de rocha recebe animação CSS `terrunia-granite-rock-flight` e VFX de projétil atrelados ao evento de ataque. Mantém `prefers-reduced-motion` e permite substituir o sprite sem alterar gameplay. Uma animação referencial em 8 quadros foi gerada separadamente e poderá originar um atlas definitivo 4×4; a prévia GIF ainda não é asset nativo do repositório.
 
-**OWNER_DECISION / BALANCE_DRAFT:** chance e multiplicador do crítico, número de poções previsto para cada build, defesa adicional e duração/telegraph precisam de playtest real do duelo com builds variadas, sem alterar o compromisso de HP/ATQ +10%.
+**OWNER_DECISION / BALANCE_DRAFT:** multiplicador do crítico (1,5×), número de poções previsto para cada build, defesa adicional e duração/telegraph precisam de playtest real do duelo com builds variadas, sem alterar o compromisso de HP/ATQ +10%. O gatilho em face máxima foi aprovado para todo o combate.
+
+## Dados e críticos — regra transversal de combate
+
+Esta seção define o comportamento implementado na **v0.5.14.2** e substitui a chance de crítico exclusiva do Golem:
+
+| Dado principal de ataque | Face crítica | Probabilidade teórica |
+| --- | --- | --- |
+| d4 | 4 | 25% |
+| d6 | 6 | ≈ 16,67% |
+| d8 | 8 | 12,5% |
+| d10 | 10 | 10% |
+| d12 | 12 | ≈ 8,33% |
+
+- Dano do acerto normal: regra de ataque/skill, defesa, dado principal e dado bônus da arma. **Somente face máxima do dado principal** ativa crítico; o bônus da arma não concede um segundo crítico.
+- Ao resultar na face máxima, multiplicar o dano final por 1,5 e arredondar para cima (`BALANCE_DRAFT`). Defesa continua válida; mitigação de bloqueio é contabilizada **antes** do multiplicador. O mínimo de dano permanece.
+- Implementado no motor compartilhado: ataques únicos, área, habilidades, consumíveis ofensivos, inimigos, ondas, trilhas, masmorras, Clãs e bosses. Splash compartilha a rolagem original e recebe dano já multiplicado; não realiza segundo sorteio nem acumula multiplicadores.
+- **Iniciativa não é um ataque**: face máxima na iniciativa **não** produz crítico nem bônus de dano.
+- RNG: `createRandomId` obtém UUID via Web Crypto; `seedFromBattleId` transforma esse identificador em semente de combate. O algoritmo Park–Miller persiste `rngSeed` no estado e usa **rejection sampling** em `rollSeededCombatDie` para impedir viés de módulo nas faces dos dados suportados. A UI lê os resultados e não rola novamente.
+- O comportamento é **pseudoaleatório e reproduzível**, não uma garantia de aleatoriedade criptográfica em cada turno. A auditoria verifica faixas válidas, distribuição estatística aproximada, reexecução idêntica por save/seed e marcação de crítico derivada da face real.
+- Compatibilidade: `roll.critical` e `damageBreakdown.critical` são opcionais, preservando logs/saves históricos. As novas rolagens passam a preencher ambos.
+- Decisão estética e impacto de crit pertencem à camada visual; **regras e RNG ficam fora do React**.
 
 ## OWNER_DECISION / a validar
 
