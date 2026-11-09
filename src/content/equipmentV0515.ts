@@ -81,7 +81,7 @@ function addSet(id:string,name:string,tier:number,channel:GearChannel,base:strin
   ...(clanId?{castleId:CASTLES[clanId]}:{}),level:GEAR_LEVELS[tier-1],
   palette:palette(base,trim,tier,0),itemIds:[]}
  SLOTS.forEach((slot,index)=>{
-  const sku=id.replace(/^set_/,'eq_')+'_'+slot
+  const sku=id.replace(/^set_/,'eq_')+'_'+slot.toLowerCase()
   const price=Math.round(PRICES[index]*TIER_PRICE[tier-1]*(channel==='PUBLIC_TERRAN'?1:channel==='CLAN_EXCLUSIVE'?1.1:1.2))
   const v=VALUES[index][tier-1]
   const pal=palette(base,trim,tier,index)
