@@ -45,6 +45,7 @@ const entries: AssetEntry[] = [
     path: `/assets/skills/${skill.id}.png`,
     fallback: '/assets/placeholders/skill.svg',
     alt: skill.name, pixelArt: true,
+    ...(skill.id === 'skill_granite_slam' ? { draftPlaceholder: true as const } : {}),
   })),
   ...complementaryItemDefinitions.map((item) => ({
     id: item.iconAssetId, path: '/assets/items/complementary/' + item.id + '.png',

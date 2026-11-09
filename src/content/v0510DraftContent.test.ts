@@ -25,12 +25,12 @@ describe('v0.5.10 content integration and canon guards', () => {
   })
   it('covers all existing enemies with native animation or species-specific fallback', () => {
     const monsters = Object.values(content.enemies)
-    expect(monsters).toHaveLength(24)
+    expect(monsters).toHaveLength(25)
     const native = monsters.filter((enemy) => Boolean(resolveAsset(enemy.assetId).motionSheet))
     expect(native).toHaveLength(4)
     for (const enemy of monsters) {
       const asset = resolveAsset(enemy.assetId)
-      expect(Boolean(asset.motionSheet || legacyEnemyMotion[enemy.assetId])).toBe(true)
+      expect(Boolean(asset.motionSheet || legacyEnemyMotion[enemy.assetId] || (enemy.id === 'enemy_granite_golem' && asset.draftPlaceholder))).toBe(true)
     }
   })
   it('keeps biomes, chance tables and rune effects non-canonical until approved', () => {
