@@ -1,4 +1,5 @@
 import { combatSkillDefinitions } from '../content/combat'
+import type { CombatSkillDefinition } from '../content/types'
 import { biomeMaterialDefinitions, biomeEnemyDefinitions } from '../content/biomeExpeditions'
 import { complementaryItemDefinitions } from '../content/complementaryItems'
 import type { BoundSlot } from '../domain/shared/types'
@@ -28,7 +29,7 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
-  ...combatSkillDefinitions.map((skill) => ({
+  ...(combatSkillDefinitions as CombatSkillDefinition[]).map((skill) => ({
     id: skill.iconAssetId ?? `skill.${skill.id}`,
     path: `/assets/skills/${skill.id}.svg`,
     fallback: '/assets/placeholders/skill.svg',

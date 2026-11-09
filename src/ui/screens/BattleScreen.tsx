@@ -184,7 +184,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     const impactMs = event.kind === 'damage' ? (reducedMotion ? 160 : 450) : 80
     const reveal = window.setTimeout(() => {
       setDiceStage('impact')
-      if (event.kind === 'initiative' && event.initiativeTotal !== undefined) {
+      if (event.kind === 'initiative' && event.initiativeTotal !== undefined && event.actorId) {
         setRevealedInitiative((current) => ({ ...current, [event.actorId]: event.initiativeTotal! }))
       }
       if (event.kind === 'damage') {
@@ -285,7 +285,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     previewTimer.current = window.setTimeout(() => {
       // A roll becomes public only after its own die focus finishes.
       setDiceStage('impact')
-      if (event.kind === 'initiative' && event.initiativeTotal !== undefined) {
+      if (event.kind === 'initiative' && event.initiativeTotal !== undefined && event.actorId) {
         setRevealedInitiative((current) => ({ ...current, [event.actorId]: event.initiativeTotal! }))
       }
       if (event.kind === 'damage') {
