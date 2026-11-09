@@ -25,7 +25,7 @@ describe('v0.5.10 content integration and canon guards', () => {
   })
   it('covers all existing enemies with native animation or species-specific fallback', () => {
     const monsters = Object.values(content.enemies)
-    expect(monsters).toHaveLength(23)
+    expect(monsters).toHaveLength(24)
     const native = monsters.filter((enemy) => Boolean(resolveAsset(enemy.assetId).motionSheet))
     expect(native).toHaveLength(4)
     for (const enemy of monsters) {

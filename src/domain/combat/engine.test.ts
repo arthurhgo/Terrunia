@@ -178,17 +178,17 @@ describe('máquina de estados de combate', () => {
     )
   })
 
-  it('carrega o Colosso Micélio como chefe data-driven com recompensa de Vínculo', () => {
+  it('carrega o novo totem arcano como chefe data-driven com recompensa de Vínculo', () => {
     const battle = createBattle(
       makeSave(),
-      content.encounters.encounter_colossus_mycelium_01,
+      content.encounters.encounter_fungal_core_sentinel,
       content,
       'battle_boss',
     )
-    const bossId = 'combatant_enemy_colossus_mycelium_1'
+    const bossId = 'combatant_enemy_ruin_corrupted_sentinel_1'
     expect(battle.combatants[bossId]).toMatchObject({
-      name: 'Colosso Micélio',
-      maxHp: 24,
+      name: 'Sentinela Corrompida · Núcleo da Ruína',
+      maxHp: 42,
     })
     expect(battle.rewards).toMatchObject({
       boundResonance: 256,

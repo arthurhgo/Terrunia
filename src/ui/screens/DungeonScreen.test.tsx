@@ -39,22 +39,27 @@ describe('Câmaras Fúngicas em quatro salas', () => {
     expect(screen.getByRole('img', { name: /Dungeon em pixels, quatro salas/ })).toBeInTheDocument()
   })
 
-  it('as salas descobertas não liberam o chefe sem as 12 ondas de combate', () => {
-    seedDungeon(true)
+  it('permite o primeiro estágio, sem assumir que descoberta libera o chefe', () => {
+    seedDungeon()
     render(<MemoryRouter initialEntries={['/dungeon']}><Routes>
       <Route path="/dungeon" element={<DungeonScreen />} />
       <Route path="/battle" element={<div>Combate de estágio</div>} />
     </Routes></MemoryRouter>)
+    fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Vestíbulo Micelial' }))
+    expect(screen.getByRole('complementary', { name: 'Painel lateral: Vestíbulo Micelial' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Enfrentar estágio 1/3' })).toBeEnabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Enfrentar estágio 1/3' }))
+    expect(useGameStore.getState().save?.battle?.encounterId).toBe('encounter_fungal_vestibule_stage_1')
+    expect(screen.getByText('Combate de estágio')).toBeInTheDocument()
+  })
+
+  it('descobrir todas as salas não libera a Sentinela sem as 12 ondas', () => {
+    seedDungeon(true)
+    render(<MemoryRouter initialEntries={['/dungeon']}><DungeonScreen /></MemoryRouter>)
     fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Núcleo da Ruína' }))
     expect(screen.getByRole('complementary', { name: 'Painel lateral: Núcleo da Ruína' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Enfrentar Núcleo da Ruína/ })).not.toBeInTheDocument()
     expect(useGameStore.getState().save?.battle).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Vestíbulo Micelial' }))
-    expect(screen.getByRole('button', { name: 'Enfrentar estágio 1/3' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Enfrentar estágio 1/3' }))
-    expect(useGameStore.getState().save?.battle?.encounterId).toBe('encounter_fungal_vestibule_stage_1')
-    expect(screen.getByText('Combate de estágio')).toBeInTheDocument()
   })
 
 })
