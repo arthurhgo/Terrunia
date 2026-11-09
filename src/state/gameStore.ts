@@ -2,6 +2,8 @@ import { enterBiomeTrail } from '../domain/exploration/biomeAccess'
 import { BACKPACK_UPGRADES, routeNewItemOverflow } from '../domain/inventory/backpacks'
 import { executeForgeRecipe, executeGoldForgeUpgrade } from '../domain/terran/forge'
 import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmor'
+import { purchaseGear, equipGearStyle, refineCatalogGear } from '../domain/inventory/equipmentV0515'
+import { gearSetById, gearOfferById } from '../content/equipmentV0515'
 import { equipComplementaryItem } from '../domain/inventory/complementaryEquipment'
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
 import { create } from 'zustand'
@@ -138,6 +140,10 @@ type GameState = {
   equipComplementary: (slot: ComplementarySlot, instanceId: string | null) => void
   refineArmor: (instanceId: string) => void
   buyFromMarket: (npcId: string, itemId: string, quantity?: number) => void
+  buyGear: (offerIds: string[]) => void
+  buyGearSet: (setId: string) => void
+  equipGearStyle: (slot: BoundSlot, instanceId: string | null) => void
+  refineGear: (instanceId: string) => void
   recordCutsceneViewed: (sceneId: CutsceneId) => void
   enterAstravel: () => void
   enterBiome: (biomeId: string) => void
@@ -204,6 +210,9 @@ export const useGameStore = create<GameState>((set, get) => {
 
   const commit = (candidate: GameSave) => {
     const save = routeNewItemOverflow(get().save, refreshTutorialQuestProgress(refreshDeliveryQuestProgress(candidate, content, candidate.updatedAt), content, candidate.updatedAt))
+    const maxima = deriveCharacterStats(save, content)
+    save.vitals.hp = Math.min(save.vitals.hp, maxima.life.value)
+    save.vitals.mp = Math.min(save.vitals.mp, maxima.mana.value)
     set({ save, status: 'ready', error: null })
     return persist(save)
   }
@@ -785,6 +794,43 @@ export const useGameStore = create<GameState>((set, get) => {
       show('Compra realizada', BACKPACK_UPGRADES.find((upgrade) => upgrade.id === itemId)
         ? 'Capacidade da mochila expandida e salva no personagem.'
         : `${quantity}× ${content.items[itemId].name} recebido no Mercado.`, 'success')
+    },
+
+    buyGear: (offerIds) => {
+      const save = get().save
+      if (!save) return
+      const result = purchaseGear(save, offerIds, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+      show('Equipamentos adquiridos', offerIds.length + ' peça(s) do catálogo adicionada(s) à mochila ou ao baú da Base.', 'success')
+    },
+
+    buyGearSet: (setId) => {
+      const setDefinition = gearSetById[setId]
+      if (!setDefinition) return failAction('Kit não encontrado.')
+      get().buyGear(setDefinition.itemIds)
+    },
+
+    equipGearStyle: (slot, instanceId) => {
+      const save = get().save
+      if (!save) return
+      const result = equipGearStyle(save, instanceId, slot, nowIso())
+      if (!result.ok) return failAction(result.message)
+      if (result.value === save) return
+      commit(result.value)
+      show('Equipamentos', instanceId ? 'Revestimento equipado sem substituir o Vínculo.' : 'Revestimento devolvido à mochila.', 'success')
+    },
+
+    refineGear: (instanceId) => {
+      const save = get().save
+      if (!save) return
+      const result = refineCatalogGear(save, instanceId, nowIso())
+      if (!result.ok) return failAction(result.message)
+      commit(result.value)
+      const gearId = [...result.value.inventory, ...(result.value.equippedBasicArmor ? [result.value.equippedBasicArmor] : []),
+        ...Object.values(result.value.equippedComplementary ?? {}), ...Object.values(result.value.equippedGearStyles ?? {})]
+        .find((item) => item?.instanceId === instanceId)?.definitionId
+      show('Forja de Durnan', 'Equipamento '+(gearOfferById[gearId ?? '']?.name ?? '')+' aprimorado até G3.', 'success')
     },
 
     recordCutsceneViewed: (sceneId) => {
