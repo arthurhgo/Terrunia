@@ -252,9 +252,14 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     }
     const currentSave = useGameStore.getState().save ?? save
     const quest = presence.npcId ? getNpcActionableQuests(currentSave, presence.npcId, content)[0] : undefined
-    if (quest) {
+    const riteLeader = Boolean(presence.npcId && Object.values(content.clans).some((clan) =>
+      clan.recruiterNpcId === presence.npcId &&
+      currentSave.character.clan.candidateClanId === clan.id &&
+      !currentSave.character.clan.clanId &&
+      currentSave.character.clan.eligibleClanIds.includes(clan.id)))
+    if (quest || riteLeader) {
       setDrawer(null)
-      setMissionNpc({ presence, questId: quest.id, sourceId })
+      setMissionNpc({ presence, questId: quest?.id ?? 'talk', sourceId })
       return
     }
     if (sourceId === 'location_terran_forge') {
