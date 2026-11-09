@@ -147,7 +147,8 @@ describe('v0.5.14.2 — recrutamento por onda 14, Emblema e Castelo', () => {
     expect(started.battle?.phase).toBe('AwaitingInitiative')
     expect(started.battle?.clanBossQuestId).toBe(id)
     expect(started.world.currentLocationId).toBe(GRANITE_HEART_INSTANCE_ID)
-    expect(Object.values(started.battle!.combatants).find(c => c.definitionId === GRANITE_GOLEM_ENEMY_ID)?.maxHp).toBeGreaterThan(50)
+    expect(Object.values(started.battle!.combatants).find(c => c.definitionId === GRANITE_GOLEM_ENEMY_ID)?.maxHp)
+      .toBe(Math.ceil(started.battle!.combatants.combatant_player.maxHp * 1.1))
     const battle = structuredClone(started.battle!)
     battle.phase = 'Victory'
     for (const enemy of Object.values(battle.combatants).filter(c => c.side === 'enemy')) {
