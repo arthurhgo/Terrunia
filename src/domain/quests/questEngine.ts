@@ -8,6 +8,7 @@ import { consumeQuestDelivery, refreshDeliveryQuestProgress } from './questInven
 import { refreshTutorialQuestProgress } from './tutorialProgress'
 import { chooseClanCandidate } from '../progression/clanOrientation'
 import { clanTableQuestId } from '../../content/clanProgressionV05142'
+import { isLegacyClanTrialQuestId } from '../../content/clanTrials'
 
 export const SLOT_OCCUPYING_QUEST_STATUSES = ['active', 'ready_to_turn_in'] as const
 
@@ -54,6 +55,7 @@ export const refreshQuestAvailability = (save: GameSave, catalog: ContentCatalog
   for (const definition of Object.values(catalog.quests)) {
     const progress = next.quests[definition.id]
     if (!progress || progress.status !== 'locked' || !prerequisitesMet(next, definition)) continue
+    if (isLegacyClanTrialQuestId(definition.id)) continue
     if (definition.category === 'clan') {
       const leaderClan = Object.values(catalog.clans).find((clan) => clan.recruiterNpcId === definition.giverNpcId)
       if (leaderClan && (next.character.clan.clanId && next.character.clan.clanId !== leaderClan.id ||
