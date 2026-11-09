@@ -51,4 +51,31 @@ describe('dungeon de Astravél (domínio puro)', () => {
     expect(reentering.ok).toBe(true)
     if (reentering.ok) expect(reentering.save.world.worldFlags.filter((flag) => flag === dungeonRoomFlag('fungal_vestibule'))).toHaveLength(1)
   })
+  it('permite etapa 15/15 após retornar pelo Portal, mantendo o marco do chefe desbloqueado', () => {
+    const save = ready()
+    const astravel = content.trails.trail_astravel_entry
+    save.world.currentLocationId = 'astravel_entry' // o Portal reabre a instância pela Entrada
+    save.world.trailNodeStates.astravel_ruin_threshold_05 = 'completed'
+    const result = enterDungeon(save, dungeon, now, astravel)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.save.world.currentLocationId).toBe(dungeon.id)
+    expect(result.save.world.trailNodeStates.astravel_boss_preview).toBe('bossCurrent')
+    expect(result.save.world.trailNodeStates.astravel_ruin_threshold_05).toBe('completed')
+    expect(save.world.currentLocationId).toBe('astravel_entry')
+  })
+
+  it('não permite entrar de Terran, outro bioma ou com o chefe ainda bloqueado', () => {
+    const astravel = content.trails.trail_astravel_entry
+    for (const location of ['location_terran_portal_plaza', 'cerrado_entry']) {
+      const save = ready()
+      save.world.currentLocationId = location
+      expect(enterDungeon(save, dungeon, now, astravel).ok).toBe(false)
+    }
+    const save = ready()
+    save.world.currentLocationId = 'astravel_entry'
+    save.world.trailNodeStates.astravel_boss_preview = 'locked'
+    expect(enterDungeon(save, dungeon, now, astravel).ok).toBe(false)
+  })
+
 })

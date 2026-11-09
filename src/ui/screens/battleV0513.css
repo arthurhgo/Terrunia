@@ -38,3 +38,82 @@
 @media(max-width:850px){.pixel-battle__header{grid-template-columns:1fr minmax(0,4fr);gap:3px;}.pixel-battle__header h1{grid-column:auto!important;grid-row:auto!important;}.pixel-battle__submenu .pixel-battle__skill-grid{grid-template-columns:repeat(auto-fill,minmax(102px,1fr));}}
 @media(max-width:560px){.pixel-battle__header strong{font-size:12px;}.pixel-battle__header .pixel-battle__encounter-label h1{font-size:clamp(10px,3vw,14px);}.pixel-battle__submenu .pixel-battle__skill-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.pixel-battle__skill-tooltip{right:8px;bottom:8px;width:calc(100vw - 16px);max-height:64dvh;}}
 @media(prefers-reduced-motion:reduce){.pixel-battle__cooldown-mask{transition:none;}.combat-timeline--portraits .combat-timeline__initiative.is-revealed{animation:none;}}
+
+/* v0.5.13.1: the skill picker fills the available action panel, never a scrollable popover.
+   Card dimensions are derived from both columns and the remaining row height. */
+.pixel-battle__actions .pixel-battle__submenu--skill-picker {
+  inset: 44px 7px 7px;
+  background: #071321;
+  padding: 4px 48px 4px 7px;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  gap: 0;
+  overflow: hidden;
+}
+.pixel-battle__submenu--skill-picker > button:first-child {
+  position: absolute;
+  right: 5px; top: 5px;
+  min-height: 27px; height: 27px;
+  width: 39px; padding: 2px 3px;
+  font: 700 8px/1 var(--display);
+  z-index: 2;
+}
+.pixel-battle__actions .pixel-battle__submenu--skill-picker .pixel-battle__skill-grid {
+  box-sizing: border-box;
+  container-type: size;
+  display: grid;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: var(--skill-max-width);
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  grid-template-columns: repeat(var(--skill-columns), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--skill-rows), minmax(0, 1fr));
+  place-items: center;
+  align-content: center;
+  gap: 5px;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+.pixel-battle__actions .pixel-battle__submenu--skill-picker .pixel-battle__skill-card {
+  box-sizing: border-box;
+  width: min(100%, 102px);
+  width: min(100%, 102px, calc((100cqh - 9px) / var(--skill-rows)));
+  height: auto;
+  aspect-ratio: 1 / 1;
+  max-height: 100%;
+  min-width: 0; min-height: 0;
+  padding: 3px;
+  gap: 1px;
+  font-size: 9px;
+  line-height: 1.05;
+  align-self: center;
+}
+.pixel-battle__submenu--skill-picker .pixel-battle__skill-icon {
+  width: 30px; height: 30px;
+  max-width: 44%;
+}
+.pixel-battle__submenu--skill-picker .pixel-battle__skill-name {
+  min-height: 0;
+  max-height: 21px;
+  font-size: 9px;
+  line-height: 1.08;
+}
+.pixel-battle__submenu--skill-picker .pixel-battle__skill-cost,
+.pixel-battle__submenu--skill-picker .pixel-battle__skill-stats {font-size: 8px;}
+.pixel-battle__submenu--skill-picker .pixel-battle__skill-reason {font-size: 7px;}
+@media (max-height: 760px) {
+  .pixel-battle__submenu--skill-picker .pixel-battle__skill-icon {width: 25px;height:25px;}
+  .pixel-battle__actions .pixel-battle__submenu--skill-picker .pixel-battle__skill-card {padding:2px;gap:0;}
+}
+@media (max-width: 600px) {
+  .pixel-battle__actions .pixel-battle__submenu--skill-picker {
+    inset: 43px 5px 5px; padding: 3px 43px 3px 4px;
+  }
+  .pixel-battle__submenu--skill-picker > button:first-child {width:35px;font-size:7px;}
+}

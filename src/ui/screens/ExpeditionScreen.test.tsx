@@ -111,4 +111,25 @@ describe('expedição pixelada de Astravél', () => {
     expect(useGameStore.getState().save?.world.currentLocationId).toBe('dungeon_fungal_chambers')
     expect(useGameStore.getState().save?.battle).toBeNull()
   })
+  it('o Portal pode reiniciar em Entrada e ainda assim a etapa 15/15 abre as Câmaras', () => {
+    seedExpedition('astravel_boss_preview')
+    const save = useGameStore.getState().save!
+    save.world.trailNodeStates.astravel_fungorro_01 = 'completed'
+    save.world.trailNodeStates.astravel_ruin_threshold_05 = 'completed'
+    save.world.trailNodeStates.astravel_boss_preview = 'bossCurrent'
+    render(<MemoryRouter initialEntries={['/expedition']}><Routes>
+      <Route path="/expedition" element={<ExpeditionScreen />} /><Route path="/dungeon" element={<div>Câmaras desbloqueadas</div>} />
+    </Routes></MemoryRouter>)
+    // Open the physical final-stage drawer, then simulate the Portal's saved location.
+    fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Câmaras Fúngicas' }))
+    const reentered = structuredClone(useGameStore.getState().save!)
+    reentered.world.currentLocationId = 'astravel_entry'
+    useGameStore.setState({ save: reentered })
+    expect(screen.getByRole('button', { name: 'Adentrar Câmaras Fúngicas' })).toBeEnabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Adentrar Câmaras Fúngicas' }))
+    expect(screen.getByText('Câmaras desbloqueadas')).toBeInTheDocument()
+    expect(useGameStore.getState().save?.world.currentLocationId).toBe('dungeon_fungal_chambers')
+    expect(useGameStore.getState().save?.world.trailNodeStates.astravel_boss_preview).toBe('bossCurrent')
+  })
+
 })
