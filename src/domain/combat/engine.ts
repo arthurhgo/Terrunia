@@ -1,6 +1,7 @@
 import type { ContentCatalog } from '../../content/catalog'
 import { BALANCE } from '../../content/balance'
 import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/fungalChambers'
+import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
 import type {
   CombatEffectDefinition,
   CombatSkillDefinition,
@@ -230,12 +231,16 @@ const applyCombatEffects = (
 ) => {
   // A protected construct is immune to every offensive effect, including AoE and splash.
   if (actor.side !== target.side && isProtectedBoss(state, target)) return { damage: 0, face: 1, sides: selectDamageDie(actor, skill) }
+  // Defending against the telegraphed boulder also prevents its Stagger debuff.
+  const guardedBoulder = Boolean(target.defending && skill?.id === 'skill_granite_slam')
   let dealt = 0
   let usedFace = 1
   let usedSides = selectDamageDie(actor, skill)
   for (const effect of effects) {
     if (effect.type === 'damage') {
-      const guardMitigation = target.defending ? BALANCE.defendMitigation : 0
+      const guardMitigation = target.defending
+        ? BALANCE.defendMitigation + (guardedBoulder ? GRANITE_GOLEM_BALANCE.throwBonusGuardMitigation : 0)
+        : 0
       const sides = selectDamageDie(actor, skill)
       const face = rollCombatDie(state, sides)
       const bonusFace = actor.weaponBonusDie ? rollCombatDie(state, actor.weaponBonusDie) : 0
@@ -246,15 +251,23 @@ const applyCombatEffects = (
         getEffectiveMitigation(target, catalog),
         face, sides, effect.powerBonus, guardMitigation,
       )
-      const damage = breakdown.finalDamage
+      // Encounter-scoped critical roll: seeded and replay-safe, never a fake visual crit.
+      const critical = state.encounterId === GRANITE_GOLEM_ENCOUNTER_ID &&
+        actor.side === 'player' && target.definitionId === GRANITE_GOLEM_ENEMY_ID &&
+        rollChance(state, GRANITE_GOLEM_BALANCE.criticalChance)
+      const damage = critical
+        ? Math.ceil(breakdown.finalDamage * GRANITE_GOLEM_BALANCE.criticalDamageMultiplier)
+        : breakdown.finalDamage
+      if (critical) breakdown.finalDamage = damage
       dealt += damage
       target.hp = Math.max(0, target.hp - damage)
       target.alive = target.hp > 0
       target.defending = false
       const guardNote = guardMitigation
         ? ` · Guarda evitou ${breakdown.guardPrevented} de dano.` : ''
+      const critNote = critical ? ' ACERTO CRÍTICO!' : ''
       addLog(state,
-        `${actor.name} causa ${damage} de dano em ${target.name}. d${sides}=${face}${actor.weaponBonusDie ? ` + d${actor.weaponBonusDie} da arma=${bonusFace}` : ''}, ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${guardMitigation}.${guardNote}`,
+        `${actor.name} causa ${damage} de dano em ${target.name}.${critNote} d${sides}=${face}${actor.weaponBonusDie ? ` + d${actor.weaponBonusDie} da arma=${bonusFace}` : ''}, ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${guardMitigation}.${guardNote}`,
         'damage', { actorId: actor.id, targetId: target.id, sides, face, action, damageBreakdown: breakdown,
           ...(actor.weaponBonusDie ? { weaponBonusRoll: { sides: actor.weaponBonusDie, face: bonusFace } } : {}) },
       )
@@ -275,7 +288,9 @@ const applyCombatEffects = (
       addLog(state, `${target.name} remove ${oldLength - target.statusEffects.length} efeito(s) prejudicial(is).`, 'reward')
     }
     if (effect.type === 'applyStatus' && target.alive) {
-      applyStatus(state, actor, target, effect, catalog)
+      if (guardedBoulder && effect.statusId === 'status_granite_shaken') {
+        addLog(state, 'Defesa perfeita! O abalo do granito foi evitado.', 'defense')
+      } else applyStatus(state, actor, target, effect, catalog)
     }
   }
   return { damage: dealt, face: usedFace, sides: usedSides }
@@ -507,9 +522,13 @@ const resolveEnemyAction = (
     else resolveAttack(state, actor, player, catalog)
     return
   }
-  // Telegraph on the previous round: the player gets one full turn to defend.
-  if (actor.definitionId === 'enemy_granite_golem' && state.round % 3 === 2)
-    addLog(state, 'O Golem ergue os punhos de granito. Esmagamento na próxima rodada — prepare a Defesa!', 'system')
+  // Wind-up replaces this turn's attack. Regardless of initiative order, the player
+  // receives one full opportunity to defend before the boulder is thrown.
+  if (actor.definitionId === GRANITE_GOLEM_ENEMY_ID &&
+      state.round % GRANITE_GOLEM_BALANCE.throwIntervalRounds === GRANITE_GOLEM_BALANCE.windupRoundRemainder) {
+    addLog(state, 'O Golem ergue uma rocha! Na próxima rodada ele vai arremessá-la. Use DEFENDER e uma poção se necessário.', 'system')
+    return
+  }
   const skillId =
     actor.aiSkillEveryRounds && state.round % actor.aiSkillEveryRounds === 0
       ? actor.skillIds[0]
@@ -600,6 +619,17 @@ export const createBattle = (
   const enemies = encounter.enemyDefinitionIds.map((definitionId, index) =>
     deriveEnemyCombatant(definitionId, index, catalog),
   )
+  if (encounter.id === GRANITE_GOLEM_ENCOUNTER_ID) {
+    const golem = enemies.find((enemy) => enemy.definitionId === GRANITE_GOLEM_ENEMY_ID)
+    if (golem) {
+      // +10% over this player's maximum HP and base ATK, snapshotted at encounter entry.
+      // DEF stays at player parity: scaling it by rounding would unfairly punish weak builds.
+      golem.maxHp = Math.ceil(player.maxHp * GRANITE_GOLEM_BALANCE.playerStatMultiplier)
+      golem.hp = golem.maxHp
+      golem.attackPower = Math.ceil(player.attackPower * GRANITE_GOLEM_BALANCE.playerStatMultiplier)
+      golem.mitigation = player.mitigation
+    }
+  }
   const combatants = [player, ...enemies]
   const initiativeOrder = [...combatants]
     .sort((a, b) => b.initiative - a.initiative || a.id.localeCompare(b.id))
@@ -638,6 +668,8 @@ export const createBattle = (
   }
 
   addLog(state, `${encounter.name} bloqueia o avanço em Astravél.`, 'system')
+  if (encounter.id === GRANITE_GOLEM_ENCOUNTER_ID)
+    addLog(state, `Golem adaptado ao seu poder: +10% de Vida e Ataque, Defesa equivalente. Uma rocha é arremessada a cada três rodadas, com preparação antecipada.`, 'system')
   if (options.manualInitiative) {
     addPhase(state, 'AwaitingInitiative')
     addLog(state, 'Turno 1 · Prepare a rolagem de iniciativa.', 'system')

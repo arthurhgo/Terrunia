@@ -4,6 +4,7 @@ import { biomeEnemyDefinitions } from './biomeExpeditions'
 export const enemyDefinitions = [
   {
     id: 'enemy_granite_golem', name: 'Golem de Granito · Guardião de Korduun',
+    // Baseline fallback; the v0.5.14.2 boss encounter derives real stats from the player.
     level: 7, maxHp: 82, mitigation: 4, attackPower: 7,
     xpReward: 220, goldReward: 140, boundResonanceReward: 130,
     lootDefinitionIds: ['drop_ruin_shard'], skillIds: ['skill_granite_slam'],

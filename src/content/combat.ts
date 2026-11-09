@@ -235,8 +235,8 @@ export const combatSkillDefinitions = [
     status: 'BALANCE_DRAFT',
   },
   {
-    id: 'skill_granite_slam', name: 'Esmagamento de Korduun',
-    description: 'A cada terceira rodada, o Golem descarrega um golpe pesado anunciado na rodada anterior. Defender reduz a pancada.',
+    id: 'skill_granite_slam', name: 'Arremesso de Granito',
+    description: 'A cada terceira rodada, o Golem arremessa uma rocha após preparar o golpe. Defender reduz o dano e anula Abalado pelo Granito.',
     target: 'enemy', mpCost: 0, cooldownTurns: 0, damageDieSteps: 1,
     effects: [{ type: 'damage', powerBonus: 3 },
       { type: 'applyStatus', statusId: 'status_granite_shaken', durationTurns: 2, chance: 1 }],
