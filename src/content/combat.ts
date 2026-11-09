@@ -3,6 +3,7 @@ import { biomeEncounterDefinitions } from './biomeExpeditions'
 import { fungalDungeonEncounters } from './fungalChambers'
 import { newClanSpells, newClanStatuses } from './clanSpells'
 import { clanTrialEncounters } from './clanTrials'
+import { CLAN_EMBLEM_ITEM_ID } from './clanProgressionV05142'
 import type {
   CombatSkillDefinition,
   EncounterDefinition,
@@ -314,7 +315,7 @@ export const encounterDefinitions = [
     victoryTitle: 'O Granito se curva', victorySummary: 'Retorne ao mestre do seu Clã para entregar a missão.',
     trailNodeId: 'location_terran_clan_hall',
     enemyDefinitionIds: ['enemy_granite_golem'], canFlee: false,
-    rewards: { characterXp: 180, gold: 90, boundResonance: 130, lootDefinitionIds: ['drop_ruin_shard'],
+    rewards: { characterXp: 180, gold: 90, boundResonance: 130, lootDefinitionIds: [CLAN_EMBLEM_ITEM_ID, 'drop_ruin_shard'],
       worldFlags: ['granite_golem_v05142_defeated'] },
     status: 'BALANCE_DRAFT',
   },

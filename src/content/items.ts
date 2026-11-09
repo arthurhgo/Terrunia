@@ -2,8 +2,17 @@ import type { BoundItemBaseDefinition, ItemDefinition } from './types'
 import { basicArmorItems } from './rosettaTutorial'
 import { complementaryItemDefinitions } from './complementaryItems'
 import { biomeMaterialDefinitions } from './biomeExpeditions'
+import { CLAN_EMBLEM_ITEM_ID } from './clanProgressionV05142'
 
 export const itemDefinitions = [
+  {
+    id: CLAN_EMBLEM_ITEM_ID, name: 'Emblema de Clã',
+    description: 'Insígnia recuperada do Coração de Granito, entregue somente ao líder do Clã escolhido para concluir o recrutamento.',
+    category: 'quest', rarity: 'unique', convertToEssence: false, essenceValue: 0,
+    sellable: false, sellValue: 0, questLocked: true, canInfuseBoundItem: false,
+    combatEffects: [], affinityTags: ['clan', 'granite', 'recruitment'],
+    iconAssetId: 'item.clan-granite-emblem', status: 'CONTENT_DRAFT',
+  },
   {
     id: 'quest_daeryn_home_key',
     name: 'Chave de Daeryn',

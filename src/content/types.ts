@@ -228,6 +228,7 @@ export type QuestObjectiveDefinition = {
 export type QuestCategory = 'main' | 'clan' | 'class' | 'secondary' | 'bounty'
 
 export type QuestPrerequisite =
+  | { type: 'portalWaveReached'; value: number }
   | { type: 'clanKnown'; clanId: string }
   | { type: 'questCompleted'; questId: string }
   /** BALANCE_DRAFT: optional missions; accepted quests are never re-locked. */

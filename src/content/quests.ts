@@ -2,7 +2,7 @@ import type { QuestDefinition, QuestProgressionOutcome } from './types'
 import { clanDefinitions, classDefinitions } from './progression'
 import { sideQuestDefinitions } from './sidequests'
 import { rosettaTutorialQuests } from './rosettaTutorial'
-import { clanTableQuestId, clanGolemQuestId, CLAN_INITIATION_TABLE_ID, GRANITE_GOLEM_ENEMY_ID, MAIN_CLAN_AFFILIATION_QUEST, CLAN_AFFILIATION_RITE_ID } from './clanProgressionV05142'
+import { clanTableQuestId, clanGolemQuestId, CLAN_INITIATION_TABLE_ID, GRANITE_GOLEM_ENEMY_ID, MAIN_CLAN_AFFILIATION_QUEST, CLAN_AFFILIATION_RITE_ID, CLAN_RECRUITMENT_WAVE, CLAN_EMBLEM_ITEM_ID } from './clanProgressionV05142'
 
 const mainLoreClassVariants = Object.fromEntries(classDefinitions.map((classDefinition) => [
   classDefinition.id,
@@ -67,16 +67,19 @@ const clanTableQuest = (clanId: string, npcId: string, clanName: string): QuestD
   status: 'CONTENT_DRAFT',
 })
 
-/** One level-seven boss mission per leader; only the player's actual clan unlocks it. */
-const clanGraniteQuest = (clanId: string, npcId: string, clanName: string, finalTrialId: string): QuestDefinition => ({
+/** Recruitment: complete Portal wave 14, then leader transports candidate to this boss. */
+const clanGraniteQuest = (clanId: string, npcId: string, clanName: string): QuestDefinition => ({
   id: clanGolemQuestId(clanId),
   title: `O Coração de Granito — ${clanName}`,
-  summary: 'No nível 7, seu mestre convoca uma nova prova: sobreviva ao Golem de Granito das Montanhas de Korduun. Observe quando ele prepara o esmagamento, defenda-se e explore as aberturas entre golpes.',
+  summary: `Após vencer a onda ${CLAN_RECRUITMENT_WAVE} do Modo Ondas, fale com o líder de ${clanName} para ser transportado ao Golem de Granito. Recolha o Emblema de Clã e entregue-o ao mesmo NPC para ser recrutado.`,
   giverNpcId: npcId, turnInNpcId: npcId, category: 'clan',
-  objectives: [{ id: 'defeat_granite_golem', type: 'kill', targetId: GRANITE_GOLEM_ENEMY_ID, required: 1, label: 'Derrotar o Golem de Granito em combate real' }],
-  prerequisites: [{ type: 'characterLevel', value: 7 }, { type: 'clanJoined', clanId }, { type: 'questCompleted', questId: finalTrialId }],
+  objectives: [
+    { id: 'defeat_granite_golem', type: 'kill', targetId: GRANITE_GOLEM_ENEMY_ID, required: 1, label: 'Derrote o Golem de Granito' },
+    { id: 'recover_clan_emblem', type: 'collect', targetId: CLAN_EMBLEM_ITEM_ID, required: 1, label: 'Recolha o Emblema de Clã na arena' },
+  ],
+  turnInItems: [{ itemId: CLAN_EMBLEM_ITEM_ID, quantity: 1 }],
+  prerequisites: [{ type: 'portalWaveReached', value: CLAN_RECRUITMENT_WAVE }, { type: 'noClan' }, { type: 'questCompleted', questId: clanTableQuestId(clanId) }],
   rewards: [{ type: 'characterXp', value: 120 }, { type: 'gold', value: 80 }],
-  outcomes: [{ type: 'clanReputation', clanId, value: 2 }],
   initialStatus: 'locked',
   terranFlow: { active: 'location_terran_clan_hall', ready_to_turn_in: 'location_terran_clan_hall' },
   status: 'BALANCE_DRAFT',
@@ -221,7 +224,7 @@ export const questDefinitions = [
   },
   {
     id: MAIN_CLAN_AFFILIATION_QUEST, title: 'Aceitar um Clã',
-    summary: 'Os Quatro Caminhos terminou. Fale com os líderes no Salão, aceite a primeira missão de um deles, examine a mesa, supere as provas em ondas e confirme seu único juramento de Clã.',
+    summary: 'Os Quatro Caminhos terminou. Fale com os líderes no Salão, aceite a primeira missão de um deles, examine a mesa, alcance a onda 14 no Portal, derrote o Golem e entregue o Emblema de Clã ao líder.',
     giverNpcId: 'npc_curador_nexo', turnInNpcId: 'npc_curador_nexo', category: 'main',
     objectives: [{id:'complete_clan_affiliation',type:'completeRite',targetId:CLAN_AFFILIATION_RITE_ID,required:1,
       label:'Conquiste filiação a um Clã e confirme o rito no Salão'}],
@@ -251,7 +254,7 @@ export const questDefinitions = [
     ['clan_estres_02', 'Não Interrompa o Caos', 'Redirecione e equilibre a fonte em vez de destruí-la.'],
     ['clan_estres_03', 'À Beira da Ruptura', 'Use parte da instabilidade para estabilizar o todo.'],
   ]),
-  ...clanDefinitions.map((clan) => clanGraniteQuest(clan.id, clan.recruiterNpcId, clan.name, clan.recruitmentQuestIds[2])),
+  ...clanDefinitions.map((clan) => clanGraniteQuest(clan.id, clan.recruiterNpcId, clan.name)),
   classTrial('class_sentinela_trial', 'Sentinela da Luz', 'Proteja vários objetivos com recursos defensivos limitados.', 'npc_master_sentinela', 'dunavar', 'sentinela_da_luz'),
   classTrial('class_gladiador_trial', 'Gladiador da Barreira', 'Sobreviva usando defesa, timing e contra-ataque.', 'npc_master_gladiador', 'dunavar', 'gladiador_da_barreira'),
   classTrial('class_batedor_trial', 'Batedor da Vigília', 'Reconheça ameaças, evite batalhas e descubra uma rota.', 'npc_master_batedor', 'dunavar', 'batedor_da_vigilia'),

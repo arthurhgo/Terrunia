@@ -39,6 +39,7 @@ const prerequisitesMet = (save: GameSave, definition: QuestDefinition) =>
       case 'clanKnown': return save.character.clan.knownClanIds.includes(requirement.clanId)
       case 'questCompleted': return save.quests[requirement.questId]?.status === 'completed'
       case 'characterLevel': return save.character.level >= requirement.value
+      case 'portalWaveReached': return (save.world.portalWaveBest ?? 0) >= requirement.value
       case 'clanJoined': return save.character.clan.clanId === requirement.clanId
       case 'noClan': return save.character.clan.clanId === null
       case 'noClass': return save.character.classProgression.classId === null

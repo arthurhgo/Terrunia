@@ -36,6 +36,8 @@ const entries: AssetEntry[] = [
 
   { id: 'skill.use-healing-potion', path: '/assets/skills/skill_use_healing_potion.png',
     fallback: '/assets/placeholders/skill.svg', alt: 'Poção Restauradora', pixelArt: true },
+  { id: 'item.clan-granite-emblem', path: '/assets/items/quest_clan_granite_emblem.png',
+    fallback: '/assets/placeholders/item.svg', alt: 'Emblema de Clã', pixelArt: true, draftPlaceholder: true },
   { id: 'enemy.granite-golem', path: '/assets/enemies/bosses/enemy_granite_golem_idle.png',
     fallback: '/assets/placeholders/enemy.svg', alt: 'Golem de Granito · Korduun', pixelArt: true, draftPlaceholder: true },
   { id: 'enemy.ruin-corrupted-sentinel', path: '/assets/enemies/bosses/enemy_ruin_corrupted_sentinel_idle.png',
