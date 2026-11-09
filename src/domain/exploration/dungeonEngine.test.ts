@@ -8,6 +8,7 @@ const now = '2026-10-28T20:00:00Z'
 
 const ready = () => {
   const save = createNewSave('dungeon-owner', 'Aren', 'character.terririan.default', content, now)
+  save.character.clan.clanId = 'dunavar' // Established clan: dungeon gate is intentional in v0.5.14.1.
   save.world.currentLocationId = 'astravel_ruin_threshold_05'
   save.world.trailNodeStates.astravel_boss_preview = 'bossCurrent'
   return save

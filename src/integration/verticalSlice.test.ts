@@ -162,6 +162,7 @@ describe('vertical slice integrada', () => {
         store().startBattle(node.id)
         expect(store().save!.battle).toBeNull()
         const reachedThreshold = structuredClone(store().save!)
+        reachedThreshold.character.clan.clanId = 'dunavar' // Pre-existing affiliation for late-game fixture.
         reachedThreshold.world.currentLocationId = content.dungeons.dungeon_fungal_chambers.entryTrailNodeId
         useGameStore.setState({ save: reachedThreshold })
         store().enterFungalChambers()

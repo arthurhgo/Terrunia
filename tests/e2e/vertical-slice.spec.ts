@@ -143,6 +143,7 @@ test('v0.5.13.1: revisitar Astravél pelo Portal preserva acesso ao encontro 15/
     for (const node of content.trails.trail_astravel_entry.nodes) {
       save.world.trailNodeStates[node.id] = node.type === 'boss' ? 'bossCurrent' : 'completed'
     }
+    save.character.clan.clanId = 'dunavar' // Affiliated character can re-enter the dungeon.
     save.world.currentLocationId = 'astravel_entry' // retorno pelo Portal
     save.quests.main_astravel_corruption.status = 'active'
     useGameStore.setState({ save })
