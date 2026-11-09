@@ -507,7 +507,7 @@ export const useGameStore = create<GameState>((set, get) => {
       const save = get().save
       if (!save || save.battle || save.vitals.hp <= 0)
         return failAction('Finalize o encontro atual ou descanse antes de aceitar o desafio.')
-      const clanId = save.character.clan.clanId
+      const clanId = save.character.clan.candidateClanId
       if (!clanId || save.character.clan.clanId || (save.world.portalWaveBest ?? 0) < CLAN_RECRUITMENT_WAVE ||
           save.quests[clanTableQuestId(clanId)]?.status !== 'completed' ||
           questId !== clanGolemQuestId(clanId) ||
