@@ -2,7 +2,7 @@ import type { QuestDefinition, QuestProgressionOutcome } from './types'
 import { clanDefinitions, classDefinitions } from './progression'
 import { sideQuestDefinitions } from './sidequests'
 import { rosettaTutorialQuests } from './rosettaTutorial'
-import { clanTableQuestId, clanGolemQuestId, CLAN_INITIATION_TABLE_ID, GRANITE_GOLEM_ENEMY_ID } from './clanProgressionV05142'
+import { clanTableQuestId, clanGolemQuestId, CLAN_INITIATION_TABLE_ID, GRANITE_GOLEM_ENEMY_ID, MAIN_CLAN_AFFILIATION_QUEST, CLAN_AFFILIATION_RITE_ID } from './clanProgressionV05142'
 
 const mainLoreClassVariants = Object.fromEntries(classDefinitions.map((classDefinition) => [
   classDefinition.id,
@@ -216,6 +216,17 @@ export const questDefinitions = [
       label:'Entre no Salão dos Clãs e conheça os representantes'}],
     prerequisites:[{type:'characterLevel',value:4},{type:'noClan'}],
     rewards:[{type:'characterXp',value:20}], initialStatus:'locked',
+    terranFlow:{active:'location_terran_clan_hall',ready_to_turn_in:'location_terran_clan_hall'},
+    status:'CONTENT_DRAFT',
+  },
+  {
+    id: MAIN_CLAN_AFFILIATION_QUEST, title: 'Aceitar um Clã',
+    summary: 'Os Quatro Caminhos terminou. Fale com os líderes no Salão, aceite a primeira missão de um deles, examine a mesa, supere as provas em ondas e confirme seu único juramento de Clã.',
+    giverNpcId: 'npc_curador_nexo', turnInNpcId: 'npc_curador_nexo', category: 'main',
+    objectives: [{id:'complete_clan_affiliation',type:'completeRite',targetId:CLAN_AFFILIATION_RITE_ID,required:1,
+      label:'Conquiste filiação a um Clã e confirme o rito no Salão'}],
+    prerequisites:[{type:'questCompleted',questId:'main_rosetta_clan_guidance_v05141'},{type:'noClan'}],
+    rewards:[], initialStatus:'locked',
     terranFlow:{active:'location_terran_clan_hall',ready_to_turn_in:'location_terran_clan_hall'},
     status:'CONTENT_DRAFT',
   },

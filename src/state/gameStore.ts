@@ -28,7 +28,7 @@ import {
 import { discoverDungeonRoom, enterDungeon, exitDungeon, FUNGAL_DUNGEON_ID,
   startDungeonEncounter as prepareDungeonEncounter, claimDungeonEncounter } from '../domain/exploration/dungeonEngine'
 import { FUNGAL_BOSS_ENCOUNTER_ID } from '../content/fungalChambers'
-import { GRANITE_GOLEM_ENCOUNTER_ID, clanGolemQuestId } from '../content/clanProgressionV05142'
+import { GRANITE_GOLEM_ENCOUNTER_ID, clanGolemQuestId, MAIN_CLAN_AFFILIATION_QUEST, CLAN_AFFILIATION_RITE_ID } from '../content/clanProgressionV05142'
 import { ROSETTA_CLAN_QUEST } from '../domain/progression/clanOrientation'
 import { chooseClanCandidate as chooseClanCandidateDomain, chooseInitialClanSpell as chooseInitialClanSpellDomain } from '../domain/progression/clanOrientation'
 import { startClanTrialWave as prepareClanWave, claimClanTrialWave } from '../domain/progression/clanTrials'
@@ -532,7 +532,13 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!save) return
       const joined = joinClanDomain(save, clanId, content, nowIso())
       if (!joined.ok) return failAction(joined.message)
-      commit(joined.value)
+      let next = joined.value
+      if (next.quests[MAIN_CLAN_AFFILIATION_QUEST]?.status === 'active') {
+        next = applyQuestEvent(next, {type:'completeRite',targetId:CLAN_AFFILIATION_RITE_ID},content,nowIso())
+        const completed = turnInQuestDomain(next,MAIN_CLAN_AFFILIATION_QUEST,'npc_curador_nexo',content,nowIso())
+        if (completed.ok) next = completed.value
+      }
+      commit(next)
       show('Vínculo aceito', `${content.clans[clanId].name} agora faz parte da identidade do Terrírian.`, 'success')
     },
 
@@ -563,6 +569,17 @@ export const useGameStore = create<GameState>((set, get) => {
         if (!delivered.ok) return failAction(delivered.message)
         next = delivered.value
         show('Orientação concluída', 'Os Quatro Caminhos terminou. Converse com um dos líderes e aceite uma única candidatura.', 'success')
+      }
+      if (locationId === 'location_terran_clan_hall' && !next.character.clan.clanId &&
+          next.quests[ROSETTA_CLAN_QUEST]?.status === 'completed' &&
+          ['available','offered'].includes(next.quests[MAIN_CLAN_AFFILIATION_QUEST]?.status ?? '')) {
+        const candidate = next.quests[MAIN_CLAN_AFFILIATION_QUEST].status === 'available'
+          ? offerQuestDomain(next,MAIN_CLAN_AFFILIATION_QUEST,content,now)
+          : {ok:true as const,value:next}
+        if (!candidate.ok) return failAction(candidate.message)
+        const accepted = acceptQuestDomain(candidate.value,MAIN_CLAN_AFFILIATION_QUEST,content,now)
+        if (!accepted.ok) return failAction(accepted.message)
+        next = accepted.value
       }
       if (next !== save) commit(next)
       if (result.value.firstVisit) {
