@@ -83,7 +83,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
           : <div className="rosetta-tutorial__actions">
               {orientation?.status==='available' || orientation?.status==='offered' ?
                 <button type="button" className="rosetta-tutorial__accept" onClick={()=>accept(ROSETTA_CLAN_QUEST)}>Aceitar “Os Quatro Caminhos”</button>
-                : orientation?.status==='active' ? <button type="button" onClick={onOpenQuests}>Visitar o Salão dos Clãs</button>
+                : orientation?.status==='active' ? <button type="button" onClick={onShowPaths ?? onOpenQuests}>Mostrar caminho para o Salão dos Clãs</button>
                 : orientation?.status==='ready_to_turn_in' ?
                   <strong>Entre novamente no Salão dos Clãs para registrar a orientação concluída.</strong>
                   : <small>Oriente-se com Rosetta para iniciar a missão.</small>}
