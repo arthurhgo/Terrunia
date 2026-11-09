@@ -2514,6 +2514,14 @@
       "width": 32,
       "height": 32,
       "atlas": null
+    },
+    {
+      "assetId": "skill.skill_sentinel_arcane_pulse",
+      "path": "/assets/skills/skill_sentinel_arcane_pulse.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
     }
   ]
 }
