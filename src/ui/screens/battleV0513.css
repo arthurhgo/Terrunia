@@ -117,3 +117,23 @@
   }
   .pixel-battle__submenu--skill-picker > button:first-child {width:35px;font-size:7px;}
 }
+
+/* v0.5.14: corrupted totem guard, AoE VFX and potion skill card */
+.pixel-battle__boss-timers{position:absolute;z-index:8;right:12px;top:10px;display:grid;gap:3px;
+ background:#071827e8;border:1px solid #bf8a57;padding:6px 8px;color:#ffe6b9;max-width:40%;
+ font:700 10px/1.2 var(--display);pointer-events:none;text-shadow:1px 1px #000;}
+.pixel-battle__boss-timers span{color:#b2ddcf;font:9px/1.3 var(--display);}
+.pixel-battle__boss-timers small{font:8px/1.3 var(--display);color:#efb4ad;}
+.pixel-battle__enemy .pixel-battle__boss-lock{position:absolute;inset:-10px auto auto 46%;font-size:23px;
+ z-index:8;color:#ffc97a;text-shadow:0 0 8px #e77a56;}
+.pixel-battle__strike-fx.is-resonance{height:20px;border:3px solid #b5a7ff;background:transparent;
+ box-shadow:0 0 25px #ae9ffa,0 0 13px #84f7fa;animation:combat-resonance-splash .65s ease-out both;}
+.pixel-battle__strike-fx.is-area{height:15px;background:linear-gradient(90deg,transparent,#eae9b4,#72dbbb,transparent);
+ box-shadow:0 0 20px #a6f9d5;animation:combat-resonance-splash .55s steps(8,end) both;}
+@keyframes combat-resonance-splash{from{opacity:1;transform:scale(.3) rotate(0)}to{opacity:0;transform:scale(2.3) rotate(160deg)}}
+.pixel-battle__potion-skill{display:grid;place-items:center;width:100%;min-width:100px;}
+.pixel-battle__potion-skill .pixel-battle__skill-card{width:100px;min-height:0;height:100px;padding:5px;}
+.pixel-battle__potion-caption{font-size:9px;color:#c8bba0;}
+@media(max-width:600px){.pixel-battle__boss-timers{right:3px;top:4px;max-width:60%;font-size:8px;padding:3px;}
+ .pixel-battle__boss-timers span,.pixel-battle__boss-timers small{font-size:7px;}}
+@media(prefers-reduced-motion:reduce){.pixel-battle__strike-fx.is-resonance,.pixel-battle__strike-fx.is-area{animation:none;}}

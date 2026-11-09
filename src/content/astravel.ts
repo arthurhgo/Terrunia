@@ -76,9 +76,9 @@ const stages: Stage[] = [
     description: 'Uma sentinela e um Horror protegem as inscrições quebradas. A passagem para as Câmaras só abre após a vitória.',
     tacticalHint: 'Última defesa externa. Prepare os suprimentos antes de avançar ao Núcleo das Câmaras Fúngicas.' },
   { id: 'astravel_boss_preview', label: 'Câmaras Fúngicas', x: 38, y: 86, encounterId: 'encounter_colossus_mycelium_01',
-    enemies: ['enemy_colossus_mycelium'],
-    description: 'O Colosso Micélio concentra a anomalia fúngica. Atravesse as salas da Ruína e alcance seu núcleo.',
-    tacticalHint: 'Chefe da rota. O Fragmento Micelial e a Esmeralda são preservados para os ritos dos seus Vínculos.' },
+    enemies: ['enemy_ruin_corrupted_sentinel', 'enemy_spore_bulwark', 'enemy_mycelial_stalker', 'enemy_fungal_horror'],
+    description: 'Uma Sentinela Corrompida, totem mágico sem biologia, governa os fungos. Atravesse as quatro salas até o Núcleo da Ruína.',
+    tacticalHint: 'Chefe protegido por três fungos. Elimine os guardiões para romper a barreira arcana.' },
 ]
 
 export const astravelCombatNodes: TrailNodeDefinition[] = stages.map((stage, i) => ({
@@ -96,11 +96,11 @@ export const astravelEncounterDefinitions: EncounterDefinition[] = stages.map((s
   const enemies = stage.enemies.map((id) => enemyById[id])
   const first = index === 0, boss = index === 14
   return {
-    id: stage.encounterId ?? `encounter_${stage.id}`, name: boss ? 'Colosso Micélio' : first ? 'Primeira Presença Fungorra' : stage.label, trailNodeId: stage.id,
+    id: stage.encounterId ?? `encounter_${stage.id}`, name: boss ? 'Núcleo da Ruína: Sentinela Corrompida' : first ? 'Primeira Presença Fungorra' : stage.label, trailNodeId: stage.id,
     locationLabel: boss ? 'Câmaras Fúngicas de Astravél' : getAstravelSector(index + 1).name,
     enemyDefinitionIds: stage.enemies, canFlee: false,
-    victoryTitle: boss ? 'O núcleo da Ruína cedeu' : stage.checkpoint ? 'Refúgio recuperado' : 'A rota foi preservada',
-    victorySummary: boss ? 'A memória do Colosso foi gravada no Vínculo. Retorne a Lithwynn com o relato da Ruína.'
+    victoryTitle: boss ? 'A Sentinela Corrompida silenciou' : stage.checkpoint ? 'Refúgio recuperado' : 'A rota foi preservada',
+    victorySummary: boss ? 'A memória da Sentinela Corrompida foi gravada no Vínculo. Retorne a Lithwynn com o relato da Ruína.'
       : stage.checkpoint ? `${stage.description} O repouso e os suprimentos são concedidos uma única vez.`
         : `Marco ${index + 1}/15 preservado. ${stage.description}`,
     rewards: {
@@ -111,8 +111,8 @@ export const astravelEncounterDefinitions: EncounterDefinition[] = stages.map((s
       ...(stage.fieldRecovery ? { fieldRecovery: stage.fieldRecovery } : {}),
       worldFlags: [...(stage.flags ?? []), ...(boss ? ['colossus_mycelium_defeated', 'fungal_chambers_first_clear', 'astravel_route_cleared'] : [])],
       ...(first ? { characterXp: 15, gold: 8, boundResonance: 12 } : {}),
-      ...(boss ? { boundMemory: { type: 'boss' as const, sourceId: 'enemy_colossus_mycelium',
-        title: 'Memória do Colosso Micélio', description: 'O primeiro núcleo de uma Ruína derrotado ao lado do Vínculo.' } } : {}),
+      ...(boss ? { boundMemory: { type: 'boss' as const, sourceId: 'enemy_ruin_corrupted_sentinel',
+        title: 'Memória da Sentinela Corrompida', description: 'O primeiro núcleo de uma Ruína derrotado ao lado do Vínculo.' } } : {}),
     },
     status: 'BALANCE_DRAFT',
   }
