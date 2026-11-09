@@ -17,7 +17,7 @@ export function checkGearAccess(save:GameSave,offer:GearOffer):Result<true>{
  return ok(true)
 }
 
-const addItem=(save:GameSave,offer:GearOffer,now:string):InventoryItemInstance=>({
+const addItem=(offer:GearOffer,now:string):InventoryItemInstance=>({
  instanceId:'gear_'+createRandomId(),definitionId:offer.id,quantity:1,
  rarity:offer.tier>=5?'epic':offer.tier>=3?'rare':offer.tier===2?'uncommon':'common',
  locked:false,favorite:false,acquiredAt:now,refinementLevel:0,
@@ -37,7 +37,7 @@ export function purchaseGear(save:GameSave,offerIds:readonly string[],now:string
  if(save.wallet.gold<cost)return fail('GEAR_GOLD','Ouro insuficiente: '+cost+' necessário.')
  const next=structuredClone(save)
  next.wallet.gold-=cost
- next.inventory.push(...offers.map(offer=>addItem(next,offer,now)))
+ next.inventory.push(...offers.map(offer=>addItem(offer,now)))
  next.updatedAt=now;next.revision+=1
  next.eventLog.push('GearPurchased:v0515:'+offers[0].setId+':'+offerIds.length+':'+cost)
  return ok(next)
