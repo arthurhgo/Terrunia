@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { equipmentOffersV0515, equipmentSetsV0515, gearOfferById, gearSetById, getGearGrade } from '../../content/equipmentV0515'
+import { equipComplementaryItem } from './complementaryEquipment'
 import { createNewSave } from '../game/createSave'
 import { createBoundItem } from '../bond/boundItems'
 import { purchaseGear, checkGearAccess, equipGearStyle, refineCatalogGear, getGearBonuses, getSetPrice } from './equipmentV0515'
@@ -59,6 +60,20 @@ describe('v0.5.15 gear rules',()=>{
   expect(checkGearAccess(save,cls)).toMatchObject({ok:true})
   save.world.currentLocationId='interior_clan_rustal_castle'
   expect(checkGearAccess(save,cls)).toMatchObject({ok:false,code:'GEAR_LOCATION'})
+ })
+
+ it('rejects wearing an exclusive complementary item after loss of its Clan or Class gate',()=>{
+  const save=base()
+  const gear=equipmentOffersV0515.find(o=>o.channel==='CLASS_EXCLUSIVE'&&o.slot==='helmet'&&o.tier===1&&o.classId==='sentinela_da_luz')!
+  save.inventory.push({instanceId:'exclusive-helmet',definitionId:gear.id,quantity:1,rarity:'common',
+   locked:false,favorite:false,acquiredAt:NOW})
+  expect(equipComplementaryItem(save,'helmet','exclusive-helmet',content,NOW))
+   .toMatchObject({ok:false,code:'GEAR_CLAN'})
+  save.character.clan.clanId='dunavar'
+  expect(equipComplementaryItem(save,'helmet','exclusive-helmet',content,NOW))
+   .toMatchObject({ok:false,code:'GEAR_CLASS'})
+  save.character.classProgression.classId='sentinela_da_luz'
+  expect(equipComplementaryItem(save,'helmet','exclusive-helmet',content,NOW)).toMatchObject({ok:true})
  })
  it('forges G1→G2→G3 only at Durnan, charges Gold and preserves Tier',()=>{
   const save=base()
