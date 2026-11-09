@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Backpack, Bomb, BookOpen, Crosshair, Gem, ScrollText, Shield, Sparkles, Swords, Zap } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
-import { submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
+import { isProtectedBoss, submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { getTrailByNodeId } from '../../domain/exploration/trailEngine'
 import { useGameStore } from '../../state/gameStore'
@@ -20,6 +20,7 @@ import { BattleTimeline } from '../battle/BattleTimeline'
 import { SkillCard } from '../battle/SkillCard'
 import { SkillTooltip } from '../battle/SkillTooltip'
 import { previewCombatSkill } from '../../domain/combat/skillPreview'
+import type { CombatSkillDefinition } from '../../content/types'
 import { BATTLE_PRESENTATION } from '../battle/presentationTiming'
 import { groupBattleLoot } from '../../domain/inventory/battleLoot'
 import './battlePixel.css'
@@ -30,11 +31,14 @@ import './gameplayV057.css'
 import './battleV0513.css'
 
 type Menu = 'skills' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
+const POTION_CARD_ID = 'skill.use-healing-potion'
 const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
 
 const getBattleStrikeFx = (event: BattleDiceEvent) => {
   const action = event.action.toLowerCase()
-  const style = /arco|bow|flecha|arremess|projectile/i.test(action) ? 'projectile' as const
+  const style = /pulso ressonante|golpe ressonante/i.test(action) ? 'resonance' as const
+    : /ataque em área/i.test(action) ? 'area' as const
+    : /arco|bow|flecha|arremess|projectile/i.test(action) ? 'projectile' as const
     : /arcano|magic|magia|arcane|runa|scepter|staff|grimoire|spell/i.test(action) ? 'arcane' as const
       : 'slash' as const
   return {
@@ -81,7 +85,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const [hoveredEnemyId, setHoveredEnemyId] = useState<string | null>(null)
   const [hoveredSkillId, setHoveredSkillId] = useState<string | null>(null)
   const [pinnedSkillId, setPinnedSkillId] = useState<string | null>(null)
-  const [strikeFx, setStrikeFx] = useState<{ actorId: string; targetId: string; style: 'arcane' | 'projectile' | 'slash' } | null>(null)
+  const [strikeFx, setStrikeFx] = useState<{ actorId: string; targetId: string; style: 'arcane' | 'projectile' | 'slash' | 'resonance' | 'area' } | null>(null)
   const pendingRollsRef = useRef<{ rolls: BattleDiceEvent[]; cursor: number; commit: () => void } | null>(null)
   const previewTimer = useRef<number | null>(null)
   const seenDiceLog = useRef<{ id: string; count: number } | null>(null)
@@ -97,10 +101,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }, [battle?.id, defeated, reducedMotion, returnToTerran])
 
   useEffect(() => {
-    if (!enemies.some((enemy) => enemy.id === targetId && enemy.alive)) {
-      setTargetId(enemies.find((enemy) => enemy.alive)?.id ?? '')
+    if (!enemies.some((enemy) => enemy.id === targetId && enemy.alive && (!battle || !isProtectedBoss(battle, enemy)))) {
+      setTargetId(enemies.find((enemy) => enemy.alive && (!battle || !isProtectedBoss(battle, enemy)))?.id ?? '')
     }
-  }, [enemies, targetId])
+  }, [battle, enemies, targetId])
   useEffect(() => {
     setMenu(null)
     setConfirmDefense(false)
@@ -234,7 +238,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }
   if (!player || !enemies.length) return <Navigate to="/terran" replace />
 
-  const target = enemies.find((enemy) => enemy.id === targetId && enemy.alive) ?? enemies.find((enemy) => enemy.alive) ?? enemies[0]
+  const target = enemies.find((enemy) => enemy.id === targetId && enemy.alive && !isProtectedBoss(battle, enemy))
+    ?? enemies.find((enemy) => enemy.alive && !isProtectedBoss(battle, enemy)) ?? enemies[0]
   const encounter = content.encounters[battle.encounterId]
   const battleTitle = `${encounter?.locationLabel ?? 'ASTRAVÉL'}: ${encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}`
   const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((skill) => Boolean(skill))
@@ -329,6 +334,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         const next = sequence.rolls[sequence.cursor]
         setActiveDice(next)
         const awaitingPlayerThrow = next.actorSide === 'player' && next.kind !== 'initiative'
+          && !/Pulso Ressonante|Ataque em Área/.test(next.action)
         setDiceAwaitingClick(awaitingPlayerThrow)
         if (!awaitingPlayerThrow) playVisualRoll(next)
       }, impactMs)
@@ -460,13 +466,17 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             '--enemy-width': `${getEnemyFormationSlot(i, enemies.length).widthPercent}%`,
             zIndex: getEnemyFormationSlot(i, enemies.length).layer } as React.CSSProperties}
           className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
-          onClick={() => enemy.alive && setTargetId(enemy.id)} disabled={!enemy.alive}
+          onClick={() => enemy.alive && !isProtectedBoss(battle, enemy) && setTargetId(enemy.id)}
+           disabled={!enemy.alive || isProtectedBoss(battle, enemy)}
           onMouseEnter={() => setHoveredEnemyId(enemy.id)} onMouseLeave={() => setHoveredEnemyId(null)}
           onFocus={() => setHoveredEnemyId(enemy.id)} onBlur={() => setHoveredEnemyId(null)}
           aria-describedby={hoveredEnemyId === enemy.id ? 'enemy-status-' + i : undefined}
-          aria-label={`Selecionar ${enemy.name} ${i + 1}, ${visualHp(enemy.id)} de ${enemy.maxHp} de Vida`}
+          aria-label={isProtectedBoss(battle, enemy)
+             ? `${enemy.name} protegido: derrote os fungos para alvejar a Sentinela`
+             : `Selecionar ${enemy.name} ${i + 1}, ${visualHp(enemy.id)} de ${enemy.maxHp} de Vida`}
           aria-pressed={enemy.id === target.id}>
-          {enemy.alive && enemy.id === target.id && <span className="pixel-battle__target-arrow" aria-hidden="true">◆</span>}
+          {isProtectedBoss(battle, enemy) && <span className="pixel-battle__boss-lock" aria-hidden="true">🔒</span>}
+           {enemy.alive && enemy.id === target.id && <span className="pixel-battle__target-arrow" aria-hidden="true">◆</span>}
           <span className="pixel-battle__enemy-bar" role="progressbar" aria-label={`Vida de ${enemy.name} ${i + 1}`}
             aria-valuenow={visualHp(enemy.id)} aria-valuemin={0} aria-valuemax={enemy.maxHp}>
             <i style={{ width: clampPercent(visualHp(enemy.id), enemy.maxHp) + '%' }} />
@@ -491,7 +501,13 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           </span>}
         </button>)}
       </div>
-      {actorCueName && <div className="pixel-battle__actor-cue" role="status" aria-live="polite">
+      {battle.bossMechanics && <div className="pixel-battle__boss-timers" role="status">
+         <strong>☷ Núcleo da Ruína · {Object.values(battle.combatants).filter((actor) => actor.side === 'enemy' && actor.alive && actor.id !== battle.bossMechanics?.bossId).length}/3 guardiões</strong>
+         <span>Invocação: {5 - battle.round % 5} rodadas · Cura: {2 - battle.round % 2} rodadas</span>
+         <small>{Object.values(battle.combatants).some((actor) => actor.side === 'enemy' && actor.alive && actor.id !== battle.bossMechanics?.bossId)
+           ? 'Derrote os fungos para atingir a Sentinela' : 'Sentinela vulnerável'}</small>
+       </div>}
+       {actorCueName && <div className="pixel-battle__actor-cue" role="status" aria-live="polite">
         TURNO DE {actorCueName.toLocaleUpperCase('pt-BR')}
       </div>}
       {roundCurtain && !activeDice && <div className="pixel-battle__round-curtain" role="status" aria-label="Separador de turno">
