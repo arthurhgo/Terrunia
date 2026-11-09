@@ -1,3 +1,4 @@
+import { gearOfferById } from '../../content/equipmentV0515'
 import { GearForgeV0515 } from './GearForgeV0515'
 import { Link } from 'react-router-dom'
 import type { GameSave } from '../../domain/game/types'
@@ -21,7 +22,7 @@ export function ForgePanel({ save, onClose, onQuest }: { save: GameSave; onClose
       <p>{save.wallet.gold} Ouro · Materiais protegidos e favoritos são preservados.</p>
       <Link to="/skill-tree" className="panel-link" onClick={onClose}>Ver caminhos da arma na Skill Tree →</Link>
       {onQuest && <button type="button" className="terran-service-action" onClick={onQuest}>Consultar missão de Durnan</button>}
-      {[...save.inventory, ...(save.equippedBasicArmor ? [save.equippedBasicArmor] : [])].some((item) => content.items[item.definitionId]?.basicArmor) && <section className="forge-starter" aria-label="Reforçar proteções simples"><h3>Primeiro reforço · +1</h3>
+      {[...save.inventory, ...(save.equippedBasicArmor ? [save.equippedBasicArmor] : [])].some((item) => content.items[item.definitionId]?.basicArmor && !gearOfferById[item.definitionId]) && <section className="forge-starter" aria-label="Reforçar proteções simples"><h3>Primeiro reforço · +1</h3>
         <p>Uma Linha de Linho e {ARMOR_REFINEMENT.gold} Ouro. A peça ganha 1 de Defesa.</p>
         {[...save.inventory, ...(save.equippedBasicArmor ? [save.equippedBasicArmor] : [])].filter((item) => content.items[item.definitionId]?.basicArmor).map((item) => {
           const definition = content.items[item.definitionId]
