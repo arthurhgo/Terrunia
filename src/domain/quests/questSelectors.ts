@@ -79,6 +79,10 @@ export type NpcQuestMarker = 'available' | 'turnIn' | null
 export const getNpcActionableQuests = (save: GameSave, npcId: string, catalog: ContentCatalog) =>
   Object.values(catalog.quests).filter((quest) => {
     const status = save.quests[quest.id]?.status ?? 'locked'
+    if (quest.category === 'clan' && save.character.clan.candidateClanId) {
+      const candidate = catalog.clans[save.character.clan.candidateClanId]
+      if (candidate && quest.giverNpcId !== candidate.recruiterNpcId) return false
+    }
     return (quest.giverNpcId === npcId && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(status))
       || (quest.turnInNpcId === npcId && status === 'ready_to_turn_in')
   })

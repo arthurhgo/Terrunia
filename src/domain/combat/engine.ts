@@ -507,6 +507,9 @@ const resolveEnemyAction = (
     else resolveAttack(state, actor, player, catalog)
     return
   }
+  // Telegraph on the previous round: the player gets one full turn to defend.
+  if (actor.definitionId === 'enemy_granite_golem' && state.round % 3 === 2)
+    addLog(state, 'O Golem ergue os punhos de granito. Esmagamento na próxima rodada — prepare a Defesa!', 'system')
   const skillId =
     actor.aiSkillEveryRounds && state.round % actor.aiSkillEveryRounds === 0
       ? actor.skillIds[0]

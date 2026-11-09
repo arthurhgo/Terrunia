@@ -6,6 +6,8 @@ import { fail, ok, type Result } from '../shared/types'
 import { gainCharacterXp } from '../character/attributeProgression'
 import { consumeQuestDelivery, refreshDeliveryQuestProgress } from './questInventory'
 import { refreshTutorialQuestProgress } from './tutorialProgress'
+import { chooseClanCandidate } from '../progression/clanOrientation'
+import { clanTableQuestId } from '../../content/clanProgressionV05142'
 
 export const SLOT_OCCUPYING_QUEST_STATUSES = ['active', 'ready_to_turn_in'] as const
 
@@ -51,6 +53,11 @@ export const refreshQuestAvailability = (save: GameSave, catalog: ContentCatalog
   for (const definition of Object.values(catalog.quests)) {
     const progress = next.quests[definition.id]
     if (!progress || progress.status !== 'locked' || !prerequisitesMet(next, definition)) continue
+    if (definition.category === 'clan') {
+      const leaderClan = Object.values(catalog.clans).find((clan) => clan.recruiterNpcId === definition.giverNpcId)
+      if (leaderClan && (next.character.clan.clanId && next.character.clan.clanId !== leaderClan.id ||
+        next.character.clan.candidateClanId && next.character.clan.candidateClanId !== leaderClan.id)) continue
+    }
     progress.status = 'available'
     changed = true
     next.eventLog.push(`QuestAvailable:${definition.id}`)
@@ -75,6 +82,12 @@ export const offerQuest = (
   }
   if (!prerequisitesMet(save, catalog.quests[questId])) {
     return fail('QUEST_PREREQUISITES_NOT_MET', 'Os requisitos desta missão não estão mais válidos.')
+  }
+  if (catalog.quests[questId].category === 'clan') {
+    const clan = Object.values(catalog.clans).find((entry) => entry.recruiterNpcId === catalog.quests[questId].giverNpcId)
+    if (clan && (save.character.clan.clanId && save.character.clan.clanId !== clan.id ||
+      save.character.clan.candidateClanId && save.character.clan.candidateClanId !== clan.id))
+      return fail('CLAN_EXCLUSIVE_CANDIDACY', 'Somente o representante do caminho escolhido pode oferecer estas provas.')
   }
   const next = structuredClone(save)
   next.quests[questId].status = 'offered'
@@ -116,10 +129,23 @@ export const acceptQuest = (
   if (questId === 'main_rosetta_clan_guidance_v05141' &&
     (save.character.level < 4 || save.character.clan.clanId !== null))
     return fail('ROSETTA_CLAN_LEVEL_GATE','Rosetta só entrega Os Quatro Caminhos a partir do nível 4 e antes da filiação.')
+  let acceptedFrom = save
   if (definition.category === 'clan') {
-    const clanId = Object.values(catalog.clans).find(clan=>clan.recruitmentQuestIds.some(id=>id===questId))?.id
-    if (!clanId || save.character.level<4 || save.character.clan.candidateClanId!==clanId || save.character.clan.clanId)
-      return fail('CLAN_CANDIDACY_REQUIRED','Escolha sua candidatura no Salão dos Clãs, após Rosetta.')
+    const clan = Object.values(catalog.clans).find(entry => entry.recruiterNpcId === definition.giverNpcId)
+    if (!clan || save.character.level < 4 || (save.character.clan.clanId && save.character.clan.clanId !== clan.id))
+      return fail('CLAN_CANDIDACY_REQUIRED', 'A tarefa pertence ao representante do seu Clã.')
+    if (questId === clanTableQuestId(clan.id) && !save.character.clan.candidateClanId) {
+      // Accepting the named leader's explicit mission is the player's candidacy decision.
+      const chosen = chooseClanCandidate(save, clan.id, catalog, now)
+      if (!chosen.ok) return chosen
+      acceptedFrom = chosen.value
+    }
+    if (acceptedFrom.character.clan.candidateClanId !== clan.id)
+      return fail('CLAN_CANDIDACY_REQUIRED', 'Receba primeiro a missão da mesa diretamente do líder escolhido.')
+    if (clan.recruitmentQuestIds.includes(questId) &&
+        acceptedFrom.quests[clanTableQuestId(clan.id)]?.status !== 'completed' &&
+        !['active', 'ready_to_turn_in', 'completed'].includes(acceptedFrom.quests[questId]?.status ?? ''))
+      return fail('CLAN_TABLE_REQUIRED', 'Conclua primeiro a interação com a Mesa de Iniciação.')
   }
   if (definition.giverNpcId === 'npc_rosetta' && (save.battle || save.world.currentLocationId !== 'location_terran_portal_plaza')) {
     return fail('TUTORIAL_LOCATION', 'Converse com Rosetta na Praça do Portal para começar esta lição.')
@@ -128,7 +154,7 @@ export const acceptQuest = (
     if (!catalog.items[input.itemId] || !Number.isSafeInteger(input.quantity) || input.quantity < 1 ||
       save.inventory.some((item) => item.instanceId === `lesson_${questId}_${input.itemId}`)) return fail('TUTORIAL_SUPPLIES', 'Os materiais desta lição não estão disponíveis para um novo recebimento.')
   }
-  const next = structuredClone(save)
+  const next = structuredClone(acceptedFrom)
   // Accepting a new quest makes it the only active visual objective.
   for (const quest of Object.values(next.quests)) quest.tracked = false
   next.quests[questId].status = 'active'
@@ -243,7 +269,9 @@ export const turnInQuest = (
   if (!definition || !progress) return fail('UNKNOWN_QUEST', 'Missão desconhecida.')
   if (progress.status !== 'ready_to_turn_in') return fail('QUEST_NOT_READY', 'Os objetivos desta missão ainda não foram concluídos.')
   if (definition.turnInNpcId !== npcId) return fail('WRONG_TURN_IN_NPC', 'Esta missão deve ser entregue a outro NPC.')
-  if (npcId === 'npc_rosetta' && (save.battle || save.world.currentLocationId !== 'location_terran_portal_plaza')) return fail('TUTORIAL_LOCATION', 'Retorne a Rosetta na Praça do Portal para concluir esta lição.')
+  if (npcId === 'npc_rosetta' && (save.battle || (questId === 'main_rosetta_clan_guidance_v05141'
+    ? save.world.currentLocationId !== 'location_terran_clan_hall'
+    : save.world.currentLocationId !== 'location_terran_portal_plaza'))) return fail('TUTORIAL_LOCATION', 'Retorne a Rosetta na Praça do Portal para concluir esta lição.')
   if (definition.choiceRewardItemIds?.length) {
     if (!choiceItemId || !definition.choiceRewardItemIds.includes(choiceItemId) || !catalog.items[choiceItemId]?.basicArmor) {
       return fail('QUEST_CHOICE_REQUIRED', 'Escolha uma proteção entre as recompensas válidas antes de concluir.')
