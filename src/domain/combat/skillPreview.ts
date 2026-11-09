@@ -26,6 +26,7 @@ export function previewCombatSkill(actor: Combatant, target: Combatant, skill: C
     if (effect.type === 'restoreHp') return [`Cura: até ${effect.value} PV`]
     if (effect.type === 'restoreMp') return [`Recupera: até ${effect.value} MP`]
     if (effect.type === 'cleanseHarmful') return ['Remove efeitos negativos']
+    if (effect.type === 'adjacentSplash') return [`Splash: ${Math.round(effect.fraction*100)}% do dano principal em ${effect.maxTargets} vizinho(s)`]
     return []
   })
   return { die, weaponBonusDie: actor.weaponBonusDie, ranges, effects, targetName: target.name }
