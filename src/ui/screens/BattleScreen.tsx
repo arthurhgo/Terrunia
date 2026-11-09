@@ -30,7 +30,7 @@ import './battleCinematic.css'
 import './gameplayV057.css'
 import './battleV0513.css'
 
-type Menu = 'skills' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
+type Menu = 'attack' | 'skills' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const POTION_CARD_ID = 'skill.use-healing-potion'
 const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
 
@@ -265,11 +265,15 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   })
   const categoryItems = (kind: 'throwable' | 'rune' | 'essence') =>
     save.inventory.filter((instance) => content.items[instance.definitionId]?.combatKind === kind)
-  const isMagicSkill = (id: string) => /scepter|grimoire|staff|spore|arcane|magic|spell/i.test(id)
-  const skillPickerOpen = menu === 'skills' || menu === 'magic'
-  const visibleSkills = skillPickerOpen
+  const isMagicSkill = (id: string) => content.combatSkills[id]?.presentationGroup === 'magic'
+  const skillPickerOpen = menu === 'skills' || menu === 'magic' || menu === 'attack'
+  const visibleSkills = menu === 'magic' || menu === 'skills'
     ? skills.filter((skill) => menu === 'magic' ? isMagicSkill(skill.id) : !isMagicSkill(skill.id))
     : []
+  const attackCards: CombatSkillDefinition[] = [
+    {id:'attack_single_v05141',name:'Ataque Único',description:'Ataque concentrado no inimigo selecionado, com força integral.',target:'enemy',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-single',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
+    {id:'skill_basic_area_attack',name:'Ataque em Área',description:'60% do ataque no alvo central + 30% desse dano no inimigo de cada lado.',target:'enemy',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-area',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
+  ]
   const skillColumns = Math.max(1, Math.min(4, visibleSkills.length))
   const skillRows = Math.max(1, Math.ceil(visibleSkills.length / skillColumns))
   const hasUsefulSupplies = (kind: 'throwable' | 'rune' | 'essence') =>
@@ -438,7 +442,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const end = (toCity: boolean) => {
     if (toCity) returnToTerran()
     else finishBattleIntoExpedition()
-    if (!unified) navigate(toCity ? '/terran' : save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon' : '/expedition')
+    if (!unified) navigate(toCity || battle.clanTrialQuestId ? '/terran' : save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon' : '/expedition')
   }
   const button = (label: string, icon: React.ReactNode, onClick: () => void, disabled = false, selected = false) => (
     <button key={label} type="button"
@@ -584,7 +588,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           <small>Seu dado de Agilidade define a ordem junto à iniciativa-base. Monstros rolam automaticamente.</small>
         </div> : battle.phase === 'AwaitingAction' ? <>
           <div className="pixel-battle__commands" aria-label="Barra de ações">
-            {button('ATAQUE', <Swords />, () => send({ type: 'attack', targetId: target.id }), !isPlayerTurn || !target.alive)}
+            {button('ATAQUE', <Swords />, () => openMenu('attack'), !isPlayerTurn || !target.alive, menu==='attack')}
             {button('HABILIDADES', <BookOpen />, () => openMenu('skills'), !isPlayerTurn || skills.filter((skill) => !isMagicSkill(skill.id)).length === 0, menu === 'skills')}
             {button('MAGIAS', <Sparkles />, () => openMenu('magic'), !isPlayerTurn || skills.filter((skill) => isMagicSkill(skill.id)).length === 0, menu === 'magic')}
             {button('DEFENDER', <Shield />, () => { setConfirmDefense(true); setMenu(null) }, !isPlayerTurn, confirmDefense)}
@@ -601,7 +605,15 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           {menu && <div className={`pixel-battle__submenu ${skillPickerOpen ? 'pixel-battle__submenu--skill-picker' : ''}`}
             aria-label={skillPickerOpen ? 'Seleção de habilidades sem rolagem' : undefined}>
             <button type="button" aria-label="Voltar sem executar a ação" onClick={() => setMenu(null)}>VOLTAR</button>
-            {skillPickerOpen && <>
+            {menu === 'attack' && <div className="pixel-battle__skill-grid pixel-battle__attack-grid" aria-label="Escolher modo de ataque">
+              {attackCards.map((attack) => <SkillCard key={attack.id} skill={attack}
+                preview={previewCombatSkill(player,target,attack,content)} remaining={0}
+                unavailable={!isPlayerTurn?'Aguarde seu turno':!target.alive?'Alvo indisponível':null}
+                onInspect={()=>{setPinnedSkillId(null);setHoveredSkillId(attack.id)}} onLeave={()=>setHoveredSkillId(null)}
+                onPin={()=>setPinnedSkillId(attack.id)}
+                onUse={()=>send(attack.id==='attack_single_v05141'?{type:'attack',targetId:target.id}:{type:'areaAttack',targetId:target.id})}/>) }
+            </div>}
+            {(menu === 'skills'||menu === 'magic') && <>
               <div className="pixel-battle__skill-grid"
                 style={{ '--skill-columns': skillColumns, '--skill-rows': skillRows,
                   '--skill-max-width': `${skillColumns * 106 + (skillColumns - 1) * 6}px` } as React.CSSProperties}>
@@ -685,6 +697,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       onUse={() => { setHoveredSkillId(null); setPinnedSkillId(null)
         if (healingPotion && !potionUnavailable) send({ type: 'item', itemInstanceId: healingPotion.instanceId, targetId: player.id })
       }} />}
+    {menu==='attack' && attackCards.find(a=>a.id===(pinnedSkillId??hoveredSkillId)) && (()=>{const attack=attackCards.find(a=>a.id===(pinnedSkillId??hoveredSkillId))!;return <SkillTooltip skill={attack} preview={previewCombatSkill(player,target,attack,content)} remaining={0}
+      unavailable={!isPlayerTurn?'Aguarde seu turno':!target.alive?'Alvo indisponível':null}
+      onClose={()=>{setHoveredSkillId(null);setPinnedSkillId(null)}}
+      onUse={()=>{setHoveredSkillId(null);setPinnedSkillId(null);send(attack.id==='attack_single_v05141'?{type:'attack',targetId:target.id}:{type:'areaAttack',targetId:target.id})}}/>})()}
     {(menu === 'skills' || menu === 'magic') && inspectedSkill && <SkillTooltip skill={inspectedSkill}
       preview={previewCombatSkill(player, inspectedSkill.target === 'self' ? player : target, inspectedSkill, content)}
       remaining={player.skillCooldowns?.[inspectedSkill.id] ?? 0}
