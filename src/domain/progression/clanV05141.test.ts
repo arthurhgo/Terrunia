@@ -6,6 +6,7 @@ import { chooseClanCandidate,chooseInitialClanSpell,getClanRecommendations,ROSET
 import { startClanTrialWave,claimClanTrialWave } from './clanTrials'
 import { joinClan } from './progressionEngine'
 import { CLAN_TRIALS,CLAN_TRIAL_WAVE_COUNT } from '../../content/clanTrials'
+import { clanTableQuestId, clanGolemQuestId } from '../../content/clanProgressionV05142'
 const now='2026-11-09T17:00:00Z'
 
 describe('v0.5.14.1: ingresso, ondas e magia exclusiva',()=>{
@@ -50,6 +51,9 @@ describe('v0.5.14.1: ingresso, ondas e magia exclusiva',()=>{
     expect(deliveredTable.ok).toBe(true)
     if(!deliveredTable.ok)return
     s=deliveredTable.value
+    // Historical quest remains playable in imported saves, but is not offered to new recruits.
+    expect(s.quests.clan_dunavar_01.status).toBe('locked')
+    s.quests.clan_dunavar_01.status='available'
     const offered=offerQuest(s,'clan_dunavar_01',content,now)
     expect(offered.ok).toBe(true)
     if(!offered.ok)return
@@ -87,6 +91,9 @@ describe('v0.5.14.1: ingresso, ondas e magia exclusiva',()=>{
     s.character.clan.candidateClanId='dunavar'
     for(const id of content.clans.dunavar.recruitmentQuestIds)s.quests[id].status='completed'
     s.character.clan.eligibleClanIds.push('dunavar')
+    s.quests[clanTableQuestId('dunavar')].status='completed'
+    s.world.portalWaveBest=14
+    s.quests[clanGolemQuestId('dunavar')].status='completed'
     expect(joinClan(s,'rustal',content,now)).toMatchObject({ok:false})
     const joined=joinClan(s,'dunavar',content,now)
     expect(joined.ok).toBe(true)
