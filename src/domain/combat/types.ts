@@ -104,6 +104,7 @@ export type BattleState = {
   dungeonRunId?: string
   clanTrialQuestId?: string
   clanTrialRunId?: string
+  clanBossQuestId?: string
   bossMechanics?: {
     bossId: string
     guardDefinitionIds: string[]

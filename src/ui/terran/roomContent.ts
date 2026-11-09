@@ -42,7 +42,7 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
   location_terran_clan_hall: [
     { id: 'clan_banners', name: 'Estandartes dos Clãs', point: { x: 108, y: 125 }, behavior: 'inspect', description: 'Os estandartes representam caminhos que devem ser conquistados em jogo.' },
     { id: 'clan_echo_table', name: 'Mesa dos Ecos', point: { x: 192, y: 198 }, behavior: 'quest', questId: 'main_lore_identity_01', description: 'Anotações sobre Personagem, Clã e Classe; interpretar não concede filiação ou disciplina.' },
-    { id: 'clan_council', name: 'Mesa dos Representantes', point: { x: 250, y: 193 }, behavior: 'services', description: 'Representantes e mestres apresentam os requisitos de Clã e Classe.' },
+    { id: 'clan_initiation_table', name: 'Mesa de Iniciação', point: { x: 250, y: 193 }, behavior: 'quest', description: 'Aceite o convite de um líder e interaja com esta mesa. Depois entregue o relatório ao NPC do Clã.' },
   ],
   location_terran_daeryn_house: [
     { id: 'daeryn_herbs', name: 'Jardim de Ervas', point: { x: 96, y: 184 }, behavior: 'inspect', description: 'Ervas e frascos preparados para a recuperação de viajantes.' },

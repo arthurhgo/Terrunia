@@ -4,6 +4,26 @@ import type { GameSave } from '../game/types'
  * No minigame grants items or makes a hypothesis canonical.
  */
 export const questObjectActivities = {
+  clan_dunavar_table_v05142: {
+    locationId: 'location_terran_clan_hall', objectId: 'clan_initiation_table',
+    title: "Mesa de Iniciação Dûn'Avar", kind: 'echo',
+    solution: ['echo_character', 'echo_clan', 'echo_class'],
+  },
+  clan_rustal_table_v05142: {
+    locationId: 'location_terran_clan_hall', objectId: 'clan_initiation_table',
+    title: 'Mesa de Iniciação Rustal', kind: 'echo',
+    solution: ['echo_character', 'echo_clan', 'echo_class'],
+  },
+  clan_cebios_esti_table_v05142: {
+    locationId: 'location_terran_clan_hall', objectId: 'clan_initiation_table',
+    title: 'Mesa de Iniciação Cebios Esti', kind: 'echo',
+    solution: ['echo_character', 'echo_clan', 'echo_class'],
+  },
+  clan_estres_do_et_table_v05142: {
+    locationId: 'location_terran_clan_hall', objectId: 'clan_initiation_table',
+    title: 'Mesa de Iniciação Estres do Ét', kind: 'echo',
+    solution: ['echo_character', 'echo_clan', 'echo_class'],
+  },
   main_terran_first_home: {
     locationId: 'location_terran_daeryn_house',
     objectId: 'daeryn_healing_shelf',

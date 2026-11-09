@@ -267,6 +267,7 @@ const battleSchema = z.object({
   dungeonRunId: idSchema.optional(),
   clanTrialQuestId: idSchema.optional(),
   clanTrialRunId: idSchema.optional(),
+  clanBossQuestId: idSchema.optional(),
   bossMechanics: z.object({
     bossId: idSchema,
     guardDefinitionIds: z.array(idSchema),
