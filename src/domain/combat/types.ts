@@ -40,6 +40,9 @@ export type Combatant = {
   statusEffects: ActiveStatus[]
   aiSkillEveryRounds?: number
   attackDie?: CombatDie
+  weaponBonusDie?: CombatDie
+  potionCooldown?: number
+  potionHealingTicks?: number
   initiativeDie?: CombatDie
 }
 
@@ -52,6 +55,7 @@ export type CombatRoll = {
   face: number
   action: string
   /** v0.5.7: the actual face determines damage; all fields are motor-produced. */
+  weaponBonusRoll?: { sides: CombatDie; face: number }
   damageBreakdown?: {
     baseAttack: number
     skillBonus: number
@@ -97,6 +101,16 @@ export type BattleState = {
   /** v0.5.14 stage identity; keeps trail boss progression separate from stage victories. */
   dungeonEncounterId?: string
   dungeonRunId?: string
+  bossMechanics?: {
+    bossId: string
+    guardDefinitionIds: string[]
+    maxAlive: number
+    summonEveryRounds: number
+    healEveryRounds: number
+    healFraction: number
+    buffEveryRounds: number
+    buffDurationTurns: number
+  }
   phase: BattlePhase
   phaseHistory: BattlePhase[]
   round: number
@@ -115,6 +129,7 @@ export type BattleState = {
 export type BattleCommand =
   | { type: 'rollInitiative' }
   | { type: 'attack'; targetId: string }
+  | { type: 'areaAttack' }
   | { type: 'defend' }
   | { type: 'skill'; skillId: string; targetId: string }
   | { type: 'item'; itemInstanceId: string; targetId: string }

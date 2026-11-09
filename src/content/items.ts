@@ -14,6 +14,16 @@ export const itemDefinitions = [
     iconAssetId: 'item.daeryn-home-key', status: 'CONTENT_DRAFT',
   },
   ...basicArmorItems,
+  {
+    id: 'consumable_fungal_healing_potion',
+    name: 'Poção Restauradora',
+    description: 'Ação gratuita de combate; restaura 10% da Vida máxima nos próximos dois turnos.',
+    category: 'consumable', rarity: 'uncommon', convertToEssence: false, essenceValue: 0,
+    sellable: false, sellValue: 0, questLocked: false, canInfuseBoundItem: false,
+    combatEffects: [{ type: 'restoreHp', value: 0 }], combatUseMode: 'freeHealingPotion',
+    combatTarget: 'self', affinityTags: ['healing', 'potion', 'fungal'],
+    iconAssetId: 'skill.use-healing-potion', status: 'BALANCE_DRAFT',
+  },
   ...complementaryItemDefinitions,
   ...biomeMaterialDefinitions,
   { id: 'material_linen_thread', name: 'Linha de Linho', description: 'Linha resistente usada por Durnan para o primeiro reforço das proteções simples.',
@@ -284,6 +294,9 @@ const weapon = (
     treeId: 'tree_weapon_foundation',
     assetIdByGrade: allGrades(assetId),
     statBonuses: {},
+    // BALANCE_DRAFT: one extra d4 for the seven new weapon families.
+    // Historical prologue weapon has no bonus die and retains prior balance.
+    bonusAttackDie: 4,
     status: 'BALANCE_DRAFT',
   }
 }

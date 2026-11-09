@@ -239,6 +239,15 @@ export const statusEffectDefinitions = [
   },
 
   {
+    id: 'status_corrupted_mycotic_boost',
+    name: 'Ressonância Micótica',
+    description: 'Impulso arcano da Sentinela que fortalece temporariamente suas criaturas.',
+    tone: 'beneficial',
+    startTurnDamage: 0,
+    attackModifier: 1, mitigationModifier: 1,
+    status: 'BALANCE_DRAFT',
+  },
+  {
     id: 'status_rune_ward',
     name: 'Guarda Rúnica',
     description: 'Uma inscrição de campo reforça temporariamente a defesa.',

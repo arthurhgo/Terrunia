@@ -12,8 +12,8 @@ export function previewCombatSkill(actor: Combatant, target: Combatant, skill: C
     const defense = getEffectiveMitigation(target, catalog)
     const attack = getEffectiveAttackPower(actor, catalog)
     const guard = target.defending ? BALANCE.defendMitigation : 0
-    const minimum = calculateRolledDamage(attack, defense, 1, die!, effect.powerBonus, guard).finalDamage
-    const maximum = calculateRolledDamage(attack, defense, die!, die!, effect.powerBonus, guard).finalDamage
+    const minimum = calculateRolledDamage(attack + (actor.weaponBonusDie ? 1 : 0), defense, 1, die!, effect.powerBonus, guard).finalDamage
+    const maximum = calculateRolledDamage(attack + (actor.weaponBonusDie ?? 0), defense, die!, die!, effect.powerBonus, guard).finalDamage
     return { minimum, maximum }
   })
   const effects = skill.effects.flatMap((effect) => {
