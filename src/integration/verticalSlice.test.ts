@@ -172,8 +172,13 @@ describe('vertical slice integrada', () => {
           const prepared = structuredClone(store().save!)
           const hero = prepared.battle!.combatants.combatant_player
           hero.attackPower = 120
-          hero.hp = 1000
-          hero.maxHp = 1000
+          // Prepared battle fixture, without writing impossible HP into a persisted save.
+          const hp = deriveCharacterStats(prepared, content).life.value
+          hero.hp = hero.maxHp = hp
+          prepared.vitals.hp = hp
+          for (const creature of Object.values(prepared.battle!.combatants)) {
+            if (creature.side === 'enemy') creature.attackPower = 0
+          }
           useGameStore.setState({ save: prepared })
         }
         const fightPrepared = (label: string) => {
