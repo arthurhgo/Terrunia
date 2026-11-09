@@ -44,9 +44,9 @@ describe('v0.5.14.2 · dados justos e crítico global por face máxima', () => {
       const counts = Array.from({ length: sides }, () => 0)
       for (let i = 0; i < 100000; i++) {
         const roll = rollSeededCombatDie(seed, sides)
-        expect(roll.face).toBeGreaterThanOrEqual(1)
-        expect(roll.face).toBeLessThanOrEqual(sides)
-        expect(Number.isInteger(roll.face)).toBe(true)
+        if (roll.face < 1 || roll.face > sides || !Number.isInteger(roll.face)) {
+          throw new Error(`Face inválida em d${sides}: ${roll.face}`)
+        }
         seed = roll.nextSeed
         counts[roll.face - 1]++
       }
