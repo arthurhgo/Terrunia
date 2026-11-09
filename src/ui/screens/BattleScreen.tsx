@@ -406,6 +406,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         id: entry.id, sides: roll.sides, face: roll.face, damage: Number(match[1]),
         actorId: roll.actorId, targetId: roll.targetId ?? (actor?.side === 'enemy' ? player.id : target.id),
         action: roll.action, kind: 'damage' as const,
+        ...(roll.weaponBonusRoll ? { weaponBonusRoll: roll.weaponBonusRoll } : {}),
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy' as const,
       }]
     })

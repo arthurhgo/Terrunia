@@ -18,6 +18,7 @@ export type BattleDiceEvent = {
   actorSide?: 'player' | 'enemy'
   kind?: 'initiative' | 'damage'
   initiativeTotal?: number
+  weaponBonusRoll?: { sides: AttributeDie; face: number }
 }
 
 /** Full-arena VFX, not a dialog. Die visibly travels from actions into the world.
@@ -65,6 +66,7 @@ export function BattleDicePlatform({ roll, reducedMotion, awaitingClick = false,
       </div>
       {settled && <div className="battle-dice-platform__result">
         <strong>{initiative ? `Iniciativa ${roll.initiativeTotal ?? roll.face}` : `d${roll.sides}: ${roll.face}`}</strong>
+        {!initiative && roll.weaponBonusRoll && <small>Arma d{roll.weaponBonusRoll.sides}: {roll.weaponBonusRoll.face}</small>}
         {!initiative && <small>{roll.damage} de dano</small>}
       </div>}
     </div>}
