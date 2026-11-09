@@ -5,6 +5,7 @@ import type { GameSave } from '../../domain/game/types'
 import { getNpcQuestMarker, getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
 import { getNpcQuestNotice, type NpcMarkerPhase, type NpcWorldMarker } from '../../domain/quests/questSelectors'
 import { PLAYER_HOME_INTERIOR_ID, type TerranInteriorId } from './roomContent'
+import { isClanCastleInteriorId } from '../../content/clanCastlesV05142'
 import type { WorldPoint } from './pixelCityArt'
 import { getRoomPlan, isRoomWalkable } from './roomGeometry'
 
@@ -34,7 +35,7 @@ const paletteByTone: Record<string, string> = {
 
 /** Layout is independent of sprite paths and of quest/combat logic. */
 export function getInteriorResidents(save: GameSave, id: TerranInteriorId): InteriorResident[] {
-  if (id === PLAYER_HOME_INTERIOR_ID || !hasTerranInterior(id)) return []
+  if (id === PLAYER_HOME_INTERIOR_ID || isClanCastleInteriorId(id) || !hasTerranInterior(id)) return []
   const location = content.terranLocations[id]
   const positions = getRoomPlan(id).residents
   return getVisibleNpcsInLocation(save, id).slice(0, positions.length).map(({ presence }, index) => {
