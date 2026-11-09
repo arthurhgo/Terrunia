@@ -28,5 +28,5 @@ export function previewCombatSkill(actor: Combatant, target: Combatant, skill: C
     if (effect.type === 'cleanseHarmful') return ['Remove efeitos negativos']
     return []
   })
-  return { die, ranges, effects, targetName: target.name }
+  return { die, weaponBonusDie: actor.weaponBonusDie, ranges, effects, targetName: target.name }
 }

@@ -315,9 +315,15 @@ const resolveSkill = (
   const primary = applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name, skill)
   if (skill.id === 'skill_resonant_strike' && primary.damage > 0) {
     // BALANCE_DRAFT OD-06: 5% final primary damage to each other unprotected enemy.
+    // Snapshot the shield from action start; AoE never hits the boss accidentally.
+    const bossProtected = state.bossMechanics &&
+      Object.values(state.combatants).some((entry) => entry.side === 'enemy' &&
+        entry.id !== state.bossMechanics!.bossId && (entry.alive || entry.id === target.id))
     const splash = Math.max(1, Math.ceil(primary.damage * 0.05))
     for (const other of Object.values(state.combatants)) {
-      if (other.id === target.id || !validTarget(actor, other, 'enemy', state)) continue
+      if (other.id === target.id ||
+          (bossProtected && other.id === state.bossMechanics?.bossId) ||
+          !validTarget(actor, other, 'enemy', state)) continue
       const damage = Math.min(other.hp, splash)
       other.hp = Math.max(0, other.hp - damage)
       other.alive = other.hp > 0
@@ -334,8 +340,11 @@ const resolveAreaAttack = (state: BattleState, actor: Combatant, catalog: Conten
   addPhase(state, 'SelectingTarget')
   addPhase(state, 'ResolvingAction')
   // BALANCE_DRAFT OD-07: 60% of a normal attack applied to each eligible enemy.
+  const protectedBossId = state.bossMechanics &&
+    Object.values(state.combatants).some((entry) => entry.side === 'enemy' && entry.id !== state.bossMechanics!.bossId && entry.alive)
+    ? state.bossMechanics.bossId : null
   for (const target of Object.values(state.combatants)) {
-    if (!validTarget(actor, target, 'enemy', state)) continue
+    if (target.id === protectedBossId || !validTarget(actor, target, 'enemy', state)) continue
     const sides = selectDamageDie(actor)
     const face = rollCombatDie(state, sides)
     const bonusFace = actor.weaponBonusDie ? rollCombatDie(state, actor.weaponBonusDie) : 0
@@ -374,11 +383,15 @@ const resolveItem = (
 
 const applyPotionTurn = (state: BattleState, actor: Combatant) => {
   if (actor.side !== 'player') return
-  if ((actor.potionCooldown ?? 0) > 0) actor.potionCooldown!--
-  if ((actor.potionHealingTicks ?? 0) <= 0) return
-  const healed = Math.min(Math.max(0, actor.maxHp - actor.hp), Math.ceil(actor.maxHp * 0.05))
+  actor.potionCooldown = Math.max(0, (actor.potionCooldown ?? 0) - 1)
+  const ticks = actor.potionHealingTicks ?? 0
+  if (ticks <= 0) return
+  // Exactly 10% of max HP in total (rounded up once), split across two turns.
+  const amount = Math.ceil((actor.potionHealingRemaining ?? 0) / ticks)
+  const healed = Math.min(Math.max(0, actor.maxHp - actor.hp), amount)
   actor.hp += healed
-  actor.potionHealingTicks!--
+  actor.potionHealingRemaining = Math.max(0, (actor.potionHealingRemaining ?? 0) - amount)
+  actor.potionHealingTicks = ticks - 1
   addLog(state, `Poção Restauradora recupera ${healed} de Vida em ${actor.name}.`, 'reward')
 }
 
@@ -475,7 +488,9 @@ const resolveEnemyAction = (
           durationTurns: state.bossMechanics.buffDurationTurns, chance: 1 }, catalog)
       addLog(state, 'O Núcleo da Ruína fortalece seus fungos.', 'system')
     }
-    resolveAttack(state, actor, player, catalog)
+    const strike = catalog.combatSkills.skill_sentinel_arcane_pulse
+    if (strike) resolveSkill(state, actor, player, strike, catalog)
+    else resolveAttack(state, actor, player, catalog)
     return
   }
   const skillId =
@@ -721,6 +736,7 @@ export const submitBattleCommand = (
       return fail('POTION_NOT_NEEDED', 'Vida já está completa.')
     player.potionCooldown = 2
     player.potionHealingTicks = 2
+    player.potionHealingRemaining = Math.ceil(player.maxHp * 0.1)
     addLog(state, `${player.name} toma Poção Restauradora: 10% da Vida em dois turnos, sem gastar ação.`, 'reward')
     state.consumedItemInstanceIds.push(command.itemInstanceId)
     return ok(state) // Free action: NO turn advances and NO opponent reacts.

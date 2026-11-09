@@ -7,7 +7,7 @@ export const enemyDefinitions = [
     name: 'Sentinela Corrompida · Núcleo da Ruína',
     level: 6, maxHp: 42, mitigation: 3, attackPower: 5,
     xpReward: 120, goldReward: 60, boundResonanceReward: 256,
-    lootDefinitionIds: [], skillIds: [], boss: true,
+    lootDefinitionIds: [], skillIds: ['skill_sentinel_arcane_pulse'], boss: true,
     weaknessTags: ['arcane', 'resonance', 'construct'],
     assetId: 'enemy.ruin-corrupted-sentinel', status: 'BALANCE_DRAFT',
   },

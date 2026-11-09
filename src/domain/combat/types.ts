@@ -43,6 +43,7 @@ export type Combatant = {
   weaponBonusDie?: CombatDie
   potionCooldown?: number
   potionHealingTicks?: number
+  potionHealingRemaining?: number
   initiativeDie?: CombatDie
 }
 

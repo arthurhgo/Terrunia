@@ -9,6 +9,13 @@ import type {
 
 export const combatSkillDefinitions = [
   {
+    id: 'skill_sentinel_arcane_pulse', name: 'Pulso Arcano Corrompido',
+    description: 'A Sentinela dispara energia mágica de seu núcleo inorgânico.',
+    target: 'enemy', mpCost: 0, cooldownTurns: 0, damageDieSteps: 0,
+    effects: [{ type: 'damage', powerBonus: 1 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
     id: 'skill_basic_area_attack', name: 'Ataque em Área',
     description: 'Ação básica que atinge inimigos elegíveis com potência reduzida (BALANCE_DRAFT: 60%).',
     target: 'enemy', mpCost: 0, cooldownTurns: 0, damageDieSteps: 0,
