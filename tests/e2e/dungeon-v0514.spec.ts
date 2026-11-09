@@ -27,7 +27,7 @@ test('v0.5.14: vence estágio do Vestíbulo, continua na Câmara e reinicia ao s
     useGameStore.getState().enterFungalChambers()
   })
   await expect(page.getByRole('heading', { name: 'Câmaras Fúngicas', exact: true })).toBeVisible()
-  await expect(page.getByText('Estágio 1/3').first()).toBeVisible()
+  await expect(page.getByText(/Estágio 1\/3/).first()).toBeVisible()
   await page.getByRole('button', { name: 'Aproximar-se de Vestíbulo Micelial' }).click()
   const drawer = page.getByRole('complementary', { name: 'Painel lateral: Vestíbulo Micelial' })
   await expect(drawer).toBeVisible({ timeout: 20_000 })
@@ -46,7 +46,7 @@ test('v0.5.14: vence estágio do Vestíbulo, continua na Câmara e reinicia ao s
   await fightAndCollect(page, dropCount)
   await page.getByRole('button', { name: 'CONTINUAR EXPEDIÇÃO', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Câmaras Fúngicas', exact: true })).toBeVisible()
-  await expect(page.getByText('Estágio 2/3').first()).toBeVisible()
+  await expect(page.getByText(/Estágio 2\/3/).first()).toBeVisible()
 
   await page.getByRole('button', { name: 'Sair das Câmaras para Astravél' }).click()
   await page.evaluate(async () => {
