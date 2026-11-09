@@ -96,6 +96,69 @@ test('Astravél: câmera, dois combates, coleta manual de drops e retomada do sa
   expect(errors).toEqual([])
 })
 
+
+test('v0.5.13.1: cards de habilidade visíveis e quadrados sem scroll', async ({ page }) => {
+  test.setTimeout(90_000)
+  await createExpedition(page)
+  await page.getByRole('button', { name: 'Seguir objetivo' }).click()
+  const drawer = page.getByRole('complementary', { name: 'Painel lateral: Presença Fungorra' })
+  await expect(drawer).toBeVisible()
+  await drawer.locator('.expedition-node-detail__action').click()
+  const initiative = page.getByRole('button', { name: /^Arrastar dado de iniciativa d\\d+ para cima para rolar$/ })
+  await expect(initiative).toBeEnabled({ timeout: 15_000 })
+  await initiative.press('Enter')
+  const action = page.getByRole('button', { name: 'HABILIDADES', exact: true })
+  await expect(action).toBeEnabled({ timeout: 25_000 })
+  await action.click()
+  const picker = page.locator('.pixel-battle__submenu--skill-picker')
+  await expect(picker).toBeVisible()
+  await expect(picker.locator('.pixel-battle__submenu-heading')).toHaveCount(0)
+  const dimensions = await picker.evaluate((element) => {
+    const host = element.getBoundingClientRect()
+    const cards = Array.from(element.querySelectorAll('.pixel-battle__skill-card'))
+      .map((node) => node.getBoundingClientRect())
+    return {
+      cards: cards.length,
+      scrollFree: element.scrollHeight <= element.clientHeight + 1,
+      allVisible: cards.every((card) => card.left >= host.left - 1 &&
+        card.right <= host.right + 1 && card.top >= host.top - 1 &&
+        card.bottom <= host.bottom + 1),
+      square: cards.every((card) => Math.abs(card.width - card.height) <= 2),
+    }
+  })
+  expect(dimensions.cards).toBeGreaterThan(0)
+  expect(dimensions.scrollFree).toBe(true)
+  expect(dimensions.allVisible).toBe(true)
+  expect(dimensions.square).toBe(true)
+  await page.getByRole('button', { name: 'Voltar sem executar a ação' }).click()
+  await expect(picker).toHaveCount(0)
+})
+
+test('v0.5.13.1: revisitar Astravél pelo Portal preserva acesso ao encontro 15/15', async ({ page }) => {
+  await createExpedition(page)
+  await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    const { content } = await import('/src/content/catalog.ts')
+    const save = structuredClone(useGameStore.getState().save!)
+    for (const node of content.trails.trail_astravel_entry.nodes) {
+      save.world.trailNodeStates[node.id] = node.type === 'boss' ? 'bossCurrent' : 'completed'
+    }
+    save.world.currentLocationId = 'astravel_entry' // retorno pelo Portal
+    save.quests.main_astravel_corruption.status = 'active'
+    useGameStore.setState({ save })
+  })
+  await page.getByRole('button', { name: 'Aproximar-se de Câmaras Fúngicas' }).click()
+  await expect(page.getByRole('complementary', { name: 'Painel lateral: Câmaras Fúngicas' })).toBeVisible()
+  await page.getByRole('button', { name: 'Adentrar Câmaras Fúngicas' }).click()
+  await expect(page.getByRole('heading', { name: 'Câmaras Fúngicas' })).toBeVisible({ timeout: 15_000 })
+  const state = await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    const save = useGameStore.getState().save!
+    return { location: save.world.currentLocationId, boss: save.world.trailNodeStates.astravel_boss_preview }
+  })
+  expect(state).toEqual({ location: 'dungeon_fungal_chambers', boss: 'bossCurrent' })
+})
+
 test('o próximo setor exige missão aceita e permite retornar sem iniciar combate', async ({ page }) => {
   await createExpedition(page)
   await page.evaluate(async () => {
