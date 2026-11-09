@@ -185,7 +185,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     const reveal = window.setTimeout(() => {
       setDiceStage('impact')
       if (event.kind === 'initiative' && event.initiativeTotal !== undefined && event.actorId) {
-        setRevealedInitiative((current) => ({ ...current, [event.actorId]: event.initiativeTotal! }))
+        const actorId = event.actorId
+        const total = event.initiativeTotal
+        setRevealedInitiative((current) => ({ ...current, [actorId]: total }))
       }
       if (event.kind === 'damage') {
         setImpactEventId(event.id)
@@ -286,7 +288,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       // A roll becomes public only after its own die focus finishes.
       setDiceStage('impact')
       if (event.kind === 'initiative' && event.initiativeTotal !== undefined && event.actorId) {
-        setRevealedInitiative((current) => ({ ...current, [event.actorId]: event.initiativeTotal! }))
+        const actorId = event.actorId
+        const total = event.initiativeTotal
+        setRevealedInitiative((current) => ({ ...current, [actorId]: total }))
       }
       if (event.kind === 'damage') {
         if (event.targetId) {
