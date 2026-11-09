@@ -95,15 +95,15 @@ describe('Casa do Ferreiro e materiais vinculados', () => {
     expect(save).toEqual(before)
   })
 
-  it('Neris vende materiais no Mercado, com custo real e sem permitir compras fora dele', () => {
+  it('Valmira vende materiais no Mercado, com custo real e sem permitir compras fora dele', () => {
     const save = ready()
     save.world.currentLocationId = MARKET_LOCATION_ID
-    const purchase = buyMarketItem(save, 'presence_neris', 'drop_ruin_shard', 2, content, save.updatedAt)
+    const purchase = buyMarketItem(save, 'presence_valmira', 'drop_ruin_shard', 2, content, save.updatedAt)
     expect(purchase.ok).toBe(true)
     if (!purchase.ok) return
     expect(purchase.value.wallet.gold).toBe(880)
     expect(purchase.value.inventory.at(-1)?.quantity).toBe(2)
-    expect(buyMarketItem({ ...save, world: { ...save.world, currentLocationId: FORGE_LOCATION_ID } }, 'presence_neris', 'drop_ruin_shard', 1, content, save.updatedAt).ok).toBe(false)
+    expect(buyMarketItem({ ...save, world: { ...save.world, currentLocationId: FORGE_LOCATION_ID } }, 'presence_valmira', 'drop_ruin_shard', 1, content, save.updatedAt).ok).toBe(false)
   })
   it('forja ouro alto sem criar outra arma, preserva Grau e bloqueia compra duplicada', () => {
     const save = ready()
