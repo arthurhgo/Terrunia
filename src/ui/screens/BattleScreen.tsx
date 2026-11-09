@@ -3,7 +3,6 @@ import { Backpack, Bomb, BookOpen, Crosshair, Gem, ScrollText, Shield, Sparkles,
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
-import type { BattleState } from '../../domain/combat/types'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { getTrailByNodeId } from '../../domain/exploration/trailEngine'
 import { useGameStore } from '../../state/gameStore'
@@ -69,7 +68,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const [activeDice, setActiveDice] = useState<BattleDiceEvent | null>(null)
   const [diceStage, setDiceStage] = useState<'focus' | 'impact'>('focus')
   const [stagedHp, setStagedHp] = useState<Record<string, number> | null>(null)
-  const [initiativePreview, setInitiativePreview] = useState<BattleState | null>(null)
+  const [revealedInitiative, setRevealedInitiative] = useState<Record<string, number>>({})
   const [impactEventId, setImpactEventId] = useState<string | null>(null)
   const [diceQueue, setDiceQueue] = useState<BattleDiceEvent[]>([])
   const [resolvingRolls, setResolvingRolls] = useState(false)
@@ -103,7 +102,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     setActiveDice(null)
     setDiceStage('focus')
     setStagedHp(null)
-    setInitiativePreview(null)
+    setRevealedInitiative({})
     setImpactEventId(null)
     setDiceQueue([])
     setResolvingRolls(false)
@@ -177,6 +176,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     const impactMs = event.kind === 'damage' ? (reducedMotion ? 160 : 450) : 80
     const reveal = window.setTimeout(() => {
       setDiceStage('impact')
+      if (event.kind === 'initiative' && event.initiativeTotal !== undefined) {
+        setRevealedInitiative((current) => ({ ...current, [event.actorId]: event.initiativeTotal! }))
+      }
       if (event.kind === 'damage') {
         setImpactEventId(event.id)
         if (!reducedMotion) setStrikeFx(getBattleStrikeFx(event))
@@ -224,6 +226,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
 
   const target = enemies.find((enemy) => enemy.id === targetId && enemy.alive) ?? enemies.find((enemy) => enemy.alive) ?? enemies[0]
   const encounter = content.encounters[battle.encounterId]
+  const battleTitle = `${encounter?.locationLabel ?? 'ASTRAVÉL'}: ${encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}`
   const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((skill) => Boolean(skill))
   const consumables = save.inventory.filter((instance) => {
     const definition = content.items[instance.definitionId]
@@ -296,7 +299,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           setActiveDice(null)
           setDiceAwaitingClick(false)
           setResolvingRolls(false)
-          setInitiativePreview(null)
           skipPreviewCommitHit.current = true
           sequence.commit()
           setStagedHp(null)
@@ -327,7 +329,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     setDiceStage('focus')
     setDiceQueue([])
     setStagedHp(null)
-    setInitiativePreview(null)
     setImpactEventId(null)
     setDiceAwaitingClick(false)
     setResolvingRolls(false)
@@ -367,7 +368,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     })
     if (!rolls.length) { submit(command); return }
     setStagedHp(Object.fromEntries(Object.values(battle.combatants).map((actor) => [actor.id, actor.hp])))
-    setInitiativePreview(initiative ? preview.value : null)
     setImpactEventId(null)
     setResolvingRolls(true)
     setDiceStage('focus')
@@ -419,10 +419,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const scene = <section className={`pixel-battle ${activeDice && diceStage === 'focus' ? "pixel-battle--dice-pending" : ""} ${diceAwaitingClick ? "pixel-battle--dice-awaiting" : ""}`} role="region" aria-label="Viewport unificada de combate">
     <header className="pixel-battle__header" aria-label="Encontro de combate">
       <strong>TERRÚNIA</strong>
-      <div className="pixel-battle__encounter-label"><span>{battle.waveIndex ? 'PORTAL · ONDAS DA RUÍNA' : encounter?.locationLabel ?? 'ASTRAVÉL'}</span><h1>{encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}</h1></div>
+      <div className="pixel-battle__encounter-label"><h1 title={battleTitle}>{battleTitle}</h1></div>
       <small>{battle.waveIndex ? 'ONDA ' + battle.waveIndex + ' · ' : ''}RODADA {battle.round} · {activeDice?.actorName ? 'VEZ DE ' + activeDice.actorName.toLocaleUpperCase('pt-BR') : turnCue ? 'REAÇÃO INIMIGA' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : battle.phase === 'AwaitingInitiative' ? 'INICIATIVA PENDENTE' : 'TURNO DO JOGADOR'}</small>
     </header>
-    <BattleTimeline battle={initiativePreview ?? battle} activeActorId={actingId} stagedHp={stagedHp} playerAppearance={save.character.appearance} playerPortraitAssetId={save.character.portraitAssetId} />
+    <BattleTimeline battle={battle} revealedInitiative={revealedInitiative} activeActorId={actingId} stagedHp={stagedHp} playerAppearance={save.character.appearance} playerPortraitAssetId={save.character.portraitAssetId} />
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
       <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} biome={battleBiome} />
       <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''} ${strikeFx?.actorId === player.id ? 'is-striking' : ''} ${strikeFx?.targetId === player.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === player.id ? 'is-acting' : ''} ${receivingId === player.id ? 'is-receiving' : ''}`}>
@@ -461,7 +461,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             <strong>{enemy.name}</strong>
             <span>Vida: {visualHp(enemy.id)}/{enemy.maxHp} · Mana: {enemy.mp}/{enemy.maxMp}</span>
             <span>Nível {content.enemies[enemy.definitionId]?.level ?? 1} · Ataque: {enemy.attackPower} · Defesa: {enemy.mitigation}</span>
-            <span>Iniciativa: {enemy.initiative} · Dado d{enemy.attackDie ?? 4}</span>
+            <span>Iniciativa: {battle.phase === 'AwaitingInitiative' ? (revealedInitiative[enemy.id] ?? 'pendente') : enemy.initiative} · Dado d{enemy.attackDie ?? 4}</span>
             <span>{enemy.statusEffects.length ? enemy.statusEffects.map((status) =>
               content.statusEffects[status.definitionId]?.name ?? status.definitionId).join(', ') : 'Sem efeitos ativos'}</span>
           </span>}

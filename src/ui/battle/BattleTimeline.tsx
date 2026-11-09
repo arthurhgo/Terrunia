@@ -9,12 +9,13 @@ import { AssetImage } from '../components/AssetImage'
  * Accessible names and title tooltips preserve exact numeric results and order.
  * Actor cursor, alive state and initiative are read from the battle engine.
  */
-export function BattleTimeline({ battle, playerAppearance, playerPortraitAssetId, activeActorId, stagedHp }: {
+export function BattleTimeline({ battle, playerAppearance, playerPortraitAssetId, activeActorId, stagedHp, revealedInitiative }: {
   battle: BattleState
   playerAppearance?: CharacterAppearance
   playerPortraitAssetId?: string
   activeActorId?: string
   stagedHp?: Record<string, number> | null
+  revealedInitiative?: Record<string, number>
 }) {
   const rolled = battle.phase !== 'AwaitingInitiative'
   const currentId = activeActorId ?? battle.actorId
@@ -24,6 +25,8 @@ export function BattleTimeline({ battle, playerAppearance, playerPortraitAssetId
       {battle.initiativeOrder.map((id, index) => {
         const actor = battle.combatants[id]
         if (!actor) return null
+        const initiativeValue = rolled ? actor.initiative : revealedInitiative?.[id]
+        const hasInitiative = initiativeValue !== undefined
         const alive = (stagedHp?.[id] ?? actor.hp) > 0
         const active = rolled && alive && currentId === id
         const acted = rolled && index < (activeActorId ? activeIndex : battle.actorCursor)
@@ -32,9 +35,9 @@ export function BattleTimeline({ battle, playerAppearance, playerPortraitAssetId
           'combat-timeline__portrait', actor.side === 'player' ? 'is-player' : 'is-enemy',
           active ? 'is-current' : '', acted ? 'is-acted' : '', !alive ? 'is-defeated' : '',
         ].filter(Boolean).join(' ')}
-          title={`${actor.name} · ${rolled ? 'Iniciativa ' + actor.initiative : 'Aguardando iniciativa'}`}
+          title={`${actor.name} · ${hasInitiative ? 'Iniciativa ' + initiativeValue : 'Aguardando iniciativa'}`}
           aria-current={active ? 'step' : undefined}
-          aria-label={`${index + 1}º: ${actor.name}, ${rolled ? 'iniciativa ' + actor.initiative : 'iniciativa pendente'}${active ? ', AGORA É A VEZ' : ''}`}>
+          aria-label={`${index + 1}º: ${actor.name}, ${hasInitiative ? 'iniciativa ' + initiativeValue : 'iniciativa pendente'}${active ? ', AGORA É A VEZ' : ''}`}>
           {active && <span className="combat-timeline__turn-arrow" aria-hidden="true">▼</span>}
           <span className="combat-timeline__face" aria-hidden="true">
             {actor.side === 'player'
@@ -42,7 +45,7 @@ export function BattleTimeline({ battle, playerAppearance, playerPortraitAssetId
               : <AssetImage assetId={enemyAsset} alt="" />}
           </span>
           {active && <span className="combat-timeline__turn-label">VEZ</span>}
-          {rolled && <span className="combat-timeline__initiative" aria-hidden="true">{actor.initiative}</span>}
+          {hasInitiative && <span key={`${id}-${initiativeValue}`} className="combat-timeline__initiative is-revealed" aria-hidden="true">{initiativeValue}</span>}
         </li>
       })}
     </ol>
