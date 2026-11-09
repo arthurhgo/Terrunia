@@ -210,7 +210,7 @@ export const questDefinitions = [
   },
   {
     id: 'main_rosetta_clan_guidance_v05141', title: 'Os Quatro Caminhos',
-    summary: 'Rosetta apresenta os quatro caminhos e indica o Salão dos Clãs. A orientação termina assim que você entra no Salão; cada líder concede sua própria missão.'
+    summary: 'Rosetta apresenta os quatro caminhos e indica o Salão dos Clãs. A orientação termina assim que você entra no Salão; cada líder concede sua própria missão.',
     giverNpcId: 'npc_rosetta', turnInNpcId:'npc_rosetta', category:'main',
     objectives:[{id:'rosetta_visit_clan_hall',type:'visit',targetId:'location_terran_clan_hall',required:1,
       label:'Entre no Salão dos Clãs e conheça os representantes'}],
