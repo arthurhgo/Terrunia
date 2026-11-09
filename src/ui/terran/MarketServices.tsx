@@ -1,3 +1,4 @@
+import { GearShopV0515 } from './GearShopV0515'
 import { useState } from 'react'
 import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
@@ -26,6 +27,7 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
   return <section className="terran-shop" aria-label="Comprar itens no Mercado">
     <h3><Backpack size={18} /> Mochila do vendedor · itens à venda</h3>
     <p className="terran-shop__wallet"><Coins size={16} /> {save.wallet.gold} Ouro</p>
+    {npcId === 'presence_neris' && <GearShopV0515 save={save} channel="PUBLIC_TERRAN" />}
     <div className="terran-shop__stock">
       {stock.map((offer) => {
         const { itemId, price } = offer
