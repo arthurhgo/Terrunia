@@ -7,7 +7,7 @@
 - Quatro salas existentes (`fungal_vestibule`, `fungal_spore_gallery`, `fungal_root_sanctum`, `fungal_core`).
 - Cada sala: três estágios com composições distintas de inimigos cadastrados; total de **12 estágios mais um confronto separado com o chefe**.
 - `dungeonRun` isola avanço, estágio, sala, drops resgatados, missão principal e `runId`. Nenhuma descoberta global antiga libera estágios; cada recompensa só pode ser resgatada no estágio ativo.
-- Ao sair voluntariamente, retornar a Terran ou ressuscitar, apenas o estado da tentativa é descartado. Novo ingresso sempre recomeça na primeira sala/primeiro estágio.
+- Ao sair voluntariamente, retornar a Terran ou ressuscitar, apenas o estado da tentativa é descartado. As salas exibidas são derivadas da tentativa atual, mesmo quando existem flags globais antigas de descoberta. Novo ingresso sempre recomeça na primeira sala/primeiro estágio.
 - Reload dentro da dungeon mantém tentativa, encontro, RNG, rolagens, cooldowns e HP/MP; o save schema 17 foi ampliado *aditivamente* com campos opcionais, sem migrar ou invalidar saves antigos.
 - A vitória da Sentinela conclui o nó da trilha Astravél apenas após a conclusão dos 12 estágios; visitar o interior não conclui a missão.
 
@@ -24,7 +24,7 @@
 
 - `skill_resonant_strike`: preserva MP 3, cooldown 2 e Fratura no alvo principal; adiciona 5% do dano final principal a cada outro inimigo elegível, com VFX de pulso e logs por alvo. A Fratura não é propagada.
 - `skill_basic_area_attack`: técnica básica sem custo de mana, com 60% do dano de ataque em cada inimigo elegível, calculado por alvo e com VFX próprio.
-- Poção Restauradora: consumível real, comprado na Casa de Daeryn; **não encerra a ação** do jogador. Recupera exatamente `ceil(maxHp × 0.10)` PV distribuídos nos próximos dois inícios de turno do jogador, sem exceder HP máximo. Cooldown dois turnos, sem empilhar; requer item real, 1 item consumido por uso. Tonico/Éter/Antídoto antigos continuam com regras anteriores.
+- Poção Restauradora: consumível real, disponível com Edran no Mercado de Terran (28 Ouro, BALANCE_DRAFT); **não encerra a ação** do jogador. Recupera exatamente `ceil(maxHp × 0.10)` PV distribuídos nos próximos dois inícios de turno do jogador, sem exceder HP máximo. Cooldown dois turnos, sem empilhar; requer item real, 1 item consumido por uso. Tonico/Éter/Antídoto antigos continuam com regras anteriores.
 - Ataque de arma com bônus cadastrado: soma rolagem de dado separado do atributo + bônus da arma. Números e faces registrados no motor, no log, no card e na apresentação de foco. Uma arma sem bônus mantém o cálculo original.
 
 ## Parâmetros de balanceamento — **não canônicos**
