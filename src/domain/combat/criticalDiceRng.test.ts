@@ -4,6 +4,7 @@ import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
 import { calculateRolledDamage, createBattle, seedFromBattleId, submitBattleCommand } from './engine'
 import { rollSeededCombatDie } from './rng'
+import { migrateAndValidateSave } from '../../persistence/saveSchema'
 import type { CombatDie } from './types'
 
 const dice: CombatDie[] = [4, 6, 8, 10, 12]
@@ -158,6 +159,32 @@ describe('v0.5.14.2 · dados justos e crítico global por face máxima', () => {
       }
       expect(sawCritical).toBe(true)
     }
+  })
+
+  it('saves mantêm a face, o crítico e a semente; saves antigos dispensam o novo campo', () => {
+    const save = makeSave()
+    const { battle, targetId } = makeTestBattle('encounter_fungorro_01', 'saved-critical')
+    battle.combatants.combatant_player.attackPower = 9
+    let critSeed = 1
+    while (rollSeededCombatDie(critSeed, 4).face !== 4) critSeed++
+    battle.rngSeed = critSeed
+    const result = submitBattleCommand(battle, { type: 'attack', targetId }, content)
+    if (!result.ok) throw Error(result.message)
+    save.battle = result.value
+    const latest = migrateAndValidateSave(structuredClone(save))
+    const hit = latest.battle?.log.find(entry => entry.roll?.actorId === 'combatant_player')
+    expect(hit?.roll?.face).toBe(4)
+    expect(hit?.roll?.critical).toBe(true)
+    expect(hit?.roll?.damageBreakdown?.critical).toBe(true)
+    expect(latest.battle?.rngSeed).toBe(result.value.rngSeed)
+    const old = structuredClone(save)
+    for (const entry of old.battle!.log) {
+      if (entry.roll) {
+        delete entry.roll.critical
+        if (entry.roll.damageBreakdown) delete entry.roll.damageBreakdown.critical
+      }
+    }
+    expect(migrateAndValidateSave(old).battle?.rngSeed).toBe(result.value.rngSeed)
   })
 
   it('rolagem máxima de iniciativa não cria crítico nem bônus indevido de dano', () => {
