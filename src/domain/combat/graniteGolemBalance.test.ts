@@ -114,4 +114,48 @@ describe('Golem de Granito v0.5.14.2 — duelo tático +10%', () => {
     expect(potionResult.value.consumedItemInstanceIds).toContain('potion-unit')
     expect(potionResult.value.round).toBe(1)
   })
+  it('é possível vencer usando poções, defesa e críticos em combate reproduzível', () => {
+    let tacticalVictory = false
+    const potion = content.items.consumable_fungal_healing_potion
+    for (let seed = 0; seed < 90 && !tacticalVictory; seed++) {
+      const battle = createBattle(fresh(), encounter, content,
+        'granite-gameplay-' + seed, { manualInitiative: true })
+      const rolled = submitBattleCommand(battle, { type: 'rollInitiative' }, content)
+      if (!rolled.ok) throw new Error(rolled.message)
+      let state = rolled.value
+      const golemId = getGolem(state).id
+      const inventory = Array.from({ length: 4 }, (_, index) => ({
+        instanceId: 'golem-potion-' + index, definitionId: potion.id, quantity: 1,
+        rarity: potion.rarity, locked: false, favorite: false, acquiredAt: '2026-11-09T18:00:00Z',
+      }))
+      let potions = 0
+      let defenses = 0
+      for (let turn = 0; turn < 32 && state.phase === 'AwaitingAction'; turn++) {
+        const player = state.combatants.combatant_player
+        if (player.hp <= player.maxHp - 3 && potions < inventory.length &&
+          !(player.potionCooldown ?? 0) && !(player.potionHealingTicks ?? 0)) {
+          const potionResult = submitBattleCommand(state,
+            { type: 'item', itemInstanceId: inventory[potions].instanceId, targetId: player.id },
+            content, inventory)
+          if (!potionResult.ok) throw new Error(potionResult.message)
+          state = potionResult.value
+          potions++
+        }
+        const lastStoneEvent = [...state.log].reverse().find(entry =>
+          entry.message.includes('O Golem ergue uma rocha') || entry.roll?.action === 'Arremesso de Granito')
+        const block = Boolean(lastStoneEvent?.message.includes('O Golem ergue uma rocha'))
+        if (block) defenses++
+        const action = block
+          ? { type: 'defend' as const }
+          : { type: 'attack' as const, targetId: golemId }
+        const outcome = submitBattleCommand(state, action, content)
+        if (!outcome.ok) throw new Error(outcome.message)
+        state = outcome.value
+      }
+      const critical = state.log.some(entry => entry.message.includes('ACERTO CRÍTICO!'))
+      tacticalVictory = state.phase === 'Victory' && potions > 0 && defenses > 0 && critical
+    }
+    expect(tacticalVictory).toBe(true)
+  })
+
 })
