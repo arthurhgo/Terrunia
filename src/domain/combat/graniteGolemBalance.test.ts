@@ -78,7 +78,7 @@ describe('Golem de Granito v0.5.14.2 — duelo tático +10%', () => {
     expect(guarded.value.log.some(e => e.message.includes('Arremesso de Granito'))).toBe(true)
   })
 
-  it('crítico tem dano real e só atua no combate do Golem', () => {
+  it('crítico do Golem também segue a face máxima do dado, sem chance separada', () => {
     let criticalFound = false
     for (let index = 0; index < 120; index++) {
       const { battle, golemId } = playerTurnBattle('granite-crit-' + index)
@@ -88,6 +88,8 @@ describe('Golem de Granito v0.5.14.2 — duelo tático +10%', () => {
       const hit = result.value.log.find(entry => entry.message.includes('ACERTO CRÍTICO!'))
       if (!hit) continue
       criticalFound = true
+      expect(hit.roll?.face).toBe(hit.roll?.sides)
+      expect(hit.roll?.critical).toBe(true)
       expect(hit.roll?.damageBreakdown?.finalDamage).toBeGreaterThan(1)
       expect(hit.message).toContain('causa ' + hit.roll?.damageBreakdown?.finalDamage + ' de dano')
       break

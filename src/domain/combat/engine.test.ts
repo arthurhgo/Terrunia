@@ -66,7 +66,11 @@ describe('máquina de estados de combate', () => {
     const result = submitBattleCommand(battle, { type: 'defend' }, content)
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(playerBefore - result.value.combatants.combatant_player.hp).toBe(1)
+    const enemyHit = result.value.log.find(entry =>
+      entry.tone === 'damage' && entry.roll?.actorId !== 'combatant_player')
+    expect(enemyHit?.roll?.damageBreakdown?.guardMitigation).toBe(2)
+    expect(playerBefore - result.value.combatants.combatant_player.hp)
+      .toBe(enemyHit?.roll?.damageBreakdown?.finalDamage)
   })
 
   it('suporta encontro com três inimigos e alvos independentes', () => {
