@@ -1128,7 +1128,7 @@ export const useGameStore = create<GameState>((set, get) => {
         }
         if (!next.world.completedEncounterIds.includes(battle.encounterId))
           next.world.completedEncounterIds.push(battle.encounterId)
-      } else if (!battle.waveIndex && !battle.portalHuntId) {
+      } else if (!battle.waveIndex && !battle.portalHuntId && !battle.clanBossQuestId) {
         const trail = getTrailByNodeId(content, battle.trailNodeId)
         if (!trail) return failAction('A trilha deste encontro não foi encontrada.')
         const trailResult = completeTrailNode(next, trail, battle.trailNodeId, acquiredAt)

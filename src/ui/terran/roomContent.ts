@@ -54,14 +54,14 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
     { id: 'daeryn_shop', name: 'Balcão de Sylwen', point: { x: 297, y: 194 }, behavior: 'services', description: 'Poções e suprimentos de campo da loja de Sylwen.' },
   ],
   location_terran_portal_plaza: [],
-  ...Object.fromEntries(Object.values(CLAN_CASTLE_DEFINITIONS).map(castle=>[castle.interiorId,[
+  ...(Object.fromEntries(Object.values(CLAN_CASTLE_DEFINITIONS).map(castle=>[castle.interiorId,[
     {id:castle.interiorId+'_banner',name:'Estandarte de '+castle.name,point:{x:114,y:140},
       behavior:'inspect' as const,description:'Identidade visual provisória do Clã.'},
     {id:castle.interiorId+'_council',name:'Salão do Conselho — futuro',point:{x:253,y:139},
       behavior:'inspect' as const,description:'NPCs, missões e serviços de Clã serão adicionados em versões futuras.'},
     {id:castle.interiorId+'_return',name:'Portal de Retorno ao Salão',point:{x:192,y:213},
       behavior:'portal' as const,description:'Retornar ao Salão dos Clãs em Terran.'},
-  ]])),
+  ]])) as Record<ClanCastleInteriorId, readonly RoomFurniture[]>),
   interior_terririan_home: [
     { id: 'home_memories', name: 'Mesa das Memórias', point: { x: 141, y: 191 }, behavior: 'inspect', description: 'Um lugar reservado a lembranças de suas viagens. O arquivo de memórias será ampliado futuramente.' },
     { id: 'home_bed', name: 'Cama da Base', point: { x: 249, y: 189 }, behavior: 'rest', description: 'Descanso para recuperar Vida e Mana fora de combate.' },
