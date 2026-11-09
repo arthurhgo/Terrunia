@@ -72,7 +72,7 @@ function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
   return (
     <div className="terran-drawer__section">
       <p>{location.description}</p>
-      {location.viewKind === 'workshop' && <p>O Mercado de Terran distribui os serviços entre os moradores: Valmira e Edran vendem itens; Feril paga Ouro; Lorian transforma drops em Essência; Lithwynn e Talia aplicam melhorias aos Vínculos. Aproxime-se e converse com cada NPC.</p>}
+      {location.viewKind === 'workshop' && <p>O Mercado de Terran distribui os serviços entre os moradores: Neris vende equipamentos; Valmira negocia componentes e Edran fornece suprimentos; Feril paga Ouro; Lorian transforma drops em Essência; Lithwynn e Talia aplicam melhorias aos Vínculos. Aproxime-se e converse com cada NPC.</p>}
       {location.viewKind === 'clanHall' && <ClanHallPanel save={save} />}
       {location.viewKind === 'daeryn' && <DaerynServices save={save} />}
       {location.viewKind === 'vorren' && <VorrenBestiary save={save} />}
