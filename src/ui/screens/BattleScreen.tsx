@@ -17,6 +17,9 @@ import { BattleEquipmentHud } from '../battle/BattleEquipmentHud'
 import { BattleDicePlatform, type BattleDiceEvent } from '../battle/BattleDicePlatform'
 import { DraggableBattleDie } from '../battle/DraggableBattleDie'
 import { BattleTimeline } from '../battle/BattleTimeline'
+import { SkillCard } from '../battle/SkillCard'
+import { SkillTooltip } from '../battle/SkillTooltip'
+import { previewCombatSkill } from '../../domain/combat/skillPreview'
 import { BATTLE_PRESENTATION } from '../battle/presentationTiming'
 import { groupBattleLoot } from '../../domain/inventory/battleLoot'
 import './battlePixel.css'
@@ -24,6 +27,7 @@ import './battleRemake.css'
 import './battleTimeline.css'
 import './battleCinematic.css'
 import './gameplayV057.css'
+import './battleV0513.css'
 
 type Menu = 'skills' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
@@ -75,6 +79,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const [diceAwaitingClick, setDiceAwaitingClick] = useState(false)
   const [initiativeReady, setInitiativeReady] = useState(false)
   const [hoveredEnemyId, setHoveredEnemyId] = useState<string | null>(null)
+  const [hoveredSkillId, setHoveredSkillId] = useState<string | null>(null)
+  const [pinnedSkillId, setPinnedSkillId] = useState<string | null>(null)
   const [strikeFx, setStrikeFx] = useState<{ actorId: string; targetId: string; style: 'arcane' | 'projectile' | 'slash' } | null>(null)
   const pendingRollsRef = useRef<{ rolls: BattleDiceEvent[]; cursor: number; commit: () => void } | null>(null)
   const previewTimer = useRef<number | null>(null)
@@ -112,6 +118,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     setStrikeFx(null)
     announcedRound.current = null
     setHoveredEnemyId(null)
+    setHoveredSkillId(null)
+    setPinnedSkillId(null)
     pendingRollsRef.current = null
     if (previewTimer.current !== null) window.clearTimeout(previewTimer.current)
     previewTimer.current = null
@@ -228,6 +236,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const encounter = content.encounters[battle.encounterId]
   const battleTitle = `${encounter?.locationLabel ?? 'ASTRAVÉL'}: ${encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}`
   const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((skill) => Boolean(skill))
+  const inspectedSkill = skills.find((skill) => skill.id === (pinnedSkillId ?? hoveredSkillId))
   const consumables = save.inventory.filter((instance) => {
     const definition = content.items[instance.definitionId]
     return definition?.category === 'consumable' && definition.combatEffects.length > 0 && !definition.combatKind
@@ -386,6 +395,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     if (!requireClick) playVisualRoll(rolls[0])
   }
   const openMenu = (next: Menu) => {
+    setHoveredSkillId(null)
+    setPinnedSkillId(null)
     setConfirmDefense(false)
     setMenu(menu === next ? null : next)
   }
@@ -549,14 +560,18 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               <div className="pixel-battle__skill-grid">
               {skills.filter((skill) => menu === 'magic' ? isMagicSkill(skill.id) : !isMagicSkill(skill.id)).map((skill) => {
                 const remaining = player.skillCooldowns?.[skill.id] ?? 0
-                return <button key={skill.id} className="pixel-battle__skill" type="button"
-                  disabled={!isPlayerTurn || remaining > 0 || player.mp < skill.mpCost || (skill.target === 'enemy' && !target.alive)}
-                  title={remaining > 0 ? `${skill.name}: recarga ${remaining}` : `${skill.name}: ${skill.mpCost} MP`}
-                  aria-label={`Usar ${skill.name}`}
-                  onClick={() => send({ type: 'skill', skillId: skill.id, targetId: skill.target === 'self' ? player.id : target.id })}>
-                  {isMagicSkill(skill.id) ? <Sparkles size={22} /> : <Swords size={22} />}
-                  <span>{skill.name}</span><small>{remaining > 0 ? `${remaining}T` : `${skill.mpCost} MP`}</small>
-                </button>
+                const skillTarget = skill.target === 'self' ? player : target
+                const preview = previewCombatSkill(player, skillTarget, skill, content)
+                const unavailable = !isPlayerTurn ? 'Aguarde seu turno'
+                  : remaining > 0 ? `Recarga: ${remaining} turno(s)`
+                    : player.mp < skill.mpCost ? 'Mana insuficiente'
+                      : skill.target === 'enemy' && !target.alive ? 'Alvo indisponível' : null
+                return <SkillCard key={skill.id} skill={skill} preview={preview} remaining={remaining}
+                  unavailable={unavailable}
+                  onInspect={() => { setPinnedSkillId(null); setHoveredSkillId(skill.id) }}
+                  onLeave={() => setHoveredSkillId(null)}
+                  onPin={() => setPinnedSkillId(skill.id)}
+                  onUse={() => { if (!unavailable) send({ type: 'skill', skillId: skill.id, targetId: skillTarget.id }) }} />
               })}
               </div>
             </>}
@@ -604,6 +619,17 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         <p className="pixel-battle__hint"><Crosshair size={14} /> {battle.phase === 'Victory' ? 'Recolha tudo de uma vez e continue.' : battle.phase === 'Defeat' ? 'A expedição foi interrompida.' : 'Selecione um inimigo e escolha sua ação.'}</p>
       </section>
     </div>
+    {(menu === 'skills' || menu === 'magic') && inspectedSkill && <SkillTooltip skill={inspectedSkill}
+      preview={previewCombatSkill(player, inspectedSkill.target === 'self' ? player : target, inspectedSkill, content)}
+      remaining={player.skillCooldowns?.[inspectedSkill.id] ?? 0}
+      unavailable={!isPlayerTurn ? 'Aguarde seu turno' :
+        (player.skillCooldowns?.[inspectedSkill.id] ?? 0) > 0 ? 'Habilidade em recarga' :
+          player.mp < inspectedSkill.mpCost ? 'Mana insuficiente' :
+            inspectedSkill.target === 'enemy' && !target.alive ? 'Alvo indisponível' : null}
+      onClose={() => { setPinnedSkillId(null); setHoveredSkillId(null) }}
+      onUse={() => { const skillTargetId = inspectedSkill.target === 'self' ? player.id : target.id
+        setPinnedSkillId(null); setHoveredSkillId(null)
+        send({ type: 'skill', skillId: inspectedSkill.id, targetId: skillTargetId }) }} />}
   </section>
 
   return unified ? scene : <GameShell fluid immersive>{scene}</GameShell>

@@ -1,0 +1,40 @@
+/* Terrúnia v0.5.13 — presentation-only refinements. */
+.pixel-battle__header .pixel-battle__encounter-label {min-width:0;width:100%;display:flex;justify-content:center;align-items:center;}
+.pixel-battle__header .pixel-battle__encounter-label h1 {display:block;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(11px,1.15vw,21px);letter-spacing:0;line-height:1.2;}
+.pixel-battle__header {grid-template-columns:minmax(90px,.65fr) minmax(0,3.4fr) minmax(0,.35fr);min-height:46px;}
+.pixel-battle__header > small{display:none;}
+.combat-timeline--portraits .combat-timeline__initiative.is-revealed {animation:combat-init-reveal .36s steps(5,end) both;}
+@keyframes combat-init-reveal {0%{transform:scale(.5);opacity:0;filter:brightness(2);}65%{transform:scale(1.2);filter:brightness(1.8);}100%{transform:scale(1);opacity:1;filter:none;}}
+.pixel-battle__submenu .pixel-battle__skill-grid {grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;align-self:start;align-content:start;max-width:100%;padding:2px;}
+.pixel-battle__submenu .pixel-battle__skill-card {box-sizing:border-box;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;aspect-ratio:1/1;height:auto;min-height:0;padding:8px 5px 5px;overflow:hidden;background:linear-gradient(160deg,#152a42,#061423);border:2px solid #bd944d;box-shadow:inset 0 0 0 1px #745626;color:#f5dfb6;font:700 10px/1.13 var(--display);cursor:pointer;isolation:isolate;}
+.pixel-battle__submenu .pixel-battle__skill-card:hover,.pixel-battle__submenu .pixel-battle__skill-card:focus-visible {border-color:#ffe2a1;box-shadow:0 0 13px #e9bb67ad,inset 0 0 0 1px #e7bd7d;outline:1px solid #f7c66c;outline-offset:1px;}
+.pixel-battle__submenu .pixel-battle__skill-card.is-unavailable {border-color:#687280;background:linear-gradient(#1a2838,#0a1321);color:#b2b9bd;cursor:help;}
+.pixel-battle__skill-icon {width:42px;height:42px;max-width:44%;position:relative;display:grid;place-items:center;flex:none;}
+.pixel-battle__skill-icon img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;}
+.pixel-battle__skill-name {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;max-width:100%;line-height:1.13;min-height:22px;overflow-wrap:anywhere;}
+.pixel-battle__skill-cost{font-size:10px;color:#8ee3ee;}
+.pixel-battle__skill-stats{display:flex;justify-content:space-between;width:100%;gap:3px;font-size:9px;color:#ead5a4;white-space:nowrap;}
+.pixel-battle__skill-reason{font-size:8px;color:#f3bb9c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+@property --cooldown-angle {syntax:'<angle>';inherits:false;initial-value:0deg;}
+.pixel-battle__cooldown-mask{position:absolute;inset:0;z-index:2;--cooldown-angle:360deg;background:conic-gradient(from 0deg,rgba(6,10,28,.85) 0deg var(--cooldown-angle),transparent var(--cooldown-angle) 360deg);border:1px solid #b5a3c2;transition:--cooldown-angle .36s steps(12,end);pointer-events:none;}
+.pixel-battle__cooldown-clock{position:absolute;inset:auto 0 0;z-index:3;display:flex;align-items:center;justify-content:center;gap:2px;background:#060c1dba;color:#ffe3a1;font:700 10px var(--display);pointer-events:none;}
+.pixel-battle__skill-card.is-ready .pixel-battle__skill-icon {filter:drop-shadow(0 0 3px #f9bd6180);}
+.pixel-battle__skill-tooltip{position:fixed;z-index:1000;right:clamp(8px,3vw,45px);bottom:clamp(10px,4vh,36px);box-sizing:border-box;width:min(350px,calc(100vw - 16px));max-height:80dvh;overflow-y:auto;padding:14px 15px 12px;border:2px solid #d0a457;background:linear-gradient(145deg,#10283bfa,#040d1bfc);box-shadow:0 0 0 2px #352a23,0 13px 40px #000d;color:#f6dfb5;font:13px/1.4 Georgia,serif;}
+.pixel-battle__skill-tooltip header{display:flex;gap:10px;align-items:center;padding-right:19px;}
+.pixel-battle__skill-tooltip header img{width:52px;height:52px;object-fit:contain;image-rendering:pixelated;flex:none;}
+.pixel-battle__skill-tooltip header strong{display:block;font:700 16px/1.2 var(--display);color:#ffdf9d;}
+.pixel-battle__skill-tooltip header small{display:block;color:#94c8db;margin-top:3px;}
+.pixel-battle__skill-tooltip p{margin:10px 0;padding-bottom:8px;border-bottom:1px solid #7b6445;}
+.pixel-battle__skill-tooltip dl{margin:0;display:grid;gap:4px;}
+.pixel-battle__skill-tooltip dl div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #244154;padding:3px 0;}
+.pixel-battle__skill-tooltip dt{display:flex;align-items:center;gap:3px;color:#a8bfc8;}
+.pixel-battle__skill-tooltip dd{margin:0;text-align:right;color:#ffe5ae;}
+.pixel-battle__skill-extra{display:grid;gap:3px;margin:10px 0;font-size:12px;}
+.pixel-battle__skill-extra strong{color:#f9d995;}
+.pixel-battle__skill-warning{display:block;color:#ffb39d;padding:4px 0;}
+.pixel-battle__skill-tooltip-close{position:absolute;right:5px;top:5px;background:transparent;color:#fce4b3;border:1px solid #916e43;width:25px;height:25px;display:grid;place-items:center;cursor:pointer;}
+.pixel-battle__skill-tooltip-use{width:100%;margin-top:10px;padding:9px;border:1px solid #d8a95d;background:#1e3542;color:#ffdc95;font:700 11px var(--display);cursor:pointer;}
+.pixel-battle__skill-tooltip-use:disabled{opacity:.55;cursor:not-allowed;}
+@media(max-width:850px){.pixel-battle__header{grid-template-columns:1fr minmax(0,4fr);gap:3px;}.pixel-battle__header h1{grid-column:auto!important;grid-row:auto!important;}.pixel-battle__submenu .pixel-battle__skill-grid{grid-template-columns:repeat(auto-fill,minmax(102px,1fr));}}
+@media(max-width:560px){.pixel-battle__header strong{font-size:12px;}.pixel-battle__header .pixel-battle__encounter-label h1{font-size:clamp(10px,3vw,14px);}.pixel-battle__submenu .pixel-battle__skill-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.pixel-battle__skill-tooltip{right:8px;bottom:8px;width:calc(100vw - 16px);max-height:64dvh;}}
+@media(prefers-reduced-motion:reduce){.pixel-battle__cooldown-mask{transition:none;}.combat-timeline--portraits .combat-timeline__initiative.is-revealed{animation:none;}}
