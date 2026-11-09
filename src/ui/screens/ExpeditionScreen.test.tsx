@@ -100,6 +100,7 @@ describe('expedição pixelada de Astravél', () => {
     const save = useGameStore.getState().save!
     save.world.trailNodeStates.astravel_fungorro_01 = 'completed'
     save.character.clan.clanId = 'dunavar'
+    save.eventLog.push('CutsceneViewed:clan_oath')
     save.world.trailNodeStates.astravel_ruin_threshold_05 = 'completed'
     save.world.trailNodeStates.astravel_boss_preview = 'bossCurrent'
     render(<MemoryRouter initialEntries={['/expedition']}><Routes>
@@ -117,6 +118,7 @@ describe('expedição pixelada de Astravél', () => {
     const save = useGameStore.getState().save!
     save.world.trailNodeStates.astravel_fungorro_01 = 'completed'
     save.character.clan.clanId = 'dunavar'
+    save.eventLog.push('CutsceneViewed:clan_oath')
     save.world.trailNodeStates.astravel_ruin_threshold_05 = 'completed'
     save.world.trailNodeStates.astravel_boss_preview = 'bossCurrent'
     render(<MemoryRouter initialEntries={['/expedition']}><Routes>
