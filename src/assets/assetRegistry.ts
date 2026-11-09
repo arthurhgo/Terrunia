@@ -31,7 +31,7 @@ const FALLBACK = '/assets/placeholders/generic.svg'
 const entries: AssetEntry[] = [
   ...(combatSkillDefinitions as CombatSkillDefinition[]).map((skill) => ({
     id: skill.iconAssetId ?? `skill.${skill.id}`,
-    path: `/assets/skills/${skill.id}.svg`,
+    path: `/assets/skills/${skill.id}.png`,
     fallback: '/assets/placeholders/skill.svg',
     alt: skill.name, pixelArt: true,
   })),

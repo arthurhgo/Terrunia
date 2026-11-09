@@ -8,7 +8,7 @@
 - Cards de habilidades e magias em proporção 1:1 com ícones cadastrados, custo MP, dado real e dano estimado para o alvo atual.
 - Tooltip acessível com descrição do catálogo, dado, dano, cura/status, cooldown total/restante e ação contextual.
 - Cooldown visual por setores radiais com relógio e turnos restantes, sem timers de gameplay: apenas o motor modifica `skillCooldowns`.
-- 28 ícones SVG em pixel-grid 32×32 (export 64×64), individuais e substituíveis; nenhum nome embutido nas imagens, sem alteração de balanceamento.
+- 28 ícones PNG RGBA nativos 16×16 (fontes SVG editáveis em pixel-grid 32×32), individuais e substituíveis; nenhum nome embutido nas imagens, sem alteração de balanceamento.
 
 ## Regras preservadas
 - V0.5.12: dano, animação e HP somente quando o dado sai do foco.
@@ -17,8 +17,8 @@
 - Save schema inalterado. Ícones são apresentação por `assetRegistry`, não objetos de inventário.
 
 ## Assets
-Caminhos: `public/assets/skills/skill_*.svg`, IDs `skill.skill_*`.
-Substituição de arte: atualizar `path` no `assetRegistry` para PNG 64×64 transparente (ou SVG) e manter ID.
+Caminhos: `public/assets/skills/skill_*.png` com fontes SVG homônimas, IDs `skill.skill_*`.
+Substituição de arte: atualizar `path` no `assetRegistry` para PNG transparente na grade nativa de 16×16 e manter ID.
 Fallback: `public/assets/placeholders/skill.svg`.
 
 ## Verificações

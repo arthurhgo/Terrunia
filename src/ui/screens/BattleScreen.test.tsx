@@ -247,7 +247,8 @@ describe('combate visual v0.17', () => {
   it('mostra título unificado e cards quadrados com dado, dano e tooltip de habilidade', () => {
     vi.useFakeTimers()
     const save = createBattleSave()
-    const chosen = save.battle!.combatants.combatant_player.skillIds[0]
+    const chosen = 'skill_axe_sunder'
+    save.battle!.combatants.combatant_player.skillIds = [chosen]
     const ability = content.combatSkills[chosen]
     expect(ability).toBeDefined()
     const { container } = render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
