@@ -34,6 +34,20 @@
 
 Os interiores têm silhueta de castelo com muralhas, torres, salão e pontos de interação de referência. NPCs, missões exclusivas, comércio, treinamento e serviços **não são implementados nesta versão**. Todos os interiores ficam fora do catálogo de ruas de Terran e usam o mesmo personagem/estado de save; sprites e parâmetros visuais continuam substituíveis.
 
+
+## Golem de Korduun — identidade visual e combate tático
+
+**+10% aprovado para este encontro:** na criação da luta, o motor calcula `HP máximo do Golem = ceil(1.1 × HP máximo do jogador)` e `Ataque do Golem = ceil(1.1 × Ataque do jogador)`. A Defesa do Golem permanece igual à Defesa do jogador, evitando aumentos desproporcionais provocados por arredondamento em valores baixos. O cálculo é um snapshot de entrada da instância; não se ajusta após danos, cura, poções ou efeitos para impedir exploits. Não afeta outros monstros.
+
+**Counterplay obrigatoriamente real:**
+- **Poção Restauradora:** ação gratuita já existente, recupera 10% de Vida ao longo de dois turnos e respeita cooldown/inventário, sem alterar a regra geral.
+- **Defender:** o Golem passa a **preparar a rocha na segunda rodada** de cada ciclo de três, sem causar dano naquele turno. O jogador tem uma oportunidade de defender antes do arremesso na terceira rodada, independentemente da iniciativa. A defesa adiciona mais 2 de mitigação, além dos 2 normais, apenas contra a pedra, e bloqueia `Abalado pelo Granito`.
+- **Crítico real:** ao atacar o Golem, o jogador tem uma rolagem determinística de chance de crítico (20%, `BALANCE_DRAFT`) com dano final ×1,5 arredondado para cima (`BALANCE_DRAFT`). O dano efetivo e a mensagem **ACERTO CRÍTICO** vêm da máquina de estados, não do componente React. O dano crítico não se aplica a combates comuns.
+
+**Visual:** sprite provisório em `public/assets/enemies/bosses/enemy_granite_golem_idle.svg`, registrado por `enemy.granite-golem`; silhueta grande de pedra rachada, musgo, sigilos e olhos azul-cintilante. O lançamento de rocha recebe animação CSS `terrunia-granite-rock-flight` e VFX de projétil atrelados ao evento de ataque. Mantém `prefers-reduced-motion` e permite substituir o sprite sem alterar gameplay. Uma animação referencial em 8 quadros foi gerada separadamente e poderá originar um atlas definitivo 4×4; a prévia GIF ainda não é asset nativo do repositório.
+
+**OWNER_DECISION / BALANCE_DRAFT:** chance e multiplicador do crítico, número de poções previsto para cada build, defesa adicional e duração/telegraph precisam de playtest real do duelo com builds variadas, sem alterar o compromisso de HP/ATQ +10%.
+
 ## OWNER_DECISION / a validar
 
 - Paleta oficial e arquitetura final de cada castelo: cores e estruturas acima são placeholders visuais, não cânone definitivo.
