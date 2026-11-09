@@ -2,7 +2,8 @@ import { resolveAsset } from '../../assets/assetRegistry'
 import type { ActorFacing } from '../terran/pixelActorArt'
 import { drawActorImage } from '../terran/worldSprites'
 import { getEquipmentAnchor, type VisualItem } from './equipmentVisuals'
-import { armorPalette, armorPixels } from './armorSilhouette'
+import { equipmentPixels } from './equipmentPixelShapes'
+import { armorPalette } from './armorSilhouette'
 
 const cache = new Map<string, HTMLImageElement>()
 const getEquipmentImage = (assetId: string): HTMLImageElement | null => {
@@ -22,10 +23,10 @@ export function drawEquipmentLayer(ctx: CanvasRenderingContext2D, visuals: reado
   for (const item of visuals) {
     const anchor = getEquipmentAnchor(item, facing)
     if (anchor.layer !== layer) continue
-    if (item.slot === 'armor') {
+    if (item.slot === 'armor' || item.palette) {
       const scale = size / 32
       const palette = armorPalette(item)
-      const pixels = armorPixels(facing)
+      const pixels = equipmentPixels(item, facing)
       ctx.save()
       ctx.imageSmoothingEnabled = false
       for (const rect of pixels) {
