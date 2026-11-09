@@ -1,8 +1,9 @@
-import { Award, BookOpenCheck, CheckCircle2, Sparkles, UsersRound } from 'lucide-react'
+import { Award, CheckCircle2, Sparkles, UsersRound } from 'lucide-react'
 import { useState } from 'react'
 import { content } from '../../content/catalog'
 import { CLAN_SPELL_OPTIONS } from '../../content/clanSpells'
 import { ROSETTA_CLAN_QUEST, getClanRecommendations } from '../../domain/progression/clanOrientation'
+import { clanTableQuestId, clanGolemQuestId } from '../../content/clanProgressionV05142'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
@@ -15,7 +16,6 @@ const nextQuestFor=(questIds:readonly string[],save:GameSave)=>questIds.map(id=>
   .find(progress=>progress&&progress.status!=='completed')
 
 export function ClanHallPanel({save}:{save:GameSave}){
-  const chooseCandidate=useGameStore(s=>s.chooseClanCandidate)
   const chooseSpell=useGameStore(s=>s.chooseInitialClanSpell)
   const joinClan=useGameStore(s=>s.joinClan)
   const unlockClass=useGameStore(s=>s.unlockClass)
@@ -38,28 +38,41 @@ export function ClanHallPanel({save}:{save:GameSave}){
         <small>Classe: {save.character.classProgression.classId?content.classes[save.character.classProgression.classId]?.name:'ainda não desenvolvida'}</small>
       </span></div>
       {!joinedClan&&<p>{!oriented
-        ? `Rosetta oferece Os Quatro Caminhos no nível 4. Nível atual: ${save.character.level}. Converse com ela na Praça do Portal, aceite a missão e retorne aqui.`
-        : candidate?`Candidatura escolhida: ${content.clans[candidate]?.name}. Conclua as três provas em ondas com seu representante.`
-          :'Agora escolha uma candidatura. Rosetta recomenda caminhos conforme sua arma, mas todas as opções são válidas.'}</p>}
+        ? `Rosetta oferece Os Quatro Caminhos no nível 4. Nível atual: ${save.character.level}. A orientação termina ao entrar neste Salão.`
+        : candidate?`Candidatura: ${content.clans[candidate]?.name}. Entregue a missão da mesa e vença as três provas de três ondas com seu líder.`
+          :'Fale com um líder e aceite a missão da Mesa de Iniciação. Esse aceite registra sua candidatura exclusiva.'}</p>}
       {!joinedClan&&<div className="clan-path-grid">{Object.values(content.clans).map(clan=>{
         const eligible=save.character.clan.eligibleClanIds.includes(clan.id)
-        const nextQuest=nextQuestFor(clan.recruitmentQuestIds,save)
+        const tableQuest=save.quests[clanTableQuestId(clan.id)]
+         const nextQuest=tableQuest?.status!=='completed'?tableQuest:nextQuestFor(clan.recruitmentQuestIds,save)
         const complete=clan.recruitmentQuestIds.filter(id=>save.quests[id]?.status==='completed').length
         const current=candidate===clan.id
+         const leader=content.npcs[clan.recruiterNpcId]
         const advice=suggestions.find(c=>c.clanId===clan.id)
         return <article key={clan.id} className={eligible?'eligible':''}><Sparkles size={22}/>
           <h3>{clan.name}</h3><p>{clan.philosophy}</p>
           <small>{advice?.explanation}</small>
           <span className="clan-trial-progress">PROVAS <strong>{complete}/3</strong></span>
-          {!oriented?<small>🔒 Primeiro conclua a missão de Rosetta no nível 4.</small>
-            : !candidate?<GameButton variant="primary" onClick={()=>chooseCandidate(clan.id)}>Escolher candidatura</GameButton>
-            : !current?<small>Outro caminho já escolhido. Seu juramento será único.</small>
-            : eligible?<GameButton variant="primary" onClick={()=>setConfirmClanId(clan.id)}><Award size={16}/> Confirmar rito único</GameButton>
-            : nextQuest?<GameButton variant="primary" onClick={()=>setSelectedQuestId(nextQuest.questId)}><BookOpenCheck size={16}/> {nextQuest.status==='available'?'Conversar com recrutador':nextQuest.status==='offered'?'Ler oferta':nextQuest.status==='active'?'Prosseguir nas ondas':'Entregar prova'}</GameButton>:null}
+          {!oriented?<small>🔒 Primeiro visite o Salão após aceitar Os Quatro Caminhos.</small>
+             : candidate && !current?<small>Outro caminho já escolhido. O juramento é exclusivo.</small>
+             : eligible?<GameButton variant="primary" onClick={()=>setConfirmClanId(clan.id)}><Award size={16}/> Confirmar rito único</GameButton>
+             : <small>{nextQuest?.status === 'active' && tableQuest?.status !== 'completed'
+                 ? 'Interaja com a Mesa de Iniciação e retorne ao líder.'
+                 : `Fale com ${leader?.name ?? 'o líder do Clã'} para ${!candidate ? 'aceitar a candidatura' : 'receber ou entregar a prova'}.`}</small>}
         </article>
       })}</div>}
       {joinedClan&&<section className="clan-joined-path">
         <strong>Clã atual: {joinedClan.name} — filiação única</strong>
+         <article className="main-lore-unlock">
+           <Award size={24}/><span><small>DESAFIO DE NÍVEL 7</small>
+           <strong>O Coração de Granito</strong>
+           <p>{save.character.level<7
+             ? `Disponível a partir do nível 7 (atual: ${save.character.level}).`
+             : save.quests[clanGolemQuestId(joinedClan.id)]?.status==='completed'
+               ? 'Golem derrotado e missão entregue.'
+               : `Fale com ${content.npcs[joinedClan.recruiterNpcId]?.name} para aceitar a prova do Golem e retornar após a vitória.`}</p>
+           </span>
+         </article>
         {pendingSkill?<div className="clan-skill-choices" aria-label="Escolha sua primeira magia de Clã">
           <h3>Escolha uma magia inicial (1 de 3)</h3>
           <p>As outras duas ficam reservadas à progressão futura. Confirme sua escolha.</p>
