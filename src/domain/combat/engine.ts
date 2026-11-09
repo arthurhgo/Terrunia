@@ -2,6 +2,7 @@ import type { ContentCatalog } from '../../content/catalog'
 import { BALANCE } from '../../content/balance'
 import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/fungalChambers'
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
+import { nextCombatRandomSeed, rollSeededCombatDie } from './rng'
 import type {
   CombatEffectDefinition,
   CombatSkillDefinition,
@@ -54,14 +55,15 @@ export const seedFromBattleId = (id: string): number => {
   return (hash >>> 0) % 2147483646 + 1
 }
 
-const rollCombatDie = (state: BattleState, sides: 4 | 6 | 8 | 10 | 12) => {
-  state.rngSeed = (state.rngSeed * 48271) % 2147483647
-  return 1 + Math.floor(state.rngSeed / 2147483647 * sides)
+const rollCombatDie = (state: BattleState, sides: CombatDie) => {
+  const { face, nextSeed } = rollSeededCombatDie(state.rngSeed, sides)
+  state.rngSeed = nextSeed
+  return face
 }
 
 const rollChance = (state: BattleState, chance: number) => {
-  state.rngSeed = (state.rngSeed * 48271) % 2147483647
-  return state.rngSeed / 2147483647 <= chance
+  state.rngSeed = nextCombatRandomSeed(state.rngSeed)
+  return (state.rngSeed - 1) / 2147483646 < chance
 }
 
 const getStatusModifier = (
@@ -83,8 +85,9 @@ export const getEffectiveMitigation = (combatant: Combatant, catalog: ContentCat
 export const calculateDamage = (attackPower: number, mitigation: number) =>
   Math.max(1, Math.floor(attackPower) - Math.max(0, Math.floor(mitigation)))
 
-/** BALANCE_DRAFT v0.5.7: one deterministic roll drives BOTH damage and its visual presentation.
- * The midpoint offset retains the existing baseline on average; no unapproved crit mechanic.
+/** One persisted seeded roll drives BOTH real damage and its visual presentation.
+ * A natural maximum on the primary damage die is a critical hit in ALL encounters.
+ * The weapon's additional die modifies damage but never rolls a separate critical.
  */
 export const calculateRolledDamage = (
   baseAttack: number,
@@ -96,10 +99,12 @@ export const calculateRolledDamage = (
 ) => {
   const dieAdjustment = BALANCE.combatDieCentered ? face - Math.floor((sides + 1) / 2) : face
   const rawPower = baseAttack + skillBonus + dieAdjustment
-  const withoutGuard = calculateDamage(rawPower, mitigation)
-  const finalDamage = calculateDamage(rawPower, mitigation + guardMitigation)
+  const critical = face === sides
+  const amplify = (damage: number) => critical ? Math.ceil(damage * BALANCE.combatCriticalMultiplier) : damage
+  const withoutGuard = amplify(calculateDamage(rawPower, mitigation))
+  const finalDamage = amplify(calculateDamage(rawPower, mitigation + guardMitigation))
   return { baseAttack, skillBonus, dieAdjustment, mitigation, guardMitigation,
-    guardPrevented: Math.max(0, withoutGuard - finalDamage), finalDamage }
+    guardPrevented: Math.max(0, withoutGuard - finalDamage), finalDamage, critical }
 }
 
 export const selectDamageDie = (actor: Combatant, skill?: CombatSkillDefinition): CombatDie => {
@@ -230,12 +235,13 @@ const applyCombatEffects = (
   skill?: CombatSkillDefinition,
 ) => {
   // A protected construct is immune to every offensive effect, including AoE and splash.
-  if (actor.side !== target.side && isProtectedBoss(state, target)) return { damage: 0, face: 1, sides: selectDamageDie(actor, skill) }
+  if (actor.side !== target.side && isProtectedBoss(state, target)) return { damage: 0, face: 1, sides: selectDamageDie(actor, skill), critical: false }
   // Defending against the telegraphed boulder also prevents its Stagger debuff.
   const guardedBoulder = Boolean(target.defending && skill?.id === 'skill_granite_slam')
   let dealt = 0
   let usedFace = 1
   let usedSides = selectDamageDie(actor, skill)
+  let usedCritical = false
   for (const effect of effects) {
     if (effect.type === 'damage') {
       const guardMitigation = target.defending
@@ -251,24 +257,19 @@ const applyCombatEffects = (
         getEffectiveMitigation(target, catalog),
         face, sides, effect.powerBonus, guardMitigation,
       )
-      // Encounter-scoped critical roll: seeded and replay-safe, never a fake visual crit.
-      const critical = state.encounterId === GRANITE_GOLEM_ENCOUNTER_ID &&
-        actor.side === 'player' && target.definitionId === GRANITE_GOLEM_ENEMY_ID &&
-        rollChance(state, GRANITE_GOLEM_BALANCE.criticalChance)
-      const damage = critical
-        ? Math.ceil(breakdown.finalDamage * GRANITE_GOLEM_BALANCE.criticalDamageMultiplier)
-        : breakdown.finalDamage
-      if (critical) breakdown.finalDamage = damage
+      // No second critical roll: face === sides is the ONLY critical trigger.
+      const damage = breakdown.finalDamage
+      usedCritical = breakdown.critical
       dealt += damage
       target.hp = Math.max(0, target.hp - damage)
       target.alive = target.hp > 0
       target.defending = false
       const guardNote = guardMitigation
         ? ` · Guarda evitou ${breakdown.guardPrevented} de dano.` : ''
-      const critNote = critical ? ' ACERTO CRÍTICO!' : ''
+      const critNote = breakdown.critical ? ' ACERTO CRÍTICO!' : ''
       addLog(state,
         `${actor.name} causa ${damage} de dano em ${target.name}.${critNote} d${sides}=${face}${actor.weaponBonusDie ? ` + d${actor.weaponBonusDie} da arma=${bonusFace}` : ''}, ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${guardMitigation}.${guardNote}`,
-        'damage', { actorId: actor.id, targetId: target.id, sides, face, action, damageBreakdown: breakdown,
+        'damage', { actorId: actor.id, targetId: target.id, sides, face, action, critical: breakdown.critical, damageBreakdown: breakdown,
           ...(actor.weaponBonusDie ? { weaponBonusRoll: { sides: actor.weaponBonusDie, face: bonusFace } } : {}) },
       )
     }
@@ -293,7 +294,7 @@ const applyCombatEffects = (
       } else applyStatus(state, actor, target, effect, catalog)
     }
   }
-  return { damage: dealt, face: usedFace, sides: usedSides }
+  return { damage: dealt, face: usedFace, sides: usedSides, critical: usedCritical }
 }
 
 const resolveAttack = (
@@ -334,7 +335,7 @@ const resolveSkill = (
     ? state.bossMechanics.bossId : undefined
   const primary = applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name, skill)
   for(const effect of skill.effects) if(effect.type==='adjacentSplash'&&primary.damage>0)
-    applySplash(state,actor,target,Math.floor(primary.damage*effect.fraction),skill.name,primary.sides,primary.face,effect.maxTargets,protectedBossId)
+    applySplash(state,actor,target,Math.floor(primary.damage*effect.fraction),skill.name,primary.sides,primary.face,effect.maxTargets,protectedBossId,primary.critical)
   if (skill.id === 'skill_resonant_strike' && primary.damage > 0) {
     // BALANCE_DRAFT OD-06: 5% final primary damage to each other unprotected enemy.
     // Snapshot the shield from action start; AoE never hits the boss accidentally.
@@ -350,7 +351,7 @@ const resolveSkill = (
       other.hp = Math.max(0, other.hp - damage)
       other.alive = other.hp > 0
       addLog(state, `${actor.name} causa ${damage} de dano em ${other.name} por Pulso Ressonante.`, 'damage',
-        { actorId: actor.id, targetId: other.id, sides: primary.sides, face: primary.face, action: 'Pulso Ressonante' })
+        { actorId: actor.id, targetId: other.id, sides: primary.sides, face: primary.face, action: 'Pulso Ressonante', critical: primary.critical })
     }
   }
   addPhase(state, 'ResolvingReactions')
@@ -366,13 +367,13 @@ const adjacentEnemies = (state:BattleState,target:Combatant):Combatant[] => {
     (other):other is Combatant=>Boolean(other?.alive))
 }
 const applySplash=(state:BattleState,actor:Combatant,target:Combatant,damage:number,
-  action:string,sides:CombatDie,face:number,maxTargets:number,protectedBossId?:string) => {
+  action:string,sides:CombatDie,face:number,maxTargets:number,protectedBossId?:string,critical=false) => {
   for(const other of adjacentEnemies(state,target).filter(c=>c.id!==protectedBossId && validTarget(actor,c,'enemy',state)).slice(0,maxTargets)){
     const dealt=Math.min(other.hp,Math.max(0,damage))
     if(!dealt)continue
     other.hp=Math.max(0,other.hp-dealt);other.alive=other.hp>0
     addLog(state,`${actor.name} causa ${dealt} de dano em ${other.name} por ${action}.`,'damage',
-      {actorId:actor.id,targetId:other.id,sides,face,action})
+      {actorId:actor.id,targetId:other.id,sides,face,action,critical})
   }
 }
 const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,catalog:ContentCatalog) => {
@@ -387,10 +388,11 @@ const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,cata
     ? state.bossMechanics.bossId : undefined
   const centerDamage=Math.min(target.hp,Math.max(1,Math.floor(rolled.finalDamage*0.6)))
   target.hp=Math.max(0,target.hp-centerDamage);target.alive=target.hp>0;target.defending=false
-  addLog(state,`${actor.name} causa ${centerDamage} de dano em ${target.name} com Ataque em Área.`,'damage',
-    {actorId:actor.id,targetId:target.id,sides,face,action:'Ataque em Área',
+  addLog(state,`${actor.name} causa ${centerDamage} de dano em ${target.name} com Ataque em Área.${rolled.critical ? ' ACERTO CRÍTICO!' : ''}`,'damage',
+    {actorId:actor.id,targetId:target.id,sides,face,action:'Ataque em Área',critical:rolled.critical,
+      damageBreakdown:{...rolled,finalDamage:centerDamage},
       ...(actor.weaponBonusDie?{weaponBonusRoll:{sides:actor.weaponBonusDie,face:bonusFace}}:{})})
-  applySplash(state,actor,target,Math.floor(centerDamage*0.3),'Splash de Área',sides,face,2,protectedBossId)
+  applySplash(state,actor,target,Math.floor(centerDamage*0.3),'Splash de Área',sides,face,2,protectedBossId,rolled.critical)
   addPhase(state,'ResolvingReactions');addPhase(state,'ApplyingStatuses');addPhase(state,'CheckEndConditions')
 }
 

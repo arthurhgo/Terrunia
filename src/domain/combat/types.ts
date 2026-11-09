@@ -55,6 +55,8 @@ export type CombatRoll = {
   sides: CombatDie
   face: number
   action: string
+  /** Authoritative motor result, only for damage dice; undefined in historical saves. */
+  critical?: boolean
   /** v0.5.7: the actual face determines damage; all fields are motor-produced. */
   weaponBonusRoll?: { sides: CombatDie; face: number }
   damageBreakdown?: {
@@ -65,6 +67,7 @@ export type CombatRoll = {
     guardMitigation: number
     guardPrevented: number
     finalDamage: number
+    critical?: boolean
   }
 }
 

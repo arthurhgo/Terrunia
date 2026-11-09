@@ -6,11 +6,9 @@ export const CLAN_AFFILIATION_RITE_ID = 'clan_affiliation_v05142'
 export const CLAN_RECRUITMENT_WAVE = 14 as const
 export const CLAN_EMBLEM_ITEM_ID = 'quest_clan_granite_emblem'
 export const GRANITE_HEART_INSTANCE_ID = 'instance_clan_granite_heart_v05142'
-/** Owner-requested encounter balance. Percentages/crit remain BALANCE_DRAFT until playtested. */
+/** Boss-specific stats and boulder mechanics. Natural-max criticals are global. */
 export const GRANITE_GOLEM_BALANCE = {
   playerStatMultiplier: 1.1,
-  criticalChance: 0.2,
-  criticalDamageMultiplier: 1.5,
   throwIntervalRounds: 3,
   windupRoundRemainder: 2,
   throwBonusGuardMitigation: 2,
