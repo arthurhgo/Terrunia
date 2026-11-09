@@ -223,7 +223,11 @@ describe('vertical slice integrada', () => {
       for (let turn = 0; turn < 50 && store().save!.battle?.phase === 'AwaitingAction'; turn++) {
         const battle = store().save!.battle!
         const player = battle.combatants.combatant_player
-        const target = Object.values(battle.combatants).filter((actor) => actor.side === 'enemy' && actor.alive)
+        // Never spend a turn on the Sentinela while a fungus remains alive.
+        const guardsAlive = battle.bossMechanics && Object.values(battle.combatants).some(actor =>
+          actor.side === 'enemy' && actor.alive && actor.id !== battle.bossMechanics?.bossId)
+        const target = Object.values(battle.combatants).filter(actor => actor.side === 'enemy' && actor.alive &&
+          (!guardsAlive || actor.id !== battle.bossMechanics?.bossId))
           .sort((a, b) => a.hp - b.hp)[0]
         const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((entry) => entry.mpCost <= player.mp && !(player.skillCooldowns?.[entry.id] ?? 0))
         const skill = skills.find((entry) => entry.id === 'skill_resonant_strike') ?? skills.find((entry) => entry.id !== 'skill_basic_area_attack')
