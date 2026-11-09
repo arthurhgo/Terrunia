@@ -466,6 +466,15 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const receivingId = diceStage === 'impact' && activeDice?.kind === 'damage' ? activeDice.targetId : undefined
   const damageRevealed = diceStage === 'impact' && activeDice?.id === impactEventId
 
+  const statusesFor=(actor:NonNullable<typeof player>)=><div className="pixel-battle__status-strip" aria-label="Efeitos ativos">
+    {actor.statusEffects.map((effect,index)=>{
+      const definition=content.statusEffects[effect.definitionId]
+      return <span key={effect.definitionId+'-'+index} title={`${definition?.name??effect.definitionId} · ${effect.remainingTurns} turno(s): ${definition?.description??''}`}>
+        <AssetImage assetId={`status.${effect.definitionId}`} alt={definition?.name??effect.definitionId}/>
+        <b>{effect.remainingTurns}T</b>
+      </span>
+    })}
+  </div>
   const scene = <section className={`pixel-battle ${activeDice && diceStage === 'focus' ? "pixel-battle--dice-pending" : ""} ${diceAwaitingClick ? "pixel-battle--dice-awaiting" : ""}`} role="region" aria-label="Viewport unificada de combate">
     <header className="pixel-battle__header" aria-label="Encontro de combate">
       <strong>TERRÚNIA</strong>
@@ -502,6 +511,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             <i style={{ width: clampPercent(visualHp(enemy.id), enemy.maxHp) + '%' }} />
             <b>{visualHp(enemy.id)} / {enemy.maxHp}</b>
           </span>
+          {statusesFor(enemy)}
           <EnemyMotionSprite
             assetId={content.enemies[enemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'}
             reducedMotion={reducedMotion}
@@ -570,6 +580,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             <div className="pixel-battle__meter mp" role="progressbar" aria-label="Mana" aria-valuenow={player.mp} aria-valuemin={0} aria-valuemax={player.maxMp}><i style={{ width: clampPercent(player.mp, player.maxMp) + '%' }} /><span>MANA {player.mp} / {player.maxMp}</span></div>
           </div>
         </div>
+        {statusesFor(player)}
         <BattleEquipmentHud save={save} />
       </section>
       <section className="pixel-battle__panel pixel-battle__actions" aria-label="Ações de combate" data-turn-gate={actionGate}>
