@@ -1,6 +1,8 @@
 import { astravelEncounterDefinitions } from './astravel'
 import { biomeEncounterDefinitions } from './biomeExpeditions'
 import { fungalDungeonEncounters } from './fungalChambers'
+import { newClanSpells, newClanStatuses } from './clanSpells'
+import { clanTrialEncounters } from './clanTrials'
 import type {
   CombatSkillDefinition,
   EncounterDefinition,
@@ -188,23 +190,28 @@ export const combatSkillDefinitions = [
   {
     id: 'skill_clan_dunavar_guard', name: 'Voto da Barreira', description: "Postura Dûn'Avar que recupera a força do portador.", target: 'self',
     mpCost: 0, cooldownTurns: 3, damageDieSteps: 0,
-    effects: [{ type: 'restoreHp', value: 2 }], status: 'BALANCE_DRAFT',
+    effects: [{ type: 'restoreHp', value: 2 }], presentationGroup: 'magic', iconAssetId: 'skill.skill_clan_dunavar_guard',
+    status: 'BALANCE_DRAFT',
   },
   {
     id: 'skill_clan_rustal_glyph', name: 'Glifo de Rustal', description: 'Inscrição de combate reservada ao iniciado em Rustal.', target: 'enemy',
     mpCost: 3, cooldownTurns: 3, damageDieSteps: 0,
-    effects: [{ type: 'damage', powerBonus: 2 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }], status: 'BALANCE_DRAFT',
+    effects: [{ type: 'damage', powerBonus: 2 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }], presentationGroup: 'magic', iconAssetId: 'skill.skill_clan_rustal_glyph',
+    status: 'BALANCE_DRAFT',
   },
   {
     id: 'skill_clan_cebios_orb', name: 'Orbe de Cebios', description: 'Descarga celeste de um iniciado em Cebios Esti.', target: 'enemy',
     mpCost: 3, cooldownTurns: 3, damageDieSteps: 0,
-    effects: [{ type: 'damage', powerBonus: 3 }], status: 'BALANCE_DRAFT',
+    effects: [{ type: 'damage', powerBonus: 3 }], presentationGroup: 'magic', iconAssetId: 'skill.skill_clan_cebios_orb',
+    status: 'BALANCE_DRAFT',
   },
   {
     id: 'skill_clan_estres_flux', name: 'Fluxo do Ét', description: 'Surto arcano exclusivo do Clã Estres do Ét.', target: 'enemy',
     mpCost: 3, cooldownTurns: 3, damageDieSteps: 0,
-    effects: [{ type: 'damage', powerBonus: 2 }], status: 'BALANCE_DRAFT',
+    effects: [{ type: 'damage', powerBonus: 2 }], presentationGroup: 'magic', iconAssetId: 'skill.skill_clan_estres_flux',
+    status: 'BALANCE_DRAFT',
   },
+  ...newClanSpells,
   {
     id: 'skill_resonant_strike',
     name: 'Golpe Ressonante',
@@ -272,10 +279,11 @@ export const statusEffectDefinitions = [
     mitigationModifier: 2,
     status: 'BALANCE_DRAFT',
   },
+  ...newClanStatuses,
 ] satisfies StatusEffectDefinition[]
 
 export const encounterDefinitions = [
-  ...astravelEncounterDefinitions, ...biomeEncounterDefinitions, ...fungalDungeonEncounters,
+  ...astravelEncounterDefinitions, ...biomeEncounterDefinitions, ...fungalDungeonEncounters, ...clanTrialEncounters,
   {
     id: 'encounter_portal_luminous_nest',
     name: 'Ninho Luminescente',

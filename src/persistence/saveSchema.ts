@@ -78,6 +78,8 @@ const characterSchema = z.object({
     eligibleClanIds: z.array(idSchema),
     initiationQuestId: z.string().optional(),
     joinedAt: z.string().optional(),
+    candidateClanId: z.string().nullable().optional(),
+    selectedClanSkillId: z.string().nullable().optional(),
   }),
   classProgression: z.object({
     classId: z.string().nullable(),
@@ -190,6 +192,13 @@ const worldSchema = z.object({
   completedEncounterIds: z.array(idSchema),
   portalWaveBest: nonnegativeInteger.optional(),
   worldFlags: z.array(z.string()),
+})
+
+const clanTrialRunSchema = z.object({
+  runId: idSchema, questId: idSchema, clanId: idSchema,
+  waveIndex: z.number().int().min(1).max(3),
+  completedWaveIds: z.array(idSchema), activeEncounterId: idSchema.nullable(),
+  phase: z.enum(['active','won']), createdAt: z.string().min(1),
 })
 
 const dungeonRunSchema = z.object({
@@ -345,6 +354,7 @@ export const gameSaveSchema = z.object({
   world: worldSchema,
   battle: battleSchema.nullable(),
   dungeonRun: dungeonRunSchema.nullable().optional(),
+  clanTrialRun: clanTrialRunSchema.nullable().optional(),
   settings: z.object({
     reducedMotion: z.boolean(),
     soundEnabled: z.boolean(),

@@ -78,7 +78,19 @@ const baseSideQuestDefinitions: QuestDefinition[] = npcDefinitions.filter((npc) 
   }
 })
 
+
+const clanExtraSidequests: QuestDefinition[] = [["dunavar","npc_mireya_dunavar","watch_echoes","Ecos da Vigília","enemy_fungorro_crawler"],["dunavar","npc_mireya_dunavar","oath","O Juramento Incompleto","enemy_spore_bulwark"],["rustal","npc_master_rustal","stone","A Pedra sem Nome","enemy_ruin_sentinel"],["rustal","npc_master_rustal","glyphs","Três Glifos Partidos","enemy_spore_sower"],["cebios_esti","npc_observador_cebios","orbit","Órbita Interrompida","enemy_void_moth"],["cebios_esti","npc_observador_cebios","missing_light","A Luz que Faltou","enemy_mycelial_stalker"],["estres_do_et","npc_guardador_estres","rift","A Fissura Errante","enemy_spore_sower"],["estres_do_et","npc_guardador_estres","balance","O Preço do Equilíbrio","enemy_spore_bulwark"]].map(([clanId,npcId,suffix,title,enemyId],index) => ({
+  id:`side_clan_${clanId}_${suffix}`,title,summary:`O representante solicita investigar e conter ${enemyId} em Astravél e no Portal.`,
+  giverNpcId:npcId,turnInNpcId:npcId,category:'secondary',
+  objectives:[{id:`side_clan_${clanId}_${suffix}_kill`,type:'kill',targetId:enemyId,required:2+index%2,
+    label:'Derrote criaturas e reporte ao representante do Clã'}],
+  prerequisites:[{type:'clanJoined',clanId}],
+  rewards:[{type:'characterXp',value:38+index*4},{type:'gold',value:16+index*2}],
+  initialStatus:'locked',status:'CONTENT_DRAFT',
+}))
+
 export const sideQuestDefinitions: QuestDefinition[] = [
+  ...clanExtraSidequests,
   ...baseSideQuestDefinitions,
   ...streetQuestDefinitions,
   ...collectionContractDefinitions,
