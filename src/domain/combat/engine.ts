@@ -142,7 +142,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     initiativeDie: character.attributes.agility.die,
     alive: true,
     defending: false,
-    skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds, ...(clanSkillId ? [clanSkillId] : [])])],
+    skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds, ...(clanSkillId ? [clanSkillId] : []), 'skill_basic_area_attack'])],
     attackDie: character.attributes[catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.scalingAttribute ?? 'strength'].die,
     ...(catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.bonusAttackDie
       ? { weaponBonusDie: catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? ''].bonusAttackDie }
@@ -308,6 +308,10 @@ const resolveSkill = (
     actor.skillCooldowns[skill.id] = Math.floor(skill.cooldownTurns) + 1
   }
   addLog(state, `${actor.name} usa ${skill.name}.`, 'system')
+  if (skill.id === 'skill_basic_area_attack') {
+    resolveAreaAttack(state, actor, catalog)
+    return
+  }
   const primary = applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name, skill)
   if (skill.id === 'skill_resonant_strike' && primary.damage > 0) {
     // BALANCE_DRAFT OD-06: 5% final primary damage to each other unprotected enemy.

@@ -25,7 +25,7 @@ import {
   getTrailByNodeId,
   resolveTrailInteraction,
 } from '../domain/exploration/trailEngine'
-import { discoverDungeonRoom, dungeonRoomFlag, enterDungeon, exitDungeon, FUNGAL_DUNGEON_ID,
+import { discoverDungeonRoom, enterDungeon, exitDungeon, FUNGAL_DUNGEON_ID,
   startDungeonEncounter as prepareDungeonEncounter, claimDungeonEncounter } from '../domain/exploration/dungeonEngine'
 import { FUNGAL_BOSS_ENCOUNTER_ID } from '../content/fungalChambers'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
