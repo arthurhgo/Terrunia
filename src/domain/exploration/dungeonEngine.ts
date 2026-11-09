@@ -1,4 +1,4 @@
-import type { DungeonDefinition } from '../../content/types'
+import type { DungeonDefinition, TrailDefinition } from '../../content/types'
 import type { GameSave } from '../game/types'
 
 export const FUNGAL_DUNGEON_ID = 'dungeon_fungal_chambers'
@@ -13,11 +13,20 @@ const advance = (save: GameSave, now: string, event: string) => {
   return save
 }
 
-/** A dungeon is entered from an already unlocked ruin; no duplicate loot or quest events. */
-export function enterDungeon(save: GameSave, dungeon: DungeonDefinition, now: string): DungeonResult {
+/** Re-entry may leave the saved location at the trail entrance, even after reaching the boss.
+ * Validate membership in the matching trail, then the boss unlock. No auto-completion.
+ */
+export function enterDungeon(
+  save: GameSave, dungeon: DungeonDefinition, now: string, sourceTrail?: TrailDefinition,
+): DungeonResult {
   if (save.battle) return { ok: false, message: 'Termine o combate antes de entrar na ruína.' }
-  if (![dungeon.entryTrailNodeId, dungeon.bossTrailNodeId].includes(save.world.currentLocationId)) {
-    return { ok: false, message: 'A ruína só é acessível pelo limiar de Astravél.' }
+  const currentLocation = save.world.currentLocationId
+  const directEntry = [dungeon.entryTrailNodeId, dungeon.bossTrailNodeId].includes(currentLocation)
+  const sameTrail = sourceTrail?.nodes.some((node) => node.id === dungeon.entryTrailNodeId)
+    && sourceTrail.nodes.some((node) => node.id === dungeon.bossTrailNodeId)
+    && sourceTrail.nodes.some((node) => node.id === currentLocation)
+  if (!directEntry && !sameTrail) {
+    return { ok: false, message: 'A ruína só é acessível pela trilha de Astravél.' }
   }
   if (!['bossCurrent', 'completed'].includes(save.world.trailNodeStates[dungeon.bossTrailNodeId] ?? '')) {
     return { ok: false, message: 'Investigue o limiar para abrir as Câmaras Fúngicas.' }

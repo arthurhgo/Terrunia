@@ -729,7 +729,7 @@ export const useGameStore = create<GameState>((set, get) => {
         const gate = checkTrailQuestGate(save, boss, content)
         if (!gate.ok) return failAction(gate.message)
       }
-      const result = enterDungeon(save, content.dungeons.dungeon_fungal_chambers, nowIso())
+      const result = enterDungeon(save, content.dungeons.dungeon_fungal_chambers, nowIso(), content.trails.trail_astravel_entry)
       if (!result.ok) return failAction(result.message)
       commit(result.save)
       show('Câmaras Fúngicas', 'A passagem foi aberta. Explore as salas até o núcleo da Ruína.', 'info')
