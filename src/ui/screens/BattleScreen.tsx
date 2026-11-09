@@ -442,7 +442,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const end = (toCity: boolean) => {
     if (toCity) returnToTerran()
     else finishBattleIntoExpedition()
-    if (!unified) navigate(toCity || battle.clanTrialQuestId ? '/terran' : save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon' : '/expedition')
+    if (!unified) navigate(toCity || battle.clanTrialQuestId || battle.clanBossQuestId ? '/terran' : save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon' : '/expedition')
   }
   const button = (label: string, icon: React.ReactNode, onClick: () => void, disabled = false, selected = false) => (
     <button key={label} type="button"
@@ -684,7 +684,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           <p>+{battle.rewards.characterXp} XP · +{battle.rewards.gold} Ouro · {drops.length} drops</p>
           {!battle.claimed ? <button type="button" onClick={claim}>RECOLHER TODOS OS ESPÓLIOS</button> : <>
             {battle.waveIndex ? <button onClick={nextWave}>PRÓXIMA ONDA · {battle.waveIndex + 1}</button> :
-              battle.portalHuntId ? null : <button onClick={() => end(false)}>CONTINUAR EXPEDIÇÃO</button>}
+              battle.portalHuntId ? null : <button onClick={() => end(false)}>{battle.clanTrialQuestId || battle.clanBossQuestId ? 'VOLTAR AO SALÃO DOS CLÃS' : 'CONTINUAR EXPEDIÇÃO'}</button>}
             <button onClick={() => end(true)}>{battle.portalHuntId ? 'VOLTAR AO PORTAL' : 'RETORNAR A TERRAN'}</button>
           </>}
         </div> : <div className="pixel-battle__result"><p>O Nexo retorna à Base. Sem perda de XP, Ouro ou equipamentos nesta versão.</p>
