@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { dungeonRoomFlag, FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
+import { FUNGAL_ROOM_IDS } from '../../content/fungalChambers'
 import { getNextCutscene } from '../../domain/terran/cutscenes'
 import { useGameStore } from '../../state/gameStore'
 import { GameShell } from '../components/GameShell'
@@ -20,7 +21,7 @@ export function DungeonScene({ unified = false }: { unified?: boolean }) {
   const save = useGameStore((state) => state.save)
   const discoverFungalRoom = useGameStore((state) => state.discoverFungalRoom)
   const exitFungalChambers = useGameStore((state) => state.exitFungalChambers)
-  const startBattle = useGameStore((state) => state.startBattle)
+  const startDungeonStage = useGameStore((state) => state.startDungeonStage)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
   const [drawer, setDrawer] = useState<Drawer>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -33,9 +34,13 @@ export function DungeonScene({ unified = false }: { unified?: boolean }) {
 
   const scene = getNextCutscene(save)
   const discoveredFlags = save.world.worldFlags
-  const completed = dungeon.rooms.filter((room) => discoveredFlags.includes(dungeonRoomFlag(room.id))).length
-  const bossDefeated = save.world.trailNodeStates[dungeon.bossTrailNodeId] === 'completed'
-  const bossAvailable = save.world.trailNodeStates[dungeon.bossTrailNodeId] === 'bossCurrent'
+  const run = save.dungeonRun
+  const roomIndex = run?.roomIndex ?? 0
+  const stageIndex = run?.stageIndex ?? 1
+  const completed = run?.clearedRoomIds.length ?? 0
+  const bossDefeated = run?.mode === 'won'
+  const bossAvailable = run?.mode === 'boss'
+  const activeRoomId = FUNGAL_ROOM_IDS[roomIndex]
   const selectedRoom = dungeon.rooms.find((room) => room.id === selectedId)
   const quest = save.quests.vs_astravel_first_contact
   const questDefinition = content.quests.vs_astravel_first_contact
@@ -51,15 +56,15 @@ export function DungeonScene({ unified = false }: { unified?: boolean }) {
     if (!unified) navigate('/expedition')
   }
   const battle = () => {
-    if (!selectedRoom || selectedRoom.kind !== 'boss' || !bossAvailable || !discoveredFlags.includes(dungeonRoomFlag(selectedRoom.id))) return
-    startBattle(dungeon.bossTrailNodeId)
-    if (!unified) navigate('/battle')
+    if (!selectedRoom || selectedRoom.id !== activeRoomId || bossDefeated) return
+    startDungeonStage(selectedRoom.id)
+    if (useGameStore.getState().save?.battle && !unified) navigate('/battle')
   }
 
   const sceneContent = <div className="terran-game dungeon-game">
       <header className="terran-game__topbar">
         <div><span className="eyebrow">RUÍNAS DA ENTROPIA · NÍVEL I</span><h1>Câmaras Fúngicas</h1></div>
-        <div className="terran-game__readout"><MapPin size={16} /> ASTRAVÉL &gt; RUÍNA <span>{completed}/{dungeon.rooms.length} salas descobertas</span></div>
+        <div className="terran-game__readout"><MapPin size={16} /> ASTRAVÉL &gt; RUÍNA <span>{completed}/4 salas · ${bossAvailable ? 'Sentinela liberada' : bossDefeated ? 'Sentinela derrotada' : `Estágio ${stageIndex}/3`}</span></div>
       </header>
       <div className={`terran-game__layout ${drawer ? 'has-drawer' : ''}`}>
         <section className="terran-game__stage" aria-label="Cenário contínuo do interior das Câmaras Fúngicas">
@@ -77,7 +82,7 @@ export function DungeonScene({ unified = false }: { unified?: boolean }) {
             <ArrowLeft size={15} /> Astravél
           </button>
           <div className="terran-game__quest"><DoorOpen size={17} /><span>
-            {bossDefeated ? 'Colosso derrotado · retorne a Terran para avançar' : 'Explore as quatro câmaras até o Núcleo da Ruína'}
+            {bossDefeated ? 'Sentinela Corrompida derrotada · memória preservada' : `Câmara ${roomIndex + 1}/4 · ${bossAvailable ? 'Enfrente a Sentinela Corrompida' : `Estágio ${stageIndex}/3`}`}
             <small>WASD / setas / toque · E para inspecionar · combate por turnos</small>
           </span></div>
         </section>
@@ -89,15 +94,24 @@ export function DungeonScene({ unified = false }: { unified?: boolean }) {
             {drawer === 'room' && selectedRoom && <article className="expedition-node-detail">
               <span className="eyebrow">{selectedRoom.kind === 'boss' ? 'CÂMARA FINAL' : 'CÂMARA EXPLORÁVEL'} · CONTENT_DRAFT</span>
               <h3>{selectedRoom.name}</h3><p>{selectedRoom.description}</p>
-              {selectedRoom.kind === 'boss' && bossAvailable && discoveredFlags.includes(dungeonRoomFlag(selectedRoom.id)) &&
-                <button type="button" className="expedition-node-detail__action" onClick={battle}><Swords size={17} /> Enfrentar Colosso Micélio</button>}
-              {selectedRoom.kind === 'boss' && bossDefeated && <span className="expedition-node-detail__done">✓ Colosso derrotado · memória preservada</span>}
-              {selectedRoom.kind !== 'boss' && <span className="expedition-node-detail__done">✓ Sala registrada no diário de exploração</span>}
+              <div className="expedition-dungeon-stage" aria-live="polite">
+                <strong>{run?.clearedRoomIds.includes(selectedRoom.id) ? '✓ Sala purificada'
+                  : selectedRoom.id === activeRoomId
+                    ? bossAvailable ? '3/3 concluídos · Sentinela liberada' : `Estágio ${stageIndex}/3 · onda ativa`
+                    : 'Sala bloqueada nesta tentativa'}</strong>
+                <small>{run?.completedStageIds.filter((id) => id.startsWith(`encounter_${selectedRoom.id}_stage_`)).length ?? 0}/3 estágios vencidos</small>
+              </div>
+              {selectedRoom.id === activeRoomId && !bossDefeated &&
+                <button type="button" className="expedition-node-detail__action" onClick={battle}>
+                  <Swords size={17} /> {bossAvailable ? 'Enfrentar Núcleo da Ruína' : `Enfrentar estágio ${stageIndex}/3`}
+                </button>}
+              {selectedRoom.kind === 'boss' && bossDefeated && <span className="expedition-node-detail__done">✓ Sentinela Corrompida derrotada</span>}
             </article>}
             {drawer === 'rooms' && <div className="expedition-route-list">
-              <p>O mapa permanece na tela. Mova-se entre os corredores; cada câmara descoberta é registrada no save sem gerar itens automáticos.</p>
+              <p>Quatro salas, três estágios cada. Conclua a onda atual para avançar. Sair da Ruína reinicia a tentativa sem perder itens coletados.</p>
               {dungeon.rooms.map((room, index) => <div key={room.id} className={`expedition-route-list__item ${discoveredFlags.includes(dungeonRoomFlag(room.id)) ? 'expedition-route-list__item--completed' : ''}`}>
-                <strong>{index + 1}. {room.name}</strong><small>{discoveredFlags.includes(dungeonRoomFlag(room.id)) ? 'Descoberta' : 'Desconhecida'}</small>
+                <strong>{index + 1}. {room.name}</strong><small>{run?.clearedRoomIds.includes(room.id) ? '✓ 3/3 concluídos'
+                  : room.id === activeRoomId ? (bossAvailable ? 'Chefe liberado' : `Estágio ${stageIndex}/3`) : 'Bloqueada'}</small>
               </div>)}
             </div>}
             {drawer === 'inventory' && <InventoryPanel save={save} />}

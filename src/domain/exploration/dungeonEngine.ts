@@ -31,14 +31,15 @@ export const dungeonNextEncounter = (run: DungeonRunState): string | null =>
 export function startDungeonEncounter(
   save: GameSave, roomId: string, now: string,
 ): DungeonResult {
-  const run = save.dungeonRun
-  if (save.world.currentLocationId !== FUNGAL_DUNGEON_ID || save.battle || !run || run.mode === 'won')
+  const run = save.dungeonRun ?? createDungeonRun(now)
+  if (save.world.currentLocationId !== FUNGAL_DUNGEON_ID || save.battle || run.mode === 'won')
     return { ok: false, message: 'Não há um estágio disponível nesta tentativa.' }
   if (FUNGAL_ROOM_IDS[run.roomIndex] !== roomId)
     return { ok: false, message: 'Conclua os estágios anteriores antes de avançar.' }
   if (run.activeEncounterId) return { ok: false, message: 'Encontro já registrado nesta tentativa.' }
   const next = structuredClone(save)
-  next.dungeonRun!.activeEncounterId = dungeonNextEncounter(run)
+  next.dungeonRun = structuredClone(run)
+  next.dungeonRun.activeEncounterId = dungeonNextEncounter(run)
   return { ok: true, save: advance(next, now, `DungeonEncounterStarted:${next.dungeonRun!.activeEncounterId}`) }
 }
 
