@@ -291,4 +291,24 @@ describe('combate visual v0.17', () => {
     )
   })
 
+  it('v0.5.13.1 organiza habilidades em grade sem o cabeçalho redundante e sem scroll no submenu', () => {
+    vi.useFakeTimers()
+    const save = createBattleSave()
+    save.battle!.combatants.combatant_player.skillIds = ['skill_axe_sunder', 'skill_resonant_strike']
+    const { container } = render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    act(() => { vi.advanceTimersByTime(1950) })
+    fireEvent.click(screen.getByRole('button', { name: 'HABILIDADES' }))
+    const picker = container.querySelector('.pixel-battle__submenu--skill-picker')
+    expect(picker).toBeInTheDocument()
+    expect(picker).not.toHaveTextContent('HABILIDADES')
+    expect(picker?.querySelector('.pixel-battle__submenu-heading')).toBeNull()
+    const grid = picker?.querySelector('.pixel-battle__skill-grid') as HTMLElement
+    expect(grid.style.getPropertyValue('--skill-columns')).toBe('2')
+    expect(grid.style.getPropertyValue('--skill-rows')).toBe('1')
+    expect(grid.querySelectorAll('.pixel-battle__skill-card')).toHaveLength(2)
+    expect(screen.getByRole('button', { name: 'Voltar sem executar a ação' })).toBeEnabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar sem executar a ação' }))
+    expect(container.querySelector('.pixel-battle__submenu--skill-picker')).not.toBeInTheDocument()
+  })
+
 })

@@ -246,6 +246,12 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const categoryItems = (kind: 'throwable' | 'rune' | 'essence') =>
     save.inventory.filter((instance) => content.items[instance.definitionId]?.combatKind === kind)
   const isMagicSkill = (id: string) => /scepter|grimoire|staff|spore|arcane|magic|spell/i.test(id)
+  const skillPickerOpen = menu === 'skills' || menu === 'magic'
+  const visibleSkills = skillPickerOpen
+    ? skills.filter((skill) => menu === 'magic' ? isMagicSkill(skill.id) : !isMagicSkill(skill.id))
+    : []
+  const skillColumns = Math.max(1, Math.min(4, visibleSkills.length))
+  const skillRows = Math.max(1, Math.ceil(visibleSkills.length / skillColumns))
   const hasUsefulSupplies = (kind: 'throwable' | 'rune' | 'essence') =>
     categoryItems(kind).some((instance) => content.items[instance.definitionId].combatEffects.some((effect) =>
       effect.type === 'damage' || effect.type === 'applyStatus' ||
@@ -560,12 +566,14 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             <button type="button" onClick={() => setConfirmDefense(false)} aria-label="Voltar sem defender">VOLTAR</button>
             <button type="button" onClick={() => send({ type: 'defend' })}>CONFIRMAR DEFESA</button>
           </div>}
-          {menu && <div className="pixel-battle__submenu">
+          {menu && <div className={`pixel-battle__submenu ${skillPickerOpen ? 'pixel-battle__submenu--skill-picker' : ''}`}
+            aria-label={skillPickerOpen ? 'Seleção de habilidades sem rolagem' : undefined}>
             <button type="button" aria-label="Voltar sem executar a ação" onClick={() => setMenu(null)}>VOLTAR</button>
-            {(menu === 'skills' || menu === 'magic') && <>
-              <strong className="pixel-battle__submenu-heading">{menu === 'magic' ? 'MAGIAS' : 'HABILIDADES'}</strong>
-              <div className="pixel-battle__skill-grid">
-              {skills.filter((skill) => menu === 'magic' ? isMagicSkill(skill.id) : !isMagicSkill(skill.id)).map((skill) => {
+            {skillPickerOpen && <>
+              <div className="pixel-battle__skill-grid"
+                style={{ '--skill-columns': skillColumns, '--skill-rows': skillRows,
+                  '--skill-max-width': `${skillColumns * 106 + (skillColumns - 1) * 6}px` } as React.CSSProperties}>
+              {visibleSkills.map((skill) => {
                 const remaining = player.skillCooldowns?.[skill.id] ?? 0
                 const skillTarget = skill.target === 'self' ? player : target
                 const preview = previewCombatSkill(player, skillTarget, skill, content)
