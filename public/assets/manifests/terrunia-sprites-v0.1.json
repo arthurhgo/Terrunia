@@ -2490,6 +2490,30 @@
       "width": 16,
       "height": 16,
       "atlas": null
+    },
+    {
+      "assetId": "skill.basic-area-attack",
+      "path": "/assets/skills/skill_basic_area_attack.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.use-healing-potion",
+      "path": "/assets/skills/skill_use_healing_potion.png",
+      "family": "skill",
+      "width": 16,
+      "height": 16,
+      "atlas": null
+    },
+    {
+      "assetId": "enemy.ruin-corrupted-sentinel",
+      "path": "/assets/enemies/bosses/enemy_ruin_corrupted_sentinel_idle.png",
+      "family": "monster",
+      "width": 32,
+      "height": 32,
+      "atlas": null
     }
   ]
 }

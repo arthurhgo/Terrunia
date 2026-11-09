@@ -29,6 +29,10 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
+  { id: 'skill.use-healing-potion', path: '/assets/skills/skill_use_healing_potion.png',
+    fallback: '/assets/placeholders/skill.svg', alt: 'Poção Restauradora', pixelArt: true },
+  { id: 'enemy.ruin-corrupted-sentinel', path: '/assets/enemies/bosses/enemy_ruin_corrupted_sentinel_idle.png',
+    fallback: '/assets/placeholders/enemy.svg', alt: 'Sentinela Corrompida · Núcleo da Ruína', pixelArt: true },
   ...(combatSkillDefinitions as CombatSkillDefinition[]).map((skill) => ({
     id: skill.iconAssetId ?? `skill.${skill.id}`,
     path: `/assets/skills/${skill.id}.png`,
