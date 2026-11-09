@@ -44,7 +44,7 @@ export const newClanSpells = [
     mpCost:4,cooldownTurns:3,damageDieSteps:0,
     effects:[{type:'damage',powerBonus:1},{type:'adjacentSplash',fraction:0.25,maxTargets:1,basis:'primaryFinalDamage'}]},
 ].map(skill=>({...skill,presentationGroup:'magic' as const,iconAssetId:'skill.'+skill.id,
-  status:'BALANCE_DRAFT' as const})) satisfies CombatSkillDefinition[]
+  status:'BALANCE_DRAFT' as const} as unknown as CombatSkillDefinition))
 
 export const newClanStatuses: StatusEffectDefinition[] = [
   ['status_clan_aegis','Égide Ativa','Égide mágica do Dûn\'Avar.',0,1,'beneficial'],
