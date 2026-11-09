@@ -30,6 +30,7 @@ import { discoverDungeonRoom, enterDungeon, exitDungeon, FUNGAL_DUNGEON_ID,
 import { FUNGAL_BOSS_ENCOUNTER_ID } from '../content/fungalChambers'
 import { GRANITE_GOLEM_ENCOUNTER_ID, clanGolemQuestId, clanTableQuestId, MAIN_CLAN_AFFILIATION_QUEST, CLAN_AFFILIATION_RITE_ID, CLAN_RECRUITMENT_WAVE, GRANITE_HEART_INSTANCE_ID } from '../content/clanProgressionV05142'
 import { ROSETTA_CLAN_QUEST } from '../domain/progression/clanOrientation'
+import { enterClanCastle as enterClanCastleDomain, leaveClanCastle as leaveClanCastleDomain } from '../domain/progression/clanCastle'
 import { chooseClanCandidate as chooseClanCandidateDomain, chooseInitialClanSpell as chooseInitialClanSpellDomain } from '../domain/progression/clanOrientation'
 import { startClanTrialWave as prepareClanWave, claimClanTrialWave } from '../domain/progression/clanTrials'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
@@ -118,6 +119,8 @@ type GameState = {
   joinClan: (clanId: string) => void
   unlockClass: (classId: string) => void
   travelInTerran: (locationId: string) => void
+  enterClanCastle: () => boolean
+  leaveClanCastle: () => boolean
   inspectCityLandmark: (landmarkId: string) => void
   preparePlayerHome: () => void
   performTerranQuestTask: (questId: string, objectId?: string, completedSteps?: readonly string[]) => boolean
@@ -568,6 +571,23 @@ export const useGameStore = create<GameState>((set, get) => {
       show('Classe desbloqueada', `${content.classes[classId].name} foi assumida após a prova.`, 'success')
     },
 
+    enterClanCastle: () => {
+      const save=get().save
+      if(!save) { failAction('Nenhum Terrírian ativo.'); return false }
+      const result=enterClanCastleDomain(save,nowIso())
+      if(!result.ok) { failAction(result.message); return false }
+      commit(result.value)
+      show('Base de Clã', 'O miniportal conduziu você ao castelo do seu Clã.', 'success')
+      return true
+    },
+    leaveClanCastle: () => {
+      const save=get().save
+      if(!save) { failAction('Nenhum Terrírian ativo.'); return false }
+      const result=leaveClanCastleDomain(save,nowIso())
+      if(!result.ok) { failAction(result.message); return false }
+      commit(result.value)
+      return true
+    },
     travelInTerran: (locationId) => {
       const save = get().save
       if (!save) return
