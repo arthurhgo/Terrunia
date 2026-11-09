@@ -241,6 +241,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const target = enemies.find((enemy) => enemy.id === targetId && enemy.alive && !isProtectedBoss(battle, enemy))
     ?? enemies.find((enemy) => enemy.alive && !isProtectedBoss(battle, enemy)) ?? enemies[0]
   const encounter = content.encounters[battle.encounterId]
+  const graniteRockIncoming = battle.encounterId === 'encounter_clan_granite_golem_v05142' &&
+    battle.phase === 'AwaitingAction' && battle.log.reduce((pending, entry) =>
+      entry.message.includes('O Golem ergue uma rocha') ? true
+        : entry.roll?.action === 'Arremesso de Granito' ? false : pending, false)
   const battleTitle = `${encounter?.locationLabel ?? 'ASTRAVÉL'}: ${encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}`
   const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((skill) => Boolean(skill))
   const inspectedSkill = skills.find((skill) => skill.id === (pinnedSkillId ?? hoveredSkillId))
@@ -526,13 +530,17 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             aria-label={'Status de ' + enemy.name} id={'enemy-status-' + i}>
             <strong>{enemy.name}</strong>
             <span>Vida: {visualHp(enemy.id)}/{enemy.maxHp} · Mana: {enemy.mp}/{enemy.maxMp}</span>
-            <span>Nível {content.enemies[enemy.definitionId]?.level ?? 1} · Ataque: {enemy.attackPower} · Defesa: {enemy.mitigation}</span>
+            <span>{enemy.definitionId === 'enemy_granite_golem' ? 'Boss adaptativo (+10%)' : `Nível ${content.enemies[enemy.definitionId]?.level ?? 1}`} · Ataque: {enemy.attackPower} · Defesa: {enemy.mitigation}</span>
             <span>Iniciativa: {battle.phase === 'AwaitingInitiative' ? (revealedInitiative[enemy.id] ?? 'pendente') : enemy.initiative} · Dado d{enemy.attackDie ?? 4}</span>
             <span>{enemy.statusEffects.length ? enemy.statusEffects.map((status) =>
               content.statusEffects[status.definitionId]?.name ?? status.definitionId).join(', ') : 'Sem efeitos ativos'}</span>
           </span>}
         </button>)}
       </div>
+      {graniteRockIncoming && <div className="pixel-battle__granite-warning" role="status" aria-live="polite">
+        <strong>ROCHA PREPARADA — DEFENDA!</strong>
+        <span>O Golem vai arremessar uma pedra. Bloquear reduz o dano e impede o Abalo. Use poções para recuperar Vida.</span>
+      </div>}
       {battle.bossMechanics && <div className="pixel-battle__boss-timers" role="status">
          <strong>☷ Núcleo da Ruína · {Object.values(battle.combatants).filter((actor) => actor.side === 'enemy' && actor.alive && actor.id !== battle.bossMechanics?.bossId).length}/3 guardiões</strong>
          <span>Invocação: {5 - battle.round % 5} rodadas · Cura: {2 - battle.round % 2} rodadas</span>

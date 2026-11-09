@@ -249,3 +249,14 @@
   .battle-die-drag__arrow { animation: none; }
   .battle-die-drag__visual { transition: none; }
 }
+
+/* Telegraphed Golem boulder: only while player can act before impact. */
+.pixel-battle__granite-warning {
+  position: relative; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px;
+  align-items: center; justify-content: center; max-width: 90%; margin: 4px auto;
+  padding: 7px 12px; border: 1px solid #55c5ef; border-radius: 4px;
+  background: #14253ce8; color: #d8f4ff; text-align: center;
+  box-shadow: 0 0 11px #42baff33;
+}
+.pixel-battle__granite-warning strong { color: #95e7ff; font-weight: 800; font-size: .77rem; }
+.pixel-battle__granite-warning span { font-size: .72rem; }

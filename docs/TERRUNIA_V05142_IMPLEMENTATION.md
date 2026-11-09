@@ -37,7 +37,7 @@ Os interiores têm silhueta de castelo com muralhas, torres, salão e pontos de 
 
 ## Golem de Korduun — identidade visual e combate tático
 
-**+10% aprovado para este encontro:** na criação da luta, o motor calcula `HP máximo do Golem = ceil(1.1 × HP máximo do jogador)` e `Ataque do Golem = ceil(1.1 × Ataque do jogador)`. A Defesa do Golem permanece igual à Defesa do jogador, evitando aumentos desproporcionais provocados por arredondamento em valores baixos. O cálculo é um snapshot de entrada da instância; não se ajusta após danos, cura, poções ou efeitos para impedir exploits. Não afeta outros monstros.
+**+10% aprovado para este encontro:** na criação da luta, o motor calcula `HP máximo do Golem = ceil(1.1 × HP máximo do jogador)`, `Ataque do Golem = ceil(1.1 × Ataque do jogador)` e `Iniciativa do Golem = ceil(1.1 × Iniciativa do jogador)`. A Defesa do Golem permanece igual à Defesa do jogador, evitando aumentos desproporcionais provocados por arredondamento em valores baixos. O cálculo é um snapshot de entrada da instância; não se ajusta após danos, cura, poções ou efeitos para impedir exploits. Não afeta outros monstros.
 
 **Counterplay obrigatoriamente real:**
 - **Poção Restauradora:** ação gratuita já existente, recupera 10% de Vida ao longo de dois turnos e respeita cooldown/inventário, sem alterar a regra geral.
