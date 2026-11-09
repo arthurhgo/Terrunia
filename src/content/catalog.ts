@@ -6,6 +6,7 @@ import { essenceComponentDefinitions } from './essences'
 import { gemComponentDefinitions } from './gems'
 import { npcDefinitions } from './npcs'
 import { questDefinitions } from './quests'
+import { CLAN_EMBLEM_ITEM_ID, clanGolemQuestId, CLAN_RECRUITMENT_WAVE } from './clanProgressionV05142'
 import { skillTreeNodeDefinitions } from './skillTrees'
 import { trailDefinitions } from './trails'
 import { dungeonDefinitions } from './dungeons'
@@ -250,8 +251,13 @@ for (const quest of Object.values(content.quests)) {
   const deliveryIds = new Set<string>()
   for (const input of quest.turnInItems ?? []) {
     const item = content.items[input.itemId]
-    assertReference(item && item.sellable && !item.questLocked && !item.canInfuseBoundItem && !item.gemComponentId,
-      `${quest.id} → material comercial ${input.itemId}`)
+    const protectedClanEmblem = input.itemId === CLAN_EMBLEM_ITEM_ID &&
+      Object.values(content.clans).some((clan) => quest.id === clanGolemQuestId(clan.id))
+    assertReference(item && !item.canInfuseBoundItem && !item.gemComponentId &&
+      (protectedClanEmblem
+        ? item.category === 'quest' && item.questLocked && !item.sellable && !item.convertToEssence
+        : item.sellable && !item.questLocked),
+      `${quest.id} → material de entrega autorizado ${input.itemId}`)
     if (!Number.isSafeInteger(input.quantity) || input.quantity < 1 || deliveryIds.has(input.itemId)
       || !quest.objectives.some((objective) => objective.type === 'collect' && objective.targetId === input.itemId && objective.required === input.quantity)) {
       throw new Error(`Entrega inválida: ${quest.id} → ${input.itemId}`)
@@ -262,6 +268,10 @@ for (const quest of Object.values(content.quests)) {
     if (requirement.type === 'questCompleted') assertReference(content.quests[requirement.questId], `${quest.id} → ${requirement.questId}`)
     if (requirement.type === 'characterLevel' && (!Number.isSafeInteger(requirement.value) || requirement.value < 1)) {
       throw new Error(`Nível mínimo inválido: ${quest.id} → ${requirement.value}`)
+    }
+    if (requirement.type === 'portalWaveReached' && (!Number.isSafeInteger(requirement.value) ||
+      requirement.value < 1 || requirement.value > CLAN_RECRUITMENT_WAVE)) {
+      throw new Error(`Onda mínima inválida: ${quest.id} → ${requirement.value}`)
     }
     if ('clanId' in requirement) assertReference(content.clans[requirement.clanId], `${quest.id} → ${requirement.clanId}`)
   }
