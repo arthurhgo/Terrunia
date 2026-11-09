@@ -130,7 +130,8 @@ describe('grade pixel art v0.1', () => {
 
   it('reserva IDs editáveis para os novos biomas sem exigir PNG não produzido', () => {
     const pending = Object.values(assetRegistry).filter((asset) => asset.draftPlaceholder)
-    expect(pending).toHaveLength(25)
+    expect(pending.filter((asset) => !asset.id.startsWith('equipment.v0515.'))).toHaveLength(25)
+    expect(pending.filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(1400)
     expect(pending.filter((asset) => asset.id.startsWith('item.complementary.'))).toHaveLength(5)
     for (const asset of pending) {
       expect(asset.pixelArt).toBe(true)
