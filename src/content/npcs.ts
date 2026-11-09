@@ -120,9 +120,9 @@ const baseNpcDefinitions = [
     questIds: [questId], portraitAssetId: `${id}.portrait`, dialogue: [`A prova de ${title} exige ação, não uma escolha de menu.`], status: 'CONTENT_DRAFT' as const,
   })),
   {
-    id: 'npc_neris', name: 'Neris', title: 'Mercadora de Materiais', settlementId: 'terran',
+    id: 'npc_neris', name: 'Neris', title: 'Mercadora de Equipamentos', settlementId: 'terran',
     roles: ['vendor', 'questGiver'], questIds: [], portraitAssetId: 'npc.neris.portrait',
-    dialogue: ['Cada material guarda um caminho. Trago ligas, peças e suprimentos para quem deseja explorar e forjar.', 'Durnan transforma os componentes na Casa do Ferreiro. Sua arma conserva a história que você construiu.'],
+    dialogue: ['Cada armadura possui uma história possível. Trago equipamentos e conjuntos de todos os estilos para os viajantes de Terran.', 'Durnan aprimora cada peça na Casa do Ferreiro. Seus Vínculos permanecem intactos enquanto você cria seu próprio visual.'],
     status: 'CONTENT_DRAFT',
   },
   {
