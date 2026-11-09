@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { content } from '../../content/catalog'
 import { CLAN_SPELL_OPTIONS } from '../../content/clanSpells'
 import { ROSETTA_CLAN_QUEST, getClanRecommendations } from '../../domain/progression/clanOrientation'
-import { clanTableQuestId, clanGolemQuestId } from '../../content/clanProgressionV05142'
+import { clanTableQuestId, clanGolemQuestId, CLAN_RECRUITMENT_WAVE } from '../../content/clanProgressionV05142'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { ArcanePanel } from '../components/ArcanePanel'
@@ -12,22 +12,17 @@ import { Modal } from '../components/Modal'
 import { AssetImage } from '../components/AssetImage'
 import { SocialQuestDialog } from './SocialQuestDialog'
 
-const nextQuestFor=(questIds:readonly string[],save:GameSave)=>questIds.map(id=>save.quests[id])
-  .find(progress=>progress&&progress.status!=='completed')
-
 export function ClanHallPanel({save}:{save:GameSave}){
   const chooseSpell=useGameStore(s=>s.chooseInitialClanSpell)
-  const joinClan=useGameStore(s=>s.joinClan)
   const unlockClass=useGameStore(s=>s.unlockClass)
   const [selectedQuestId,setSelectedQuestId]=useState<string|null>(null)
-  const [confirmClanId,setConfirmClanId]=useState<string|null>(null)
   const [confirmClassId,setConfirmClassId]=useState<string|null>(null)
   const [confirmSkillId,setConfirmSkillId]=useState<string|null>(null)
   const joinedClan=save.character.clan.clanId?content.clans[save.character.clan.clanId]:null
-  const eligibleClan=confirmClanId?content.clans[confirmClanId]:null
   const eligibleClass=confirmClassId?content.classes[confirmClassId]:null
   const oriented=save.character.level>=4&&save.quests[ROSETTA_CLAN_QUEST]?.status==='completed'
   const candidate=save.character.clan.candidateClanId
+  const waveBest=save.world.portalWaveBest??0
   const mainLore=save.quests.main_lore_identity_01
   const suggestions=getClanRecommendations(save,content)
   const pendingSkill=joinedClan&&save.character.clan.selectedClanSkillId===null
@@ -39,41 +34,39 @@ export function ClanHallPanel({save}:{save:GameSave}){
       </span></div>
       {!joinedClan&&<p>{!oriented
         ? `Rosetta oferece Os Quatro Caminhos no nível 4. Nível atual: ${save.character.level}. A orientação termina ao entrar neste Salão.`
-        : candidate?`Candidatura: ${content.clans[candidate]?.name}. Entregue a missão da mesa e vença as três provas de três ondas com seu líder.`
+        : candidate?`Candidatura: ${content.clans[candidate]?.name}. Entregue a missão da mesa, vença a onda ${CLAN_RECRUITMENT_WAVE} no Portal, derrote o Golem e entregue o Emblema ao líder.`
           :'Fale com um líder e aceite a missão da Mesa de Iniciação. Esse aceite registra sua candidatura exclusiva.'}</p>}
       {!joinedClan&&<div className="clan-path-grid">{Object.values(content.clans).map(clan=>{
-        const eligible=save.character.clan.eligibleClanIds.includes(clan.id)
         const tableQuest=save.quests[clanTableQuestId(clan.id)]
-         const nextQuest=tableQuest?.status!=='completed'?tableQuest:nextQuestFor(clan.recruitmentQuestIds,save)
-        const complete=clan.recruitmentQuestIds.filter(id=>save.quests[id]?.status==='completed').length
+        const bossQuest=save.quests[clanGolemQuestId(clan.id)]
         const current=candidate===clan.id
-         const leader=content.npcs[clan.recruiterNpcId]
+        const leader=content.npcs[clan.recruiterNpcId]
         const advice=suggestions.find(c=>c.clanId===clan.id)
-        return <article key={clan.id} className={eligible?'eligible':''}><Sparkles size={22}/>
+        return <article key={clan.id} className={current?'eligible':''}><Sparkles size={22}/>
           <h3>{clan.name}</h3><p>{clan.philosophy}</p>
           <small>{advice?.explanation}</small>
-          <span className="clan-trial-progress">PROVAS <strong>{complete}/3</strong></span>
-          {!oriented?<small>🔒 Primeiro visite o Salão após aceitar Os Quatro Caminhos.</small>
-             : candidate && !current?<small>Outro caminho já escolhido. O juramento é exclusivo.</small>
-             : eligible?<GameButton variant="primary" onClick={()=>setConfirmClanId(clan.id)}><Award size={16}/> Confirmar rito único</GameButton>
-             : <small>{nextQuest?.status === 'active' && tableQuest?.status !== 'completed'
-                 ? 'Interaja com a Mesa de Iniciação e retorne ao líder.'
-                 : `Fale com ${leader?.name ?? 'o líder do Clã'} para ${!candidate ? 'aceitar a candidatura' : 'receber ou entregar a prova'}.`}</small>}
+          <span className="clan-trial-progress">MODO ONDAS <strong>{Math.min(waveBest,CLAN_RECRUITMENT_WAVE)}/{CLAN_RECRUITMENT_WAVE}</strong></span>
+          {!oriented ? <small>🔒 Conclua Os Quatro Caminhos com Rosetta.</small>
+           : candidate && !current ? <small>Candidatura exclusiva a outro Clã.</small>
+           : tableQuest?.status !== 'completed' ? <small>{tableQuest?.status === 'active'
+               ? 'Interaja com a Mesa de Iniciação e entregue ao líder.'
+               : `Fale com ${leader?.name ?? 'o líder'} e aceite a missão da Mesa de Iniciação.`}</small>
+           : waveBest < CLAN_RECRUITMENT_WAVE ? <small>Progresso: {waveBest}/{CLAN_RECRUITMENT_WAVE}. Continue no Modo Ondas do Portal de Astravél.</small>
+           : <small>{bossQuest?.status === 'active'
+               ? 'Missão aceita. Fale com o líder para ser transportado ao Golem.'
+               : bossQuest?.status === 'ready_to_turn_in'
+                 ? 'Emblema recuperado. Entregue-o ao líder para ser recrutado.'
+                 : `Onda 14 vencida. Fale com ${leader?.name ?? 'o líder'} para iniciar O Coração de Granito.`}</small>}
         </article>
       })}</div>}
       {joinedClan&&<section className="clan-joined-path">
         <strong>Clã atual: {joinedClan.name} — filiação única</strong>
          <article className="main-lore-unlock">
-           <Award size={24}/><span><small>DESAFIO DE NÍVEL 7</small>
-           <strong>O Coração de Granito</strong>
-           <p>{save.character.level<7
-             ? `Disponível a partir do nível 7 (atual: ${save.character.level}).`
-             : save.quests[clanGolemQuestId(joinedClan.id)]?.status==='completed'
-               ? 'Golem derrotado e missão entregue.'
-               : `Fale com ${content.npcs[joinedClan.recruiterNpcId]?.name} para aceitar a prova do Golem e retornar após a vitória.`}</p>
-           </span>
+           <Award size={24}/><span><small>BASE DE CLÃ · ACESSO LIBERADO</small>
+           <strong>Castelo de {joinedClan.name}</strong>
+           <p>O Emblema foi entregue. Use o miniportal do Salão dos Clãs para visitar seu castelo. NPCs, missões e funções exclusivas serão adicionadas futuramente.</p></span>
          </article>
-        {pendingSkill?<div className="clan-skill-choices" aria-label="Escolha sua primeira magia de Clã">
+         {pendingSkill?<div className="clan-skill-choices" aria-label="Escolha sua primeira magia de Clã">
           <h3>Escolha uma magia inicial (1 de 3)</h3>
           <p>As outras duas ficam reservadas à progressão futura. Confirme sua escolha.</p>
           <div className="clan-skill-choices__grid">{CLAN_SPELL_OPTIONS[joinedClan.id]?.map(skillId=>{
@@ -107,12 +100,6 @@ export function ClanHallPanel({save}:{save:GameSave}){
         </article>}
     </ArcanePanel>
     <SocialQuestDialog questId={selectedQuestId} save={save} onClose={()=>setSelectedQuestId(null)}/>
-    <Modal open={Boolean(eligibleClan)} onClose={()=>setConfirmClanId(null)}
-      title={`Vínculo com ${eligibleClan?.name??''}`} eyebrow="RITO ÚNICO DE CLÃ"
-      footer={<div className="quest-offer-actions"><GameButton variant="ghost" onClick={()=>setConfirmClanId(null)}>Voltar</GameButton>
-        <GameButton variant="primary" onClick={()=>{if(eligibleClan)joinClan(eligibleClan.id);setConfirmClanId(null)}}>Confirmar Clã permanentemente</GameButton></div>}>
-      <p>Você poderá pertencer a apenas um Clã. Após o rito, não será possível trocar ou acumular filiações. Sua Classe continuará sendo desenvolvida posteriormente.</p>
-    </Modal>
     <Modal open={Boolean(confirmSkillId)} onClose={()=>setConfirmSkillId(null)}
       title={content.combatSkills[confirmSkillId??'']?.name??'Escolha de magia'} eyebrow="UMA MAGIA INICIAL"
       footer={<div className="quest-offer-actions"><GameButton variant="ghost" onClick={()=>setConfirmSkillId(null)}>Rever opções</GameButton>
