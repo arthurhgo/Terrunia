@@ -2522,6 +2522,134 @@
       "width": 16,
       "height": 16,
       "atlas": null
+    },
+    {
+      "assetId": "skill.skill_clan_dunavar_aegis",
+      "path": "/assets/skills/skill_clan_dunavar_aegis.png",
+      "family": "skill",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_clan_dunavar_barrier_shock",
+      "path": "/assets/skills/skill_clan_dunavar_barrier_shock.png",
+      "family": "skill",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_clan_rustal_ward",
+      "path": "/assets/skills/skill_clan_rustal_ward.png",
+      "family": "skill",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_clan_rustal_disjunction",
+      "path": "/assets/skills/skill_clan_rustal_disjunction.png",
+      "family": "skill",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_clan_cebios_omen",
+      "path": "/assets/skills/skill_clan_cebios_omen.png",
+      "family": "skill",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_clan_cebios_orbit_shards",
+      "path": "/assets/skills/skill_clan_cebios_orbit_shards.png",
+      "family": "skill",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_clan_estres_containment",
+      "path": "/assets/skills/skill_clan_estres_containment.png",
+      "family": "skill",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "skill.skill_clan_estres_discharge",
+      "path": "/assets/skills/skill_clan_estres_discharge.png",
+      "family": "skill",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "action.attack-single",
+      "path": "/assets/actions/attack_single.png",
+      "family": "action",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "action.attack-area",
+      "path": "/assets/actions/attack_cleave.png",
+      "family": "action",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "status.status_resonant_fracture",
+      "path": "/assets/status/status_resonant_fracture.png",
+      "family": "status",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "status.status_clan_aegis",
+      "path": "/assets/status/status_clan_aegis.png",
+      "family": "status",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "status.status_clan_rune_ward",
+      "path": "/assets/status/status_clan_rune_ward.png",
+      "family": "status",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "status.status_clan_disjunction",
+      "path": "/assets/status/status_clan_disjunction.png",
+      "family": "status",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "status.status_clan_omen",
+      "path": "/assets/status/status_clan_omen.png",
+      "family": "status",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "status.status_clan_containment",
+      "path": "/assets/status/status_clan_containment.png",
+      "family": "status",
+      "width": 32,
+      "height": 32,
+      "atlas": null
     }
   ]
 }
