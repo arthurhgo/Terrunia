@@ -28,7 +28,7 @@ import {
 import { discoverDungeonRoom, enterDungeon, exitDungeon, FUNGAL_DUNGEON_ID,
   startDungeonEncounter as prepareDungeonEncounter, claimDungeonEncounter } from '../domain/exploration/dungeonEngine'
 import { FUNGAL_BOSS_ENCOUNTER_ID } from '../content/fungalChambers'
-import { GRANITE_GOLEM_ENCOUNTER_ID, clanGolemQuestId, MAIN_CLAN_AFFILIATION_QUEST, CLAN_AFFILIATION_RITE_ID } from '../content/clanProgressionV05142'
+import { GRANITE_GOLEM_ENCOUNTER_ID, clanGolemQuestId, clanTableQuestId, MAIN_CLAN_AFFILIATION_QUEST, CLAN_AFFILIATION_RITE_ID, CLAN_RECRUITMENT_WAVE, GRANITE_HEART_INSTANCE_ID } from '../content/clanProgressionV05142'
 import { ROSETTA_CLAN_QUEST } from '../domain/progression/clanOrientation'
 import { chooseClanCandidate as chooseClanCandidateDomain, chooseInitialClanSpell as chooseInitialClanSpellDomain } from '../domain/progression/clanOrientation'
 import { startClanTrialWave as prepareClanWave, claimClanTrialWave } from '../domain/progression/clanTrials'
@@ -447,11 +447,25 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!save) return
       const completed = turnInQuestDomain(save, questId, npcId, content, nowIso(), choiceItemId)
       if (!completed.ok) return failAction(completed.message)
-      const completedSave=completed.value
-      if(completedSave.clanTrialRun?.questId===questId&&completedSave.clanTrialRun.phase==='won')
-        completedSave.clanTrialRun=null
-      commit(completedSave)
-      show('Missão concluída', 'Recompensas aplicadas e registro movido para Concluídas.', 'success')
+      let next = completed.value
+      if (next.clanTrialRun?.questId === questId && next.clanTrialRun.phase === 'won')
+        next.clanTrialRun = null
+      const clan = Object.values(content.clans).find((entry) => clanGolemQuestId(entry.id) === questId)
+      if (clan) {
+        // turnInQuestDomain atomically validates and consumes the Emblem before joining.
+        const joined = joinClanDomain(next, clan.id, content, nowIso())
+        if (!joined.ok) return failAction(joined.message)
+        next = joined.value
+        if (next.quests[MAIN_CLAN_AFFILIATION_QUEST]?.status === 'active') {
+          next = applyQuestEvent(next, { type: 'completeRite', targetId: CLAN_AFFILIATION_RITE_ID }, content, nowIso())
+          const finished = turnInQuestDomain(next, MAIN_CLAN_AFFILIATION_QUEST, 'npc_curador_nexo', content, nowIso())
+          if (finished.ok) next = finished.value
+        }
+      }
+      commit(next)
+      show(clan ? 'Clã conquistado' : 'Missão concluída',
+        clan ? `Emblema entregue a ${content.npcs[npcId]?.name}. Filiação a ${clan.name} confirmada; o miniportal do castelo está aberto.`
+          : 'Recompensas aplicadas e registro movido para Concluídas.', 'success')
     },
 
     inspectCityLandmark: (landmarkId) => {
@@ -491,20 +505,23 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!save || save.battle || save.vitals.hp <= 0)
         return failAction('Finalize o encontro atual ou descanse antes de aceitar o desafio.')
       const clanId = save.character.clan.clanId
-      if (!clanId || save.character.level < 7 || questId !== clanGolemQuestId(clanId) ||
+      if (!clanId || save.character.clan.clanId || (save.world.portalWaveBest ?? 0) < CLAN_RECRUITMENT_WAVE ||
+          save.quests[clanTableQuestId(clanId)]?.status !== 'completed' ||
+          questId !== clanGolemQuestId(clanId) ||
           save.world.currentLocationId !== 'location_terran_clan_hall' ||
           save.quests[questId]?.status !== 'active')
-        return failAction('Fale com o líder do seu Clã no Salão após alcançar o nível 7 e aceitar a missão.')
+        return failAction('Conclua a onda 14 do Portal, aceite O Coração de Granito e fale com o líder do Clã no Salão.')
       const encounter = content.encounters[GRANITE_GOLEM_ENCOUNTER_ID]
       if (!encounter) return failAction('Encontro do Golem de Granito não cadastrado.')
       const next = structuredClone(save)
       next.battle = createBattle(next, encounter, content, undefined, { manualInitiative: true })
       next.battle.clanBossQuestId = questId
+      next.world.currentLocationId = GRANITE_HEART_INSTANCE_ID
       const player = next.battle.combatants.combatant_player
       next.vitals = { hp: player.hp, mp: player.mp }
       next.updatedAt = nowIso()
       next.revision += 1
-      next.eventLog.push(`GraniteTrialStarted:${questId}`)
+      next.eventLog.push(`ClanLeaderTransportedToGraniteHeart:${clanId}`)
       commit(next)
       show('Golem de Granito', 'Observe a preparação do esmagamento e use Defender no turno certo.', 'info')
     },
@@ -1068,6 +1085,8 @@ export const useGameStore = create<GameState>((set, get) => {
       next.battle = { ...battle, claimed: true }
       if (battle.waveIndex) {
         next.world.portalWaveBest = Math.max(next.world.portalWaveBest ?? 0, battle.waveIndex)
+        if (battle.waveIndex >= CLAN_RECRUITMENT_WAVE && !save.character.clan.clanId)
+          next.eventLog.push(`ClanRecruitmentWaveReached:${battle.waveIndex}`)
       }
       if (battle.clanTrialQuestId && battle.clanTrialRunId) {
         const progress=claimClanTrialWave(next,battle.clanTrialQuestId,battle.clanTrialRunId,battle.encounterId,acquiredAt)
@@ -1124,7 +1143,8 @@ export const useGameStore = create<GameState>((set, get) => {
           acquiredAt,
         )
       }
-      // Level-gated optional missions must be re-evaluated after battle XP.
+      // The Emblem is a real inventory delivery objective after claiming the boss drop.
+      next = refreshDeliveryQuestProgress(next, content, acquiredAt)
       next = refreshQuestAvailability(next, content, acquiredAt)
       commit(next)
       show(
@@ -1149,6 +1169,7 @@ export const useGameStore = create<GameState>((set, get) => {
         return failAction('Receba as recompensas antes de continuar a expedição.')
       }
       const next = structuredClone(save)
+      if (next.battle?.clanBossQuestId) next.world.currentLocationId = 'location_terran_clan_hall'
       next.battle = null
       next.updatedAt = nowIso()
       next.revision += 1
@@ -1172,9 +1193,10 @@ export const useGameStore = create<GameState>((set, get) => {
       const next = structuredClone(save)
       next.battle = null
       next.dungeonRun = null
-      next.world.currentLocationId = 'location_terran_portal_plaza'
-      if (!next.world.unlockedLocationIds.includes('location_terran_portal_plaza')) {
-        next.world.unlockedLocationIds.push('location_terran_portal_plaza')
+      const destination = save.battle?.clanBossQuestId ? 'location_terran_clan_hall' : 'location_terran_portal_plaza'
+      next.world.currentLocationId = destination
+      if (!next.world.unlockedLocationIds.includes(destination)) {
+        next.world.unlockedLocationIds.push(destination)
       }
       next.updatedAt = nowIso()
       next.revision += 1
