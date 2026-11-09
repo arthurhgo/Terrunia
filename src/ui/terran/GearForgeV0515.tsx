@@ -19,7 +19,7 @@ export function GearForgeV0515({save}:{save:GameSave}){
    return <article key={item.instanceId} className="forge-recipe">
     <AssetImage assetId={offer.assetId} alt=""/>
     <div><h3>{offer.name} · T{offer.tier} G{grade}</h3>
-     <small>{offer.stat} +{offer.values[grade-1]}{grade<3?' → +'+offer.values[grade]:''}</small>
+     <small>{offer.stat} +{offer.values[grade-1]}{grade<3?' → +'+offer.values[Math.min(2,grade)]:''}</small>
      <small>{item.locked||item.favorite?'Peça protegida. Desproteja para forjar.':
       grade===3?'Grau máximo alcançado':price+' Ouro · materiais adicionais: OWNER_DECISION'}</small></div>
     <button type="button" disabled={!eligible}
