@@ -28,7 +28,6 @@ describe('v0.5.14 · combate das Câmaras Fúngicas', () => {
   it('protege a Sentinela contra ataques diretos e Golpe Ressonante enquanto existem fungos', () => {
     const battle = readyBoss('boss-protected')
     const boss = enemies(battle).find((actor) => actor.definitionId === 'enemy_ruin_corrupted_sentinel')!
-    const guard = enemies(battle).find((actor) => actor.id !== boss.id)!
     expect(isProtectedBoss(battle, boss)).toBe(true)
     expect(submitBattleCommand(battle, { type: 'attack', targetId: boss.id }, content))
       .toMatchObject({ ok: false, code: 'INVALID_TARGET' })
