@@ -516,6 +516,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           <EnemyMotionSprite
             assetId={content.enemies[enemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'}
             reducedMotion={reducedMotion}
+            throwRock={strikeFx?.actorId === enemy.id && strikeFx.style === 'projectile'}
             motion={visualHp(enemy.id) <= 0 ? 'defeat'
               : strikeFx?.actorId === enemy.id ? 'attack'
                 : strikeFx?.targetId === enemy.id || receivingId === enemy.id ? 'hit' : 'idle'} />

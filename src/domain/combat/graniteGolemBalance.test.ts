@@ -28,6 +28,7 @@ describe('Golem de Granito v0.5.14.2 — duelo tático +10%', () => {
     expect(golem.maxHp).toBe(Math.ceil(player.maxHp * GRANITE_GOLEM_BALANCE.playerStatMultiplier))
     expect(golem.attackPower).toBe(Math.ceil(player.attackPower * GRANITE_GOLEM_BALANCE.playerStatMultiplier))
     expect(golem.mitigation).toBe(player.mitigation)
+    expect(golem.initiative).toBe(Math.ceil(Math.max(1, player.initiative) * 1.1))
     expect(battle.phase).toBe('AwaitingInitiative')
     expect(battle.canFlee).toBe(false)
     const bigger = fresh()

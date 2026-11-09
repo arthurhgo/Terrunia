@@ -111,16 +111,16 @@
   filter: drop-shadow(0 0 7px #2ca4cf75) drop-shadow(4px 8px 2px #0009);
 }
 .enemy-motion-legacy[data-asset="enemy.granite-golem"][data-motion="attack"] {
-  animation-name: terrunia-granite-heave; animation-duration: 740ms !important;
+  animation-name: terrunia-granite-heave; animation-duration: 440ms !important;
   animation-timing-function: steps(6, end); animation-iteration-count: 1;
 }
-.enemy-motion-legacy[data-asset="enemy.granite-golem"][data-motion="attack"]::after {
+.enemy-motion-legacy[data-asset="enemy.granite-golem"][data-throw-rock="true"]::after {
   content: ''; position: absolute; width: 29px; height: 28px; left: 44%; top: 8%;
   background: linear-gradient(140deg, #c8c5bf 0 15%, #81818e 16% 40%, #4b4859 41% 72%, #343449 73%);
   border: 3px solid #303242;
   clip-path: polygon(22% 0, 75% 4%, 100% 38%, 91% 84%, 57% 100%, 10% 83%, 0 38%);
   box-shadow: inset -4px -5px 0 #303446, 0 0 8px #65ccef88;
-  pointer-events: none; animation: terrunia-granite-rock-flight 740ms steps(7,end) forwards;
+  pointer-events: none; animation: terrunia-granite-rock-flight 440ms steps(7,end) forwards;
 }
 @keyframes terrunia-granite-heave {
   0%,10% {transform: translateY(0) rotate(0deg);}
@@ -135,7 +135,7 @@
   100% {transform: translate(-168px,108px) scale(1.5) rotate(240deg);opacity:0;}
 }
 @media (prefers-reduced-motion: reduce) {
-  .enemy-motion-legacy[data-asset="enemy.granite-golem"][data-motion="attack"]::after {
+  .enemy-motion-legacy[data-asset="enemy.granite-golem"][data-throw-rock="true"]::after {
     animation: none !important;opacity:0;
   }
 }

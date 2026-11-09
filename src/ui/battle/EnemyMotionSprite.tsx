@@ -29,8 +29,8 @@ export const legacyEnemyMotion: Record<string, { idleMs: number; lunge: number; 
 }
 
 /** Presentation-only animation: domain controls damage, attack timing and death. */
-export function EnemyMotionSprite({ assetId, motion = 'idle', reducedMotion = false }: {
-  assetId: string; motion?: EnemyMotionState; reducedMotion?: boolean
+export function EnemyMotionSprite({ assetId, motion = 'idle', reducedMotion = false, throwRock = false }: {
+  assetId: string; motion?: EnemyMotionState; reducedMotion?: boolean; throwRock?: boolean
 }) {
   const asset = resolveAsset(assetId)
   const sheet = asset.motionSheet
@@ -45,7 +45,7 @@ export function EnemyMotionSprite({ assetId, motion = 'idle', reducedMotion = fa
       animationDuration: `${motion === 'idle' ? profile.idleMs : motion === 'attack' ? 540 : motion === 'hit' ? 420 : 800}ms`,
     } as CSSProperties
     return <span key={`${assetId}:${motion}`} className="enemy-motion-legacy"
-      data-motion={motion} data-asset={assetId} style={style} aria-hidden="true">
+      data-motion={motion} data-asset={assetId} data-throw-rock={throwRock ? "true" : undefined} style={style} aria-hidden="true">
       <AssetImage assetId={assetId} alt="" className="enemy-motion-fallback" />
     </span>
   }

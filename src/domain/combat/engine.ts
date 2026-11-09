@@ -628,6 +628,7 @@ export const createBattle = (
       golem.hp = golem.maxHp
       golem.attackPower = Math.ceil(player.attackPower * GRANITE_GOLEM_BALANCE.playerStatMultiplier)
       golem.mitigation = player.mitigation
+      golem.initiative = Math.ceil(Math.max(1, player.initiative) * GRANITE_GOLEM_BALANCE.playerStatMultiplier)
     }
   }
   const combatants = [player, ...enemies]
