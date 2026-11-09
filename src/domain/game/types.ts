@@ -140,6 +140,18 @@ export type NPCRelationshipState = {
 
 export type TrailNodeStatus = 'completed' | 'current' | 'locked' | 'boss' | 'bossCurrent'
 
+export type DungeonRunState = {
+  runId: string
+  dungeonId: 'dungeon_fungal_chambers'
+  roomIndex: number
+  stageIndex: 1 | 2 | 3
+  mode: 'stages' | 'boss' | 'won'
+  completedStageIds: string[]
+  clearedRoomIds: string[]
+  activeEncounterId: string | null
+  createdAt: string
+}
+
 export type WorldProgress = {
   currentLocationId: string
   unlockedLocationIds: string[]
@@ -190,6 +202,8 @@ export type GameSave = {
   relationships: Record<string, NPCRelationshipState>
   world: WorldProgress
   battle: BattleState | null
+  /** Optional, run-local state. Old campaign saves start fresh when entering the dungeon. */
+  dungeonRun?: DungeonRunState | null
   settings: PlayerSettings
   eventLog: string[]
 }
