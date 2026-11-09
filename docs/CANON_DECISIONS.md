@@ -129,3 +129,7 @@ Quatro novos ícones nativos 16×16 e textos de lição são `VISUAL_DRAFT`/`CON
 | Fauna progressiva | A lista inicial não apresentava escalonamento suficiente de silhuetas entre os 15 encontros. | Adicionar quatro inimigos `CONTENT_DRAFT`/ `BALANCE_DRAFT` de níveis 2–5 e sprites `VISUAL_DRAFT` substituíveis. Reutilizar famílias de materiais já existentes; não criar drops de equipamento que substituam os cinco Vínculos. |
 
 Balanceamento, nomes finais, lore dos novos monstros e arte final continuam `OWNER_DECISION`; os números e sprites deste incremento são provisórios.
+
+## v0.5.15 — Venda exclusiva e revestimentos
+
+A autorização do criador para implementar os catálogos não revoga o vínculo permanente da v0.4. Equipamento comercial de Arma, Escudo, Armadura, Colar e Pulseira é revestimento separado, com status e visual variáveis, sem substituir item-base, memória, Ressonância, componentes ou Skill Tree. Comprar Classe/Clã exige castelo e progressão reais. Materiais específicos de G2/G3 e ranks ainda são OWNER_DECISION; documentados em `docs/TERRUNIA_V0515_EQUIPMENT.md`.
