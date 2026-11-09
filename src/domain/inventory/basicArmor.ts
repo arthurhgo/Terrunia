@@ -1,3 +1,4 @@
+import { checkGearWear } from './equipmentV0515'
 import { gearOfferById } from '../../content/equipmentV0515'
 import type { ContentCatalog } from '../../content/catalog'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
@@ -20,6 +21,8 @@ export function equipBasicArmor(save: GameSave, instanceId: string | null, catal
     const item = save.inventory.find((entry) => entry.instanceId === instanceId)
     if (!item || item.quantity !== 1 || !catalog.items[item.definitionId]?.basicArmor) return fail('EQUIP_ITEM', 'Escolha uma proteção simples da sua mochila.')
     if (item.locked) return fail('EQUIP_LOCKED', 'Desbloqueie esta peça antes de equipar.')
+    const gear = gearOfferById[item.definitionId]
+    if (gear) { const permission = checkGearWear(save,gear); if (!permission.ok) return permission }
   }
   // Atomic transfer: one physical instance belongs either to backpack or the worn slot.
   const next = structuredClone(save)
