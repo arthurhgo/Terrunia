@@ -1,10 +1,12 @@
+import { gearOfferById, getGearGrade, type GearPalette } from '../../content/equipmentV0515'
+import type { ComplementarySlot } from '../../domain/shared/types'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import type { ActorFacing } from '../terran/pixelActorArt'
 import { getWeaponGripProfile } from '../prologue/weaponGripProfiles'
 
 export const VISUAL_EQUIPMENT_ORDER = ['armor', 'necklace', 'bracelet', 'shield', 'weapon'] as const
-export type CharacterVisualSlot = (typeof VISUAL_EQUIPMENT_ORDER)[number]
+export type CharacterVisualSlot = (typeof VISUAL_EQUIPMENT_ORDER)[number] | ComplementarySlot
 export type VisualItem = {
   slot: CharacterVisualSlot
   assetId: string
@@ -15,11 +17,21 @@ export type VisualItem = {
   rarity?: string
   sheathed?: boolean
   visualTier?: number
+  forgeGrade?: number
+  palette?: GearPalette
 }
 /** One source of truth for exactly what the owner has equipped. Never creates an item. */
 export function getVisualEquipment(save: GameSave, sheathed = false): VisualItem[] {
   const items: VisualItem[] = []
   for (const slot of VISUAL_EQUIPMENT_ORDER) {
+    const wornShell = save.equippedGearStyles?.[slot]
+    const gearShell = wornShell ? gearOfferById[wornShell.definitionId] : undefined
+    if (gearShell && save.character.bondedEquipment[slot]) {
+      items.push({slot,assetId:gearShell.assetId,itemId:gearShell.id,itemName:gearShell.name,
+        forged:getGearGrade(wornShell?.refinementLevel)>1,forgeGrade:getGearGrade(wornShell?.refinementLevel),
+        visualTier:gearShell.tier,palette:gearShell.palette,sheathed:slot==='weapon'&&sheathed})
+      continue
+    }
     const instanceId = save.character.bondedEquipment[slot]
     const instance = instanceId ? save.boundItems[instanceId] : null
     const base = instance?.slot === slot ? content.boundItemBases[instance.baseItemId] : null
@@ -28,10 +40,22 @@ export function getVisualEquipment(save: GameSave, sheathed = false): VisualItem
       if (assetId) items.push({ slot, assetId, itemId: base.id, itemName: base.name, forged: Boolean(instance.forging?.upgradeIds.length), sheathed: slot === 'weapon' && sheathed, visualTier: instance.grade })
     } else if (slot === 'armor' && save.equippedBasicArmor) {
       const definition = content.items[save.equippedBasicArmor.definitionId]
-      if (definition?.basicArmor && definition.iconAssetId) items.push({
-        slot, assetId: definition.iconAssetId, itemId: definition.id, itemName: definition.name, forged: false, rarity: definition.rarity, visualTier: definition.basicArmor.tier,
-      })
+      if (definition?.basicArmor && definition.iconAssetId) {
+        const catalog = gearOfferById[definition.id]
+        items.push({slot,assetId:definition.iconAssetId,itemId:definition.id,itemName:definition.name,
+          forged:Boolean(save.equippedBasicArmor.refinementLevel),rarity:definition.rarity,
+          visualTier:definition.basicArmor.tier,...(catalog?{palette:catalog.palette,forgeGrade:getGearGrade(save.equippedBasicArmor.refinementLevel)}:{})})
+      }
     }
+  }
+  const complementarySlots: ComplementarySlot[]=['pants','boots','helmet','accessoryA','accessoryB']
+  for (const slot of complementarySlots) {
+    const worn=save.equippedComplementary?.[slot]
+    const definition=worn&&content.items[worn.definitionId]
+    const gear=worn&&gearOfferById[worn.definitionId]
+    if (worn && definition && gear) items.push({slot,assetId:gear.assetId,itemId:gear.id,itemName:gear.name,
+      forged:getGearGrade(worn.refinementLevel)>1,forgeGrade:getGearGrade(worn.refinementLevel),
+      visualTier:gear.tier,palette:gear.palette,rarity:definition.rarity})
   }
   return items
 }
@@ -71,6 +95,11 @@ export function getEquipmentAnchor(item: VisualItem, facing: ActorFacing): Visua
   if (item.slot === 'shield') return left
     ? point(26, 24, 14, .5, .7, -8, 'front')
     : point(6, 24, 14, .5, .7, 8, back ? 'back' : 'front')
+  if (item.slot === 'helmet') return point(16, 13, 16)
+  if (item.slot === 'pants') return point(16, 26, 13)
+  if (item.slot === 'boots') return point(16, 30, 13)
+  if (item.slot === 'accessoryA') return point(11, 22, 6)
+  if (item.slot === 'accessoryB') return point(21, 22, 6)
   if (item.slot === 'armor') return point(16, 21, 17, .5, .42, 0)
   if (item.slot === 'necklace') return point(16, 18, 7, .5, .5)
   return point(left ? 7 : 25, 25, 6, .5, .5)
