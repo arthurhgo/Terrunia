@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useGameStore } from '../../state/gameStore'
 import { BookOpen, MessageCircle, Wrench } from 'lucide-react'
 import { content } from '../../content/catalog'
 import type { TerranLocationDefinition } from '../../content/types'
@@ -27,6 +28,8 @@ export function NpcMissionHub({ save, presence, initialQuestId, onClose, onServi
 }) {
   const quests = presence.npcId ? getNpcActionableQuests(save, presence.npcId, content) : []
   const [topic, setTopic] = useState<string>(initialQuestId)
+  const [confirmRite, setConfirmRite] = useState(false)
+  const joinClan = useGameStore((state) => state.joinClan)
   const previousStatuses = useRef<Record<string, string>>({})
   // Accepted missions move to the end; offer the next available quest in the same dialogue.
   useEffect(() => {
@@ -40,6 +43,10 @@ export function NpcMissionHub({ save, presence, initialQuestId, onClose, onServi
   }, [save.revision, topic, presence.npcId])
   const selected = quests.find((q) => q.id === topic) ?? quests[0]
   const talking = topic === 'talk'
+  const leaderClan = Object.values(content.clans).find((clan) => clan.recruiterNpcId === presence.npcId)
+  const canCompleteRite = Boolean(leaderClan && !save.character.clan.clanId &&
+    save.character.clan.candidateClanId === leaderClan.id &&
+    save.character.clan.eligibleClanIds.includes(leaderClan.id))
   const portrait = getPresencePortrait(presence)
   const script = getTerranDialogue(save, presence)
   const progress = selected ? save.quests[selected.id] : null
@@ -72,6 +79,16 @@ export function NpcMissionHub({ save, presence, initialQuestId, onClose, onServi
         </div>
         <QuestNpcPanel embedded save={save} questId={selected.id} onClose={onClose}/>
       </div>}
+      {canCompleteRite && leaderClan && <section className="npc-mission-hub__detail" aria-label="Rito de filiação do Clã">
+        <strong>Três provas concluídas — {leaderClan.name}</strong>
+        <p>Você cumpriu as nove ondas de iniciação. Confirmar o rito vincula permanentemente este Terrírian ao Clã escolhido.</p>
+        {!confirmRite
+          ? <button type="button" className="terran-service-action" onClick={() => setConfirmRite(true)}>Solicitar rito de filiação</button>
+          : <div className="terran-quest-dialog__actions" role="group" aria-label="Confirmar filiação exclusiva">
+              <button type="button" onClick={() => setConfirmRite(false)}>Cancelar</button>
+              <button type="button" className="terran-service-action" onClick={() => { joinClan(leaderClan.id); onClose() }}>Confirmar filiação única a {leaderClan.name}</button>
+            </div>}
+      </section>}
       {talking && <p className="npc-mission-hub__talk-note">Escolha respostas na conversa acima. Suas missões e recompensas continuam preservadas.</p>}
     </section>
   </DialogueWindow>
