@@ -43,6 +43,7 @@
    Card dimensions are derived from both columns and the remaining row height. */
 .pixel-battle__actions .pixel-battle__submenu--skill-picker {
   inset: 44px 7px 7px;
+  background: #071321;
   padding: 4px 48px 4px 7px;
   display: flex;
   flex-wrap: nowrap;

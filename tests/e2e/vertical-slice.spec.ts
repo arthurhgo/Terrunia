@@ -150,7 +150,7 @@ test('v0.5.13.1: revisitar Astravél pelo Portal preserva acesso ao encontro 15/
   await page.getByRole('button', { name: 'Seguir objetivo' }).click()
   await expect(page.getByRole('complementary', { name: 'Painel lateral: Câmaras Fúngicas' })).toBeVisible({ timeout: 25_000 })
   await page.getByRole('button', { name: 'Adentrar Câmaras Fúngicas' }).click()
-  await expect(page.getByRole('heading', { name: 'Câmaras Fúngicas' })).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('heading', { name: 'Câmaras Fúngicas', exact: true })).toBeVisible({ timeout: 15_000 })
   const state = await page.evaluate(async () => {
     const { useGameStore } = await import('/src/state/gameStore.ts')
     const save = useGameStore.getState().save!
