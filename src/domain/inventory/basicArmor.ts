@@ -1,3 +1,4 @@
+import { gearOfferById } from '../../content/equipmentV0515'
 import type { ContentCatalog } from '../../content/catalog'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
 import type { GameSave } from '../game/types'
@@ -38,6 +39,7 @@ export function checkBasicArmorRefinement(save: GameSave, instanceId: string, ca
     : save.inventory.find((entry) => entry.instanceId === instanceId)
   const armor = item && catalog.items[item.definitionId]?.basicArmor
   if (!item || !armor || item.quantity !== 1) return fail('REFINE_ITEM', 'Escolha uma proteção simples da mochila ou do slot equipado.')
+  if (gearOfferById[item.definitionId]) return fail('GEAR_FORGE_V0515','Use a Forja de Equipamentos Tier G1–G3 para esta peça.')
   if (item.locked || item.favorite) return fail('REFINE_PROTECTED', 'Desproteja a peça antes de aprimorar.')
   if ((item.refinementLevel ?? 0) >= armor.maxRefinement) return fail('REFINE_MAX', 'Esta proteção já está em +1.')
   if (save.wallet.gold < ARMOR_REFINEMENT.gold) return fail('REFINE_GOLD', 'São necessários 8 Ouro para o reforço.')
