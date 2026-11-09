@@ -207,6 +207,8 @@ export type GameSave = {
   equippedBasicArmor: InventoryItemInstance | null
   /** Optional for pre-v0.5.11 saves; no bonuses from complementary pieces. */
   equippedComplementary?: Partial<Record<ComplementarySlot, InventoryItemInstance>>
+  /** Removable gear shell only; never changes the permanent Bond identity. */
+  equippedGearStyles?: Partial<Record<BoundSlot, InventoryItemInstance>>
   baseStorage: InventoryItemInstance[]
   wallet: { gold: number }
   // Vida/Mana atuais persistem; máximos continuam derivados do personagem.
