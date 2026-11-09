@@ -40,6 +40,8 @@ import { MarketNpcPanel } from '../terran/MarketServices'
 import { isMarketNpc } from '../../domain/terran/market'
 import { BASE_LOCATION_ID, hasPlayerHomeKey, isPlayerHomeDoorOpen } from '../../domain/terran/base'
 import { getNpcActionableQuests } from '../../domain/quests/questSelectors'
+import { clanTableQuestId, CLAN_INITIATION_TABLE_ID } from '../../content/clanProgressionV05142'
+import { CLAN_HALL_MINI_PORTAL_ID, getClanCastleId, isClanCastleInteriorId } from '../../content/clanCastlesV05142'
 import { type TerranLandmark } from '../../content/terranExploration'
 import { CityLandmarkDialog } from '../terran/CityLandmarkDialog'
 import { Modal } from '../components/Modal'
@@ -102,11 +104,21 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const acknowledgeBaseIntroduction = useGameStore((state) => state.acknowledgeBaseIntroduction)
   const acceptQuest = useGameStore((state) => state.acceptQuest)
   const leaveBase = useGameStore((state) => state.leaveBase)
+  const enterClanCastle = useGameStore((state) => state.enterClanCastle)
+  const leaveClanCastle = useGameStore((state) => state.leaveClanCastle)
   const [drawer, setDrawer] = useState<Drawer>(routerLocation.state?.openPortal ? 'location' : null)
   const drawerRef = useRef<HTMLElement>(null)
-  const [locationId, setLocationId] = useState<TerranLocationId>('location_terran_portal_plaza')
-  const [interiorId, setInteriorId] = useState<TerranInteriorId | null>(
-    save?.world.currentLocationId === BASE_LOCATION_ID ? PLAYER_HOME_INTERIOR_ID : null)
+  const [locationId, setLocationId] = useState<TerranLocationId>(
+    save?.world.currentLocationId === 'location_terran_clan_hall' ||
+      (save?.world.currentLocationId && isClanCastleInteriorId(save.world.currentLocationId))
+      ? 'location_terran_clan_hall' : 'location_terran_portal_plaza')
+  const [interiorId, setInteriorId] = useState<TerranInteriorId | null>(() => {
+    const stored = save?.world.currentLocationId
+    if (stored === BASE_LOCATION_ID) return PLAYER_HOME_INTERIOR_ID
+    if (stored && isClanCastleInteriorId(stored)) return stored
+    if (stored === 'location_terran_clan_hall') return stored
+    return null
+  })
   const [waking, setWaking] = useState(() => Boolean(save?.world.currentLocationId === BASE_LOCATION_ID &&
     save.eventLog.at(-1) === 'PlayerRespawnedAtBase'))
   const [streetSpawn, setStreetSpawn] = useState<WorldPoint | null>(null)
@@ -192,7 +204,28 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setLocalQuestId(null)
   }
   const inspectFurniture = (furniture: RoomFurniture) => {
-    if (furniture.behavior === 'quest' && furniture.questId) {
+    if (furniture.id === CLAN_HALL_MINI_PORTAL_ID) {
+      if (enterClanCastle()) {
+        const castle = getClanCastleId(save.character.clan.clanId ?? '')
+        if (castle) {
+          setInteriorId(castle)
+          setDrawer(null)
+          setInspected(null)
+        }
+      }
+    } else if (furniture.behavior === 'portal' && interiorId && isClanCastleInteriorId(interiorId)) {
+      if (leaveClanCastle()) {
+        setLocationId('location_terran_clan_hall')
+        setInteriorId('location_terran_clan_hall')
+        setDrawer(null)
+        setInspected(null)
+      }
+    } else if (furniture.id === CLAN_INITIATION_TABLE_ID) {
+      const clanId = save.character.clan.candidateClanId
+      const questId = clanId ? clanTableQuestId(clanId) : null
+      if (questId && save.quests[questId]?.status === 'active') setActiveQuestObjectId(questId)
+      else setInspected(furniture)
+    } else if (furniture.behavior === 'quest' && furniture.questId) {
       setActiveQuestObjectId(furniture.questId)
     } else if (furniture.id === 'home_memories' && interiorId === PLAYER_HOME_INTERIOR_ID) {
       setDrawer('homeRecords')
@@ -210,10 +243,16 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     }
   }
   const exitInterior = () => {
-    if (interiorId === PLAYER_HOME_INTERIOR_ID) leaveBase()
+    if (interiorId && isClanCastleInteriorId(interiorId)) {
+      if (!leaveClanCastle()) return
+      setLocationId('location_terran_clan_hall')
+      setInteriorId('location_terran_clan_hall')
+    } else {
+      if (interiorId === PLAYER_HOME_INTERIOR_ID) leaveBase()
+      setInteriorId(null)
+    }
     setHomeMenuOpen(false)
     setRestPromptOpen(false)
-    setInteriorId(null)
     setDrawer(null)
     setDialogue(null)
     setLocalQuestId(null)
@@ -246,9 +285,14 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     }
     const currentSave = useGameStore.getState().save ?? save
     const quest = presence.npcId ? getNpcActionableQuests(currentSave, presence.npcId, content)[0] : undefined
-    if (quest) {
+    const riteLeader = Boolean(presence.npcId && Object.values(content.clans).some((clan) =>
+      clan.recruiterNpcId === presence.npcId &&
+      currentSave.character.clan.candidateClanId === clan.id &&
+      !currentSave.character.clan.clanId &&
+      currentSave.character.clan.eligibleClanIds.includes(clan.id)))
+    if (quest || riteLeader) {
       setDrawer(null)
-      setMissionNpc({ presence, questId: quest.id, sourceId })
+      setMissionNpc({ presence, questId: quest?.id ?? 'talk', sourceId })
       return
     }
     if (sourceId === 'location_terran_forge') {
@@ -291,12 +335,12 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             {interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
                 questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
                 showTrackedQuestRoute={Boolean(trackedRoute)} trackedQuestRoute={trackedRoute}
-                onTalk={(presence) => { if (interiorId !== PLAYER_HOME_INTERIOR_ID) talk(presence, interiorId) }}
+                onTalk={(presence) => { if (interiorId !== PLAYER_HOME_INTERIOR_ID && !isClanCastleInteriorId(interiorId)) talk(presence, interiorId) }}
                 onServices={() => {
                   if (interiorId === PLAYER_HOME_INTERIOR_ID) {
                     const bed = roomFurniture[PLAYER_HOME_INTERIOR_ID].find((furniture) => furniture.id === 'home_bed')
                     if (bed) inspectFurniture(bed)
-                  } else openRoomServices(interiorId)
+                  } else if (!isClanCastleInteriorId(interiorId)) openRoomServices(interiorId)
                 }}
                 onFurniture={inspectFurniture}
                 onExit={exitInterior} />

@@ -1,8 +1,9 @@
 import type { TerranLocationId } from '../../content/terran'
 import type { WorldPoint } from './pixelCityArt'
+import { CLAN_HALL_MINI_PORTAL_ID, CLAN_CASTLE_DEFINITIONS, isClanCastleInteriorId, getClanCastleByInteriorId, type ClanCastleInteriorId } from '../../content/clanCastlesV05142'
 
 export const PLAYER_HOME_INTERIOR_ID = 'interior_terririan_home' as const
-export type TerranInteriorId = TerranLocationId | typeof PLAYER_HOME_INTERIOR_ID
+export type TerranInteriorId = TerranLocationId | typeof PLAYER_HOME_INTERIOR_ID | ClanCastleInteriorId
 
 export { PLAYER_HOME_CENTER, PLAYER_HOME_DOOR } from './cityWorld'
 
@@ -10,7 +11,7 @@ export type RoomFurniture = {
   id: string
   name: string
   point: WorldPoint
-  behavior: 'inspect' | 'services' | 'rest' | 'storage' | 'archive' | 'quest'
+  behavior: 'inspect' | 'services' | 'rest' | 'storage' | 'archive' | 'quest' | 'portal'
   questId?: string
   description: string
 }
@@ -40,8 +41,11 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
     { id: 'zareth_reports', name: 'Relatórios da Guarda', point: { x: 291, y: 169 }, behavior: 'services', description: 'Ordens de patrulha e serviços do Quartel.' },
   ],
   location_terran_clan_hall: [
+    { id: CLAN_HALL_MINI_PORTAL_ID, name:'Miniportal para a Base do Clã', point:{x:143,y:212},
+      behavior:'portal',description:'O arco aparece depois de entregar o Emblema de Clã ao líder.' },
     { id: 'clan_banners', name: 'Estandartes dos Clãs', point: { x: 108, y: 125 }, behavior: 'inspect', description: 'Os estandartes representam caminhos que devem ser conquistados em jogo.' },
     { id: 'clan_echo_table', name: 'Mesa dos Ecos', point: { x: 192, y: 198 }, behavior: 'quest', questId: 'main_lore_identity_01', description: 'Anotações sobre Personagem, Clã e Classe; interpretar não concede filiação ou disciplina.' },
+    { id: 'clan_initiation_table', name: 'Mesa de Iniciação', point: { x: 222, y: 194 }, behavior: 'quest', description: 'Aceite o convite de um líder e interaja com esta mesa. Depois entregue o relatório ao NPC do Clã.' },
     { id: 'clan_council', name: 'Mesa dos Representantes', point: { x: 250, y: 193 }, behavior: 'services', description: 'Representantes e mestres apresentam os requisitos de Clã e Classe.' },
   ],
   location_terran_daeryn_house: [
@@ -50,6 +54,14 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
     { id: 'daeryn_shop', name: 'Balcão de Sylwen', point: { x: 297, y: 194 }, behavior: 'services', description: 'Poções e suprimentos de campo da loja de Sylwen.' },
   ],
   location_terran_portal_plaza: [],
+  ...(Object.fromEntries(Object.values(CLAN_CASTLE_DEFINITIONS).map(castle=>[castle.interiorId,[
+    {id:castle.interiorId+'_banner',name:'Estandarte de '+castle.name,point:{x:114,y:140},
+      behavior:'inspect' as const,description:'Identidade visual provisória do Clã.'},
+    {id:castle.interiorId+'_council',name:'Salão do Conselho — futuro',point:{x:253,y:139},
+      behavior:'inspect' as const,description:'NPCs, missões e serviços de Clã serão adicionados em versões futuras.'},
+    {id:castle.interiorId+'_return',name:'Portal de Retorno ao Salão',point:{x:192,y:213},
+      behavior:'portal' as const,description:'Retornar ao Salão dos Clãs em Terran.'},
+  ]])) as unknown as Record<ClanCastleInteriorId, readonly RoomFurniture[]>),
   interior_terririan_home: [
     { id: 'home_memories', name: 'Mesa das Memórias', point: { x: 141, y: 191 }, behavior: 'inspect', description: 'Um lugar reservado a lembranças de suas viagens. O arquivo de memórias será ampliado futuramente.' },
     { id: 'home_bed', name: 'Cama da Base', point: { x: 249, y: 189 }, behavior: 'rest', description: 'Descanso para recuperar Vida e Mana fora de combate.' },
@@ -59,6 +71,7 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
 
 export const getRoomName = (id: TerranInteriorId) =>
   id === PLAYER_HOME_INTERIOR_ID ? 'Base do Terrírian' :
+  isClanCastleInteriorId(id) ? getClanCastleByInteriorId(id)!.name :
   ({
     location_terran_forge: 'Casa do Ferreiro',
     location_terran_eldamar_house: 'Casa de Eldamar',

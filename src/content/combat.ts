@@ -3,6 +3,7 @@ import { biomeEncounterDefinitions } from './biomeExpeditions'
 import { fungalDungeonEncounters } from './fungalChambers'
 import { newClanSpells, newClanStatuses } from './clanSpells'
 import { clanTrialEncounters } from './clanTrials'
+import { CLAN_EMBLEM_ITEM_ID } from './clanProgressionV05142'
 import type {
   CombatSkillDefinition,
   EncounterDefinition,
@@ -234,6 +235,14 @@ export const combatSkillDefinitions = [
     status: 'BALANCE_DRAFT',
   },
   {
+    id: 'skill_granite_slam', name: 'Arremesso de Granito',
+    description: 'A cada terceira rodada, o Golem arremessa uma rocha após preparar o golpe. Defender reduz o dano e anula Abalado pelo Granito.',
+    target: 'enemy', mpCost: 0, cooldownTurns: 0, damageDieSteps: 1,
+    effects: [{ type: 'damage', powerBonus: 3 },
+      { type: 'applyStatus', statusId: 'status_granite_shaken', durationTurns: 2, chance: 1 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
     id: 'skill_spore_burst',
     name: 'Explosão de Esporos',
     description: 'Uma descarga fúngica que deixa esporos nocivos aderidos ao alvo.',
@@ -249,6 +258,12 @@ export const combatSkillDefinitions = [
 ] satisfies CombatSkillDefinition[]
 
 export const statusEffectDefinitions = [
+  {
+    id: 'status_granite_shaken', name: 'Abalado pelo Granito',
+    description: 'O impacto de Korduun fragiliza a guarda por dois turnos.',
+    tone: 'harmful', startTurnDamage: 0, attackModifier: 0,
+    mitigationModifier: -1, status: 'BALANCE_DRAFT',
+  },
   {
     id: 'status_resonant_fracture',
     name: 'Fratura Ressonante',
@@ -294,6 +309,16 @@ export const statusEffectDefinitions = [
 
 export const encounterDefinitions = [
   ...astravelEncounterDefinitions, ...biomeEncounterDefinitions, ...fungalDungeonEncounters, ...clanTrialEncounters,
+  {
+    id: 'encounter_clan_granite_golem_v05142', name: 'Prova de Korduun · Golem de Granito',
+    locationLabel: 'Arena da Prova · Montanhas de Korduun',
+    victoryTitle: 'O Granito se curva', victorySummary: 'Retorne ao mestre do seu Clã para entregar a missão.',
+    trailNodeId: 'location_terran_clan_hall',
+    enemyDefinitionIds: ['enemy_granite_golem'], canFlee: false,
+    rewards: { characterXp: 180, gold: 90, boundResonance: 130, lootDefinitionIds: [CLAN_EMBLEM_ITEM_ID, 'drop_ruin_shard'],
+      worldFlags: ['granite_golem_v05142_defeated'] },
+    status: 'BALANCE_DRAFT',
+  },
   {
     id: 'encounter_portal_luminous_nest',
     name: 'Ninho Luminescente',

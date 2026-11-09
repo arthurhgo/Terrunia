@@ -32,4 +32,6 @@ export const BALANCE = {
   /** BALANCE_DRAFT v0.5.7: combat die is centered on its midpoint, then adjusts damage. */
   combatDieCentered: true,
   defendMitigation: 2,
+  /** BALANCE_DRAFT: natural maximum on the attack die crits, 1.5× final damage. */
+  combatCriticalMultiplier: 1.5,
 } as const

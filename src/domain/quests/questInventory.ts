@@ -2,10 +2,13 @@ import type { ContentCatalog } from '../../content/catalog'
 import type { QuestDefinition } from '../../content/types'
 import type { GameSave } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
+import { CLAN_EMBLEM_ITEM_ID } from '../../content/clanProgressionV05142'
 
 export function getDeliverableCount(save: GameSave, itemId: string, catalog: ContentCatalog): number {
   const item = catalog.items[itemId]
-  if (!item || !item.sellable || item.questLocked || item.canInfuseBoundItem || item.gemComponentId) return 0
+  // Clan Emblem is an explicit one-time NPC delivery; it is never tradeable or convertible.
+  const emblem = itemId === CLAN_EMBLEM_ITEM_ID
+  if (!item || (!item.sellable && !emblem) || (item.questLocked && !emblem) || item.canInfuseBoundItem || item.gemComponentId) return 0
   return save.inventory.filter((entry) => entry.definitionId === itemId && !entry.locked && !entry.favorite)
     .reduce((sum, entry) => sum + entry.quantity, 0)
 }

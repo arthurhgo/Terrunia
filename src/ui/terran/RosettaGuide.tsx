@@ -69,8 +69,8 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
       </section> : <p className="rosetta-tutorial__done"><CheckCircle2 size={16} /> As três lições principais foram concluídas. Sua proteção escolhida evolui com você; novas peças são opcionais.</p>}
       <article className="rosetta-guide__next" aria-label="Orientação de Clãs e arma vinculada">
         <h3><Compass size={16}/> Os Quatro Caminhos · Clã único</h3>
-        <p>Rosetta apresenta Dûn'Avar (proteção), Rustal (runas), Cebios Esti (visão celestial) e Estres do Ét (fluxos instáveis). Só um Clã poderá receber seu juramento; a escolha ocorre após três provas no Salão dos Clãs.</p>
-        <strong>Sinergia sugerida com ${recommendations[0]?.weaponName ?? 'sua arma'}</strong>
+        <p>Rosetta apresenta Dûn'Avar (proteção), Rustal (runas), Cebios Esti (visão celestial) e Estres do Ét (fluxos instáveis). Só um Clã poderá receber seu juramento. Entre no Salão dos Clãs para encerrar a orientação; então aceite a missão da mesa diretamente com o líder de sua escolha.</p>
+        <strong>Sinergia sugerida com {recommendations[0]?.weaponName ?? 'sua arma'}</strong>
         <div className="rosetta-clan-advice">{recommendations.map((clan,index)=><div key={clan.clanId}>
           <strong>{index===0?'★ Recomendação: ':''}{clan.name}</strong>
           <small>{clan.explanation}</small>
@@ -79,13 +79,13 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
         <small>Essas sugestões consideram bônus do catálogo. Qualquer arma pode ingressar em qualquer Clã. A decisão é sua.</small>
         {save.character.clan.clanId ? <strong>Filiação única: {content.clans[save.character.clan.clanId]?.name}</strong>
           : save.character.level<4 ? <small>🔒 Missão de Clã disponível no nível 4. Nível atual: {save.character.level}.</small>
-          : orientation?.status==='completed' ? <strong>Orientação concluída. Visite o Salão dos Clãs e escolha sua candidatura.</strong>
+          : orientation?.status==='completed' ? <strong>Orientação concluída. Aceite a primeira missão diretamente com um líder no Salão dos Clãs.</strong>
           : <div className="rosetta-tutorial__actions">
               {orientation?.status==='available' || orientation?.status==='offered' ?
                 <button type="button" className="rosetta-tutorial__accept" onClick={()=>accept(ROSETTA_CLAN_QUEST)}>Aceitar “Os Quatro Caminhos”</button>
-                : orientation?.status==='active' ? <button type="button" onClick={onOpenQuests}>Visitar o Salão dos Clãs</button>
+                : orientation?.status==='active' ? <button type="button" onClick={onShowPaths ?? onOpenQuests}>Mostrar caminho para o Salão dos Clãs</button>
                 : orientation?.status==='ready_to_turn_in' ?
-                  <button type="button" className="rosetta-tutorial__accept" onClick={()=>complete(ROSETTA_CLAN_QUEST,'npc_rosetta')}>Concluir orientação de Clã</button>
+                  <strong>Entre novamente no Salão dos Clãs para registrar a orientação concluída.</strong>
                   : <small>Oriente-se com Rosetta para iniciar a missão.</small>}
             </div>}
       </article>

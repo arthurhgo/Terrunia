@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Clock3, X } from 'lucide-react'
+import { BALANCE } from '../../content/balance'
 import type { CombatSkillDefinition } from '../../content/types'
 import type { previewCombatSkill } from '../../domain/combat/skillPreview'
 import { AssetImage } from '../components/AssetImage'
@@ -31,6 +32,7 @@ export function SkillTooltip({ skill, preview, remaining, unavailable, onClose, 
         <dd>{preview.ranges.length
           ? preview.ranges.map(({ minimum, maximum }) => `${minimum}–${maximum}`).join(' + ')
           : 'Não causa dano direto'}</dd></div>
+      {preview.die && <div><dt>Crítico</dt><dd>d{preview.die} = {preview.die} → ×{BALANCE.combatCriticalMultiplier.toLocaleString('pt-BR')} dano (já incluído no máximo)</dd></div>}
       <div><dt>Mana</dt><dd>{skill.mpCost} MP</dd></div>
       <div><dt><Clock3 size={13}/> Recarga</dt><dd>{skill.cooldownTurns ?? 0} turno(s) · {remaining > 0 ? `restam ${remaining}` : 'pronta'}</dd></div>
     </dl>

@@ -1,5 +1,6 @@
 import type { WorldPoint } from './pixelCityArt'
 import type { TerranInteriorId } from './roomContent'
+import { CLAN_CASTLE_DEFINITIONS, type ClanCastleInteriorId } from '../../content/clanCastlesV05142'
 
 /** VISUAL_DRAFT: room coordinates, collision and entry points share one source of truth. */
 export type RoomRect = { x: number; y: number; w: number; h: number }
@@ -10,13 +11,20 @@ export type RoomPlan = {
   exit: WorldPoint
   service: WorldPoint
   residents: readonly WorldPoint[]
-  tile: 'slate' | 'moss' | 'arcane' | 'stone' | 'ceremony' | 'wood' | 'home' | 'forge'
+  tile: 'slate' | 'moss' | 'arcane' | 'stone' | 'ceremony' | 'wood' | 'home' | 'forge' |
+    'castle-dunavar' | 'castle-rustal' | 'castle-cebios' | 'castle-estres'
 }
 
 const rect = (x: number, y: number, w: number, h: number): RoomRect => ({ x, y, w, h })
 const point = (x: number, y: number): WorldPoint => ({ x, y })
 
 export const ROOM_PLANS: Record<TerranInteriorId, RoomPlan> = {
+  ...(Object.fromEntries(Object.values(CLAN_CASTLE_DEFINITIONS).map(castle=>[castle.interiorId,{
+    floor:[rect(55,68,274,172),rect(88,44,208,45)],
+    obstacles:[rect(174,112,36,18)],
+    spawn:point(192,210),exit:point(192,233),service:point(260,177),
+    residents:[],tile:castle.tile,
+  }])) as unknown as Record<ClanCastleInteriorId, RoomPlan>),
   location_terran_forge: {
     floor: [rect(49, 73, 288, 167), rect(83, 57, 69, 35)],
     obstacles: [rect(163, 125, 56, 28), rect(270, 99, 35, 30)],

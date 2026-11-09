@@ -76,10 +76,11 @@ describe('serviços de Terran e progressão da casa', () => {
     const old = { ...save, schemaVersion: 7, vitals: undefined }
     const migrated = migrateAndValidateSave(old)
     expect(migrated.vitals).toEqual({ hp: stats.life.value, mp: stats.mana.value })
-    const battle = createBattle(save, content.encounters.encounter_fungorro_01, content)
-    // A iniciativa pode permitir uma ação inimiga antes do primeiro comando.
-    expect(battle.combatants.combatant_player.hp).toBeGreaterThan(0)
-    expect(battle.combatants.combatant_player.hp).toBeLessThanOrEqual(5)
+    const battle = createBattle(save, content.encounters.encounter_fungorro_01, content,
+      'vitals-rest-regression', { manualInitiative: true })
+    // New fights start pending a real initiative roll, preserving saved vitals until the roll.
+    expect(battle.phase).toBe('AwaitingInitiative')
+    expect(battle.combatants.combatant_player.hp).toBe(5)
     expect(battle.combatants.combatant_player.mp).toBe(2)
     save.world.worldFlags.push(PLAYER_HOME_FLAG)
     save.world.currentLocationId = BASE_LOCATION_ID

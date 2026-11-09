@@ -11,11 +11,12 @@ describe('objetivos realizados em objetos reais', () => {
   it('todos os objetivos main/interact de Terran têm objeto e solução no local certo', () => {
     for (const [questId, activity] of Object.entries(questObjectActivities)) {
       const definition = content.quests[questId]
-      expect(definition?.category).toBe('main')
+      expect(['main', 'clan']).toContain(definition?.category)
       expect(definition.terranFlow?.active).toBe(activity.locationId)
       const furniture = activity.locationId === 'location_terran_daeryn_house' ? 'daeryn_healing_shelf'
         : activity.locationId === 'location_terran_vorren_post' ? 'vorren_bestiary'
-          : activity.locationId === 'location_terran_bond_workshop' ? 'bond_inscription_table' : 'clan_echo_table'
+          : activity.locationId === 'location_terran_bond_workshop' ? 'bond_inscription_table'
+            : definition.category === 'clan' ? 'clan_initiation_table' : 'clan_echo_table'
       expect(furniture).toBe(activity.objectId)
       const save = makeSave()
       save.world.currentLocationId = activity.locationId

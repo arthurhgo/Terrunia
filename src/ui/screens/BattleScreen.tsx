@@ -165,6 +165,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         id: entry.id, sides: entry.roll.sides, face: entry.roll.face,
         actorId: entry.roll.actorId, targetId: entry.roll.targetId ?? (actor?.side === 'enemy' ? 'combatant_player' : targetId),
         damage: Number(damage[1]), action: entry.roll.action,
+        critical: entry.roll.critical,
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy',
       }]
     })
@@ -241,6 +242,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const target = enemies.find((enemy) => enemy.id === targetId && enemy.alive && !isProtectedBoss(battle, enemy))
     ?? enemies.find((enemy) => enemy.alive && !isProtectedBoss(battle, enemy)) ?? enemies[0]
   const encounter = content.encounters[battle.encounterId]
+  const graniteRockIncoming = battle.encounterId === 'encounter_clan_granite_golem_v05142' &&
+    battle.phase === 'AwaitingAction' && battle.log.reduce((pending, entry) =>
+      entry.message.includes('O Golem ergue uma rocha') ? true
+        : entry.roll?.action === 'Arremesso de Granito' ? false : pending, false)
   const battleTitle = `${encounter?.locationLabel ?? 'ASTRAVÉL'}: ${encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}`
   const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((skill) => Boolean(skill))
   const inspectedSkill = skills.find((skill) => skill.id === (pinnedSkillId ?? hoveredSkillId))
@@ -410,6 +415,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         id: entry.id, sides: roll.sides, face: roll.face, damage: Number(match[1]),
         actorId: roll.actorId, targetId: roll.targetId ?? (actor?.side === 'enemy' ? player.id : target.id),
         action: roll.action, kind: 'damage' as const,
+        critical: roll.critical,
         ...(roll.weaponBonusRoll ? { weaponBonusRoll: roll.weaponBonusRoll } : {}),
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy' as const,
       }]
@@ -442,7 +448,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const end = (toCity: boolean) => {
     if (toCity) returnToTerran()
     else finishBattleIntoExpedition()
-    if (!unified) navigate(toCity || battle.clanTrialQuestId ? '/terran' : save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon' : '/expedition')
+    if (!unified) navigate(toCity || battle.clanTrialQuestId || battle.clanBossQuestId ? '/terran' : save.world.currentLocationId === FUNGAL_DUNGEON_ID ? '/dungeon' : '/expedition')
   }
   const button = (label: string, icon: React.ReactNode, onClick: () => void, disabled = false, selected = false) => (
     <button key={label} type="button"
@@ -494,6 +500,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             '--enemy-depth': `${getEnemyFormationSlot(i, enemies.length).depthPx}px`,
             '--enemy-width': `${getEnemyFormationSlot(i, enemies.length).widthPercent}%`,
             zIndex: getEnemyFormationSlot(i, enemies.length).layer } as React.CSSProperties}
+          data-granite-golem={enemy.definitionId === 'enemy_granite_golem' ? 'true' : undefined}
           className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
           onClick={() => enemy.alive && !isProtectedBoss(battle, enemy) && setTargetId(enemy.id)}
            disabled={!enemy.alive || isProtectedBoss(battle, enemy)}
@@ -515,22 +522,27 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           <EnemyMotionSprite
             assetId={content.enemies[enemy.definitionId]?.assetId ?? 'enemy.fungorro-crawler'}
             reducedMotion={reducedMotion}
+            throwRock={strikeFx?.actorId === enemy.id && strikeFx.style === 'projectile'}
             motion={visualHp(enemy.id) <= 0 ? 'defeat'
               : strikeFx?.actorId === enemy.id ? 'attack'
                 : strikeFx?.targetId === enemy.id || receivingId === enemy.id ? 'hit' : 'idle'} />
-          {damageRevealed && receivingId === enemy.id && <b className="pixel-battle__damage-number" role="status">−{activeDice?.damage}</b>}
+          {damageRevealed && receivingId === enemy.id && <b className="pixel-battle__damage-number" role="status">−{activeDice?.damage}{activeDice?.critical ? ' · CRÍTICO!' : ''}</b>}
            <small>{enemy.name}</small>
           {hoveredEnemyId === enemy.id && <span className="pixel-battle__enemy-tooltip" role="tooltip"
             aria-label={'Status de ' + enemy.name} id={'enemy-status-' + i}>
             <strong>{enemy.name}</strong>
             <span>Vida: {visualHp(enemy.id)}/{enemy.maxHp} · Mana: {enemy.mp}/{enemy.maxMp}</span>
-            <span>Nível {content.enemies[enemy.definitionId]?.level ?? 1} · Ataque: {enemy.attackPower} · Defesa: {enemy.mitigation}</span>
+            <span>{enemy.definitionId === 'enemy_granite_golem' ? 'Boss adaptativo (+10%)' : `Nível ${content.enemies[enemy.definitionId]?.level ?? 1}`} · Ataque: {enemy.attackPower} · Defesa: {enemy.mitigation}</span>
             <span>Iniciativa: {battle.phase === 'AwaitingInitiative' ? (revealedInitiative[enemy.id] ?? 'pendente') : enemy.initiative} · Dado d{enemy.attackDie ?? 4}</span>
             <span>{enemy.statusEffects.length ? enemy.statusEffects.map((status) =>
               content.statusEffects[status.definitionId]?.name ?? status.definitionId).join(', ') : 'Sem efeitos ativos'}</span>
           </span>}
         </button>)}
       </div>
+      {graniteRockIncoming && <div className="pixel-battle__granite-warning" role="status" aria-live="polite">
+        <strong>ROCHA PREPARADA — DEFENDA!</strong>
+        <span>O Golem vai arremessar uma pedra. Bloquear reduz o dano e impede o Abalo. Use poções para recuperar Vida.</span>
+      </div>}
       {battle.bossMechanics && <div className="pixel-battle__boss-timers" role="status">
          <strong>☷ Núcleo da Ruína · {Object.values(battle.combatants).filter((actor) => actor.side === 'enemy' && actor.alive && actor.id !== battle.bossMechanics?.bossId).length}/3 guardiões</strong>
          <span>Invocação: {5 - battle.round % 5} rodadas · Cura: {2 - battle.round % 2} rodadas</span>
@@ -548,6 +560,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           playerPortraitAssetId={save.character.portraitAssetId}
           enemyPortraitAssetId={activeDice.actorId && battle.combatants[activeDice.actorId]
             ? content.enemies[battle.combatants[activeDice.actorId].definitionId]?.assetId : undefined} />}
+      {damageRevealed && activeDice?.critical && <span className="pixel-battle__critical-flash" role="status" aria-live="polite">ACERTO CRÍTICO! · d{activeDice.sides}={activeDice.face}</span>}
       {strikeFx && <span className={`pixel-battle__strike-fx
         ${strikeFx.actorId === player.id ? 'to-enemy' : 'to-player'} is-${strikeFx.style}`} aria-hidden="true" />}
       {defeated && <div className="pixel-battle__death" role="status" aria-label="Terrírian derrotado">
@@ -684,7 +697,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           <p>+{battle.rewards.characterXp} XP · +{battle.rewards.gold} Ouro · {drops.length} drops</p>
           {!battle.claimed ? <button type="button" onClick={claim}>RECOLHER TODOS OS ESPÓLIOS</button> : <>
             {battle.waveIndex ? <button onClick={nextWave}>PRÓXIMA ONDA · {battle.waveIndex + 1}</button> :
-              battle.portalHuntId ? null : <button onClick={() => end(false)}>CONTINUAR EXPEDIÇÃO</button>}
+              battle.portalHuntId ? null : <button onClick={() => end(false)}>{battle.clanTrialQuestId || battle.clanBossQuestId ? 'VOLTAR AO SALÃO DOS CLÃS' : 'CONTINUAR EXPEDIÇÃO'}</button>}
             <button onClick={() => end(true)}>{battle.portalHuntId ? 'VOLTAR AO PORTAL' : 'RETORNAR A TERRAN'}</button>
           </>}
         </div> : <div className="pixel-battle__result"><p>O Nexo retorna à Base. Sem perda de XP, Ouro ou equipamentos nesta versão.</p>

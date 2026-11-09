@@ -61,12 +61,21 @@ describe('máquina de estados de combate', () => {
   })
 
   it('defender reduz dano do próximo ataque', () => {
-    const battle = createBattle(makeSave(), firstEncounter, content)
+    const battle = createBattle(makeSave(), firstEncounter, content,
+      'defense_regression', { manualInitiative: true })
+    battle.phase = 'AwaitingAction'
+    battle.actorCursor = 0
+    battle.actorId = 'combatant_player'
+    battle.initiativeOrder = ['combatant_player', firstTargetId]
     const playerBefore = battle.combatants.combatant_player.hp
     const result = submitBattleCommand(battle, { type: 'defend' }, content)
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(playerBefore - result.value.combatants.combatant_player.hp).toBe(1)
+    const enemyHit = result.value.log.find(entry =>
+      entry.tone === 'damage' && entry.roll?.actorId !== 'combatant_player')
+    expect(enemyHit?.roll?.damageBreakdown?.guardMitigation).toBe(2)
+    expect(playerBefore - result.value.combatants.combatant_player.hp)
+      .toBe(enemyHit?.roll?.damageBreakdown?.finalDamage)
   })
 
   it('suporta encontro com três inimigos e alvos independentes', () => {
@@ -164,6 +173,9 @@ describe('máquina de estados de combate', () => {
       'battle_status',
     )
     const crawler = 'combatant_enemy_fungorro_crawler_1'
+    // Ensure the targeted crawler survives long enough for the second enemy turn.
+    battle.combatants[crawler].hp = battle.combatants[crawler].maxHp = 250
+    battle.combatants.combatant_player.hp = battle.combatants.combatant_player.maxHp = 250
     const first = submitBattleCommand(battle, { type: 'attack', targetId: crawler }, content)
     expect(first.ok).toBe(true)
     if (!first.ok) return
@@ -290,7 +302,9 @@ describe('máquina de estados de combate', () => {
     expect(high.dieAdjustment - low.dieAdjustment).toBe(3)
     const defended = calculateRolledDamage(12, 3, 4, 4, 2, 2)
     expect(defended.finalDamage).toBe(high.finalDamage)
-    expect(defended.guardPrevented).toBe(2)
+    expect(defended.guardPrevented).toBe(
+      calculateRolledDamage(12, 3, 4, 4, 2, 0).finalDamage - defended.finalDamage)
+    expect(defended.guardPrevented).toBeGreaterThan(0)
 
     const first = createBattle(makeSave(), firstEncounter, content, 'roll_reproducible')
     const a = submitBattleCommand(first, { type: 'attack', targetId: firstTargetId }, content)

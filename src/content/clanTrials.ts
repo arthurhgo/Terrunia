@@ -68,5 +68,9 @@ export const clanTrialEncounters: EncounterDefinition[] = CLAN_TRIALS.flatMap(cl
     rewards:{characterXp:12+stage*6+wave*4,gold:4+wave*3,boundResonance:0,lootDefinitionIds:[]},
     status:'BALANCE_DRAFT' as const,
   }))))
+/** Retain legacy 3×3 content for existing saves, but no longer offer it to new recruits. */
+export const isLegacyClanTrialQuestId = (questId: string): boolean =>
+  CLAN_TRIALS.some((clan) => (clan.q as readonly string[]).includes(questId))
+
 export const clanTrialEncounterId = (questId:string,wave:number) =>
   `encounter_${questId}_wave_${wave}`

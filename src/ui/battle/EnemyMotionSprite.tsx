@@ -16,6 +16,7 @@ export const legacyEnemyMotion: Record<string, { idleMs: number; lunge: number; 
   'enemy.fungal-horror': { idleMs: 1420, lunge: 8, sway: 2, tint: '#cb93be' },
   'enemy.colossus-mycelium': { idleMs: 1950, lunge: 4, sway: 1, tint: '#a786e7' },
   'enemy.ruin-corrupted-sentinel': { idleMs: 2300, lunge: 0, sway: 1, tint: '#9a86f7' },
+  'enemy.granite-golem': { idleMs: 1900, lunge: 14, sway: 1, tint: '#69ddff' },
   'enemy.luminous-slime': { idleMs: 1100, lunge: 3, sway: 3, tint: '#74eee2' },
   'enemy.void-moth': { idleMs: 760, lunge: 10, sway: 5, tint: '#af9de8' },
   'enemy.spore-mantis': { idleMs: 680, lunge: 12, sway: 2, tint: '#d4b676' },
@@ -28,8 +29,8 @@ export const legacyEnemyMotion: Record<string, { idleMs: number; lunge: number; 
 }
 
 /** Presentation-only animation: domain controls damage, attack timing and death. */
-export function EnemyMotionSprite({ assetId, motion = 'idle', reducedMotion = false }: {
-  assetId: string; motion?: EnemyMotionState; reducedMotion?: boolean
+export function EnemyMotionSprite({ assetId, motion = 'idle', reducedMotion = false, throwRock = false }: {
+  assetId: string; motion?: EnemyMotionState; reducedMotion?: boolean; throwRock?: boolean
 }) {
   const asset = resolveAsset(assetId)
   const sheet = asset.motionSheet
@@ -44,7 +45,7 @@ export function EnemyMotionSprite({ assetId, motion = 'idle', reducedMotion = fa
       animationDuration: `${motion === 'idle' ? profile.idleMs : motion === 'attack' ? 540 : motion === 'hit' ? 420 : 800}ms`,
     } as CSSProperties
     return <span key={`${assetId}:${motion}`} className="enemy-motion-legacy"
-      data-motion={motion} data-asset={assetId} style={style} aria-hidden="true">
+      data-motion={motion} data-asset={assetId} data-throw-rock={throwRock ? "true" : undefined} style={style} aria-hidden="true">
       <AssetImage assetId={assetId} alt="" className="enemy-motion-fallback" />
     </span>
   }

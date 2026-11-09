@@ -3,6 +3,7 @@ import type { GameSave } from '../game/types'
 import { fail, ok, type Result } from '../shared/types'
 import { refreshQuestAvailability } from '../quests/questEngine'
 import { ROSETTA_CLAN_QUEST } from './clanOrientation'
+import { clanTableQuestId, clanGolemQuestId, CLAN_RECRUITMENT_WAVE } from '../../content/clanProgressionV05142'
 
 const stamp = (save: GameSave, now: string, event: string) => {
   save.updatedAt = now
@@ -34,12 +35,10 @@ export const canJoinClan = (save: GameSave, clanId: string, catalog: ContentCata
     return fail('CLAN_GUIDANCE_REQUIRED','Inicie Os Quatro Caminhos com Rosetta no nível 4.')
   if (save.character.clan.candidateClanId !== clanId)
     return fail('CLAN_CANDIDACY_REQUIRED','Selecione sua candidatura no Salão dos Clãs antes do rito.')
-  if (!save.character.clan.eligibleClanIds.includes(clanId)) {
-    return fail('CLAN_NOT_ELIGIBLE', 'Conclua as três provas e receba o convite antes do rito.')
-  }
-  if (!catalog.clans[clanId].recruitmentQuestIds.every((questId) => save.quests[questId]?.status === 'completed')) {
-    return fail('CLAN_TRIALS_INCOMPLETE', 'As três provas precisam ser entregues antes do rito.')
-  }
+  if (save.quests[clanTableQuestId(clanId)]?.status !== 'completed' ||
+      (save.world.portalWaveBest ?? 0) < CLAN_RECRUITMENT_WAVE ||
+      save.quests[clanGolemQuestId(clanId)]?.status !== 'completed')
+    return fail('CLAN_EMBLEM_REQUIRED', 'Conclua a mesa, vença a onda 14 e entregue o Emblema de Clã após derrotar o Golem.')
   return ok(true)
 }
 

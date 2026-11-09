@@ -2,6 +2,7 @@ import type { QuestDefinition, QuestProgressionOutcome } from './types'
 import { clanDefinitions, classDefinitions } from './progression'
 import { sideQuestDefinitions } from './sidequests'
 import { rosettaTutorialQuests } from './rosettaTutorial'
+import { clanTableQuestId, clanGolemQuestId, CLAN_INITIATION_TABLE_ID, GRANITE_GOLEM_ENEMY_ID, MAIN_CLAN_AFFILIATION_QUEST, CLAN_AFFILIATION_RITE_ID, CLAN_RECRUITMENT_WAVE, CLAN_EMBLEM_ITEM_ID } from './clanProgressionV05142'
 
 const mainLoreClassVariants = Object.fromEntries(classDefinitions.map((classDefinition) => [
   classDefinition.id,
@@ -46,12 +47,43 @@ const clanTrialChain = (
   'clan',
   [
     { type: 'noClan' },
-    index === 0 ? { type: 'questCompleted', questId: 'main_rosetta_clan_guidance_v05141' } : { type: 'questCompleted', questId: trials[index - 1][0] },
+    index === 0 ? { type: 'questCompleted', questId: clanTableQuestId(clanId) } : { type: 'questCompleted', questId: trials[index - 1][0] },
   ],
   index === trials.length - 1
     ? { type: 'clanEligibility', clanId }
     : { type: 'clanReputation', clanId, value: 1 },
 ))
+
+/** First contact happens at the clan leader, then through the actual table object. */
+const clanTableQuest = (clanId: string, npcId: string, clanName: string): QuestDefinition => ({
+  id: clanTableQuestId(clanId),
+  title: `O Primeiro Juramento — ${clanName}`,
+  summary: `Receba de seu representante a tarefa de interpretar a Mesa de Iniciação do Clã ${clanName}. Interaja com o objeto no Salão e volte ao mesmo NPC.`,
+  giverNpcId: npcId, turnInNpcId: npcId, category: 'clan',
+  objectives: [{ id: `${clanTableQuestId(clanId)}_objective`, type: 'interact', targetId: CLAN_INITIATION_TABLE_ID, required: 1, label: 'Investigue a Mesa de Iniciação no Salão dos Clãs' }],
+  prerequisites: [{ type: 'characterLevel', value: 4 }, { type: 'noClan' }, { type: 'questCompleted', questId: 'main_rosetta_clan_guidance_v05141' }],
+  rewards: [{ type: 'characterXp', value: 20 }], initialStatus: 'locked',
+  terranFlow: { active: 'location_terran_clan_hall', ready_to_turn_in: 'location_terran_clan_hall' },
+  status: 'CONTENT_DRAFT',
+})
+
+/** Recruitment: complete Portal wave 14, then leader transports candidate to this boss. */
+const clanGraniteQuest = (clanId: string, npcId: string, clanName: string): QuestDefinition => ({
+  id: clanGolemQuestId(clanId),
+  title: `O Coração de Granito — ${clanName}`,
+  summary: `Após vencer a onda ${CLAN_RECRUITMENT_WAVE} do Modo Ondas, fale com o líder de ${clanName} para ser transportado ao Golem de Granito. Recolha o Emblema de Clã e entregue-o ao mesmo NPC para ser recrutado.`,
+  giverNpcId: npcId, turnInNpcId: npcId, category: 'clan',
+  objectives: [
+    { id: 'defeat_granite_golem', type: 'kill', targetId: GRANITE_GOLEM_ENEMY_ID, required: 1, label: 'Derrote o Golem de Granito' },
+    { id: 'recover_clan_emblem', type: 'collect', targetId: CLAN_EMBLEM_ITEM_ID, required: 1, label: 'Recolha o Emblema de Clã na arena' },
+  ],
+  turnInItems: [{ itemId: CLAN_EMBLEM_ITEM_ID, quantity: 1 }],
+  prerequisites: [{ type: 'portalWaveReached', value: CLAN_RECRUITMENT_WAVE }, { type: 'noClan' }, { type: 'questCompleted', questId: clanTableQuestId(clanId) }],
+  rewards: [{ type: 'characterXp', value: 120 }, { type: 'gold', value: 80 }],
+  initialStatus: 'locked',
+  terranFlow: { active: 'location_terran_clan_hall', ready_to_turn_in: 'location_terran_clan_hall' },
+  status: 'BALANCE_DRAFT',
+})
 
 const classTrial = (
   id: string,
@@ -181,15 +213,27 @@ export const questDefinitions = [
   },
   {
     id: 'main_rosetta_clan_guidance_v05141', title: 'Os Quatro Caminhos',
-    summary: 'A partir do nível 4, converse com Rosetta sobre os quatro Clãs, compare sua arma vinculada e visite o Salão dos Clãs.',
+    summary: 'Rosetta apresenta os quatro caminhos e indica o Salão dos Clãs. A orientação termina assim que você entra no Salão; cada líder concede sua própria missão.',
     giverNpcId: 'npc_rosetta', turnInNpcId:'npc_rosetta', category:'main',
     objectives:[{id:'rosetta_visit_clan_hall',type:'visit',targetId:'location_terran_clan_hall',required:1,
-      label:'Conheça o Salão dos Clãs e retorne à Rosetta'}],
+      label:'Entre no Salão dos Clãs e conheça os representantes'}],
     prerequisites:[{type:'characterLevel',value:4},{type:'noClan'}],
     rewards:[{type:'characterXp',value:20}], initialStatus:'locked',
-    terranFlow:{active:'location_terran_clan_hall',ready_to_turn_in:'location_terran_portal_plaza'},
+    terranFlow:{active:'location_terran_clan_hall',ready_to_turn_in:'location_terran_clan_hall'},
     status:'CONTENT_DRAFT',
   },
+  {
+    id: MAIN_CLAN_AFFILIATION_QUEST, title: 'Aceitar um Clã',
+    summary: 'Os Quatro Caminhos terminou. Fale com os líderes no Salão, aceite a primeira missão de um deles, examine a mesa, alcance a onda 14 no Portal, derrote o Golem e entregue o Emblema de Clã ao líder.',
+    giverNpcId: 'npc_curador_nexo', turnInNpcId: 'npc_curador_nexo', category: 'main',
+    objectives: [{id:'complete_clan_affiliation',type:'completeRite',targetId:CLAN_AFFILIATION_RITE_ID,required:1,
+      label:'Conquiste filiação a um Clã e confirme o rito no Salão'}],
+    prerequisites:[{type:'questCompleted',questId:'main_rosetta_clan_guidance_v05141'},{type:'noClan'}],
+    rewards:[], initialStatus:'locked',
+    terranFlow:{active:'location_terran_clan_hall',ready_to_turn_in:'location_terran_clan_hall'},
+    status:'CONTENT_DRAFT',
+  },
+  ...clanDefinitions.map((clan) => clanTableQuest(clan.id, clan.recruiterNpcId, clan.name)),
   ...clanTrialChain('dunavar', 'npc_mireya_dunavar', [
     ['clan_dunavar_01', 'Permanecer', 'Proteja um objetivo sob pressão. O protegido precisa sobreviver.'],
     ['clan_dunavar_02', 'A Barreira', 'Escolha quando defender, avançar, proteger e reagir.'],
@@ -210,6 +254,7 @@ export const questDefinitions = [
     ['clan_estres_02', 'Não Interrompa o Caos', 'Redirecione e equilibre a fonte em vez de destruí-la.'],
     ['clan_estres_03', 'À Beira da Ruptura', 'Use parte da instabilidade para estabilizar o todo.'],
   ]),
+  ...clanDefinitions.map((clan) => clanGraniteQuest(clan.id, clan.recruiterNpcId, clan.name)),
   classTrial('class_sentinela_trial', 'Sentinela da Luz', 'Proteja vários objetivos com recursos defensivos limitados.', 'npc_master_sentinela', 'dunavar', 'sentinela_da_luz'),
   classTrial('class_gladiador_trial', 'Gladiador da Barreira', 'Sobreviva usando defesa, timing e contra-ataque.', 'npc_master_gladiador', 'dunavar', 'gladiador_da_barreira'),
   classTrial('class_batedor_trial', 'Batedor da Vigília', 'Reconheça ameaças, evite batalhas e descubra uma rota.', 'npc_master_batedor', 'dunavar', 'batedor_da_vigilia'),
