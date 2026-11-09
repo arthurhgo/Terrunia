@@ -62,4 +62,22 @@ describe('Câmaras Fúngicas em quatro salas', () => {
     expect(useGameStore.getState().save?.battle).toBeNull()
   })
 
+
+  it('nova tentativa oculta visualmente salas históricas, sem apagar flags globais', () => {
+    seedDungeon(true)
+    const original = useGameStore.getState().save!
+    const next = structuredClone(original)
+    next.dungeonRun = {
+      runId: 'attempt-new', dungeonId: 'dungeon_fungal_chambers',
+      roomIndex: 0, stageIndex: 1, mode: 'stages',
+      completedStageIds: [], clearedRoomIds: [], activeEncounterId: null,
+      createdAt: '2026-11-09T10:00:00Z',
+    }
+    useGameStore.setState({ save: next })
+    render(<MemoryRouter initialEntries={['/dungeon']}><DungeonScreen /></MemoryRouter>)
+    expect(screen.getByRole('button', { name: 'Aproximar-se de Vestíbulo Micelial' })).toHaveClass('dungeon-field__node--discovered')
+    expect(screen.getByRole('button', { name: 'Aproximar-se de Núcleo da Ruína' })).not.toHaveClass('dungeon-field__node--discovered')
+    expect(useGameStore.getState().save?.world.worldFlags).toContain(dungeonRoomFlag('fungal_core'))
+  })
+
 })

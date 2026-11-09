@@ -33,8 +33,11 @@ export function DungeonScene({ unified = false }: { unified?: boolean }) {
   if (save.world.currentLocationId !== FUNGAL_DUNGEON_ID) return <Navigate to="/" replace />
 
   const scene = getNextCutscene(save)
-  const discoveredFlags = save.world.worldFlags
   const run = save.dungeonRun
+  // Historical discovery is not progress of a new attempt: an exit resets visible rooms.
+  const discoveredFlags = run
+    ? dungeon.rooms.slice(0, run.roomIndex + 1).map((room) => dungeonRoomFlag(room.id))
+    : save.world.worldFlags
   const roomIndex = run?.roomIndex ?? 0
   const stageIndex = run?.stageIndex ?? 1
   const completed = run?.clearedRoomIds.length ?? 0
