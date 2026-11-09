@@ -94,6 +94,9 @@ export type BattleState = {
   waveIndex?: number
   /** Repeatable Portal hunt; not a story trail node. */
   portalHuntId?: string
+  /** v0.5.14 stage identity; keeps trail boss progression separate from stage victories. */
+  dungeonEncounterId?: string
+  dungeonRunId?: string
   phase: BattlePhase
   phaseHistory: BattlePhase[]
   round: number

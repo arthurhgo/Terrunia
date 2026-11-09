@@ -89,6 +89,7 @@ export function respawnDefeatedPlayer(save: GameSave, now: string): Result<GameS
   }
   const next = structuredClone(save)
   next.battle = null
+  next.dungeonRun = null
   // Before the key is used, respawn at the public plaza, not inside the locked home.
   const destination = isPlayerHomeDoorOpen(save) ? BASE_LOCATION_ID : BASE_RETURN_LOCATION_ID
   next.world.currentLocationId = destination

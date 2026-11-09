@@ -25,7 +25,9 @@ import {
   getTrailByNodeId,
   resolveTrailInteraction,
 } from '../domain/exploration/trailEngine'
-import { discoverDungeonRoom, dungeonRoomFlag, enterDungeon, exitDungeon, FUNGAL_DUNGEON_ID } from '../domain/exploration/dungeonEngine'
+import { discoverDungeonRoom, dungeonRoomFlag, enterDungeon, exitDungeon, FUNGAL_DUNGEON_ID,
+  startDungeonEncounter as prepareDungeonEncounter, claimDungeonEncounter } from '../domain/exploration/dungeonEngine'
+import { FUNGAL_BOSS_ENCOUNTER_ID } from '../content/fungalChambers'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { prepareStarterWeapon } from '../domain/bond/starterWeaponPlan'
 import { requestCampaignReset } from '../domain/game/campaignReset'
@@ -129,6 +131,7 @@ type GameState = {
   enterAstravel: () => void
   enterBiome: (biomeId: string) => void
   enterFungalChambers: () => void
+  startDungeonStage: (roomId: string) => void
   discoverFungalRoom: (roomId: string) => void
   exitFungalChambers: () => void
   resolveCurrentTrailNode: () => void
@@ -735,6 +738,32 @@ export const useGameStore = create<GameState>((set, get) => {
       show('Câmaras Fúngicas', 'A passagem foi aberta. Explore as salas até o núcleo da Ruína.', 'info')
     },
 
+    startDungeonStage: (roomId) => {
+      const save = get().save
+      if (!save || save.battle) return failAction('Termine o combate atual antes de avançar.')
+      if (save.vitals.hp <= 0) return failAction('Descanse na Base antes de combater.')
+      const draft = prepareDungeonEncounter(save, roomId, nowIso())
+      if (!draft.ok) return failAction(draft.message)
+      const encounterId = draft.save.dungeonRun!.activeEncounterId!
+      const encounter = content.encounters[encounterId]
+      if (!encounter) return failAction('Estágio sem encontro cadastrado.')
+      const next = draft.save
+      next.battle = createBattle(next, encounter, content, undefined, { manualInitiative: true })
+      next.battle.dungeonEncounterId = encounterId
+      next.battle.dungeonRunId = next.dungeonRun!.runId
+      // Historical characters keep their unique items. Stages still yield ordinary materials.
+      if (encounterId === FUNGAL_BOSS_ENCOUNTER_ID &&
+        (save.world.worldFlags.includes('fungal_chambers_first_clear')
+          || save.world.trailNodeStates.astravel_boss_preview === 'completed')) {
+        next.battle.rewards.lootDefinitionIds = next.battle.rewards.lootDefinitionIds.filter((id) =>
+          !['fragment_mycelial_essence', 'item_gem_esmeralda_crescimento'].includes(id))
+        delete next.battle.rewards.boundMemory
+      }
+      const player = next.battle.combatants.combatant_player
+      next.vitals = { hp: player.hp, mp: player.mp }
+      commit(next)
+    },
+
     discoverFungalRoom: (roomId) => {
       const save = get().save
       if (!save) return
@@ -798,9 +827,8 @@ export const useGameStore = create<GameState>((set, get) => {
       }
       const questGate = checkTrailQuestGate(save, node, content)
       if (!questGate.ok) return failAction(questGate.message)
-      if (trail.id === 'trail_astravel_entry' && node.type === 'boss' && (save.world.currentLocationId !== FUNGAL_DUNGEON_ID
-        || !save.world.worldFlags.includes(dungeonRoomFlag('fungal_core')))) {
-        return failAction('Alcance o Núcleo da Ruína dentro das Câmaras Fúngicas antes de enfrentar o Colosso.')
+      if (trail.id === 'trail_astravel_entry' && node.type === 'boss') {
+        return failAction('O Núcleo da Ruína agora é enfrentado ao concluir os 12 estágios das Câmaras Fúngicas.')
       }
       const encounter = content.encounters[node.encounterId]
       if (!encounter) return failAction('Conteúdo do encontro não encontrado.')
@@ -946,7 +974,21 @@ export const useGameStore = create<GameState>((set, get) => {
       if (battle.waveIndex) {
         next.world.portalWaveBest = Math.max(next.world.portalWaveBest ?? 0, battle.waveIndex)
       }
-      if (!battle.waveIndex && !battle.portalHuntId) {
+      if (battle.dungeonEncounterId) {
+        if (save.dungeonRun?.runId !== battle.dungeonRunId) return failAction('Tentativa da dungeon incompatível.')
+        const progress = claimDungeonEncounter(next, battle.dungeonEncounterId, acquiredAt)
+        if (!progress.ok) return failAction(progress.message)
+        next = progress.save
+        if (battle.dungeonEncounterId === FUNGAL_BOSS_ENCOUNTER_ID &&
+            next.world.trailNodeStates.astravel_boss_preview === 'bossCurrent') {
+          const trail = content.trails.trail_astravel_entry
+          const cleared = completeTrailNode(next, trail, trail.nodes[trail.nodes.length - 1].id, acquiredAt)
+          if (!cleared.ok) return failAction(cleared.message)
+          next = cleared.value.save
+        }
+        if (!next.world.completedEncounterIds.includes(battle.encounterId))
+          next.world.completedEncounterIds.push(battle.encounterId)
+      } else if (!battle.waveIndex && !battle.portalHuntId) {
         const trail = getTrailByNodeId(content, battle.trailNodeId)
         if (!trail) return failAction('A trilha deste encontro não foi encontrada.')
         const trailResult = completeTrailNode(next, trail, battle.trailNodeId, acquiredAt)
@@ -965,7 +1007,7 @@ export const useGameStore = create<GameState>((set, get) => {
         .map((id) => `EnemyStudied:${id}`))
       next.eventLog.push(`BattleWon:${battle.encounterId}`, `DropReceived:${loot.length}`)
       next.updatedAt = acquiredAt
-      if (!battle.waveIndex && !battle.portalHuntId) {
+      if (!battle.waveIndex && !battle.portalHuntId && (!battle.dungeonEncounterId || battle.dungeonEncounterId === FUNGAL_BOSS_ENCOUNTER_ID)) {
         next = applyQuestEvent(next, { type: 'visit', targetId: battle.trailNodeId }, content, acquiredAt)
       }
       for (const item of loot) {
@@ -989,9 +1031,11 @@ export const useGameStore = create<GameState>((set, get) => {
         battle.waveIndex
           ? `Onda ${battle.waveIndex} concluída: ${loot.length} itens recebidos. Você pode continuar ou retornar a Terran.`
           : battle.portalHuntId ? `Caçada concluída: ${loot.length} itens recebidos. Retorne ao Portal para outra caçada.`
-          : loot.length > 0
-            ? `${loot.length} drop entrou no inventário. A trilha avançou para o próximo nó.`
-            : 'A trilha avançou para o próximo nó.',
+          : battle.dungeonEncounterId
+            ? 'Estágio concluído. Continue pela sala atual ou avance na dungeon.'
+            : loot.length > 0
+              ? `${loot.length} drop entrou no inventário. A trilha avançou para o próximo nó.`
+              : 'A trilha avançou para o próximo nó.',
         'success',
       )
     },
@@ -1024,6 +1068,7 @@ export const useGameStore = create<GameState>((set, get) => {
       }
       const next = structuredClone(save)
       next.battle = null
+      next.dungeonRun = null
       next.world.currentLocationId = 'location_terran_portal_plaza'
       if (!next.world.unlockedLocationIds.includes('location_terran_portal_plaza')) {
         next.world.unlockedLocationIds.push('location_terran_portal_plaza')
