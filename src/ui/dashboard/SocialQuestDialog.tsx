@@ -44,9 +44,9 @@ export function SocialQuestDialog({ questId, save, onClose }: Props) {
               ? <p>Interaja com a Mesa de Iniciação e retorne ao seu líder.</p>
               : <GameButton variant="primary" onClick={() =>
                 definition.category !== 'clan' ? performTrial(definition.id)
-                : definition.id === clanGolemQuestId(save.character.clan.clanId ?? '')
+                : definition.id === clanGolemQuestId(save.character.clan.candidateClanId ?? '')
                   ? startClanGolemBattle(definition.id) : startClanTrialWave(definition.id)
-              }><ShieldCheck size={17} /> {definition.id === clanGolemQuestId(save.character.clan.clanId ?? '')
+              }><ShieldCheck size={17} /> {definition.id === clanGolemQuestId(save.character.clan.candidateClanId ?? '')
                 ? 'Enfrentar Golem de Granito'
                 : definition.category === 'clan'
                   ? `Iniciar onda ${save.clanTrialRun?.questId === definition.id ? save.clanTrialRun.waveIndex : 1}/3`
