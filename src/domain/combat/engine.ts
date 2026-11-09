@@ -315,9 +315,11 @@ const resolveSkill = (
     resolveAreaAttack(state,actor,target,catalog)
     return
   }
+  const protectedBossId=state.bossMechanics && isProtectedBoss(state,state.combatants[state.bossMechanics.bossId])
+    ? state.bossMechanics.bossId : undefined
   const primary = applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name, skill)
   for(const effect of skill.effects) if(effect.type==='adjacentSplash'&&primary.damage>0)
-    applySplash(state,actor,target,Math.floor(primary.damage*effect.fraction),skill.name,primary.sides,primary.face,effect.maxTargets)
+    applySplash(state,actor,target,Math.floor(primary.damage*effect.fraction),skill.name,primary.sides,primary.face,effect.maxTargets,protectedBossId)
   if (skill.id === 'skill_resonant_strike' && primary.damage > 0) {
     // BALANCE_DRAFT OD-06: 5% final primary damage to each other unprotected enemy.
     // Snapshot the shield from action start; AoE never hits the boss accidentally.
@@ -349,8 +351,8 @@ const adjacentEnemies = (state:BattleState,target:Combatant):Combatant[] => {
     (other):other is Combatant=>Boolean(other?.alive))
 }
 const applySplash=(state:BattleState,actor:Combatant,target:Combatant,damage:number,
-  action:string,sides:CombatDie,face:number,maxTargets:number) => {
-  for(const other of adjacentEnemies(state,target).filter(c=>validTarget(actor,c,'enemy',state)).slice(0,maxTargets)){
+  action:string,sides:CombatDie,face:number,maxTargets:number,protectedBossId?:string) => {
+  for(const other of adjacentEnemies(state,target).filter(c=>c.id!==protectedBossId && validTarget(actor,c,'enemy',state)).slice(0,maxTargets)){
     const dealt=Math.min(other.hp,Math.max(0,damage))
     if(!dealt)continue
     other.hp=Math.max(0,other.hp-dealt);other.alive=other.hp>0
@@ -366,12 +368,14 @@ const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,cata
   const rolled=calculateRolledDamage(getEffectiveAttackPower(actor,catalog)+bonusFace,
     getEffectiveMitigation(target,catalog),face,sides,0,guard)
   // BALANCE_DRAFT: 60% normal center, 30% of inflicted center for each flank.
+  const protectedBossId=state.bossMechanics && isProtectedBoss(state,state.combatants[state.bossMechanics.bossId])
+    ? state.bossMechanics.bossId : undefined
   const centerDamage=Math.min(target.hp,Math.max(1,Math.floor(rolled.finalDamage*0.6)))
   target.hp=Math.max(0,target.hp-centerDamage);target.alive=target.hp>0;target.defending=false
   addLog(state,`${actor.name} causa ${centerDamage} de dano em ${target.name} com Ataque em Área.`,'damage',
     {actorId:actor.id,targetId:target.id,sides,face,action:'Ataque em Área',
       ...(actor.weaponBonusDie?{weaponBonusRoll:{sides:actor.weaponBonusDie,face:bonusFace}}:{})})
-  applySplash(state,actor,target,Math.floor(centerDamage*0.3),'Splash de Área',sides,face,2)
+  applySplash(state,actor,target,Math.floor(centerDamage*0.3),'Splash de Área',sides,face,2,protectedBossId)
   addPhase(state,'ResolvingReactions');addPhase(state,'ApplyingStatuses');addPhase(state,'CheckEndConditions')
 }
 

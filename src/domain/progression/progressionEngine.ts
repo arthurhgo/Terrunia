@@ -49,6 +49,8 @@ export const joinClan = (
   catalog: ContentCatalog,
   now: string,
 ): Result<GameSave> => {
+  // Reconfirming the same already-owned clan never applies bonuses or rites twice.
+  if (save.character.clan.clanId === clanId) return ok(save)
   const allowed = canJoinClan(save, clanId, catalog)
   if (!allowed.ok) return allowed
   const next = structuredClone(save)
