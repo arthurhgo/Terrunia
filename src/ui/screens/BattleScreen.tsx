@@ -165,6 +165,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         id: entry.id, sides: entry.roll.sides, face: entry.roll.face,
         actorId: entry.roll.actorId, targetId: entry.roll.targetId ?? (actor?.side === 'enemy' ? 'combatant_player' : targetId),
         damage: Number(damage[1]), action: entry.roll.action,
+        critical: entry.roll.critical,
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy',
       }]
     })
@@ -414,6 +415,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         id: entry.id, sides: roll.sides, face: roll.face, damage: Number(match[1]),
         actorId: roll.actorId, targetId: roll.targetId ?? (actor?.side === 'enemy' ? player.id : target.id),
         action: roll.action, kind: 'damage' as const,
+        critical: roll.critical,
         ...(roll.weaponBonusRoll ? { weaponBonusRoll: roll.weaponBonusRoll } : {}),
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy' as const,
       }]
@@ -524,7 +526,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             motion={visualHp(enemy.id) <= 0 ? 'defeat'
               : strikeFx?.actorId === enemy.id ? 'attack'
                 : strikeFx?.targetId === enemy.id || receivingId === enemy.id ? 'hit' : 'idle'} />
-          {damageRevealed && receivingId === enemy.id && <b className="pixel-battle__damage-number" role="status">−{activeDice?.damage}</b>}
+          {damageRevealed && receivingId === enemy.id && <b className="pixel-battle__damage-number" role="status">−{activeDice?.damage}{activeDice?.critical ? ' · CRÍTICO!' : ''}</b>}
            <small>{enemy.name}</small>
           {hoveredEnemyId === enemy.id && <span className="pixel-battle__enemy-tooltip" role="tooltip"
             aria-label={'Status de ' + enemy.name} id={'enemy-status-' + i}>
@@ -558,6 +560,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           playerPortraitAssetId={save.character.portraitAssetId}
           enemyPortraitAssetId={activeDice.actorId && battle.combatants[activeDice.actorId]
             ? content.enemies[battle.combatants[activeDice.actorId].definitionId]?.assetId : undefined} />}
+      {damageRevealed && activeDice?.critical && <span className="pixel-battle__critical-flash" role="status" aria-live="polite">ACERTO CRÍTICO! · d{activeDice.sides}={activeDice.face}</span>}
       {strikeFx && <span className={`pixel-battle__strike-fx
         ${strikeFx.actorId === player.id ? 'to-enemy' : 'to-player'} is-${strikeFx.style}`} aria-hidden="true" />}
       {defeated && <div className="pixel-battle__death" role="status" aria-label="Terrírian derrotado">

@@ -22,6 +22,17 @@ describe('dado lançado diretamente na arena', () => {
     expect(screen.getByText('d8: 5')).toBeInTheDocument()
   })
 
+  it('mostra crítico somente ao revelar face máxima confirmada pelo motor', () => {
+    const critical = { ...roll, face: 8, damage: 15, critical: true }
+    const { container } = render(<BattleDicePlatform roll={critical} reducedMotion />)
+    expect(screen.getByText('d8: 8')).toBeInTheDocument()
+    expect(screen.getByText('ACERTO CRÍTICO!')).toBeInTheDocument()
+    expect(container.querySelector('.is-critical-roll')).toBeInTheDocument()
+    cleanup()
+    render(<BattleDicePlatform roll={{ ...roll, critical: false }} reducedMotion />)
+    expect(screen.queryByText('ACERTO CRÍTICO!')).not.toBeInTheDocument()
+  })
+
   it('não mostra resultado até o jogador arrastar o dado no painel de ações', () => {
     const { container } = render(<BattleDicePlatform roll={roll} reducedMotion={false} awaitingClick />)
     expect(container.querySelector('.battle-dice-platform__stage')).not.toBeInTheDocument()

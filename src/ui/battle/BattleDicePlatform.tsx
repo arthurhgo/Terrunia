@@ -19,6 +19,8 @@ export type BattleDiceEvent = {
   kind?: 'initiative' | 'damage'
   initiativeTotal?: number
   weaponBonusRoll?: { sides: AttributeDie; face: number }
+  /** True only when the combat engine resolved a natural-maximum damage roll. */
+  critical?: boolean
 }
 
 /** Full-arena VFX, not a dialog. Die visibly travels from actions into the world.
@@ -47,7 +49,8 @@ export function BattleDicePlatform({ roll, reducedMotion, awaitingClick = false,
   const initiative = roll.kind === 'initiative'
   return <div className={`battle-dice-platform battle-dice-platform--in-arena
       ${awaitingClick ? 'is-awaiting-click' : settled ? 'is-settled' : 'is-rolling'}
-      ${roll.actorSide === 'enemy' ? 'is-enemy-roll' : 'is-player-roll'}`}
+      ${roll.actorSide === 'enemy' ? 'is-enemy-roll' : 'is-player-roll'}
+      ${roll.critical && !initiative ? 'is-critical-roll' : ''}`}
     role="status" aria-live="polite" aria-label={`Lançamento visual de d${roll.sides} para ${initiative ? 'iniciativa' : roll.action}`}>
     <div className="battle-dice-platform__veil" aria-hidden="true" />
     <div className="battle-dice-platform__actor" aria-label={`Quem está rolando: ${roll.actorName ?? 'Combatente'}`}>
@@ -67,6 +70,7 @@ export function BattleDicePlatform({ roll, reducedMotion, awaitingClick = false,
       {settled && <div className="battle-dice-platform__result">
         <strong>{initiative ? `Iniciativa ${roll.initiativeTotal ?? roll.face}` : `d${roll.sides}: ${roll.face}`}</strong>
         {!initiative && roll.weaponBonusRoll && <small>Arma d{roll.weaponBonusRoll.sides}: {roll.weaponBonusRoll.face}</small>}
+        {!initiative && roll.critical && <span className="battle-dice-platform__critical">ACERTO CRÍTICO!</span>}
         {!initiative && <small>{roll.damage} de dano</small>}
       </div>}
     </div>}
