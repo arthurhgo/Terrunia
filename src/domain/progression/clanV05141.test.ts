@@ -15,6 +15,7 @@ describe('v0.5.14.1: ingresso, ondas e magia exclusiva',()=>{
     s.character.level=3
     expect(refreshQuestAvailability(s,content,now).quests[ROSETTA_CLAN_QUEST].status).toBe('locked')
     s.character.level=4
+    s.world.currentLocationId='location_terran_portal_plaza' // Rosetta must actually be present.
     s=refreshQuestAvailability(s,content,now)
     expect(s.quests[ROSETTA_CLAN_QUEST].status).toBe('available')
     const offered=offerQuest(s,ROSETTA_CLAN_QUEST,content,now)
