@@ -1,3 +1,4 @@
+import { GearForgeV0515 } from './GearForgeV0515'
 import { Link } from 'react-router-dom'
 import type { GameSave } from '../../domain/game/types'
 import { content } from '../../content/catalog'
@@ -29,6 +30,7 @@ export function ForgePanel({ save, onClose, onQuest }: { save: GameSave; onClose
             <div><h3>{definition.name}{item.refinementLevel ? ' +1' : ''}</h3><small>{item.instanceId === save.equippedBasicArmor?.instanceId ? 'Equipada · ' : ''}{!permission.ok ? permission.message : 'Pronta para reforçar'}</small></div>
             <button type="button" disabled={!permission.ok} aria-label={`Aprimorar ${definition.name} para +1`} onClick={() => refine(item.instanceId)}>Aprimorar +1</button></article>
         })}</section>}
+      <GearForgeV0515 save={save} />
       <section className="forge-premium" aria-label="Melhorias permanentes em Ouro">
         <h3>Forja Magistral · Melhorias por Ouro</h3>
         <p>Uma melhoria cara por Vínculo, sem substituição de arma, escudo, armadura, colar ou pulseira. Custos e bônus: BALANCE_DRAFT.</p>
