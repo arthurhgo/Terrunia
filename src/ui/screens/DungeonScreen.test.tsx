@@ -39,17 +39,22 @@ describe('Câmaras Fúngicas em quatro salas', () => {
     expect(screen.getByRole('img', { name: /Dungeon em pixels, quatro salas/ })).toBeInTheDocument()
   })
 
-  it('encontro com Colosso exige acesso físico ao núcleo e clique explícito', () => {
+  it('as salas descobertas não liberam o chefe sem as 12 ondas de combate', () => {
     seedDungeon(true)
     render(<MemoryRouter initialEntries={['/dungeon']}><Routes>
-      <Route path="/dungeon" element={<DungeonScreen />} /><Route path="/battle" element={<div>Combate do Colosso</div>} />
+      <Route path="/dungeon" element={<DungeonScreen />} />
+      <Route path="/battle" element={<div>Combate de estágio</div>} />
     </Routes></MemoryRouter>)
     fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Núcleo da Ruína' }))
     expect(screen.getByRole('complementary', { name: 'Painel lateral: Núcleo da Ruína' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Enfrentar Núcleo da Ruína/ })).not.toBeInTheDocument()
     expect(useGameStore.getState().save?.battle).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Enfrentar Colosso Micélio' }))
-    expect(screen.getByText('Combate do Colosso')).toBeInTheDocument()
-    expect(useGameStore.getState().save?.battle?.encounterId).toBe('encounter_colossus_mycelium_01')
-    expect(useGameStore.getState().save?.world.currentLocationId).toBe('dungeon_fungal_chambers')
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar painel' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Aproximar-se de Vestíbulo Micelial' }))
+    expect(screen.getByRole('button', { name: 'Enfrentar estágio 1/3' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Enfrentar estágio 1/3' }))
+    expect(useGameStore.getState().save?.battle?.encounterId).toBe('encounter_fungal_vestibule_stage_1')
+    expect(screen.getByText('Combate de estágio')).toBeInTheDocument()
   })
+
 })
