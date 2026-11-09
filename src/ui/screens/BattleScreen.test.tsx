@@ -244,4 +244,50 @@ describe('combate visual v0.17', () => {
     expect(updated.wallet.gold).toBe(save.wallet.gold + 9)
     expect(screen.getByRole('button', { name: /PRÓXIMA ONDA/ })).toBeEnabled()
   })
+  it('mostra título unificado e cards quadrados com dado, dano e tooltip de habilidade', () => {
+    vi.useFakeTimers()
+    const save = createBattleSave()
+    const chosen = save.battle!.combatants.combatant_player.skillIds[0]
+    const ability = content.combatSkills[chosen]
+    expect(ability).toBeDefined()
+    const { container } = render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    expect(container.querySelector('.pixel-battle__encounter-label h1')).toHaveTextContent(': ')
+    act(() => { vi.advanceTimersByTime(1950) })
+    const category = /scepter|grimoire|staff|spore|arcane|magic|spell/i.test(chosen) ? 'MAGIAS' : 'HABILIDADES'
+    fireEvent.click(screen.getByRole('button', { name: category }))
+    const skillButton = screen.getByRole('button', { name: new RegExp('Usar ' + ability.name) })
+    expect(skillButton).toHaveClass('pixel-battle__skill-card')
+    expect(skillButton).toHaveTextContent('MP')
+    fireEvent.mouseEnter(skillButton)
+    expect(screen.getByRole('tooltip', { name: 'Detalhes de ' + ability.name })).toHaveTextContent('Dado')
+    expect(screen.getByRole('tooltip', { name: 'Detalhes de ' + ability.name })).toHaveTextContent('Recarga')
+    expect(container.querySelector('.pixel-battle__skill-icon img')).toBeInTheDocument()
+    fireEvent.mouseLeave(skillButton)
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+  })
+
+  it('só mostra iniciativa de cada monstro quando seu próprio dado termina', () => {
+    vi.useFakeTimers()
+    const save = createBattleSave()
+    save.battle = createBattle(save, content.encounters.encounter_fungorro_01, content,
+      'init-sequential-v0513', { manualInitiative: true })
+    useGameStore.setState({ save })
+    const { container } = render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    expect(container.querySelectorAll('.combat-timeline__initiative')).toHaveLength(0)
+    act(() => { vi.advanceTimersByTime(1850) })
+    const die = screen.getByRole('button', { name: 'Arrastar dado de iniciativa d4 para cima para rolar' })
+    fireEvent.pointerDown(die, { pointerId: 7, pointerType: 'mouse', isPrimary: true, button: 0, clientY: 150 })
+    fireEvent.pointerMove(die, { pointerId: 7, pointerType: 'mouse', isPrimary: true, clientY: 75 })
+    fireEvent.pointerUp(die, { pointerId: 7, pointerType: 'mouse', isPrimary: true, clientY: 75 })
+    expect(container.querySelectorAll('.combat-timeline__initiative')).toHaveLength(0)
+    act(() => { vi.advanceTimersByTime(3400) })
+    expect(container.querySelectorAll('.combat-timeline__initiative')).toHaveLength(1)
+    expect(useGameStore.getState().save!.battle!.phase).toBe('AwaitingInitiative')
+    act(() => { vi.advanceTimersByTime(13000) })
+    expect(useGameStore.getState().save!.battle!.phase).not.toBe('AwaitingInitiative')
+    expect(container.querySelectorAll('.combat-timeline__initiative').length).toBe(
+      Object.keys(useGameStore.getState().save!.battle!.combatants).length,
+    )
+  })
+
 })

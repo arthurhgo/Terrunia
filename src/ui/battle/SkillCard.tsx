@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import type { CSSProperties } from 'react'
 import { Clock3 } from 'lucide-react'
 import type { CombatSkillDefinition } from '../../content/types'
 import type { previewCombatSkill } from '../../domain/combat/skillPreview'
@@ -44,7 +45,7 @@ export function SkillCard({ skill, preview, remaining, unavailable, onInspect, o
     <span className="pixel-battle__skill-icon">
       <AssetImage assetId={skill.iconAssetId ?? `skill.${skill.id}`} alt="" />
       {remaining > 0 && <span className="pixel-battle__cooldown-mask"
-        style={{ '--cooldown-angle': `${angle}deg` } as React.CSSProperties} aria-hidden="true" />}
+        style={{ '--cooldown-angle': `${angle}deg` } as CSSProperties} aria-hidden="true" />}
       {remaining > 0 && <span className="pixel-battle__cooldown-clock" aria-hidden="true">
         <Clock3 size={13} /><b>{remaining}T</b>
       </span>}

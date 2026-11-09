@@ -283,8 +283,11 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       : BATTLE_PRESENTATION.dieSpinMs + BATTLE_PRESENTATION.dieResultHoldMs
     const impactMs = event.kind === 'damage' ? (reducedMotion ? 160 : 450) : 80
     previewTimer.current = window.setTimeout(() => {
-      // The die is removed from focus BEFORE the attack and HP are revealed.
+      // A roll becomes public only after its own die focus finishes.
       setDiceStage('impact')
+      if (event.kind === 'initiative' && event.initiativeTotal !== undefined) {
+        setRevealedInitiative((current) => ({ ...current, [event.actorId]: event.initiativeTotal! }))
+      }
       if (event.kind === 'damage') {
         if (event.targetId) {
           setStagedHp((current) => current ? {

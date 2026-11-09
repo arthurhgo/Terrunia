@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Clock3, X } from 'lucide-react'
 import type { CombatSkillDefinition } from '../../content/types'
 import type { previewCombatSkill } from '../../domain/combat/skillPreview'
@@ -12,6 +13,11 @@ export function SkillTooltip({ skill, preview, remaining, unavailable, onClose, 
   onClose: () => void
   onUse: () => void
 }) {
+  useEffect(() => {
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
+    window.addEventListener('keydown', escape)
+    return () => window.removeEventListener('keydown', escape)
+  }, [onClose])
   return <aside id={`skill-tooltip-${skill.id}`} className="pixel-battle__skill-tooltip"
     role="tooltip" aria-label={`Detalhes de ${skill.name}`}>
     <button type="button" className="pixel-battle__skill-tooltip-close" aria-label="Fechar detalhes" onClick={onClose}><X size={16} /></button>
