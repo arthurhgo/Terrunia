@@ -72,7 +72,7 @@ describe('Rosetta v0.15: escolha de proteção e tiers', () => {
     save = take(equipBasicArmor(save, tunic.instanceId, content, now))
     expect(deriveCharacterStats(save, content).defense.value).toBe(baseDefense + 1)
     save.world.currentLocationId = 'location_terran_bond_workshop'
-    save = take(buyMarketItem(save, 'presence_neris', 'consumable_minor_tonic', 1, content, now))
+    save = take(buyMarketItem(save, 'presence_edran', 'consumable_minor_tonic', 1, content, now))
     expect(save.quests.rosetta_tutorial_supply.status).toBe('ready_to_turn_in')
     save = finish(save, 'rosetta_tutorial_supply')
     expect(save.quests.rosetta_tutorial_armor.status).toBe('locked')
@@ -135,7 +135,7 @@ describe('Rosetta v0.15: escolha de proteção e tiers', () => {
   it('reconhece compra anterior ao aceite da lição 2, mas ainda exige equipar uma peça', () => {
     let save = firstChoice()
     save.world.currentLocationId = 'location_terran_bond_workshop'
-    save = take(buyMarketItem(save, 'presence_neris', 'consumable_minor_tonic', 1, content, now))
+    save = take(buyMarketItem(save, 'presence_edran', 'consumable_minor_tonic', 1, content, now))
     save.world.currentLocationId = 'location_terran_portal_plaza'
     save = start(save, 'rosetta_tutorial_supply')
     expect(save.quests.rosetta_tutorial_supply.status).toBe('active')
