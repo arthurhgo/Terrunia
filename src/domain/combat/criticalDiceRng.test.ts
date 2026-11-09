@@ -4,6 +4,7 @@ import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
 import { calculateRolledDamage, createBattle, seedFromBattleId, submitBattleCommand } from './engine'
 import { rollSeededCombatDie } from './rng'
+import { createWaveBattle } from './waves'
 import { migrateAndValidateSave } from '../../persistence/saveSchema'
 import type { CombatDie } from './types'
 
@@ -185,6 +186,35 @@ describe('v0.5.14.2 · dados justos e crítico global por face máxima', () => {
       }
     }
     expect(migrateAndValidateSave(old).battle?.rngSeed).toBe(result.value.rngSeed)
+  })
+
+  it('mantém a regra também em onda 14, portal e boss de masmorra', () => {
+    const save = makeSave()
+    const wave = createWaveBattle(save, content, 14)
+    const dungeon = createBattle(save, content.encounters.encounter_fungal_core_sentinel,
+      content, 'crit-fungal-dungeon', { manualInitiative: true })
+    const hunt = createBattle(save, content.encounters.encounter_portal_spore_hunt,
+      content, 'crit-portal-hunt', { manualInitiative: true })
+    expect(wave.waveIndex).toBe(14)
+    expect(dungeon.bossMechanics).toBeDefined()
+    for (const battle of [wave, dungeon, hunt]) {
+      const player = battle.combatants.combatant_player
+      const enemies = Object.values(battle.combatants).filter(actor => actor.side === 'enemy')
+      const target = enemies.find(enemy => enemy.id !== battle.bossMechanics?.bossId) ?? enemies[0]
+      player.hp = player.maxHp = 500
+      for (const enemy of enemies) enemy.hp = enemy.maxHp = 500
+      battle.phase = 'AwaitingAction'
+      battle.initiativeOrder = [player.id, ...enemies.map(e => e.id)]
+      battle.actorId = player.id
+      battle.actorCursor = 0
+      const action = submitBattleCommand(battle, { type: 'attack', targetId: target.id }, content)
+      if (!action.ok) throw Error(action.message)
+      const hits = action.value.log.filter(entry => entry.tone === 'damage' && entry.roll)
+      expect(hits.length).toBeGreaterThan(0)
+      for (const entry of hits) {
+        expect(entry.roll?.critical).toBe(entry.roll?.face === entry.roll?.sides)
+      }
+    }
   })
 
   it('rolagem máxima de iniciativa não cria crítico nem bônus indevido de dano', () => {
