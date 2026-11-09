@@ -32,8 +32,8 @@ export const canJoinClan = (save: GameSave, clanId: string, catalog: ContentCata
   if (save.character.clan.clanId) return fail('CLAN_ALREADY_JOINED', 'Seu Terrírian já possui um Vínculo de Clã.')
   if (save.character.level < 4 || save.quests[ROSETTA_CLAN_QUEST]?.status !== 'completed')
     return fail('CLAN_GUIDANCE_REQUIRED','Inicie Os Quatro Caminhos com Rosetta no nível 4.')
-  if (save.character.clan.candidateClanId && save.character.clan.candidateClanId !== clanId)
-    return fail('CLAN_CANDIDACY_LOCKED','Sua candidatura pertence a outro Clã.')
+  if (save.character.clan.candidateClanId !== clanId)
+    return fail('CLAN_CANDIDACY_REQUIRED','Selecione sua candidatura no Salão dos Clãs antes do rito.')
   if (!save.character.clan.eligibleClanIds.includes(clanId)) {
     return fail('CLAN_NOT_ELIGIBLE', 'Conclua as três provas e receba o convite antes do rito.')
   }
