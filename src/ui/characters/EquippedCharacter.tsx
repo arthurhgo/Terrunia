@@ -5,7 +5,8 @@ import type { ActorFacing } from '../terran/pixelActorArt'
 import { AssetImage } from '../components/AssetImage'
 import { CharacterSprite } from './CharacterSprite'
 import { getEquipmentAnchor, getVisualEquipment, type VisualItem } from './equipmentVisuals'
-import { armorPalette, armorPixels } from './armorSilhouette'
+import { equipmentPixels } from './equipmentPixelShapes'
+import { armorPalette } from './armorSilhouette'
 import './equipmentComposite.css'
 
 const placedStyle = (item: VisualItem, facing: ActorFacing): CSSProperties => {
@@ -31,12 +32,12 @@ export function CharacterComposite({ appearance, portraitAssetId, visuals, facin
   alt?: string
 }) {
   const layer = (depth: 'front' | 'back') => visuals.filter((item) => getEquipmentAnchor(item, facing).layer === depth)
-    .map((item) => item.slot === 'armor'
+    .map((item) => item.slot === 'armor' || item.palette
       ? <svg key={item.slot} viewBox="0 0 32 32" role="presentation" aria-hidden="true"
-          className="equipped-character__layer equipped-character__layer--armor equipped-character__armor-silhouette"
-          data-slot="armor" data-item-id={item.itemId} data-forged={item.forged} data-rarity={item.rarity} data-grade={item.visualTier}
+          className={'equipped-character__layer equipped-character__layer--'+item.slot+' equipped-character__armor-silhouette'}
+          data-slot={item.slot} data-forge-grade={item.forgeGrade} data-item-id={item.itemId} data-forged={item.forged} data-rarity={item.rarity} data-grade={item.visualTier}
           style={{ left: 0, top: 0, width: '100%', height: '100%', transform: 'none' }}>
-          {armorPixels(facing).map((rect, index) => <rect key={index} x={rect.x} y={rect.y}
+          {equipmentPixels(item,facing).map((rect, index) => <rect key={index} x={rect.x} y={rect.y}
             width={rect.w} height={rect.h} fill={armorPalette(item)[rect.tone]} />)}
         </svg>
       : <AssetImage key={item.slot} assetId={item.assetId}
