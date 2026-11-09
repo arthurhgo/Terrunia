@@ -494,6 +494,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             '--enemy-depth': `${getEnemyFormationSlot(i, enemies.length).depthPx}px`,
             '--enemy-width': `${getEnemyFormationSlot(i, enemies.length).widthPercent}%`,
             zIndex: getEnemyFormationSlot(i, enemies.length).layer } as React.CSSProperties}
+          data-granite-golem={enemy.definitionId === 'enemy_granite_golem' ? 'true' : undefined}
           className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
           onClick={() => enemy.alive && !isProtectedBoss(battle, enemy) && setTargetId(enemy.id)}
            disabled={!enemy.alive || isProtectedBoss(battle, enemy)}
