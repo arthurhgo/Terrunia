@@ -242,9 +242,9 @@ export function QuestNpcPanel({ save, questId, onClose, onSelectQuest, embedded 
         </button>}
       {progress.status === 'active' && definition.category === 'clan' && !isQuestObjectActivityId(questId) &&
         <button type="button" className="terran-service-action" onClick={() =>
-          questId === clanGolemQuestId(save.character.clan.clanId ?? '')
+          questId === clanGolemQuestId(save.character.clan.candidateClanId ?? '')
             ? startClanGolemBattle(questId) : startClanTrialWave(questId)}>
-          {questId === clanGolemQuestId(save.character.clan.clanId ?? '')
+          {questId === clanGolemQuestId(save.character.clan.candidateClanId ?? '')
             ? 'Enfrentar Golem de Granito'
             : `Iniciar onda ${save.clanTrialRun?.questId === questId ? save.clanTrialRun.waveIndex : 1}/3`}
         </button>}
