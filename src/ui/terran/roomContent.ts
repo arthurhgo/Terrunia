@@ -61,7 +61,7 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
       behavior:'inspect' as const,description:'NPCs, missões e serviços de Clã serão adicionados em versões futuras.'},
     {id:castle.interiorId+'_return',name:'Portal de Retorno ao Salão',point:{x:192,y:213},
       behavior:'portal' as const,description:'Retornar ao Salão dos Clãs em Terran.'},
-  ]])) as Record<ClanCastleInteriorId, readonly RoomFurniture[]>),
+  ]])) as unknown as Record<ClanCastleInteriorId, readonly RoomFurniture[]>),
   interior_terririan_home: [
     { id: 'home_memories', name: 'Mesa das Memórias', point: { x: 141, y: 191 }, behavior: 'inspect', description: 'Um lugar reservado a lembranças de suas viagens. O arquivo de memórias será ampliado futuramente.' },
     { id: 'home_bed', name: 'Cama da Base', point: { x: 249, y: 189 }, behavior: 'rest', description: 'Descanso para recuperar Vida e Mana fora de combate.' },
