@@ -2,20 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { deriveCharacterStats } from '../character/derivedStats'
 import { createNewSave } from '../game/createSave'
-import { acceptQuest, applyQuestEvent, offerQuest, turnInQuest } from '../quests/questEngine'
 import { resolveQuestDefinition } from '../quests/questSelectors'
-import { discoverClan, joinClan, unlockClass } from './progressionEngine'
-
-const completeSocialQuest = (save: ReturnType<typeof createNewSave>, questId: string, now: string) => {
-  const offered = offerQuest(save, questId, content, now)
-  if (!offered.ok) throw new Error(offered.message)
-  const accepted = acceptQuest(offered.value, questId, content, now)
-  if (!accepted.ok) throw new Error(accepted.message)
-  const ready = applyQuestEvent(accepted.value, { type: 'interact', targetId: questId }, content, now)
-  const completed = turnInQuest(ready, questId, content.quests[questId].turnInNpcId, content, now)
-  if (!completed.ok) throw new Error(completed.message)
-  return completed.value
-}
+import { joinClan, unlockClass } from './progressionEngine'
 
 describe('progressão de Clã e Classe', () => {
   it('exige Rosetta no nível 4, três provas e confirmação de um único Clã', () => {
