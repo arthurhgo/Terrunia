@@ -244,9 +244,24 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const battleTitle = `${encounter?.locationLabel ?? 'ASTRAVÉL'}: ${encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}`
   const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((skill) => Boolean(skill))
   const inspectedSkill = skills.find((skill) => skill.id === (pinnedSkillId ?? hoveredSkillId))
+  const healingPotion = save.inventory.find((instance) =>
+    content.items[instance.definitionId]?.combatUseMode === 'freeHealingPotion' && instance.quantity > 0)
+  const potionSkill: CombatSkillDefinition = {
+    id: POTION_CARD_ID, name: 'Tomar Poção',
+    description: 'Usa 1 Poção Restauradora sem consumir a ação. Regenera 10% da Vida em dois turnos.',
+    target: 'self', mpCost: 0, cooldownTurns: 2, damageDieSteps: 0,
+    iconAssetId: POTION_CARD_ID,
+    effects: [{ type: 'restoreHp', value: Math.ceil(player.maxHp * 0.1) }],
+    status: 'BALANCE_DRAFT',
+  }
+  const potionInspected = menu === 'items' && (hoveredSkillId === POTION_CARD_ID || pinnedSkillId === POTION_CARD_ID)
+  const potionUnavailable = !healingPotion ? 'Nenhuma Poção Restauradora'
+    : (player.potionCooldown ?? 0) > 0 || (player.potionHealingTicks ?? 0) > 0 ? 'Poção em recarga'
+      : player.hp >= player.maxHp ? 'Vida cheia' : null
   const consumables = save.inventory.filter((instance) => {
     const definition = content.items[instance.definitionId]
-    return definition?.category === 'consumable' && definition.combatEffects.length > 0 && !definition.combatKind
+    return definition?.category === 'consumable' && definition.combatEffects.length > 0
+      && !definition.combatKind && definition.combatUseMode !== 'freeHealingPotion'
   })
   const categoryItems = (kind: 'throwable' | 'rune' | 'essence') =>
     save.inventory.filter((instance) => content.items[instance.definitionId]?.combatKind === kind)
@@ -271,7 +286,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     || effect.type === 'restoreMp' && player.mp < player.maxMp
     || effect.type === 'cleanseHarmful' && player.statusEffects.some((status) => content.statusEffects[status.definitionId]?.tone === 'harmful'),
   ))
-  const hasUsableConsumable = consumables.some((item) => content.items[item.definitionId].combatEffects.some((effect) =>
+  const hasUsableConsumable = Boolean(healingPotion) || consumables.some((item) => content.items[item.definitionId].combatEffects.some((effect) =>
     (effect.type === 'restoreHp' && player.hp < player.maxHp) ||
     (effect.type === 'restoreMp' && player.mp < player.maxMp) ||
     (effect.type === 'cleanseHarmful' && player.statusEffects.some((status) =>
@@ -606,12 +621,25 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               })}
               </div>
             </>}
-            {menu === 'items' ? consumables.length ? <><select aria-label="Selecionar consumível" value={selectedItem?.instanceId ?? ''}
-              onChange={(event) => setSelectedConsumableId(event.target.value)}>
-              {consumables.map((item) => <option key={item.instanceId} value={item.instanceId}>{content.items[item.definitionId].name} ×{item.quantity}</option>)}
-            </select><button disabled={!itemUseful} onClick={() => selectedItem && send({ type: 'item', itemInstanceId: selectedItem.instanceId, targetId: player.id })}>SELECIONAR POÇÃO</button></> :
-              <span>Sem consumíveis disponíveis.</span> : null}
-            {(['throwables', 'runes', 'essences'] as const).includes(menu as 'throwables' | 'runes' | 'essences') ? (() => {
+             {menu === 'items' && <>
+               <div className="pixel-battle__potion-skill">
+                 <SkillCard skill={potionSkill} preview={previewCombatSkill(player, player, potionSkill, content)}
+                   remaining={player.potionCooldown ?? 0} unavailable={potionUnavailable}
+                   onInspect={() => { setPinnedSkillId(null); setHoveredSkillId(POTION_CARD_ID) }}
+                   onLeave={() => setHoveredSkillId(null)}
+                   onPin={() => setPinnedSkillId(POTION_CARD_ID)}
+                   onUse={() => healingPotion && !potionUnavailable && send({ type: 'item',
+                     itemInstanceId: healingPotion.instanceId, targetId: player.id })} />
+               </div>
+               {consumables.length ? <>
+                 <select aria-label="Selecionar consumível" value={selectedItem?.instanceId ?? ''}
+                   onChange={(event) => setSelectedConsumableId(event.target.value)}>
+                   {consumables.map((item) => <option key={item.instanceId} value={item.instanceId}>{content.items[item.definitionId].name} ×{item.quantity}</option>)}
+                 </select>
+                 <button disabled={!itemUseful} onClick={() => selectedItem && send({ type: 'item', itemInstanceId: selectedItem.instanceId, targetId: player.id })}>USAR CONSUMÍVEL</button>
+               </> : <span className="pixel-battle__potion-caption">Outros consumíveis não disponíveis.</span>}
+             </>}
+             {(['throwables', 'runes', 'essences'] as const).includes(menu as 'throwables' | 'runes' | 'essences') ? (() => {
               const kind = menu === 'throwables' ? 'throwable' : menu === 'runes' ? 'rune' : 'essence'
               const supplies = categoryItems(kind)
               return supplies.length ? supplies.map((instance) => {
@@ -650,6 +678,12 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         <p className="pixel-battle__hint"><Crosshair size={14} /> {battle.phase === 'Victory' ? 'Recolha tudo de uma vez e continue.' : battle.phase === 'Defeat' ? 'A expedição foi interrompida.' : 'Selecione um inimigo e escolha sua ação.'}</p>
       </section>
     </div>
+    {potionInspected && <SkillTooltip skill={potionSkill} preview={previewCombatSkill(player, player, potionSkill, content)}
+      remaining={player.potionCooldown ?? 0} unavailable={potionUnavailable}
+      onClose={() => { setHoveredSkillId(null); setPinnedSkillId(null) }}
+      onUse={() => { setHoveredSkillId(null); setPinnedSkillId(null)
+        if (healingPotion && !potionUnavailable) send({ type: 'item', itemInstanceId: healingPotion.instanceId, targetId: player.id })
+      }} />}
     {(menu === 'skills' || menu === 'magic') && inspectedSkill && <SkillTooltip skill={inspectedSkill}
       preview={previewCombatSkill(player, inspectedSkill.target === 'self' ? player : target, inspectedSkill, content)}
       remaining={player.skillCooldowns?.[inspectedSkill.id] ?? 0}
