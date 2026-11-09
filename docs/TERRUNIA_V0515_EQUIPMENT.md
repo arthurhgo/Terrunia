@@ -34,7 +34,7 @@ Custo G2: arredondamento de 25% do preço de G1. Custo G3: arredondamento de 35%
 1. **Materiais específicos de forja:** o catálogo exige materiais por Tier, mas não determina a matéria-prima. Nesta implementação de draft, a forja de equipamentos comerciais cobra **somente Ouro**; não inventa material.
 2. **Ranks/quests extras:** até definir gates canônicos, acesso usa nível, Clã e Classe reais, sem criar quests ou ranks artificiais.
 3. **Atributos de estilos ligados:** o revestimento soma status de equipamento temporário, mas não pode remover ganhos do Vínculo; verificar fórmulas de combate em QA.
-4. **NPC exclusivo:** a loja de Neris recebeu o catálogo geral; seu estoque legado do tutorial de Rosetta ainda existe para não quebrar missões. Reorganizar suprimentos requer uma migração separada de objetivos e testes.
+4. **NPC exclusivo:** Neris vende equipamentos e mochilas. Os materiais de forja foram atribuídos a Valmira e os suprimentos do tutorial a Edran, com atualização do diálogo e objetivos da Rosetta.
 5. **Sprites finais:** os efeitos e silhuetas são placeholders originais. Importação manual via `assetRegistry` não altera gameplay.
 
 ## QA de aceite
