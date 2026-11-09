@@ -137,3 +137,9 @@
 @media(max-width:600px){.pixel-battle__boss-timers{right:3px;top:4px;max-width:60%;font-size:8px;padding:3px;}
  .pixel-battle__boss-timers span,.pixel-battle__boss-timers small{font-size:7px;}}
 @media(prefers-reduced-motion:reduce){.pixel-battle__strike-fx.is-resonance,.pixel-battle__strike-fx.is-area{animation:none;}}
+
+/* v0.5.14.1: two attacks use the same square SkillCard family. */
+.pixel-battle__attack-grid{display:grid;grid-template-columns:repeat(2,minmax(0,106px));gap:7px;justify-content:center}
+.pixel-battle__status-strip{display:flex;align-items:center;gap:4px;flex-wrap:wrap;max-width:100%}
+.pixel-battle__status-strip>span{display:inline-flex;align-items:center;gap:2px;border:1px solid #8e754d;background:#112537d9;padding:2px;color:#f1d59a;font:700 10px/1 monospace}
+.pixel-battle__status-strip img{width:20px;height:20px;object-fit:contain;image-rendering:pixelated}

@@ -28,6 +28,8 @@ import {
 import { discoverDungeonRoom, enterDungeon, exitDungeon, FUNGAL_DUNGEON_ID,
   startDungeonEncounter as prepareDungeonEncounter, claimDungeonEncounter } from '../domain/exploration/dungeonEngine'
 import { FUNGAL_BOSS_ENCOUNTER_ID } from '../content/fungalChambers'
+import { chooseClanCandidate as chooseClanCandidateDomain, chooseInitialClanSpell as chooseInitialClanSpellDomain } from '../domain/progression/clanOrientation'
+import { startClanTrialWave as prepareClanWave, claimClanTrialWave } from '../domain/progression/clanTrials'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { prepareStarterWeapon } from '../domain/bond/starterWeaponPlan'
 import { requestCampaignReset } from '../domain/game/campaignReset'
@@ -101,6 +103,9 @@ type GameState = {
   adjustAttribute: (attributeId: AttributeId, direction: 1 | -1) => void
   discoverEldamar: () => void
   discoverClan: (clanId: string) => void
+  chooseClanCandidate: (clanId: string) => void
+  chooseInitialClanSpell: (skillId: string) => void
+  startClanTrialWave: (questId: string) => void
   offerQuest: (questId: string) => void
   declineQuest: (questId: string) => void
   acceptQuest: (questId: string) => void
@@ -366,6 +371,23 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(next)
     },
 
+    chooseClanCandidate: (clanId) => {
+      const save=get().save
+      if(!save)return
+      const result=chooseClanCandidateDomain(save,clanId,content,nowIso())
+      if(!result.ok)return failAction(result.message)
+      const refreshed=refreshQuestAvailability(result.value,content,nowIso())
+      commit(refreshed)
+      show('Candidatura registrada',`Agora converse com o representante de ${content.clans[clanId].name}.`,'info')
+    },
+    chooseInitialClanSpell: (skillId) => {
+      const save=get().save
+      if(!save)return
+      const result=chooseInitialClanSpellDomain(save,skillId,content,nowIso())
+      if(!result.ok)return failAction(result.message)
+      commit(result.value)
+      show('Magia aprendida',content.combatSkills[skillId].name,'success')
+    },
     discoverClan: (clanId) => {
       const save = get().save
       if (!save) return
@@ -422,7 +444,10 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!save) return
       const completed = turnInQuestDomain(save, questId, npcId, content, nowIso(), choiceItemId)
       if (!completed.ok) return failAction(completed.message)
-      commit(completed.value)
+      const completedSave=completed.value
+      if(completedSave.clanTrialRun?.questId===questId&&completedSave.clanTrialRun.phase==='won')
+        completedSave.clanTrialRun=null
+      commit(completedSave)
       show('Missão concluída', 'Recompensas aplicadas e registro movido para Concluídas.', 'success')
     },
 
@@ -442,6 +467,22 @@ export const useGameStore = create<GameState>((set, get) => {
       if (changed.value !== save) commit(changed.value)
     },
 
+    startClanTrialWave: (questId) => {
+      const save=get().save
+      if(!save)return
+      const draft=prepareClanWave(save,questId,content,nowIso())
+      if(!draft.ok)return failAction(draft.message)
+      const encounterId=draft.value.clanTrialRun!.activeEncounterId!
+      const encounter=content.encounters[encounterId]
+      const next=draft.value
+      next.battle=createBattle(next,encounter,content,undefined,{manualInitiative:true})
+      next.battle.clanTrialQuestId=questId
+      next.battle.clanTrialRunId=next.clanTrialRun!.runId
+      const player=next.battle.combatants.combatant_player
+      next.vitals={hp:player.hp,mp:player.mp}
+      commit(next)
+      show('Prova de Clã',`Onda ${next.clanTrialRun!.waveIndex}/3. Combate iniciado.`,'info')
+    },
     performSocialTrial: (questId) => {
       const save = get().save
       const progress = save?.quests[questId]
@@ -455,6 +496,7 @@ export const useGameStore = create<GameState>((set, get) => {
       }
       if (progress.status !== 'active') return failAction('Aceite a prova antes de realizá-la.')
       if (isHallMainLore) return failAction('Interaja com a Mesa dos Ecos no Salão para investigar sua identidade.')
+      if (definition.category === 'clan') return failAction('As provas de Clã exigem três vitórias reais. Use Iniciar onda.')
       const next = applyQuestEvent(save, { type: 'interact', targetId: questId }, content, nowIso())
       commit(next)
       show('Prova realizada', 'Retorne ao representante para concluir a avaliação.', 'success')
@@ -974,7 +1016,13 @@ export const useGameStore = create<GameState>((set, get) => {
       if (battle.waveIndex) {
         next.world.portalWaveBest = Math.max(next.world.portalWaveBest ?? 0, battle.waveIndex)
       }
-      if (battle.dungeonEncounterId) {
+      if (battle.clanTrialQuestId && battle.clanTrialRunId) {
+        const progress=claimClanTrialWave(next,battle.clanTrialQuestId,battle.clanTrialRunId,battle.encounterId,acquiredAt)
+        if(!progress.ok)return failAction(progress.message)
+        next=progress.value
+        if(next.clanTrialRun?.phase==='won')
+          next=applyQuestEvent(next,{type:'completeRite',targetId:battle.clanTrialQuestId},content,acquiredAt)
+      } else if (battle.dungeonEncounterId) {
         if (save.dungeonRun?.runId !== battle.dungeonRunId) return failAction('Tentativa da dungeon incompatível.')
         const progress = claimDungeonEncounter(next, battle.dungeonEncounterId, acquiredAt)
         if (!progress.ok) return failAction(progress.message)
@@ -1007,7 +1055,7 @@ export const useGameStore = create<GameState>((set, get) => {
         .map((id) => `EnemyStudied:${id}`))
       next.eventLog.push(`BattleWon:${battle.encounterId}`, `DropReceived:${loot.length}`)
       next.updatedAt = acquiredAt
-      if (!battle.waveIndex && !battle.portalHuntId && (!battle.dungeonEncounterId || battle.dungeonEncounterId === FUNGAL_BOSS_ENCOUNTER_ID)) {
+      if (!battle.waveIndex && !battle.portalHuntId && !battle.clanTrialQuestId && (!battle.dungeonEncounterId || battle.dungeonEncounterId === FUNGAL_BOSS_ENCOUNTER_ID)) {
         next = applyQuestEvent(next, { type: 'visit', targetId: battle.trailNodeId }, content, acquiredAt)
       }
       for (const item of loot) {
@@ -1028,7 +1076,8 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(next)
       show(
         'Vitória',
-        battle.waveIndex
+        battle.clanTrialQuestId ? `Prova de Clã: onda vencida. Retorne ao Salão dos Clãs.`
+          : battle.waveIndex
           ? `Onda ${battle.waveIndex} concluída: ${loot.length} itens recebidos. Você pode continuar ou retornar a Terran.`
           : battle.portalHuntId ? `Caçada concluída: ${loot.length} itens recebidos. Retorne ao Portal para outra caçada.`
           : battle.dungeonEncounterId

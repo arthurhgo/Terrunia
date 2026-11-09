@@ -84,7 +84,7 @@ describe('quest engine', () => {
 
   it('aceita mais de três missões sem substituir nenhuma e preserva todas após reload', () => {
     let save = createNewSave('quest-user', 'Iria', 'character.terririan.default', content)
-    const ids = ['clan_dunavar_01', 'clan_rustal_01', 'clan_cebios_01', 'clan_estres_01']
+    const ids = ['side_npc_eldamar', 'side_npc_daeryn', 'side_npc_vorren', 'side_npc_lithwynn']
     for (const id of ids) {
       save.quests[id].status = 'offered'
       const result = acceptQuest(save, id, content, save.updatedAt)

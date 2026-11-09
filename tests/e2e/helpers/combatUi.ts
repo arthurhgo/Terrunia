@@ -7,6 +7,7 @@ export async function fightAndCollect(page: Page, expectedDropCount: number) {
   const initiative = page.getByRole('button', { name: /^Arrastar dado de iniciativa d\d+ para cima para rolar$/ })
   const playerDie = page.getByRole('button', { name: /^Arrastar dado d\d+ para cima para rolar$/ })
   const attack = page.getByRole('button', { name: 'ATAQUE', exact: true })
+  const single = page.getByRole('button', { name: /^Usar Ataque Único;/ })
 
   while (Date.now() - started < 65_000) {
     phase = await page.evaluate(async () => {
@@ -25,6 +26,11 @@ export async function fightAndCollect(page: Page, expectedDropCount: number) {
     }
     if (phase === 'AwaitingInitiative' && await initiative.isEnabled().catch(() => false)) {
       await initiative.press('Enter')
+      await page.waitForTimeout(120)
+      continue
+    }
+    if (phase === 'AwaitingAction' && await single.isVisible().catch(() => false)) {
+      await single.click()
       await page.waitForTimeout(120)
       continue
     }

@@ -1,6 +1,8 @@
 import { astravelEncounterDefinitions } from './astravel'
 import { biomeEncounterDefinitions } from './biomeExpeditions'
 import { fungalDungeonEncounters } from './fungalChambers'
+import { newClanSpells, newClanStatuses } from './clanSpells'
+import { clanTrialEncounters } from './clanTrials'
 import type {
   CombatSkillDefinition,
   EncounterDefinition,
@@ -79,6 +81,7 @@ export const combatSkillDefinitions = [
     target: 'enemy',
     mpCost: 2, cooldownTurns: 2, damageDieSteps: 0, 
     effects: [{ type: 'damage', powerBonus: 2 }],
+    presentationGroup: 'magic',
     status: 'BALANCE_DRAFT',
   },
   {
@@ -88,6 +91,7 @@ export const combatSkillDefinitions = [
     target: 'enemy',
     mpCost: 4, cooldownTurns: 2, damageDieSteps: 1, 
     effects: [{ type: 'damage', powerBonus: 4 }],
+    presentationGroup: 'magic',
     status: 'BALANCE_DRAFT',
   },
   {
@@ -97,6 +101,7 @@ export const combatSkillDefinitions = [
     target: 'enemy',
     mpCost: 3, cooldownTurns: 2, damageDieSteps: 0, 
     effects: [{ type: 'damage', powerBonus: 2 }],
+    presentationGroup: 'magic',
     status: 'BALANCE_DRAFT',
   },
   // v0.5.10: two bonus techniques per family at weapon Grades II and III.
@@ -152,59 +157,70 @@ export const combatSkillDefinitions = [
     id: 'skill_scepter_channel', name: 'Canal Arcano', description: 'Pulso arcano que rompe a mitigação.',
     target: 'enemy', mpCost: 2, cooldownTurns: 2, damageDieSteps: 0,
     effects: [{ type: 'damage', powerBonus: 1 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }],
+    presentationGroup: 'magic',
     status: 'BALANCE_DRAFT',
   },
   {
     id: 'skill_scepter_prism', name: 'Prisma do Cetro', description: 'Concentração arcana de Grau III.',
     target: 'enemy', mpCost: 4, cooldownTurns: 3, damageDieSteps: 1,
     effects: [{ type: 'damage', powerBonus: 3 }],
+    presentationGroup: 'magic',
     status: 'BALANCE_DRAFT',
   },
   {
     id: 'skill_grimoire_seal', name: 'Selo das Páginas', description: 'Inscrição ofensiva que desestabiliza um inimigo.',
     target: 'enemy', mpCost: 3, cooldownTurns: 2, damageDieSteps: 0,
     effects: [{ type: 'damage', powerBonus: 1 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }],
+    presentationGroup: 'magic',
     status: 'BALANCE_DRAFT',
   },
   {
     id: 'skill_grimoire_inscription', name: 'Inscrição Ressonante', description: 'Projeção reforçada pelas páginas do Vínculo.',
     target: 'enemy', mpCost: 4, cooldownTurns: 3, damageDieSteps: 1,
     effects: [{ type: 'damage', powerBonus: 4 }],
+    presentationGroup: 'magic',
     status: 'BALANCE_DRAFT',
   },
   {
     id: 'skill_staff_flow', name: 'Fluxo do Cajado', description: 'Onda mágica que enfraquece a guarda.',
     target: 'enemy', mpCost: 2, cooldownTurns: 2, damageDieSteps: 0,
     effects: [{ type: 'damage', powerBonus: 1 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }],
+    presentationGroup: 'magic',
     status: 'BALANCE_DRAFT',
   },
   {
     id: 'skill_staff_rift', name: 'Fenda Canalizada', description: 'Conjuração ampliada de Grau III.',
     target: 'enemy', mpCost: 4, cooldownTurns: 3, damageDieSteps: 1,
     effects: [{ type: 'damage', powerBonus: 3 }],
+    presentationGroup: 'magic',
     status: 'BALANCE_DRAFT',
   },
   // Clan techniques unlock only after in-world initiation; not at character creation.
   {
     id: 'skill_clan_dunavar_guard', name: 'Voto da Barreira', description: "Postura Dûn'Avar que recupera a força do portador.", target: 'self',
     mpCost: 0, cooldownTurns: 3, damageDieSteps: 0,
-    effects: [{ type: 'restoreHp', value: 2 }], status: 'BALANCE_DRAFT',
+    effects: [{ type: 'restoreHp', value: 2 }], presentationGroup: 'magic', iconAssetId: 'skill.skill_clan_dunavar_guard',
+    status: 'BALANCE_DRAFT',
   },
   {
     id: 'skill_clan_rustal_glyph', name: 'Glifo de Rustal', description: 'Inscrição de combate reservada ao iniciado em Rustal.', target: 'enemy',
     mpCost: 3, cooldownTurns: 3, damageDieSteps: 0,
-    effects: [{ type: 'damage', powerBonus: 2 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }], status: 'BALANCE_DRAFT',
+    effects: [{ type: 'damage', powerBonus: 2 }, { type: 'applyStatus', statusId: 'status_resonant_fracture', durationTurns: 1, chance: 1 }], presentationGroup: 'magic', iconAssetId: 'skill.skill_clan_rustal_glyph',
+    status: 'BALANCE_DRAFT',
   },
   {
     id: 'skill_clan_cebios_orb', name: 'Orbe de Cebios', description: 'Descarga celeste de um iniciado em Cebios Esti.', target: 'enemy',
     mpCost: 3, cooldownTurns: 3, damageDieSteps: 0,
-    effects: [{ type: 'damage', powerBonus: 3 }], status: 'BALANCE_DRAFT',
+    effects: [{ type: 'damage', powerBonus: 3 }], presentationGroup: 'magic', iconAssetId: 'skill.skill_clan_cebios_orb',
+    status: 'BALANCE_DRAFT',
   },
   {
     id: 'skill_clan_estres_flux', name: 'Fluxo do Ét', description: 'Surto arcano exclusivo do Clã Estres do Ét.', target: 'enemy',
     mpCost: 3, cooldownTurns: 3, damageDieSteps: 0,
-    effects: [{ type: 'damage', powerBonus: 2 }], status: 'BALANCE_DRAFT',
+    effects: [{ type: 'damage', powerBonus: 2 }], presentationGroup: 'magic', iconAssetId: 'skill.skill_clan_estres_flux',
+    status: 'BALANCE_DRAFT',
   },
+  ...newClanSpells,
   {
     id: 'skill_resonant_strike',
     name: 'Golpe Ressonante',
@@ -227,6 +243,7 @@ export const combatSkillDefinitions = [
       { type: 'damage', powerBonus: 0 },
       { type: 'applyStatus', statusId: 'status_spore_poison', durationTurns: 2, chance: 1 },
     ],
+    presentationGroup: 'magic',
     status: 'CONTENT_DRAFT',
   },
 ] satisfies CombatSkillDefinition[]
@@ -272,10 +289,11 @@ export const statusEffectDefinitions = [
     mitigationModifier: 2,
     status: 'BALANCE_DRAFT',
   },
+  ...newClanStatuses,
 ] satisfies StatusEffectDefinition[]
 
 export const encounterDefinitions = [
-  ...astravelEncounterDefinitions, ...biomeEncounterDefinitions, ...fungalDungeonEncounters,
+  ...astravelEncounterDefinitions, ...biomeEncounterDefinitions, ...fungalDungeonEncounters, ...clanTrialEncounters,
   {
     id: 'encounter_portal_luminous_nest',
     name: 'Ninho Luminescente',

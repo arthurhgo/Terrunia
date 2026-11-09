@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import { getRosettaGuidance } from '../../domain/terran/rosettaGuide'
+import { getClanRecommendations, ROSETTA_CLAN_QUEST } from '../../domain/progression/clanOrientation'
 import { DialogueWindow } from './DialogueWindow'
 import { ROSETTA_CORE_LESSON_IDS, rosettaTutorialQuests } from '../../content/rosettaTutorial'
 import { useGameStore } from '../../state/gameStore'
@@ -24,6 +25,8 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
   const complete = useGameStore((state) => state.turnInQuest)
   const [rewardChoice, setRewardChoice] = useState<string | null>(null)
   const guidance = getRosettaGuidance(save, content)
+  const orientation = save.quests[ROSETTA_CLAN_QUEST]
+  const recommendations = getClanRecommendations(save,content)
   const lesson = rosettaTutorialQuests.find((quest) => (ROSETTA_CORE_LESSON_IDS as readonly string[]).includes(quest.id) && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status))
   const progress = lesson ? save.quests[lesson.id] : null
   const offered = progress && ['available', 'offered'].includes(progress.status)
@@ -64,12 +67,28 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
           </button>}
         </div>
       </section> : <p className="rosetta-tutorial__done"><CheckCircle2 size={16} /> As três lições principais foram concluídas. Sua proteção escolhida evolui com você; novas peças são opcionais.</p>}
-      {save.character.level >= 3 && !save.character.clan.clanId && <article className="rosetta-guide__next" aria-label="Orientação de Clã no nível 3">
-        <h3><Compass size={16}/> Caminho dos Clãs · Nível 3</h3>
-        <p>Você já pode investigar as iniciações dos Clãs. Visite o Salão dos Clãs, conheça seus mestres e conclua as provas de filiação.</p>
-        <small>A escolha acontece dentro do mundo, após as missões; não altera a criação inicial do Terrírian.</small>
-        <button type="button" onClick={onOpenQuests}>Consultar provas e missões</button>
-      </article>}
+      <article className="rosetta-guide__next" aria-label="Orientação de Clãs e arma vinculada">
+        <h3><Compass size={16}/> Os Quatro Caminhos · Clã único</h3>
+        <p>Rosetta apresenta Dûn'Avar (proteção), Rustal (runas), Cebios Esti (visão celestial) e Estres do Ét (fluxos instáveis). Só um Clã poderá receber seu juramento; a escolha ocorre após três provas no Salão dos Clãs.</p>
+        <strong>Sinergia sugerida com ${recommendations[0]?.weaponName ?? 'sua arma'}</strong>
+        <div className="rosetta-clan-advice">{recommendations.map((clan,index)=><div key={clan.clanId}>
+          <strong>{index===0?'★ Recomendação: ':''}{clan.name}</strong>
+          <small>{clan.explanation}</small>
+          <small>{clan.philosophy}</small>
+        </div>)}</div>
+        <small>Essas sugestões consideram bônus do catálogo. Qualquer arma pode ingressar em qualquer Clã. A decisão é sua.</small>
+        {save.character.clan.clanId ? <strong>Filiação única: {content.clans[save.character.clan.clanId]?.name}</strong>
+          : save.character.level<4 ? <small>🔒 Missão de Clã disponível no nível 4. Nível atual: {save.character.level}.</small>
+          : orientation?.status==='completed' ? <strong>Orientação concluída. Visite o Salão dos Clãs e escolha sua candidatura.</strong>
+          : <div className="rosetta-tutorial__actions">
+              {orientation?.status==='available' || orientation?.status==='offered' ?
+                <button type="button" className="rosetta-tutorial__accept" onClick={()=>accept(ROSETTA_CLAN_QUEST)}>Aceitar “Os Quatro Caminhos”</button>
+                : orientation?.status==='active' ? <button type="button" onClick={onOpenQuests}>Visitar o Salão dos Clãs</button>
+                : orientation?.status==='ready_to_turn_in' ?
+                  <button type="button" className="rosetta-tutorial__accept" onClick={()=>complete(ROSETTA_CLAN_QUEST,'npc_rosetta')}>Concluir orientação de Clã</button>
+                  : <small>Oriente-se com Rosetta para iniciar a missão.</small>}
+            </div>}
+      </article>
       {onShowPaths && <button type="button" className="rosetta-guide__paths" onClick={onShowPaths}><Route size={16} /> Mostrar caminhos dourados para novas missões</button>}
       {guidance.next && guidance.next.id !== lesson?.id && <article className="rosetta-guide__next">
         <h3><Compass size={16}/> O que fazer agora</h3>

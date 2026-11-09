@@ -3,6 +3,25 @@ import { streetNpcDefinitions } from './streetNpcs'
 import { collectionQuestIdsForNpc } from './collectionContracts'
 import { rosettaTutorialQuests } from './rosettaTutorial'
 
+const clanSidequestIdsByNpc: Record<string,string[]> = {
+  "npc_mireya_dunavar": [
+    "side_clan_dunavar_watch_echoes",
+    "side_clan_dunavar_oath"
+  ],
+  "npc_master_rustal": [
+    "side_clan_rustal_stone",
+    "side_clan_rustal_glyphs"
+  ],
+  "npc_observador_cebios": [
+    "side_clan_cebios_esti_orbit",
+    "side_clan_cebios_esti_missing_light"
+  ],
+  "npc_guardador_estres": [
+    "side_clan_estres_do_et_rift",
+    "side_clan_estres_do_et_balance"
+  ]
+}
+
 const baseNpcDefinitions = [
   {
     id: 'npc_rosetta', name: 'Rosetta', title: 'Guardiã do Portal',
@@ -12,6 +31,7 @@ const baseNpcDefinitions = [
       'Bem-vindo a Terran. Sou Rosetta. Antes da estrada, vamos aprender a usar sua mochila, vestir uma proteção e negociar no Mercado.',
       'Cada lição pede uma ação sua. Vou lhe dar duas túnicas simples e orientar suas primeiras compras e o primeiro reforço com Durnan.',
       'Na Biblioteca de Eldamar há uma Estante dos Registros. Leia seus manuais e relatos sempre que precisar de orientação.',
+      'No nível quatro posso orientar seu único juramento: Dûn\'Avar protege, Rustal grava runas, Cebios Esti interpreta presságios e Estres do Ét domina fluxos instáveis.',
     ],
     status: 'CONTENT_DRAFT',
   },
@@ -116,7 +136,7 @@ const baseNpcDefinitions = [
 export const npcDefinitions: NPCDefinition[] = [
   ...baseNpcDefinitions.map((npc) => ({
     ...npc,
-    questIds: npc.id === 'npc_rosetta' ? rosettaTutorialQuests.map((quest) => quest.id) : [...npc.questIds, 'side_' + npc.id, ...collectionQuestIdsForNpc(npc.id)],
+    questIds: npc.id === 'npc_rosetta' ? [...rosettaTutorialQuests.map((quest) => quest.id), 'main_rosetta_clan_guidance_v05141'] : [...npc.questIds, 'side_' + npc.id, ...(clanSidequestIdsByNpc[npc.id] ?? []), ...collectionQuestIdsForNpc(npc.id)],
   })),
   ...streetNpcDefinitions,
 ]

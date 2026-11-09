@@ -162,6 +162,7 @@ describe('vertical slice integrada', () => {
         store().startBattle(node.id)
         expect(store().save!.battle).toBeNull()
         const reachedThreshold = structuredClone(store().save!)
+        reachedThreshold.character.clan.clanId = 'dunavar' // Pre-existing affiliation for late-game fixture.
         reachedThreshold.world.currentLocationId = content.dungeons.dungeon_fungal_chambers.entryTrailNodeId
         useGameStore.setState({ save: reachedThreshold })
         store().enterFungalChambers()
@@ -222,9 +223,13 @@ describe('vertical slice integrada', () => {
       for (let turn = 0; turn < 50 && store().save!.battle?.phase === 'AwaitingAction'; turn++) {
         const battle = store().save!.battle!
         const player = battle.combatants.combatant_player
-        const target = Object.values(battle.combatants).filter((actor) => actor.side === 'enemy' && actor.alive)
+        // Never spend a turn on the Sentinela while a fungus remains alive.
+        const guardsAlive = battle.bossMechanics && Object.values(battle.combatants).some(actor =>
+          actor.side === 'enemy' && actor.alive && actor.id !== battle.bossMechanics?.bossId)
+        const target = Object.values(battle.combatants).filter(actor => actor.side === 'enemy' && actor.alive &&
+          (!guardsAlive || actor.id !== battle.bossMechanics?.bossId))
           .sort((a, b) => a.hp - b.hp)[0]
-        const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((entry) => entry.mpCost <= player.mp && !(player.skillCooldowns?.[entry.id] ?? 0))
+        const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((entry) => entry.target === 'enemy' && entry.mpCost <= player.mp && !(player.skillCooldowns?.[entry.id] ?? 0))
         const skill = skills.find((entry) => entry.id === 'skill_resonant_strike') ?? skills.find((entry) => entry.id !== 'skill_basic_area_attack')
         store().submitBattleCommand(skill ? { type: 'skill', skillId: skill.id, targetId: target.id } : { type: 'attack', targetId: target.id })
       }

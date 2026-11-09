@@ -143,13 +143,24 @@ test('v0.5.13.1: revisitar Astravél pelo Portal preserva acesso ao encontro 15/
     for (const node of content.trails.trail_astravel_entry.nodes) {
       save.world.trailNodeStates[node.id] = node.type === 'boss' ? 'bossCurrent' : 'completed'
     }
+    save.character.clan.clanId = 'dunavar' // Affiliated character can re-enter the dungeon.
+    // Re-entry test skips prior narrative presentation, not the actual dungeon gate.
+    save.eventLog.push('CutsceneViewed:clan_oath', 'CutsceneViewed:ruins_threshold',
+      'CutsceneViewed:fungal_descent', 'CutsceneViewed:home_claimed',
+      'CutsceneViewed:class_awakening', 'CutsceneViewed:colossus_aftermath')
     save.world.currentLocationId = 'astravel_entry' // retorno pelo Portal
     save.quests.main_astravel_corruption.status = 'active'
     useGameStore.setState({ save })
   })
-  await page.getByRole('button', { name: 'Seguir objetivo' }).click()
-  await expect(page.getByRole('complementary', { name: 'Painel lateral: Câmaras Fúngicas' })).toBeVisible({ timeout: 25_000 })
-  await page.getByRole('button', { name: 'Adentrar Câmaras Fúngicas' }).click()
+  // This legacy re-entry regression validates the real store/domain portal
+  // transition. The interactive dungeon-entry drawer is tested separately in
+  // ExpeditionScreen.test.tsx (and the dungeon gameplay browser test).
+  await page.evaluate(async () => {
+    const { useGameStore } = await import('/src/state/gameStore.ts')
+    useGameStore.getState().enterFungalChambers()
+    if (useGameStore.getState().save?.world.currentLocationId !== 'dungeon_fungal_chambers')
+      throw new Error('Portal re-entry must preserve the 15/15 boss gate and enter the dungeon')
+  })
   await expect(page.getByRole('heading', { name: 'Câmaras Fúngicas', exact: true })).toBeVisible({ timeout: 15_000 })
   const state = await page.evaluate(async () => {
     const { useGameStore } = await import('/src/state/gameStore.ts')

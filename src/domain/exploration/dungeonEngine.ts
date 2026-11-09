@@ -75,6 +75,7 @@ export function enterDungeon(
   save: GameSave, dungeon: DungeonDefinition, now: string, sourceTrail?: TrailDefinition,
 ): DungeonResult {
   if (save.battle) return { ok: false, message: 'Termine o combate antes de entrar na ruína.' }
+  if(!save.character.clan.clanId) return {ok:false,message:'As Câmaras Fúngicas exigem um Clã. Fale com Rosetta a partir do nível 4.'}
   const currentLocation = save.world.currentLocationId
   const directEntry = [dungeon.entryTrailNodeId, dungeon.bossTrailNodeId].includes(currentLocation)
   const sameTrail = sourceTrail?.nodes.some((node) => node.id === dungeon.entryTrailNodeId)

@@ -25,7 +25,7 @@ const socialTrial = (
   giverNpcId: npcId,
   turnInNpcId: npcId,
   category,
-  objectives: [{ id: `${id}_objective`, type: 'interact', targetId: id, required: 1, label: `Realize: ${title}` }],
+  objectives: [{ id: `${id}_objective`, type: category === 'clan' ? 'completeRite' : 'interact', targetId: id, required: 1, label: category === 'clan' ? `Vença as três ondas: ${title}` : `Realize: ${title}` }],
   rewards: [{ type: 'characterXp', value: category === 'clan' ? 15 : 25 }],
   prerequisites,
   outcomes: [outcome],
@@ -46,7 +46,7 @@ const clanTrialChain = (
   'clan',
   [
     { type: 'noClan' },
-    index === 0 ? { type: 'clanKnown', clanId } : { type: 'questCompleted', questId: trials[index - 1][0] },
+    index === 0 ? { type: 'questCompleted', questId: 'main_rosetta_clan_guidance_v05141' } : { type: 'questCompleted', questId: trials[index - 1][0] },
   ],
   index === trials.length - 1
     ? { type: 'clanEligibility', clanId }
@@ -178,6 +178,17 @@ export const questDefinitions = [
     initialStatus: 'locked',
     terranFlow: { active: 'location_terran_clan_hall', ready_to_turn_in: 'location_terran_clan_hall' },
     status: 'CONTENT_DRAFT',
+  },
+  {
+    id: 'main_rosetta_clan_guidance_v05141', title: 'Os Quatro Caminhos',
+    summary: 'A partir do nível 4, converse com Rosetta sobre os quatro Clãs, compare sua arma vinculada e visite o Salão dos Clãs.',
+    giverNpcId: 'npc_rosetta', turnInNpcId:'npc_rosetta', category:'main',
+    objectives:[{id:'rosetta_visit_clan_hall',type:'visit',targetId:'location_terran_clan_hall',required:1,
+      label:'Conheça o Salão dos Clãs e retorne à Rosetta'}],
+    prerequisites:[{type:'characterLevel',value:4},{type:'noClan'}],
+    rewards:[{type:'characterXp',value:20}], initialStatus:'locked',
+    terranFlow:{active:'location_terran_clan_hall',ready_to_turn_in:'location_terran_portal_plaza'},
+    status:'CONTENT_DRAFT',
   },
   ...clanTrialChain('dunavar', 'npc_mireya_dunavar', [
     ['clan_dunavar_01', 'Permanecer', 'Proteja um objetivo sob pressão. O protegido precisa sobreviver.'],

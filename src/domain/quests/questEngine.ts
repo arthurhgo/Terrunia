@@ -111,6 +111,16 @@ export const acceptQuest = (
   }
   const capacity = canAcceptQuest(save)
   if (!capacity.ok) return capacity
+  // Level gating cannot be bypassed by an already-offered legacy quest. Other offers
+  // were validated when offered; preserve grandfathered independent sidequests.
+  if (questId === 'main_rosetta_clan_guidance_v05141' &&
+    (save.character.level < 4 || save.character.clan.clanId !== null))
+    return fail('ROSETTA_CLAN_LEVEL_GATE','Rosetta só entrega Os Quatro Caminhos a partir do nível 4 e antes da filiação.')
+  if (definition.category === 'clan') {
+    const clanId = Object.values(catalog.clans).find(clan=>clan.recruitmentQuestIds.some(id=>id===questId))?.id
+    if (!clanId || save.character.level<4 || save.character.clan.candidateClanId!==clanId || save.character.clan.clanId)
+      return fail('CLAN_CANDIDACY_REQUIRED','Escolha sua candidatura no Salão dos Clãs, após Rosetta.')
+  }
   if (definition.giverNpcId === 'npc_rosetta' && (save.battle || save.world.currentLocationId !== 'location_terran_portal_plaza')) {
     return fail('TUTORIAL_LOCATION', 'Converse com Rosetta na Praça do Portal para começar esta lição.')
   }

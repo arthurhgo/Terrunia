@@ -122,7 +122,10 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     cebios_esti: 'skill_clan_cebios_orb',
     estres_do_et: 'skill_clan_estres_flux',
   }
-  const clanSkillId = save.character.clan.clanId ? clanSkills[save.character.clan.clanId] : undefined
+  // Undefined is legacy: retain the historical skill; null is new player pending selection.
+  const clanSkillId = save.character.clan.clanId
+    ? (save.character.clan.selectedClanSkillId === null ? undefined :
+       save.character.clan.selectedClanSkillId ?? clanSkills[save.character.clan.clanId]) : undefined
   const stats = deriveCharacterStats(save, catalog)
   const maxHp = stats.life.value
   const maxMp = stats.mana.value
@@ -142,7 +145,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     initiativeDie: character.attributes.agility.die,
     alive: true,
     defending: false,
-    skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds, ...(clanSkillId ? [clanSkillId] : []), 'skill_basic_area_attack'])],
+    skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds, ...(clanSkillId ? [clanSkillId] : [])])],
     attackDie: character.attributes[catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.scalingAttribute ?? 'strength'].die,
     ...(catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.bonusAttackDie
       ? { weaponBonusDie: catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? ''].bonusAttackDie }
@@ -309,10 +312,14 @@ const resolveSkill = (
   }
   addLog(state, `${actor.name} usa ${skill.name}.`, 'system')
   if (skill.id === 'skill_basic_area_attack') {
-    resolveAreaAttack(state, actor, catalog)
+    resolveAreaAttack(state,actor,target,catalog)
     return
   }
+  const protectedBossId=state.bossMechanics && isProtectedBoss(state,state.combatants[state.bossMechanics.bossId])
+    ? state.bossMechanics.bossId : undefined
   const primary = applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name, skill)
+  for(const effect of skill.effects) if(effect.type==='adjacentSplash'&&primary.damage>0)
+    applySplash(state,actor,target,Math.floor(primary.damage*effect.fraction),skill.name,primary.sides,primary.face,effect.maxTargets,protectedBossId)
   if (skill.id === 'skill_resonant_strike' && primary.damage > 0) {
     // BALANCE_DRAFT OD-06: 5% final primary damage to each other unprotected enemy.
     // Snapshot the shield from action start; AoE never hits the boss accidentally.
@@ -336,33 +343,40 @@ const resolveSkill = (
   addPhase(state, 'CheckEndConditions')
 }
 
-const resolveAreaAttack = (state: BattleState, actor: Combatant, catalog: ContentCatalog) => {
-  addPhase(state, 'SelectingTarget')
-  addPhase(state, 'ResolvingAction')
-  // BALANCE_DRAFT OD-07: 60% of a normal attack applied to each eligible enemy.
-  const protectedBossId = state.bossMechanics &&
-    Object.values(state.combatants).some((entry) => entry.side === 'enemy' && entry.id !== state.bossMechanics!.bossId && entry.alive)
-    ? state.bossMechanics.bossId : null
-  for (const target of Object.values(state.combatants)) {
-    if (target.id === protectedBossId || !validTarget(actor, target, 'enemy', state)) continue
-    const sides = selectDamageDie(actor)
-    const face = rollCombatDie(state, sides)
-    const bonusFace = actor.weaponBonusDie ? rollCombatDie(state, actor.weaponBonusDie) : 0
-    const guard = target.defending ? BALANCE.defendMitigation : 0
-    const base = calculateRolledDamage(getEffectiveAttackPower(actor, catalog) + bonusFace,
-      getEffectiveMitigation(target, catalog), face, sides, 0, guard)
-    const damage = Math.max(1, Math.floor(base.finalDamage * 0.6))
-    target.hp = Math.max(0, target.hp - damage)
-    target.alive = target.hp > 0
-    target.defending = false
-    addLog(state, `${actor.name} causa ${damage} de dano em ${target.name} com Ataque em Área.`, 'damage',
-      { actorId: actor.id, targetId: target.id, sides, face,
-        action: 'Ataque em Área',
-        ...(actor.weaponBonusDie ? { weaponBonusRoll: { sides: actor.weaponBonusDie, face: bonusFace } } : {}) })
+/** Encounter declaration defines stable lateral formation; initiative never reorders neighbors. */
+const adjacentEnemies = (state:BattleState,target:Combatant):Combatant[] => {
+  const actors=Object.values(state.combatants).filter(c=>c.side==='enemy')
+  const index=actors.findIndex(c=>c.id===target.id)
+  return [actors[index-1],actors[index+1]].filter(
+    (other):other is Combatant=>Boolean(other?.alive))
+}
+const applySplash=(state:BattleState,actor:Combatant,target:Combatant,damage:number,
+  action:string,sides:CombatDie,face:number,maxTargets:number,protectedBossId?:string) => {
+  for(const other of adjacentEnemies(state,target).filter(c=>c.id!==protectedBossId && validTarget(actor,c,'enemy',state)).slice(0,maxTargets)){
+    const dealt=Math.min(other.hp,Math.max(0,damage))
+    if(!dealt)continue
+    other.hp=Math.max(0,other.hp-dealt);other.alive=other.hp>0
+    addLog(state,`${actor.name} causa ${dealt} de dano em ${other.name} por ${action}.`,'damage',
+      {actorId:actor.id,targetId:other.id,sides,face,action})
   }
-  addPhase(state, 'ResolvingReactions')
-  addPhase(state, 'ApplyingStatuses')
-  addPhase(state, 'CheckEndConditions')
+}
+const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,catalog:ContentCatalog) => {
+  addPhase(state,'SelectingTarget');addPhase(state,'ResolvingAction')
+  const sides=selectDamageDie(actor),face=rollCombatDie(state,sides)
+  const bonusFace=actor.weaponBonusDie?rollCombatDie(state,actor.weaponBonusDie):0
+  const guard=target.defending?BALANCE.defendMitigation:0
+  const rolled=calculateRolledDamage(getEffectiveAttackPower(actor,catalog)+bonusFace,
+    getEffectiveMitigation(target,catalog),face,sides,0,guard)
+  // BALANCE_DRAFT: 60% normal center, 30% of inflicted center for each flank.
+  const protectedBossId=state.bossMechanics && isProtectedBoss(state,state.combatants[state.bossMechanics.bossId])
+    ? state.bossMechanics.bossId : undefined
+  const centerDamage=Math.min(target.hp,Math.max(1,Math.floor(rolled.finalDamage*0.6)))
+  target.hp=Math.max(0,target.hp-centerDamage);target.alive=target.hp>0;target.defending=false
+  addLog(state,`${actor.name} causa ${centerDamage} de dano em ${target.name} com Ataque em Área.`,'damage',
+    {actorId:actor.id,targetId:target.id,sides,face,action:'Ataque em Área',
+      ...(actor.weaponBonusDie?{weaponBonusRoll:{sides:actor.weaponBonusDie,face:bonusFace}}:{})})
+  applySplash(state,actor,target,Math.floor(centerDamage*0.3),'Splash de Área',sides,face,2,protectedBossId)
+  addPhase(state,'ResolvingReactions');addPhase(state,'ApplyingStatuses');addPhase(state,'CheckEndConditions')
 }
 
 const resolveItem = (
@@ -683,8 +697,8 @@ export const submitBattleCommand = (
   let skill: CombatSkillDefinition | undefined
   let item: ItemDefinition | undefined
 
-  if (command.type === 'attack') {
-    target = battle.combatants[command.targetId]
+  if (command.type === 'attack' || command.type === 'areaAttack') {
+    target = battle.combatants[command.targetId ?? Object.values(battle.combatants).find(c=>c.side==='enemy'&&c.alive&&!isProtectedBoss(battle,c))?.id ?? '']
     if (!target || !validTarget(currentPlayer, target, 'enemy', battle)) {
       return fail('INVALID_TARGET', 'Escolha um alvo inimigo válido.')
     }
@@ -750,8 +764,8 @@ export const submitBattleCommand = (
     addPhase(state, 'ApplyingStatuses')
     addPhase(state, 'CheckEndConditions')
   }
-  if (command.type === 'areaAttack') {
-    resolveAreaAttack(state, player, catalog)
+  if (command.type === 'areaAttack' && resolvedTarget) {
+    resolveAreaAttack(state,player,resolvedTarget,catalog)
   }
   if (command.type === 'attack' && resolvedTarget) {
     resolveAttack(state, player, resolvedTarget, catalog)

@@ -7,6 +7,7 @@ export type CombatEffectDefinition =
   | { type: 'restoreHp'; value: number }
   | { type: 'restoreMp'; value: number }
   | { type: 'cleanseHarmful' }
+  | { type: 'adjacentSplash'; fraction: number; maxTargets: 1 | 2; basis: 'primaryFinalDamage' }
   | { type: 'applyStatus'; statusId: string; durationTurns: number; chance: number }
 
 export type ItemDefinition = {
@@ -120,6 +121,8 @@ export type CombatSkillDefinition = {
   name: string
   description: string
   target: 'enemy' | 'self'
+  /** Player-facing category is explicit: never infer magic from the skill ID. */
+  presentationGroup?: 'skills' | 'magic' | 'attack'
   mpCost: number
   /** BALANCE_DRAFT: future personal turns when this skill cannot be used. */
   cooldownTurns?: number

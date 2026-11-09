@@ -20,6 +20,8 @@ test('v0.5.14: vence estágio do Vestíbulo, continua na Câmara e reinicia ao s
     save.eventLog.push('CutsceneViewed:terran_arrival', 'CutsceneViewed:astravel_call',
       'CutsceneViewed:fungal_descent')
     save.quests.main_astravel_corruption.status = 'active'
+    save.character.clan.clanId = 'dunavar' // E2E fixture has completed initiation.
+    save.eventLog.push('CutsceneViewed:clan_oath')
     save.world.trailNodeStates.astravel_boss_preview = 'bossCurrent'
     save.world.trailNodeStates.astravel_ruin_threshold_05 = 'completed'
     save.world.currentLocationId = 'astravel_entry'

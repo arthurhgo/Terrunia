@@ -21,11 +21,14 @@ test('personagens coerentes, diálogo com retrato e respostas, mercado, forja e 
     const store = () => useGameStore.getState()
     store().recordCutsceneViewed('terran_arrival')
     store().recordCutsceneViewed('astravel_call')
-    // Four valid clan offers exercise removal of the old three-quest cap.
+    // Four independent sidequests test the unrestricted journal; admission
+    // quests now require a single clan candidacy after level-four Rosetta guidance.
     store().travelInTerran('location_terran_clan_hall')
-    for (const [clan, quest] of [['dunavar','clan_dunavar_01'], ['rustal','clan_rustal_01'], ['cebios_esti','clan_cebios_01'], ['estres_do_et','clan_estres_01']]) {
-      store().discoverClan(clan); store().offerQuest(quest); store().acceptQuest(quest)
-    }
+    const prepared = structuredClone(store().save!)
+    const contracts = ['side_npc_eldamar', 'side_npc_daeryn', 'side_npc_vorren', 'side_npc_lithwynn']
+    for (const quest of contracts) prepared.quests[quest].status = 'offered'
+    useGameStore.setState({ save: prepared })
+    for (const quest of contracts) store().acceptQuest(quest)
     store().travelInTerran('location_terran_portal_plaza')
     const save = structuredClone(store().save!)
     save.wallet.gold = 1000

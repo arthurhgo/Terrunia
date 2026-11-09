@@ -32,6 +32,8 @@ export type Character = {
     eligibleClanIds: string[]
     initiationQuestId?: string
     joinedAt?: string
+    candidateClanId?: string | null
+    selectedClanSkillId?: string | null
   }
   classProgression: {
     classId: string | null
@@ -140,6 +142,17 @@ export type NPCRelationshipState = {
 
 export type TrailNodeStatus = 'completed' | 'current' | 'locked' | 'boss' | 'bossCurrent'
 
+export type ClanTrialRun = {
+  runId: string
+  questId: string
+  clanId: string
+  waveIndex: number
+  completedWaveIds: string[]
+  activeEncounterId: string | null
+  phase: 'active' | 'won'
+  createdAt: string
+}
+
 export type DungeonRunState = {
   runId: string
   dungeonId: 'dungeon_fungal_chambers'
@@ -204,6 +217,7 @@ export type GameSave = {
   battle: BattleState | null
   /** Optional, run-local state. Old campaign saves start fresh when entering the dungeon. */
   dungeonRun?: DungeonRunState | null
+  clanTrialRun?: ClanTrialRun | null
   settings: PlayerSettings
   eventLog: string[]
 }

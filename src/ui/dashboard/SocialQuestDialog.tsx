@@ -17,6 +17,7 @@ export function SocialQuestDialog({ questId, save, onClose }: Props) {
   const declineQuest = useGameStore((state) => state.declineQuest)
   const acceptQuest = useGameStore((state) => state.acceptQuest)
   const performTrial = useGameStore((state) => state.performSocialTrial)
+  const startClanTrialWave = useGameStore((state) => state.startClanTrialWave)
   const turnInQuest = useGameStore((state) => state.turnInQuest)
   const baseDefinition = questId ? content.quests[questId] : null
   const definition = baseDefinition ? resolveQuestDefinition(save, baseDefinition) : null
@@ -36,7 +37,7 @@ export function SocialQuestDialog({ questId, save, onClose }: Props) {
         : progress.status === 'offered'
           ? <div className="quest-offer-actions"><GameButton variant="ghost" onClick={decline}><X size={17} /> Ainda não</GameButton><GameButton variant="primary" onClick={accept}><BookOpenCheck size={17} /> Aceitar prova</GameButton></div>
           : progress.status === 'active'
-            ? <GameButton variant="primary" onClick={() => performTrial(definition.id)}><ShieldCheck size={17} /> Realizar prova</GameButton>
+            ? <GameButton variant="primary" onClick={() => definition.category==='clan' ? startClanTrialWave(definition.id) : performTrial(definition.id)}><ShieldCheck size={17} /> {definition.category==='clan'?`Iniciar onda ${(save.clanTrialRun?.questId===definition.id?save.clanTrialRun.waveIndex:1)}/3`:'Realizar prova'}</GameButton>
             : progress.status === 'ready_to_turn_in'
               ? <GameButton variant="primary" onClick={complete}><CheckCheck size={17} /> Concluir prova</GameButton>
               : <GameButton variant="ghost" onClick={onClose}>Encerrar conversa</GameButton>
