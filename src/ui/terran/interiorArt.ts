@@ -4,6 +4,7 @@ import type { VisualItem } from '../characters/equipmentVisuals'
 import { getPresencePortrait } from '../../content/npcVisuals'
 import { PLAYER_HOME_INTERIOR_ID, roomFurniture, type TerranInteriorId } from './roomContent'
 import { getRoomPlan } from './roomGeometry'
+import { CLAN_HALL_MINI_PORTAL_ID, isClanCastleInteriorId } from '../../content/clanCastlesV05142'
 import { CITY_NPC_SIZE } from './cityWorld'
 import type { InteriorResident } from './interiorLayout'
 import type { WorldPoint } from './pixelCityArt'
@@ -19,6 +20,10 @@ const palettes = {
   ceremony: { wall: '#362d48', floor: '#655473', light: '#987ca7', trim: '#e0bd83', glow: '#c7a2ff' },
   wood: { wall: '#35514b', floor: '#947959', light: '#b79b75', trim: '#ddc091', glow: '#92dfbd' },
   home: { wall: '#293d55', floor: '#856d56', light: '#b09a79', trim: '#d9b87a', glow: '#7cdce5' },
+  'castle-dunavar': { wall: '#253D38', floor: '#3E655C', light: '#62877B', trim: '#D4B26B', glow: '#E5D799' },
+  'castle-rustal': { wall: '#352731', floor: '#633B48', light: '#90616E', trim: '#D38F62', glow: '#F3BA79' },
+  'castle-cebios': { wall: '#1E304F', floor: '#304D7B', light: '#607DA5', trim: '#C1D2E6', glow: '#85D1FF' },
+  'castle-estres': { wall: '#302345', floor: '#5A3C77', light: '#886CA3', trim: '#A3D8C8', glow: '#B5B7FF' },
 } as const
 
 export function drawTerranInterior(
@@ -32,6 +37,7 @@ export function drawTerranInterior(
   portraitId: string,
   residents: readonly InteriorResident[],
   equipped: readonly VisualItem[] = [],
+  clanPortalOpen = false,
 ) {
   const plan = getRoomPlan(locationId)
   const theme = palettes[plan.tile]
@@ -110,9 +116,34 @@ export function drawTerranInterior(
   }
 
   // Furniture silhouettes and hit targets share their IDs and positions.
+  // Castle towers, crenellations and hall: shared geometry, four clan palettes.
+  if (isClanCastleInteriorId(locationId)) {
+    for (const x of [63, 282]) {
+      block(x, 47, 39, 100, theme.wall)
+      for (let j = 0; j < 4; j++) block(x + j * 10, 40, 7, 15, theme.trim)
+      block(x + 12, 69, 14, 31, '#111B30')
+      block(x + 16, 76, 6, 6, theme.glow)
+      block(x + 7, 112, 24, 28, theme.light)
+    }
+    block(103, 53, 177, 55, theme.wall)
+    for (let x = 108; x < 277; x += 18) block(x, 43, 13, 15, theme.trim)
+    block(167, 78, 50, 39, '#152234')
+    block(179, 87, 26, 27, theme.glow)
+    block(183, 91, 18, 26, theme.wall)
+    for (const x of [117, 248]) {
+      block(x, 93, 16, 23, theme.trim)
+      block(x + 5, 99, 6, 9, theme.glow)
+    }
+  }
   for (const item of roomFurniture[locationId]) {
+    if (item.id === CLAN_HALL_MINI_PORTAL_ID && !clanPortalOpen) continue
     const { x, y } = item.point
-    if (locationId === 'location_terran_forge' && item.id === 'forge_furnace') {
+    if (item.behavior === 'portal') {
+      const pulse = Math.floor(frame / 9) % 3
+      block(x - 12 - pulse, y - 27 - pulse, 24 + 2*pulse, 30 + 2*pulse, theme.glow)
+      block(x - 8, y - 23, 16, 25, '#192B42')
+      block(x - 4, y - 19, 8, 18, theme.glow)
+    } else if (locationId === 'location_terran_forge' && item.id === 'forge_furnace') {
       block(x - 24, y - 25, 48, 30, '#332b2d'); block(x - 18, y - 22, 36, 25, '#8d6350')
       block(x - 13, y - 15, 26, 18, '#492e2b'); block(x - 10, y - 8, 20, 11, '#e7854f')
       block(x - 5, y - 11 + Math.floor(frame / 15) % 2, 10, 12, '#f7d18a')

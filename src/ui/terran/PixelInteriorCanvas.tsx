@@ -8,6 +8,7 @@ import { getRoomName, roomFurniture, type RoomFurniture, type TerranInteriorId, 
 import type { TerranNpcPresence } from '../../content/types'
 import { findInteriorPath, getInteriorResidents, isInteriorWalkable, type InteriorResident } from './interiorLayout'
 import { getRoomPlan } from './roomGeometry'
+import { CLAN_HALL_MINI_PORTAL_ID, isClanCastleInteriorId } from '../../content/clanCastlesV05142'
 import { drawTerranInterior } from './interiorArt'
 import type { WorldPoint } from './pixelCityArt'
 import type { ActorFacing } from './pixelActorArt'
@@ -50,7 +51,7 @@ export function PixelInteriorCanvas({
   const equipmentKey = equipmentVisualIds(save)
   const equipped = getVisualEquipment(save)
   const residents = getInteriorResidents(save, locationId)
-  const furniture = roomFurniture[locationId]
+  const furniture = roomFurniture[locationId].filter((item) => item.id !== CLAN_HALL_MINI_PORTAL_ID || Boolean(save.character.clan.clanId))
   const plan = getRoomPlan(locationId)
   const showRosettaPreview = showQuestRoutes && questRoutes.length > 0
   const showingTracked = showTrackedQuestRoute && !showRosettaPreview
@@ -197,7 +198,7 @@ export function PixelInteriorCanvas({
       }
       drawTerranInterior(ctx, locationId, playerRef.current, sprite,
         reducedRef.current ? 0 : frame, faceRef.current, walking && !reducedRef.current,
-        save.character.portraitAssetId, residentsRef.current, equipped)
+        save.character.portraitAssetId, residentsRef.current, equipped, Boolean(save.character.clan.clanId))
       raf = requestAnimationFrame(tick)
     }
     window.addEventListener('keydown', keydown)
@@ -210,7 +211,7 @@ export function PixelInteriorCanvas({
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', clearKeys)
     }
-  }, [locationId, save.character.portraitAssetId, appearanceSource, equipmentKey])
+  }, [locationId, save.character.portraitAssetId, save.character.clan.clanId, appearanceSource, equipmentKey])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return
@@ -267,7 +268,7 @@ export function PixelInteriorCanvas({
         <span aria-hidden="true">✦</span>
         {item.behavior === 'quest' && <small className="pixel-interior__furniture-caption">{item.name}</small>}
       </button>)}
-      <button type="button" disabled={!enabled}
+      <button type="button" disabled={!enabled || isClanCastleInteriorId(locationId)}
         className="pixel-interior__service" data-interaction-glow="service"
         style={{ left: `${plan.service.x / 384 * 100}%`, top: `${plan.service.y / 256 * 100}%` }}
         aria-label={locationId === PLAYER_HOME_INTERIOR_ID ? 'Cama · descansar e recuperar' : 'Abrir serviços do local'}
@@ -279,14 +280,14 @@ export function PixelInteriorCanvas({
         }}>
         {locationId === PLAYER_HOME_INTERIOR_ID
           ? <span className="pixel-interior__bed-label"><strong>Cama</strong><small>descansar e recuperar</small></span>
-          : 'Serviços'}
+          : isClanCastleInteriorId(locationId) ? 'FUNÇÕES FUTURAS' : 'Serviços'}
       </button>
       <button type="button" disabled={!enabled}
         className="pixel-interior__exit"
         style={{ left: `${plan.exit.x / 384 * 100}%`, top: `${plan.exit.y / 256 * 100}%` }}
-        aria-label="Sair do interior para as ruas de Terran"
+        aria-label={isClanCastleInteriorId(locationId) ? 'Voltar pelo portal ao Salão dos Clãs' : 'Sair do interior para as ruas de Terran'}
         onClick={() => { exitRef.current() }}>
-        ↧ Sair para Terran
+        {isClanCastleInteriorId(locationId) ? '↧ Voltar ao Salão' : '↧ Sair para Terran'}
       </button>
     </div>
     <div className="pixel-city__dpad" aria-label="Controles do interior">
