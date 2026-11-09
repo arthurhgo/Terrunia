@@ -279,6 +279,19 @@ describe('vertical slice integrada', () => {
     }
     expect(store().save!.quests.main_astravel_corruption.status).toBe('ready_to_turn_in')
     store().turnInQuest('main_astravel_corruption', 'npc_lithwynn')
+    // Twelve additional waves can fill the original 12-slot backpack: valuable
+    // bound items then go safely to the Base chest, not lost or duplicated.
+    for (const id of ['fragment_mycelial_essence', 'item_gem_esmeralda_crescimento']) {
+      if (store().save!.inventory.some((item) => item.definitionId === id)) continue
+      const stored = store().save!.baseStorage.find((item) => item.definitionId === id)
+      expect(stored, `Componente ${id} deve estar na mochila ou no baú`).toBeDefined()
+      if (!stored) continue
+      expect(store().enterBase()).toBe(true)
+      store().transferBaseItem('withdraw', stored.instanceId, 1)
+      expect(store().save!.inventory.some((item) => item.definitionId === id)).toBe(true)
+      store().leaveBase()
+      visit('location_terran_bond_workshop')
+    }
     const fragment = store().save!.inventory.find((item) => item.definitionId === 'fragment_mycelial_essence')!
     const gem = store().save!.inventory.find((item) => item.definitionId === 'item_gem_esmeralda_crescimento')!
     store().performGradeTwoRite(weaponId, fragment.instanceId)
