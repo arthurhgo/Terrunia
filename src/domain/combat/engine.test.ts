@@ -200,11 +200,15 @@ describe('máquina de estados de combate', () => {
     })
 
     battle.combatants.combatant_player.attackPower = 99
-    const result = submitBattleCommand(
-      battle,
-      { type: 'attack', targetId: bossId },
-      content,
-    )
+    expect(submitBattleCommand(battle, { type: 'attack', targetId: bossId }, content))
+      .toMatchObject({ ok: false, code: 'INVALID_TARGET' })
+    for (const guard of Object.values(battle.combatants)) {
+      if (guard.side === 'enemy' && guard.id !== bossId) {
+        guard.hp = 0
+        guard.alive = false
+      }
+    }
+    const result = submitBattleCommand(battle, { type: 'attack', targetId: bossId }, content)
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.value.phase).toBe('Victory')
