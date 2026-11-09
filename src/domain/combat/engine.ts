@@ -1,5 +1,6 @@
 import type { ContentCatalog } from '../../content/catalog'
 import { BALANCE } from '../../content/balance'
+import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/fungalChambers'
 import type {
   CombatEffectDefinition,
   CombatSkillDefinition,
@@ -141,8 +142,11 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     initiativeDie: character.attributes.agility.die,
     alive: true,
     defending: false,
-    skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds, ...(clanSkillId ? [clanSkillId] : [])])],
+    skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds, ...(clanSkillId ? [clanSkillId] : []), 'skill_basic_area_attack'])],
     attackDie: character.attributes[catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.scalingAttribute ?? 'strength'].die,
+    ...(catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.bonusAttackDie
+      ? { weaponBonusDie: catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? ''].bonusAttackDie }
+      : {}),
     statusEffects: [],
   }
 }
@@ -180,8 +184,14 @@ const deriveEnemyCombatant = (
   }
 }
 
-const validTarget = (actor: Combatant, target: Combatant, targetType: 'enemy' | 'self') =>
-  target.alive && (targetType === 'self' ? target.id === actor.id : target.side !== actor.side)
+export const isProtectedBoss = (state: BattleState, target: Combatant): boolean =>
+  Boolean(state.bossMechanics && target.id === state.bossMechanics.bossId &&
+    Object.values(state.combatants).some((actor) =>
+      actor.alive && actor.side === 'enemy' && actor.id !== target.id))
+
+const validTarget = (actor: Combatant, target: Combatant, targetType: 'enemy' | 'self', state?: BattleState) =>
+  target.alive && (targetType === 'self' ? target.id === actor.id :
+    target.side !== actor.side && (!state || !isProtectedBoss(state, target)))
 
 const applyStatus = (
   state: BattleState,
@@ -215,25 +225,35 @@ const applyCombatEffects = (
   action = 'Ataque básico',
   skill?: CombatSkillDefinition,
 ) => {
+  // A protected construct is immune to every offensive effect, including AoE and splash.
+  if (actor.side !== target.side && isProtectedBoss(state, target)) return { damage: 0, face: 1, sides: selectDamageDie(actor, skill) }
+  let dealt = 0
+  let usedFace = 1
+  let usedSides = selectDamageDie(actor, skill)
   for (const effect of effects) {
     if (effect.type === 'damage') {
       const guardMitigation = target.defending ? BALANCE.defendMitigation : 0
       const sides = selectDamageDie(actor, skill)
       const face = rollCombatDie(state, sides)
+      const bonusFace = actor.weaponBonusDie ? rollCombatDie(state, actor.weaponBonusDie) : 0
+      usedFace = face
+      usedSides = sides
       const breakdown = calculateRolledDamage(
-        getEffectiveAttackPower(actor, catalog),
+        getEffectiveAttackPower(actor, catalog) + bonusFace,
         getEffectiveMitigation(target, catalog),
         face, sides, effect.powerBonus, guardMitigation,
       )
       const damage = breakdown.finalDamage
+      dealt += damage
       target.hp = Math.max(0, target.hp - damage)
       target.alive = target.hp > 0
       target.defending = false
       const guardNote = guardMitigation
         ? ` · Guarda evitou ${breakdown.guardPrevented} de dano.` : ''
       addLog(state,
-        `${actor.name} causa ${damage} de dano em ${target.name}. d${sides}=${face} (${breakdown.dieAdjustment >= 0 ? '+' : ''}${breakdown.dieAdjustment}), ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${guardMitigation}.${guardNote}`,
-        'damage', { actorId: actor.id, targetId: target.id, sides, face, action, damageBreakdown: breakdown },
+        `${actor.name} causa ${damage} de dano em ${target.name}. d${sides}=${face}${actor.weaponBonusDie ? ` + d${actor.weaponBonusDie} da arma=${bonusFace}` : ''}, ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${guardMitigation}.${guardNote}`,
+        'damage', { actorId: actor.id, targetId: target.id, sides, face, action, damageBreakdown: breakdown,
+          ...(actor.weaponBonusDie ? { weaponBonusRoll: { sides: actor.weaponBonusDie, face: bonusFace } } : {}) },
       )
     }
     if (effect.type === 'restoreHp') {
@@ -255,6 +275,7 @@ const applyCombatEffects = (
       applyStatus(state, actor, target, effect, catalog)
     }
   }
+  return { damage: dealt, face: usedFace, sides: usedSides }
 }
 
 const resolveAttack = (
@@ -287,7 +308,58 @@ const resolveSkill = (
     actor.skillCooldowns[skill.id] = Math.floor(skill.cooldownTurns) + 1
   }
   addLog(state, `${actor.name} usa ${skill.name}.`, 'system')
-  applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name, skill)
+  if (skill.id === 'skill_basic_area_attack') {
+    resolveAreaAttack(state, actor, catalog)
+    return
+  }
+  const primary = applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name, skill)
+  if (skill.id === 'skill_resonant_strike' && primary.damage > 0) {
+    // BALANCE_DRAFT OD-06: 5% final primary damage to each other unprotected enemy.
+    // Snapshot the shield from action start; AoE never hits the boss accidentally.
+    const bossProtected = state.bossMechanics &&
+      Object.values(state.combatants).some((entry) => entry.side === 'enemy' &&
+        entry.id !== state.bossMechanics!.bossId && (entry.alive || entry.id === target.id))
+    const splash = Math.max(1, Math.ceil(primary.damage * 0.05))
+    for (const other of Object.values(state.combatants)) {
+      if (other.id === target.id ||
+          (bossProtected && other.id === state.bossMechanics?.bossId) ||
+          !validTarget(actor, other, 'enemy', state)) continue
+      const damage = Math.min(other.hp, splash)
+      other.hp = Math.max(0, other.hp - damage)
+      other.alive = other.hp > 0
+      addLog(state, `${actor.name} causa ${damage} de dano em ${other.name} por Pulso Ressonante.`, 'damage',
+        { actorId: actor.id, targetId: other.id, sides: primary.sides, face: primary.face, action: 'Pulso Ressonante' })
+    }
+  }
+  addPhase(state, 'ResolvingReactions')
+  addPhase(state, 'ApplyingStatuses')
+  addPhase(state, 'CheckEndConditions')
+}
+
+const resolveAreaAttack = (state: BattleState, actor: Combatant, catalog: ContentCatalog) => {
+  addPhase(state, 'SelectingTarget')
+  addPhase(state, 'ResolvingAction')
+  // BALANCE_DRAFT OD-07: 60% of a normal attack applied to each eligible enemy.
+  const protectedBossId = state.bossMechanics &&
+    Object.values(state.combatants).some((entry) => entry.side === 'enemy' && entry.id !== state.bossMechanics!.bossId && entry.alive)
+    ? state.bossMechanics.bossId : null
+  for (const target of Object.values(state.combatants)) {
+    if (target.id === protectedBossId || !validTarget(actor, target, 'enemy', state)) continue
+    const sides = selectDamageDie(actor)
+    const face = rollCombatDie(state, sides)
+    const bonusFace = actor.weaponBonusDie ? rollCombatDie(state, actor.weaponBonusDie) : 0
+    const guard = target.defending ? BALANCE.defendMitigation : 0
+    const base = calculateRolledDamage(getEffectiveAttackPower(actor, catalog) + bonusFace,
+      getEffectiveMitigation(target, catalog), face, sides, 0, guard)
+    const damage = Math.max(1, Math.floor(base.finalDamage * 0.6))
+    target.hp = Math.max(0, target.hp - damage)
+    target.alive = target.hp > 0
+    target.defending = false
+    addLog(state, `${actor.name} causa ${damage} de dano em ${target.name} com Ataque em Área.`, 'damage',
+      { actorId: actor.id, targetId: target.id, sides, face,
+        action: 'Ataque em Área',
+        ...(actor.weaponBonusDie ? { weaponBonusRoll: { sides: actor.weaponBonusDie, face: bonusFace } } : {}) })
+  }
   addPhase(state, 'ResolvingReactions')
   addPhase(state, 'ApplyingStatuses')
   addPhase(state, 'CheckEndConditions')
@@ -307,6 +379,20 @@ const resolveItem = (
   addPhase(state, 'ResolvingReactions')
   addPhase(state, 'ApplyingStatuses')
   addPhase(state, 'CheckEndConditions')
+}
+
+const applyPotionTurn = (state: BattleState, actor: Combatant) => {
+  if (actor.side !== 'player') return
+  actor.potionCooldown = Math.max(0, (actor.potionCooldown ?? 0) - 1)
+  const ticks = actor.potionHealingTicks ?? 0
+  if (ticks <= 0) return
+  // Exactly 10% of max HP in total (rounded up once), split across two turns.
+  const amount = Math.ceil((actor.potionHealingRemaining ?? 0) / ticks)
+  const healed = Math.min(Math.max(0, actor.maxHp - actor.hp), amount)
+  actor.hp += healed
+  actor.potionHealingRemaining = Math.max(0, (actor.potionHealingRemaining ?? 0) - amount)
+  actor.potionHealingTicks = ticks - 1
+  addLog(state, `Poção Restauradora recupera ${healed} de Vida em ${actor.name}.`, 'reward')
 }
 
 const applyStartStatuses = (
@@ -342,6 +428,30 @@ const tickStatuses = (actor: Combatant) => {
     .filter((active) => active.remainingTurns > 0)
 }
 
+const applyBossRound = (state: BattleState, catalog: ContentCatalog) => {
+  const rules = state.bossMechanics
+  if (!rules || !state.combatants[rules.bossId]?.alive) return
+  const guards = Object.values(state.combatants).filter((actor) => actor.side === 'enemy' && actor.id !== rules.bossId)
+  if (state.round % rules.healEveryRounds === 0) {
+    for (const guard of guards.filter((actor) => actor.alive)) {
+      const healed = Math.min(guard.maxHp - guard.hp, Math.ceil(guard.maxHp * rules.healFraction))
+      guard.hp += healed
+      addLog(state, `A Sentinela recupera ${healed} de Vida de ${guard.name}.`, 'reward')
+    }
+  }
+  if (state.round % rules.summonEveryRounds === 0 &&
+      guards.filter((actor) => actor.alive).length < rules.maxAlive) {
+    const dead = guards.find((actor) => !actor.alive)
+    if (dead) {
+      // Reuse the original guard slot and turn ID; cannot exceed three active fungi.
+      const revived = deriveEnemyCombatant(dead.definitionId,
+        state.initiativeOrder.indexOf(dead.id), catalog)
+      state.combatants[dead.id] = { ...revived, id: dead.id, initiative: dead.initiative }
+      addLog(state, `A Sentinela ressuscita ${dead.name} no quinto ciclo da Ruína.`, 'system')
+    }
+  }
+}
+
 const checkBattleEnd = (state: BattleState) => {
   const player = Object.values(state.combatants).find((combatant) => combatant.side === 'player')
   if (!player?.alive) {
@@ -369,6 +479,20 @@ const resolveEnemyAction = (
     (combatant) => combatant.side === 'player' && combatant.alive,
   )
   if (!player) return
+  if (state.bossMechanics && actor.id === state.bossMechanics.bossId) {
+    // BALANCE_DRAFT OD-04: +1 attack/mitigation for two turns, each 3 rounds.
+    if (state.round % state.bossMechanics.buffEveryRounds === 0) {
+      for (const guard of Object.values(state.combatants).filter((entry) => entry.side === 'enemy' && entry.id !== actor.id && entry.alive))
+        applyStatus(state, actor, guard, { type: 'applyStatus',
+          statusId: 'status_corrupted_mycotic_boost',
+          durationTurns: state.bossMechanics.buffDurationTurns, chance: 1 }, catalog)
+      addLog(state, 'O Núcleo da Ruína fortalece seus fungos.', 'system')
+    }
+    const strike = catalog.combatSkills.skill_sentinel_arcane_pulse
+    if (strike) resolveSkill(state, actor, player, strike, catalog)
+    else resolveAttack(state, actor, player, catalog)
+    return
+  }
   const skillId =
     actor.aiSkillEveryRounds && state.round % actor.aiSkillEveryRounds === 0
       ? actor.skillIds[0]
@@ -389,13 +513,17 @@ const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
   for (let attempts = 0; attempts < state.initiativeOrder.length * 2; attempts += 1) {
     const previousCursor = state.actorCursor
     state.actorCursor = (state.actorCursor + 1) % state.initiativeOrder.length
-    if (state.actorCursor <= previousCursor) state.round += 1
+    if (state.actorCursor <= previousCursor) {
+      state.round += 1
+      applyBossRound(state, catalog)
+    }
     state.actorId = state.initiativeOrder[state.actorCursor]
     const actor = state.combatants[state.actorId]
     if (!actor?.alive) continue
 
     addPhase(state, 'TurnStart')
     addLog(state, `Turno de ${actor.name} · Iniciativa ${actor.initiative}.`, 'system')
+    applyPotionTurn(state, actor)
     applyStartStatuses(state, actor, catalog)
     addPhase(state, 'CheckEndConditions')
     if (checkBattleEnd(state)) return
@@ -434,6 +562,7 @@ const resolveInitiative = (state: BattleState, catalog: ContentCatalog): void =>
   const actor = state.combatants[state.actorId]
   addPhase(state, 'TurnStart')
   addLog(state, `Turno de ${actor.name} · Iniciativa ${actor.initiative}.`, 'system')
+  applyPotionTurn(state, actor)
   applyStartStatuses(state, actor, catalog)
   if (checkBattleEnd(state)) return
   if (actor.side === 'player') addPhase(state, 'AwaitingAction')
@@ -477,6 +606,18 @@ export const createBattle = (
     canFlee: encounter.canFlee,
     consumedItemInstanceIds: [],
     rngSeed: seedFromBattleId(id),
+    ...(encounter.id === FUNGAL_BOSS_ENCOUNTER_ID
+      ? { bossMechanics: {
+          bossId: enemies.find((enemy) => enemy.definitionId === FUNGAL_BOSS_RULES.bossDefinitionId)!.id,
+          guardDefinitionIds: [...FUNGAL_BOSS_RULES.guardianDefinitionIds],
+          maxAlive: FUNGAL_BOSS_RULES.maxAliveGuards,
+          summonEveryRounds: FUNGAL_BOSS_RULES.summonIntervalRounds,
+          healEveryRounds: FUNGAL_BOSS_RULES.healIntervalRounds,
+          healFraction: FUNGAL_BOSS_RULES.healFraction,
+          buffEveryRounds: FUNGAL_BOSS_RULES.buffIntervalRounds,
+          buffDurationTurns: FUNGAL_BOSS_RULES.buffDurationTurns,
+        } }
+      : {}),
   }
 
   addLog(state, `${encounter.name} bloqueia o avanço em Astravél.`, 'system')
@@ -544,7 +685,7 @@ export const submitBattleCommand = (
 
   if (command.type === 'attack') {
     target = battle.combatants[command.targetId]
-    if (!target || !validTarget(currentPlayer, target, 'enemy')) {
+    if (!target || !validTarget(currentPlayer, target, 'enemy', battle)) {
       return fail('INVALID_TARGET', 'Escolha um alvo inimigo válido.')
     }
   }
@@ -561,7 +702,7 @@ export const submitBattleCommand = (
     if (currentPlayer.mp < skill.mpCost) {
       return fail('INSUFFICIENT_MP', 'Mana insuficiente para esta habilidade.')
     }
-    if (!target || !validTarget(currentPlayer, target, skill.target)) {
+    if (!target || !validTarget(currentPlayer, target, skill.target, battle)) {
       return fail('INVALID_TARGET', 'Escolha um alvo válido para a habilidade.')
     }
   }
@@ -579,7 +720,7 @@ export const submitBattleCommand = (
     ) {
       return fail('ITEM_UNAVAILABLE', 'Este consumível não está disponível para uso em combate.')
     }
-    if (!target || !validTarget(currentPlayer, target, item.combatTarget ?? 'self')) {
+    if (!target || !validTarget(currentPlayer, target, item.combatTarget ?? 'self', battle)) {
       return fail('INVALID_TARGET', 'Este consumível não pode ser usado no alvo escolhido.')
     }
   }
@@ -588,6 +729,19 @@ export const submitBattleCommand = (
   const player = state.combatants[state.actorId]
   const resolvedTarget = target ? state.combatants[target.id] : undefined
 
+  if (command.type === 'item' && item?.combatUseMode === 'freeHealingPotion') {
+    if ((currentPlayer.potionCooldown ?? 0) > 0 || (currentPlayer.potionHealingTicks ?? 0) > 0)
+      return fail('POTION_COOLDOWN', 'Poção em recarga: aguarde a regeneração.')
+    if (currentPlayer.hp >= currentPlayer.maxHp)
+      return fail('POTION_NOT_NEEDED', 'Vida já está completa.')
+    player.potionCooldown = 2
+    player.potionHealingTicks = 2
+    player.potionHealingRemaining = Math.ceil(player.maxHp * 0.1)
+    addLog(state, `${player.name} toma Poção Restauradora: 10% da Vida em dois turnos, sem gastar ação.`, 'reward')
+    state.consumedItemInstanceIds.push(command.itemInstanceId)
+    return ok(state) // Free action: NO turn advances and NO opponent reacts.
+  }
+
   if (command.type === 'defend') {
     addPhase(state, 'ResolvingAction')
     player.defending = true
@@ -595,6 +749,9 @@ export const submitBattleCommand = (
     addPhase(state, 'ResolvingReactions')
     addPhase(state, 'ApplyingStatuses')
     addPhase(state, 'CheckEndConditions')
+  }
+  if (command.type === 'areaAttack') {
+    resolveAreaAttack(state, player, catalog)
   }
   if (command.type === 'attack' && resolvedTarget) {
     resolveAttack(state, player, resolvedTarget, catalog)

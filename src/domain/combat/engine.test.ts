@@ -178,17 +178,17 @@ describe('máquina de estados de combate', () => {
     )
   })
 
-  it('carrega o Colosso Micélio como chefe data-driven com recompensa de Vínculo', () => {
+  it('carrega o novo totem arcano como chefe data-driven com recompensa de Vínculo', () => {
     const battle = createBattle(
       makeSave(),
-      content.encounters.encounter_colossus_mycelium_01,
+      content.encounters.encounter_fungal_core_sentinel,
       content,
       'battle_boss',
     )
-    const bossId = 'combatant_enemy_colossus_mycelium_1'
+    const bossId = 'combatant_enemy_ruin_corrupted_sentinel_1'
     expect(battle.combatants[bossId]).toMatchObject({
-      name: 'Colosso Micélio',
-      maxHp: 24,
+      name: 'Sentinela Corrompida · Núcleo da Ruína',
+      maxHp: 42,
     })
     expect(battle.rewards).toMatchObject({
       boundResonance: 256,
@@ -196,15 +196,19 @@ describe('máquina de estados de combate', () => {
         'fragment_mycelial_essence',
         'item_gem_esmeralda_crescimento',
       ],
-      worldFlags: ['colossus_mycelium_defeated', 'fungal_chambers_first_clear', 'astravel_route_cleared'],
+      worldFlags: ['fungal_chambers_first_clear', 'astravel_route_cleared'],
     })
 
     battle.combatants.combatant_player.attackPower = 99
-    const result = submitBattleCommand(
-      battle,
-      { type: 'attack', targetId: bossId },
-      content,
-    )
+    expect(submitBattleCommand(battle, { type: 'attack', targetId: bossId }, content))
+      .toMatchObject({ ok: false, code: 'INVALID_TARGET' })
+    for (const guard of Object.values(battle.combatants)) {
+      if (guard.side === 'enemy' && guard.id !== bossId) {
+        guard.hp = 0
+        guard.alive = false
+      }
+    }
+    const result = submitBattleCommand(battle, { type: 'attack', targetId: bossId }, content)
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.value.phase).toBe('Victory')

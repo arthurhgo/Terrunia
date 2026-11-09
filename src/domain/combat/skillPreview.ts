@@ -12,9 +12,11 @@ export function previewCombatSkill(actor: Combatant, target: Combatant, skill: C
     const defense = getEffectiveMitigation(target, catalog)
     const attack = getEffectiveAttackPower(actor, catalog)
     const guard = target.defending ? BALANCE.defendMitigation : 0
-    const minimum = calculateRolledDamage(attack, defense, 1, die!, effect.powerBonus, guard).finalDamage
-    const maximum = calculateRolledDamage(attack, defense, die!, die!, effect.powerBonus, guard).finalDamage
-    return { minimum, maximum }
+    const minimum = calculateRolledDamage(attack + (actor.weaponBonusDie ? 1 : 0), defense, 1, die!, effect.powerBonus, guard).finalDamage
+    const maximum = calculateRolledDamage(attack + (actor.weaponBonusDie ?? 0), defense, die!, die!, effect.powerBonus, guard).finalDamage
+    return skill.id === 'skill_basic_area_attack'
+      ? { minimum: Math.max(1, Math.floor(minimum * 0.6)), maximum: Math.max(1, Math.floor(maximum * 0.6)) }
+      : { minimum, maximum }
   })
   const effects = skill.effects.flatMap((effect) => {
     if (effect.type === 'applyStatus') {
@@ -26,5 +28,5 @@ export function previewCombatSkill(actor: Combatant, target: Combatant, skill: C
     if (effect.type === 'cleanseHarmful') return ['Remove efeitos negativos']
     return []
   })
-  return { die, ranges, effects, targetName: target.name }
+  return { die, weaponBonusDie: actor.weaponBonusDie, ranges, effects, targetName: target.name }
 }

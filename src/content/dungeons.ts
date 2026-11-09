@@ -25,7 +25,7 @@ export const dungeonDefinitions = [
       },
       {
         id: 'fungal_core', name: 'Núcleo da Ruína', kind: 'boss',
-        description: 'No coração micelial, a massa ancestral do Colosso bloqueia a anomalia fúngica.',
+        description: 'Uma Sentinela Corrompida, totem arcano sem corpo biológico, comanda os fungos que guardam o Núcleo da Ruína.',
         rect: { x: 256, y: 16, width: 112, height: 88 }, landmark: { x: 322, y: 54 },
       },
     ],

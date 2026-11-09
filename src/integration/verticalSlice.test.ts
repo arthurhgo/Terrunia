@@ -158,18 +158,65 @@ describe('vertical slice integrada', () => {
         store().enterAstravel()
       }
       if (node.type === 'boss') {
+        // The 15th milestone is now a dungeon, not an unguarded encounter.
         store().startBattle(node.id)
         expect(store().save!.battle).toBeNull()
-        // The Portal now spawns at Entrada; this integration fixture simulates
-        // walking the cleared route to the dungeon threshold before entering.
         const reachedThreshold = structuredClone(store().save!)
         reachedThreshold.world.currentLocationId = content.dungeons.dungeon_fungal_chambers.entryTrailNodeId
         useGameStore.setState({ save: reachedThreshold })
         store().enterFungalChambers()
-        for (const room of content.dungeons.dungeon_fungal_chambers.rooms) store().discoverFungalRoom(room.id)
+        expect(store().save!.dungeonRun?.stageIndex).toBe(1)
+        // Quest-integrity fixture: overpowered battle-local hero preserves actual
+        // state-machine, reward and save paths without introducing balance expectations.
+        const empower = () => {
+          const prepared = structuredClone(store().save!)
+          const hero = prepared.battle!.combatants.combatant_player
+          hero.attackPower = 120
+          // Prepared battle fixture, without writing impossible HP into a persisted save.
+          const hp = deriveCharacterStats(prepared, content).life.value
+          hero.hp = hero.maxHp = hp
+          prepared.vitals.hp = hp
+          for (const creature of Object.values(prepared.battle!.combatants)) {
+            if (creature.side === 'enemy') creature.attackPower = 0
+          }
+          useGameStore.setState({ save: prepared })
+        }
+        const fightPrepared = (label: string) => {
+          empower()
+          store().submitBattleCommand({ type: 'rollInitiative' })
+          for (let turn = 0; turn < 70 && store().save!.battle?.phase === 'AwaitingAction'; turn++) {
+            const state = store().save!.battle!
+            const target = Object.values(state.combatants)
+              .find((actor) => actor.side === 'enemy' && actor.alive
+                && (!state.bossMechanics || actor.id !== state.bossMechanics.bossId ||
+                  !Object.values(state.combatants).some((other) =>
+                    other.side === 'enemy' && other.alive && other.id !== actor.id)))
+            if (!target) break
+            store().submitBattleCommand({ type: 'attack', targetId: target.id })
+          }
+          expect(store().save!.battle?.phase, label).toBe('Victory')
+          store().claimBattleRewards()
+          expect(store().save!.battle?.claimed).toBe(true)
+          store().finishBattleIntoExpedition()
+          expect(store().save!.battle).toBeNull()
+        }
+        for (const room of content.dungeons.dungeon_fungal_chambers.rooms) {
+          for (const stage of [1, 2, 3]) {
+            store().discoverFungalRoom(room.id)
+            store().startDungeonStage(room.id)
+            expect(store().save!.battle?.encounterId).toBe(`encounter_${room.id}_stage_${stage}`)
+            fightPrepared(`${room.name} · estágio ${stage}`)
+          }
+        }
+        expect(store().save!.dungeonRun?.completedStageIds).toHaveLength(12)
+        expect(store().save!.dungeonRun?.mode).toBe('boss')
+        store().startDungeonStage('fungal_core')
+        expect(store().save!.battle?.encounterId).toBe('encounter_fungal_core_sentinel')
+        empower()
+      } else {
+        store().startBattle(node.id)
+        expect(store().save!.battle?.encounterId, node.label).toBe(node.encounterId)
       }
-      store().startBattle(node.id)
-      expect(store().save!.battle?.encounterId, node.label).toBe(node.encounterId)
       store().submitBattleCommand({ type: 'rollInitiative' })
       // Use a weapon skill when possible and basic attacks when Mana runs out.
       for (let turn = 0; turn < 50 && store().save!.battle?.phase === 'AwaitingAction'; turn++) {
@@ -178,7 +225,7 @@ describe('vertical slice integrada', () => {
         const target = Object.values(battle.combatants).filter((actor) => actor.side === 'enemy' && actor.alive)
           .sort((a, b) => a.hp - b.hp)[0]
         const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((entry) => entry.mpCost <= player.mp && !(player.skillCooldowns?.[entry.id] ?? 0))
-        const skill = skills.find((entry) => entry.id === 'skill_resonant_strike') ?? skills[0]
+        const skill = skills.find((entry) => entry.id === 'skill_resonant_strike') ?? skills.find((entry) => entry.id !== 'skill_basic_area_attack')
         store().submitBattleCommand(skill ? { type: 'skill', skillId: skill.id, targetId: target.id } : { type: 'attack', targetId: target.id })
       }
       expect(store().save!.battle?.phase, `${node.index}. ${node.label}`).toBe('Victory')
@@ -232,18 +279,31 @@ describe('vertical slice integrada', () => {
     }
     expect(store().save!.quests.main_astravel_corruption.status).toBe('ready_to_turn_in')
     store().turnInQuest('main_astravel_corruption', 'npc_lithwynn')
+    // Twelve additional waves can fill the original 12-slot backpack: valuable
+    // bound items then go safely to the Base chest, not lost or duplicated.
+    for (const id of ['fragment_mycelial_essence', 'item_gem_esmeralda_crescimento']) {
+      if (store().save!.inventory.some((item) => item.definitionId === id)) continue
+      const stored = store().save!.baseStorage.find((item) => item.definitionId === id)
+      expect(stored, `Componente ${id} deve estar na mochila ou no baú`).toBeDefined()
+      if (!stored) continue
+      expect(store().enterBase()).toBe(true)
+      store().transferBaseItem('withdraw', stored.instanceId, 1)
+      expect(store().save!.inventory.some((item) => item.definitionId === id)).toBe(true)
+      store().leaveBase()
+      visit('location_terran_bond_workshop')
+    }
     const fragment = store().save!.inventory.find((item) => item.definitionId === 'fragment_mycelial_essence')!
     const gem = store().save!.inventory.find((item) => item.definitionId === 'item_gem_esmeralda_crescimento')!
     store().performGradeTwoRite(weaponId, fragment.instanceId)
     store().performGradeThreeRite(weaponId, gem.instanceId)
     expect(store().save!.boundItems[weaponId].grade).toBe(3)
     expect(store().save!.world.worldFlags).toContain('astravel_investigation_completed')
-    expect(store().save!.world.completedEncounterIds).toHaveLength(15)
+    expect(store().save!.world.completedEncounterIds).toHaveLength(27)
     await flushPersistence()
     const reloaded = await getLatestLocalSave(ownerId)
     expect(reloaded!.world.trailNodeStates.astravel_boss_preview).toBe('completed')
     expect(reloaded!.character.bondedEquipment.weapon).toBe(weaponId)
-    expect(reloaded!.boundItems[weaponId].memories.some((memory) => memory.sourceId === 'enemy_colossus_mycelium')).toBe(true)
+    expect(reloaded!.boundItems[weaponId].memories.some((memory) => memory.sourceId === 'enemy_ruin_corrupted_sentinel')).toBe(true)
     expect(reloaded!.inventory.find((item) => item.definitionId === 'quest_hunter_insignia')).toBeDefined()
     expect(reloaded!.quests.main_astravel_corruption.status).toBe('completed')
   })

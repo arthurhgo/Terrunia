@@ -1,5 +1,6 @@
 import { astravelEncounterDefinitions } from './astravel'
 import { biomeEncounterDefinitions } from './biomeExpeditions'
+import { fungalDungeonEncounters } from './fungalChambers'
 import type {
   CombatSkillDefinition,
   EncounterDefinition,
@@ -7,6 +8,21 @@ import type {
 } from './types'
 
 export const combatSkillDefinitions = [
+  {
+    id: 'skill_sentinel_arcane_pulse', name: 'Pulso Arcano Corrompido',
+    description: 'A Sentinela dispara energia mágica de seu núcleo inorgânico.',
+    target: 'enemy', mpCost: 0, cooldownTurns: 0, damageDieSteps: 0,
+    effects: [{ type: 'damage', powerBonus: 1 }],
+    status: 'BALANCE_DRAFT',
+  },
+  {
+    id: 'skill_basic_area_attack', name: 'Ataque em Área',
+    description: 'Ação básica que atinge inimigos elegíveis com potência reduzida (BALANCE_DRAFT: 60%).',
+    target: 'enemy', mpCost: 0, cooldownTurns: 0, damageDieSteps: 0,
+    iconAssetId: 'skill.basic-area-attack',
+    effects: [{ type: 'damage', powerBonus: 0 }],
+    status: 'BALANCE_DRAFT',
+  },
   {
     id: 'skill_blackroot_crush', name: 'Esmagamento das Raízes',
     description: 'Raízes pesadas rompem a guarda do alvo.', target: 'enemy', mpCost: 0, cooldownTurns: 2, damageDieSteps: 0, 
@@ -238,6 +254,15 @@ export const statusEffectDefinitions = [
   },
 
   {
+    id: 'status_corrupted_mycotic_boost',
+    name: 'Ressonância Micótica',
+    description: 'Impulso arcano da Sentinela que fortalece temporariamente suas criaturas.',
+    tone: 'beneficial',
+    startTurnDamage: 0,
+    attackModifier: 1, mitigationModifier: 1,
+    status: 'BALANCE_DRAFT',
+  },
+  {
     id: 'status_rune_ward',
     name: 'Guarda Rúnica',
     description: 'Uma inscrição de campo reforça temporariamente a defesa.',
@@ -250,7 +275,7 @@ export const statusEffectDefinitions = [
 ] satisfies StatusEffectDefinition[]
 
 export const encounterDefinitions = [
-  ...astravelEncounterDefinitions, ...biomeEncounterDefinitions,
+  ...astravelEncounterDefinitions, ...biomeEncounterDefinitions, ...fungalDungeonEncounters,
   {
     id: 'encounter_portal_luminous_nest',
     name: 'Ninho Luminescente',

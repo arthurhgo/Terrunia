@@ -24,7 +24,9 @@ export function SkillCard({ skill, preview, remaining, unavailable, onInspect, o
   const minMax = preview.ranges.length
     ? preview.ranges.map(({ minimum, maximum }) => minimum === maximum ? String(minimum) : `${minimum}–${maximum}`).join(' + ')
     : '—'
-  const dieLabel = preview.die ? `d${preview.die}` : '—'
+  const dieLabel = preview.die
+    ? `d${preview.die}${preview.weaponBonusDie ? `+d${preview.weaponBonusDie}` : ''}`
+    : '—'
   return <button type="button"
     className={['pixel-battle__skill-card', remaining > 0 ? 'is-cooling' : 'is-ready',
       unavailable ? 'is-unavailable' : ''].join(' ')}

@@ -25,6 +25,8 @@ export type ItemDefinition = {
   gemComponentId?: string
   combatEffects: CombatEffectDefinition[]
   combatKind?: 'throwable' | 'rune' | 'essence'
+  /** Explicitly opt-in curatives; existing consumables keep their old rules. */
+  combatUseMode?: 'freeHealingPotion'
   combatTarget?: 'self' | 'enemy'
   /** Starter protection worn before the permanent armor bond; never replaces a bound piece. */
   /** Ordinary wearable, separate from all permanent Bonds. */
@@ -43,6 +45,8 @@ export type BoundItemBaseDefinition = {
   archetype: string
   rank: 1 | 2 | 3 | 4 | 5 | 6 | 7
   basePower: number
+  /** Optional extra weapon die used in attack damage; BALANCE_DRAFT per weapon. */
+  bonusAttackDie?: AttributeDie
   powerType: 'physical' | 'magical' | 'defensive' | 'utility'
   damageType: 'cutting' | 'piercing' | 'blunt' | 'arcane' | 'protection' | 'resonance'
   weightClass: 'light' | 'medium' | 'heavy'

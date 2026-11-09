@@ -97,10 +97,10 @@ describe('grade pixel art v0.1', () => {
     expect(manifest.schemaVersion).toBe('0.1')
     const ids = manifest.entries.map((entry) => entry.assetId)
     expect(new Set(ids).size).toBe(ids.length)
-    expect(ids).toHaveLength(166)
-    expect(manifest.entries.filter((entry) => entry.family === 'skill')).toHaveLength(28)
+    expect(ids).toHaveLength(170)
+    expect(manifest.entries.filter((entry) => entry.family === 'skill')).toHaveLength(31)
     expect(manifest.entries.filter((entry) => entry.family === 'item')).toHaveLength(71)
-    expect(manifest.entries.filter((entry) => entry.family === 'monster')).toHaveLength(14)
+    expect(manifest.entries.filter((entry) => entry.family === 'monster')).toHaveLength(15)
     expect(manifest.entries.filter((entry) => entry.family === 'npc')).toHaveLength(51)
     for (const id of ['item.simple-ether', 'item.field-compress', 'item.antidote',
       'npc.daeryn.portrait', 'npc.sylwen.portrait', 'npc.vorren.portrait', 'npc.lithwynn.portrait']) {

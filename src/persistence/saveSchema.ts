@@ -192,6 +192,17 @@ const worldSchema = z.object({
   worldFlags: z.array(z.string()),
 })
 
+const dungeonRunSchema = z.object({
+  runId: idSchema, dungeonId: z.literal('dungeon_fungal_chambers'),
+  roomIndex: z.number().int().min(0).max(3),
+  stageIndex: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  mode: z.enum(['stages', 'boss', 'won']),
+  completedStageIds: z.array(idSchema),
+  clearedRoomIds: z.array(idSchema),
+  activeEncounterId: idSchema.nullable(),
+  createdAt: z.string().min(1),
+})
+
 const battlePhaseSchema = z.enum([
   'Initializing',
   'AwaitingInitiative',
@@ -229,7 +240,11 @@ const combatantSchema = z.object({
     remainingTurns: positiveInteger,
   })),
   aiSkillEveryRounds: positiveInteger.optional(),
-  attackDie: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(10), z.literal(12)]).optional(),
+  attackDie: attributeDieSchema.optional(),
+  weaponBonusDie: attributeDieSchema.optional(),
+  potionCooldown: nonnegativeInteger.optional(),
+  potionHealingTicks: nonnegativeInteger.optional(),
+  potionHealingRemaining: nonnegativeInteger.optional(),
   initiativeDie: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(10), z.literal(12)]).optional(),
 })
 
@@ -239,6 +254,18 @@ const battleSchema = z.object({
   trailNodeId: idSchema,
   waveIndex: positiveInteger.optional(),
   portalHuntId: idSchema.optional(),
+  dungeonEncounterId: idSchema.optional(),
+  dungeonRunId: idSchema.optional(),
+  bossMechanics: z.object({
+    bossId: idSchema,
+    guardDefinitionIds: z.array(idSchema),
+    maxAlive: positiveInteger,
+    summonEveryRounds: positiveInteger,
+    healEveryRounds: positiveInteger,
+    healFraction: z.number().finite().min(0).max(1),
+    buffEveryRounds: positiveInteger,
+    buffDurationTurns: positiveInteger,
+  }).optional(),
   phase: battlePhaseSchema,
   phaseHistory: z.array(battlePhaseSchema).min(1),
   round: positiveInteger,
@@ -257,6 +284,7 @@ const battleSchema = z.object({
       sides: z.union([z.literal(4), z.literal(6), z.literal(8), z.literal(10), z.literal(12)]),
       face: positiveInteger,
       action: z.string().min(1),
+      weaponBonusRoll: z.object({ sides: attributeDieSchema, face: positiveInteger }).optional(),
       damageBreakdown: z.object({
         baseAttack: z.number().finite(),
         skillBonus: z.number().finite(),
@@ -316,6 +344,7 @@ export const gameSaveSchema = z.object({
   relationships: z.record(z.string(), relationshipSchema),
   world: worldSchema,
   battle: battleSchema.nullable(),
+  dungeonRun: dungeonRunSchema.nullable().optional(),
   settings: z.object({
     reducedMotion: z.boolean(),
     soundEnabled: z.boolean(),

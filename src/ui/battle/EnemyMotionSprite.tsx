@@ -15,6 +15,7 @@ export const legacyEnemyMotion: Record<string, { idleMs: number; lunge: number; 
   'enemy.fungal-slime': { idleMs: 870, lunge: 3, sway: 4, tint: '#b4e6a6' },
   'enemy.fungal-horror': { idleMs: 1420, lunge: 8, sway: 2, tint: '#cb93be' },
   'enemy.colossus-mycelium': { idleMs: 1950, lunge: 4, sway: 1, tint: '#a786e7' },
+  'enemy.ruin-corrupted-sentinel': { idleMs: 2300, lunge: 0, sway: 1, tint: '#9a86f7' },
   'enemy.luminous-slime': { idleMs: 1100, lunge: 3, sway: 3, tint: '#74eee2' },
   'enemy.void-moth': { idleMs: 760, lunge: 10, sway: 5, tint: '#af9de8' },
   'enemy.spore-mantis': { idleMs: 680, lunge: 12, sway: 2, tint: '#d4b676' },

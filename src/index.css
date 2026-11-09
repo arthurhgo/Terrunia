@@ -4038,3 +4038,34 @@ code {
   background:#284a48;
   border-color:#e8bb6e;
 }
+
+/* v0.5.14: dungeon actions must remain inside the visible viewport.
+   Terran's off-canvas reserved drawer column is not available in this dungeon.
+   Scope this overlay to dungeon only; preserve Terran and Astravél layouts. */
+.dungeon-game .terran-game__layout,
+.dungeon-game .terran-game__layout.has-drawer { position: relative; }
+.dungeon-game .terran-game__layout.has-drawer .terran-game__drawer {
+  position: absolute;
+  z-index: 45;
+  top: 0; bottom: 0;
+  right: 0; left: auto;
+  box-sizing: border-box;
+  width: min(390px, calc(100% - 12px));
+  min-width: 0; height: 100%; max-height: 100%;
+  margin: 0;
+  overflow-x: hidden; overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: -12px 0 28px #03080de0;
+}
+.dungeon-game .expedition-node-detail__action {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 40px;
+  flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  .dungeon-game .terran-game__layout.has-drawer .terran-game__drawer {
+    width: min(350px, calc(100% - 6px));
+    right: 3px;
+  }
+}

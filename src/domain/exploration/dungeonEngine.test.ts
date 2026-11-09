@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
-import { discoverDungeonRoom, dungeonRoomFlag, enterDungeon, exitDungeon } from './dungeonEngine'
+import { claimDungeonEncounter, discoverDungeonRoom, dungeonRoomFlag, dungeonNextEncounter, enterDungeon, exitDungeon, startDungeonEncounter } from './dungeonEngine'
 
 const dungeon = content.dungeons.dungeon_fungal_chambers
 const now = '2026-10-28T20:00:00Z'
@@ -34,22 +34,49 @@ describe('dungeon de Astravél (domínio puro)', () => {
     expect(discoverDungeonRoom(entering.save, dungeon, 'fungal_core', now).ok).toBe(false)
 
     let explored = entering.save
-    for (const room of dungeon.rooms.slice(1)) {
-      const result = discoverDungeonRoom(explored, dungeon, room.id, now)
-      expect(result.ok).toBe(true)
-      if (result.ok) explored = result.save
+    for (const room of dungeon.rooms) {
+      expect(explored.dungeonRun?.roomIndex).toBe(dungeon.rooms.indexOf(room))
+      for (const stage of [1, 2, 3]) {
+        expect(explored.dungeonRun?.stageIndex).toBe(stage)
+        const started = startDungeonEncounter(explored, room.id, now)
+        expect(started.ok).toBe(true)
+        if (!started.ok) return
+        const encounterId = dungeonNextEncounter(started.save.dungeonRun!)
+        expect(encounterId).toBe(`encounter_${room.id}_stage_${stage}`)
+        expect(startDungeonEncounter(started.save, room.id, now).ok).toBe(false)
+        const cleared = claimDungeonEncounter(started.save, encounterId!, now)
+        expect(cleared.ok).toBe(true)
+        if (!cleared.ok) return
+        explored = cleared.save
+        expect(claimDungeonEncounter(explored, encounterId!, now).ok).toBe(false)
+      }
+      const discovered = discoverDungeonRoom(explored, dungeon, room.id, now)
+      expect(discovered.ok).toBe(true)
+      if (discovered.ok) explored = discovered.save
     }
-    expect(explored.world.worldFlags.filter((flag) => flag.startsWith('dungeon-room-discovered:'))).toHaveLength(4)
-    const again = discoverDungeonRoom(explored, dungeon, 'fungal_core', now)
-    expect(again.ok && again.save).toBe(explored)
-    expect(explored.revision).toBe(entering.save.revision + 3)
-
+    expect(explored.dungeonRun?.completedStageIds).toHaveLength(12)
+    expect(explored.dungeonRun?.mode).toBe('boss')
+    expect(dungeonNextEncounter(explored.dungeonRun!)).toBe('encounter_fungal_core_sentinel')
+    const startedBoss = startDungeonEncounter(explored, 'fungal_core', now)
+    expect(startedBoss.ok).toBe(true)
+    if (!startedBoss.ok) return
+    const defeatedBoss = claimDungeonEncounter(startedBoss.save, 'encounter_fungal_core_sentinel', now)
+    expect(defeatedBoss.ok).toBe(true)
+    if (!defeatedBoss.ok) return
+    explored = defeatedBoss.save
+    expect(explored.dungeonRun?.mode).toBe('won')
+    expect(explored.dungeonRun?.clearedRoomIds).toHaveLength(4)
     const leaving = exitDungeon(explored, dungeon, now)
     expect(leaving.ok).toBe(true)
     if (!leaving.ok) return
+    expect(leaving.save.dungeonRun).toBeNull()
     const reentering = enterDungeon(leaving.save, dungeon, now)
     expect(reentering.ok).toBe(true)
-    if (reentering.ok) expect(reentering.save.world.worldFlags.filter((flag) => flag === dungeonRoomFlag('fungal_vestibule'))).toHaveLength(1)
+    if (reentering.ok) {
+      expect(reentering.save.dungeonRun?.stageIndex).toBe(1)
+      expect(reentering.save.dungeonRun?.completedStageIds).toHaveLength(0)
+      expect(reentering.save.world.worldFlags.filter((flag) => flag === dungeonRoomFlag('fungal_vestibule'))).toHaveLength(1)
+    }
   })
   it('permite etapa 15/15 após retornar pelo Portal, mantendo o marco do chefe desbloqueado', () => {
     const save = ready()

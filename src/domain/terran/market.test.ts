@@ -92,4 +92,18 @@ describe('Mercado de Terran', () => {
     if (tierThree.ok) expect(content.items[tierThree.value.inventory.at(-1)!.definitionId].basicArmor?.tier).toBe(3)
   })
 
+  it('oferece Poção Restauradora com consumo real na economia da Câmara', () => {
+    const save = base()
+    const result = buyMarketItem(save, 'presence_edran', 'consumable_fungal_healing_potion', 2, content, now)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.value.inventory.at(-1)).toMatchObject({
+      definitionId: 'consumable_fungal_healing_potion', quantity: 2,
+    })
+    expect(result.value.wallet.gold).toBe(save.wallet.gold - 56)
+    expect(content.items.consumable_fungal_healing_potion.combatUseMode).toBe('freeHealingPotion')
+    expect(buyMarketItem(save, 'presence_neris', 'consumable_fungal_healing_potion', 1, content, now))
+      .toMatchObject({ ok: false, code: 'MARKET_OFFER' })
+  })
+
 })

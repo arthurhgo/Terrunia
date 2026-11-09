@@ -3,8 +3,42 @@ import { content } from '../content/catalog'
 import { performGradeThreeRite, performGradeTwoRite } from '../domain/bond/boundItems'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { migrateAndValidateSave } from './saveSchema'
+import { createDungeonRun } from '../domain/exploration/dungeonEngine'
+import { createBattle } from '../domain/combat/engine'
 
 describe('save versionado', () => {
+  it('v0.5.14 preserva tentativa, RNG, boss protegido, dado de arma e poção no reload', () => {
+    const save = createNewSave('save-run', 'Lysa', 'character.terririan.default', content)
+    save.world.currentLocationId = 'dungeon_fungal_chambers'
+    save.dungeonRun = createDungeonRun('2026-11-09T00:00:00Z', 'run-persistent')
+    save.dungeonRun.roomIndex = 3
+    save.dungeonRun.stageIndex = 3
+    save.dungeonRun.mode = 'boss'
+    save.dungeonRun.activeEncounterId = 'encounter_fungal_core_sentinel'
+    save.dungeonRun.completedStageIds = ['encounter_fungal_vestibule_stage_1']
+    save.battle = createBattle(save, content.encounters.encounter_fungal_core_sentinel,
+      content, 'boss-persistent', { manualInitiative: true })
+    save.battle.dungeonEncounterId = 'encounter_fungal_core_sentinel'
+    save.battle.dungeonRunId = save.dungeonRun.runId
+    const actor = save.battle.combatants.combatant_player
+    actor.weaponBonusDie = 4
+    actor.potionCooldown = 2
+    actor.potionHealingTicks = 2
+    actor.potionHealingRemaining = 4
+    const boss = save.battle.bossMechanics!
+    expect(boss.bossId).toBeTruthy()
+    const saved = migrateAndValidateSave(save)
+    expect(saved.dungeonRun).toEqual(save.dungeonRun)
+    expect(saved.battle?.dungeonRunId).toBe('run-persistent')
+    expect(saved.battle?.dungeonEncounterId).toBe('encounter_fungal_core_sentinel')
+    expect(saved.battle?.rngSeed).toBe(save.battle.rngSeed)
+    expect(saved.battle?.bossMechanics).toEqual(boss)
+    expect(saved.battle?.combatants.combatant_player).toMatchObject({
+      weaponBonusDie: 4, potionCooldown: 2, potionHealingTicks: 2, potionHealingRemaining: 4,
+    })
+    expect(migrateAndValidateSave(saved)).toEqual(saved)
+  })
+
   it('valida save atual', () => {
     const save = createNewSave(
       'user_1',

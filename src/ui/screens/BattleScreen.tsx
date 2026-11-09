@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Backpack, Bomb, BookOpen, Crosshair, Gem, ScrollText, Shield, Sparkles, Swords, Zap } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
-import { submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
+import { isProtectedBoss, submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
 import { getTrailByNodeId } from '../../domain/exploration/trailEngine'
 import { useGameStore } from '../../state/gameStore'
@@ -20,6 +20,7 @@ import { BattleTimeline } from '../battle/BattleTimeline'
 import { SkillCard } from '../battle/SkillCard'
 import { SkillTooltip } from '../battle/SkillTooltip'
 import { previewCombatSkill } from '../../domain/combat/skillPreview'
+import type { CombatSkillDefinition } from '../../content/types'
 import { BATTLE_PRESENTATION } from '../battle/presentationTiming'
 import { groupBattleLoot } from '../../domain/inventory/battleLoot'
 import './battlePixel.css'
@@ -30,11 +31,14 @@ import './gameplayV057.css'
 import './battleV0513.css'
 
 type Menu = 'skills' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
+const POTION_CARD_ID = 'skill.use-healing-potion'
 const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
 
 const getBattleStrikeFx = (event: BattleDiceEvent) => {
   const action = event.action.toLowerCase()
-  const style = /arco|bow|flecha|arremess|projectile/i.test(action) ? 'projectile' as const
+  const style = /pulso ressonante|golpe ressonante/i.test(action) ? 'resonance' as const
+    : /ataque em área/i.test(action) ? 'area' as const
+    : /arco|bow|flecha|arremess|projectile/i.test(action) ? 'projectile' as const
     : /arcano|magic|magia|arcane|runa|scepter|staff|grimoire|spell/i.test(action) ? 'arcane' as const
       : 'slash' as const
   return {
@@ -81,7 +85,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const [hoveredEnemyId, setHoveredEnemyId] = useState<string | null>(null)
   const [hoveredSkillId, setHoveredSkillId] = useState<string | null>(null)
   const [pinnedSkillId, setPinnedSkillId] = useState<string | null>(null)
-  const [strikeFx, setStrikeFx] = useState<{ actorId: string; targetId: string; style: 'arcane' | 'projectile' | 'slash' } | null>(null)
+  const [strikeFx, setStrikeFx] = useState<{ actorId: string; targetId: string; style: 'arcane' | 'projectile' | 'slash' | 'resonance' | 'area' } | null>(null)
   const pendingRollsRef = useRef<{ rolls: BattleDiceEvent[]; cursor: number; commit: () => void } | null>(null)
   const previewTimer = useRef<number | null>(null)
   const seenDiceLog = useRef<{ id: string; count: number } | null>(null)
@@ -97,10 +101,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }, [battle?.id, defeated, reducedMotion, returnToTerran])
 
   useEffect(() => {
-    if (!enemies.some((enemy) => enemy.id === targetId && enemy.alive)) {
-      setTargetId(enemies.find((enemy) => enemy.alive)?.id ?? '')
+    if (!enemies.some((enemy) => enemy.id === targetId && enemy.alive && (!battle || !isProtectedBoss(battle, enemy)))) {
+      setTargetId(enemies.find((enemy) => enemy.alive && (!battle || !isProtectedBoss(battle, enemy)))?.id ?? '')
     }
-  }, [enemies, targetId])
+  }, [battle, enemies, targetId])
   useEffect(() => {
     setMenu(null)
     setConfirmDefense(false)
@@ -234,14 +238,30 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }
   if (!player || !enemies.length) return <Navigate to="/terran" replace />
 
-  const target = enemies.find((enemy) => enemy.id === targetId && enemy.alive) ?? enemies.find((enemy) => enemy.alive) ?? enemies[0]
+  const target = enemies.find((enemy) => enemy.id === targetId && enemy.alive && !isProtectedBoss(battle, enemy))
+    ?? enemies.find((enemy) => enemy.alive && !isProtectedBoss(battle, enemy)) ?? enemies[0]
   const encounter = content.encounters[battle.encounterId]
   const battleTitle = `${encounter?.locationLabel ?? 'ASTRAVÉL'}: ${encounter?.name ?? (battle.waveIndex ? 'ONDA ' + battle.waveIndex : 'COMBATE')}`
   const skills = player.skillIds.map((id) => content.combatSkills[id]).filter((skill) => Boolean(skill))
   const inspectedSkill = skills.find((skill) => skill.id === (pinnedSkillId ?? hoveredSkillId))
+  const healingPotion = save.inventory.find((instance) =>
+    content.items[instance.definitionId]?.combatUseMode === 'freeHealingPotion' && instance.quantity > 0)
+  const potionSkill: CombatSkillDefinition = {
+    id: POTION_CARD_ID, name: 'Tomar Poção',
+    description: 'Usa 1 Poção Restauradora sem consumir a ação. Regenera 10% da Vida em dois turnos.',
+    target: 'self', mpCost: 0, cooldownTurns: 2, damageDieSteps: 0,
+    iconAssetId: POTION_CARD_ID,
+    effects: [{ type: 'restoreHp', value: Math.ceil(player.maxHp * 0.1) }],
+    status: 'BALANCE_DRAFT',
+  }
+  const potionInspected = menu === 'items' && (hoveredSkillId === POTION_CARD_ID || pinnedSkillId === POTION_CARD_ID)
+  const potionUnavailable = !healingPotion ? 'Nenhuma Poção Restauradora'
+    : (player.potionCooldown ?? 0) > 0 || (player.potionHealingTicks ?? 0) > 0 ? 'Poção em recarga'
+      : player.hp >= player.maxHp ? 'Vida cheia' : null
   const consumables = save.inventory.filter((instance) => {
     const definition = content.items[instance.definitionId]
-    return definition?.category === 'consumable' && definition.combatEffects.length > 0 && !definition.combatKind
+    return definition?.category === 'consumable' && definition.combatEffects.length > 0
+      && !definition.combatKind && definition.combatUseMode !== 'freeHealingPotion'
   })
   const categoryItems = (kind: 'throwable' | 'rune' | 'essence') =>
     save.inventory.filter((instance) => content.items[instance.definitionId]?.combatKind === kind)
@@ -266,7 +286,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     || effect.type === 'restoreMp' && player.mp < player.maxMp
     || effect.type === 'cleanseHarmful' && player.statusEffects.some((status) => content.statusEffects[status.definitionId]?.tone === 'harmful'),
   ))
-  const hasUsableConsumable = consumables.some((item) => content.items[item.definitionId].combatEffects.some((effect) =>
+  const hasUsableConsumable = Boolean(healingPotion) || consumables.some((item) => content.items[item.definitionId].combatEffects.some((effect) =>
     (effect.type === 'restoreHp' && player.hp < player.maxHp) ||
     (effect.type === 'restoreMp' && player.mp < player.maxMp) ||
     (effect.type === 'cleanseHarmful' && player.statusEffects.some((status) =>
@@ -329,6 +349,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         const next = sequence.rolls[sequence.cursor]
         setActiveDice(next)
         const awaitingPlayerThrow = next.actorSide === 'player' && next.kind !== 'initiative'
+          && !/Pulso Ressonante|Ataque em Área/.test(next.action)
         setDiceAwaitingClick(awaitingPlayerThrow)
         if (!awaitingPlayerThrow) playVisualRoll(next)
       }, impactMs)
@@ -385,6 +406,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         id: entry.id, sides: roll.sides, face: roll.face, damage: Number(match[1]),
         actorId: roll.actorId, targetId: roll.targetId ?? (actor?.side === 'enemy' ? player.id : target.id),
         action: roll.action, kind: 'damage' as const,
+        ...(roll.weaponBonusRoll ? { weaponBonusRoll: roll.weaponBonusRoll } : {}),
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy' as const,
       }]
     })
@@ -460,13 +482,17 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             '--enemy-width': `${getEnemyFormationSlot(i, enemies.length).widthPercent}%`,
             zIndex: getEnemyFormationSlot(i, enemies.length).layer } as React.CSSProperties}
           className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
-          onClick={() => enemy.alive && setTargetId(enemy.id)} disabled={!enemy.alive}
+          onClick={() => enemy.alive && !isProtectedBoss(battle, enemy) && setTargetId(enemy.id)}
+           disabled={!enemy.alive || isProtectedBoss(battle, enemy)}
           onMouseEnter={() => setHoveredEnemyId(enemy.id)} onMouseLeave={() => setHoveredEnemyId(null)}
           onFocus={() => setHoveredEnemyId(enemy.id)} onBlur={() => setHoveredEnemyId(null)}
           aria-describedby={hoveredEnemyId === enemy.id ? 'enemy-status-' + i : undefined}
-          aria-label={`Selecionar ${enemy.name} ${i + 1}, ${visualHp(enemy.id)} de ${enemy.maxHp} de Vida`}
+          aria-label={isProtectedBoss(battle, enemy)
+             ? `${enemy.name} protegido: derrote os fungos para alvejar a Sentinela`
+             : `Selecionar ${enemy.name} ${i + 1}, ${visualHp(enemy.id)} de ${enemy.maxHp} de Vida`}
           aria-pressed={enemy.id === target.id}>
-          {enemy.alive && enemy.id === target.id && <span className="pixel-battle__target-arrow" aria-hidden="true">◆</span>}
+          {isProtectedBoss(battle, enemy) && <span className="pixel-battle__boss-lock" aria-hidden="true">🔒</span>}
+           {enemy.alive && enemy.id === target.id && <span className="pixel-battle__target-arrow" aria-hidden="true">◆</span>}
           <span className="pixel-battle__enemy-bar" role="progressbar" aria-label={`Vida de ${enemy.name} ${i + 1}`}
             aria-valuenow={visualHp(enemy.id)} aria-valuemin={0} aria-valuemax={enemy.maxHp}>
             <i style={{ width: clampPercent(visualHp(enemy.id), enemy.maxHp) + '%' }} />
@@ -491,7 +517,13 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           </span>}
         </button>)}
       </div>
-      {actorCueName && <div className="pixel-battle__actor-cue" role="status" aria-live="polite">
+      {battle.bossMechanics && <div className="pixel-battle__boss-timers" role="status">
+         <strong>☷ Núcleo da Ruína · {Object.values(battle.combatants).filter((actor) => actor.side === 'enemy' && actor.alive && actor.id !== battle.bossMechanics?.bossId).length}/3 guardiões</strong>
+         <span>Invocação: {5 - battle.round % 5} rodadas · Cura: {2 - battle.round % 2} rodadas</span>
+         <small>{Object.values(battle.combatants).some((actor) => actor.side === 'enemy' && actor.alive && actor.id !== battle.bossMechanics?.bossId)
+           ? 'Derrote os fungos para atingir a Sentinela' : 'Sentinela vulnerável'}</small>
+       </div>}
+       {actorCueName && <div className="pixel-battle__actor-cue" role="status" aria-live="polite">
         TURNO DE {actorCueName.toLocaleUpperCase('pt-BR')}
       </div>}
       {roundCurtain && !activeDice && <div className="pixel-battle__round-curtain" role="status" aria-label="Separador de turno">
@@ -590,12 +622,25 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               })}
               </div>
             </>}
-            {menu === 'items' ? consumables.length ? <><select aria-label="Selecionar consumível" value={selectedItem?.instanceId ?? ''}
-              onChange={(event) => setSelectedConsumableId(event.target.value)}>
-              {consumables.map((item) => <option key={item.instanceId} value={item.instanceId}>{content.items[item.definitionId].name} ×{item.quantity}</option>)}
-            </select><button disabled={!itemUseful} onClick={() => selectedItem && send({ type: 'item', itemInstanceId: selectedItem.instanceId, targetId: player.id })}>SELECIONAR POÇÃO</button></> :
-              <span>Sem consumíveis disponíveis.</span> : null}
-            {(['throwables', 'runes', 'essences'] as const).includes(menu as 'throwables' | 'runes' | 'essences') ? (() => {
+             {menu === 'items' && <>
+               <div className="pixel-battle__potion-skill">
+                 <SkillCard skill={potionSkill} preview={previewCombatSkill(player, player, potionSkill, content)}
+                   remaining={player.potionCooldown ?? 0} unavailable={potionUnavailable}
+                   onInspect={() => { setPinnedSkillId(null); setHoveredSkillId(POTION_CARD_ID) }}
+                   onLeave={() => setHoveredSkillId(null)}
+                   onPin={() => setPinnedSkillId(POTION_CARD_ID)}
+                   onUse={() => healingPotion && !potionUnavailable && send({ type: 'item',
+                     itemInstanceId: healingPotion.instanceId, targetId: player.id })} />
+               </div>
+               {consumables.length ? <>
+                 <select aria-label="Selecionar consumível" value={selectedItem?.instanceId ?? ''}
+                   onChange={(event) => setSelectedConsumableId(event.target.value)}>
+                   {consumables.map((item) => <option key={item.instanceId} value={item.instanceId}>{content.items[item.definitionId].name} ×{item.quantity}</option>)}
+                 </select>
+                 <button disabled={!itemUseful} onClick={() => selectedItem && send({ type: 'item', itemInstanceId: selectedItem.instanceId, targetId: player.id })}>USAR CONSUMÍVEL</button>
+               </> : <span className="pixel-battle__potion-caption">Outros consumíveis não disponíveis.</span>}
+             </>}
+             {(['throwables', 'runes', 'essences'] as const).includes(menu as 'throwables' | 'runes' | 'essences') ? (() => {
               const kind = menu === 'throwables' ? 'throwable' : menu === 'runes' ? 'rune' : 'essence'
               const supplies = categoryItems(kind)
               return supplies.length ? supplies.map((instance) => {
@@ -634,6 +679,12 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         <p className="pixel-battle__hint"><Crosshair size={14} /> {battle.phase === 'Victory' ? 'Recolha tudo de uma vez e continue.' : battle.phase === 'Defeat' ? 'A expedição foi interrompida.' : 'Selecione um inimigo e escolha sua ação.'}</p>
       </section>
     </div>
+    {potionInspected && <SkillTooltip skill={potionSkill} preview={previewCombatSkill(player, player, potionSkill, content)}
+      remaining={player.potionCooldown ?? 0} unavailable={potionUnavailable}
+      onClose={() => { setHoveredSkillId(null); setPinnedSkillId(null) }}
+      onUse={() => { setHoveredSkillId(null); setPinnedSkillId(null)
+        if (healingPotion && !potionUnavailable) send({ type: 'item', itemInstanceId: healingPotion.instanceId, targetId: player.id })
+      }} />}
     {(menu === 'skills' || menu === 'magic') && inspectedSkill && <SkillTooltip skill={inspectedSkill}
       preview={previewCombatSkill(player, inspectedSkill.target === 'self' ? player : target, inspectedSkill, content)}
       remaining={player.skillCooldowns?.[inspectedSkill.id] ?? 0}

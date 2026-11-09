@@ -9,6 +9,7 @@ import { questDefinitions } from './quests'
 import { skillTreeNodeDefinitions } from './skillTrees'
 import { trailDefinitions } from './trails'
 import { dungeonDefinitions } from './dungeons'
+import { FUNGAL_ROOM_IDS, FUNGAL_STAGE_GROUPS, FUNGAL_BOSS_ENCOUNTER_ID } from './fungalChambers'
 import { terranLocationDefinitions } from './terran'
 import { clanDefinitions, classDefinitions } from './progression'
 import type {
@@ -184,6 +185,15 @@ for (const trail of Object.values(content.trails)) {
     }
   }
 }
+
+for (const roomId of FUNGAL_ROOM_IDS) {
+  for (const stageIndex of [1, 2, 3]) {
+    const id = `encounter_${roomId}_stage_${stageIndex}`
+    assertReference(content.encounters[id], `fungalStage → ${id}`)
+  }
+}
+if (FUNGAL_STAGE_GROUPS.length !== 12) throw new Error('A dungeon exige 12 estágios.')
+assertReference(content.encounters[FUNGAL_BOSS_ENCOUNTER_ID], 'fungalBoss → Sentinela')
 
 for (const dungeon of Object.values(content.dungeons)) {
   const allNodes = Object.values(content.trails).flatMap((trail) => trail.nodes)

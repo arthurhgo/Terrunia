@@ -24,6 +24,8 @@ export const MARKET_STOCK = [
   { npcId: 'presence_edran', itemId: 'consumable_resonance_flask', price: 24 },
   { npcId: 'presence_edran', itemId: 'consumable_vital_essence', price: 26 },
   { npcId: 'presence_edran', itemId: 'consumable_field_compress', price: 8 },
+  // BALANCE_DRAFT: new free-action potion supply. Price is adjustable after owner review.
+  { npcId: 'presence_edran', itemId: 'consumable_fungal_healing_potion', price: 28 },
 ] as const
 
 export const MARKET_SERVICES = {

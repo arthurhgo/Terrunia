@@ -6,6 +6,8 @@ import { fail, ok, type Result } from '../shared/types'
 
 /** BALANCE_DRAFT — preços e estoque ajustáveis sem alterar os itens vinculados. */
 export const SYLWEN_STOCK = [
+  // BALANCE_DRAFT OD-09: new potion SKU; existing tonics stay unchanged.
+  { itemId: 'consumable_fungal_healing_potion', price: 36 },
   { itemId: 'consumable_minor_tonic', price: 20 },
   { itemId: 'consumable_simple_ether', price: 18 },
   { itemId: 'consumable_antidote', price: 16 },
