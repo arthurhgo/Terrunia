@@ -38,9 +38,9 @@ const PRICES=[20,30,22,65,35,25,20,20,24,28] as const
  * damage and defense to trivialize a level-1 boss.
  */
 const PRIMARY_BY_TIER=[1,2,3,4,5] as const
-const SECONDARY_BY_TIER=[0,0,0,1,1] as const
+const SECONDARY_BY_TIER=[0,1,1,2,2] as const
 const CHANNEL_PRIMARY_BONUS:Record<GearChannel,number>={
- PUBLIC_TERRAN:0,CLAN_EXCLUSIVE:1,CLASS_EXCLUSIVE:1,
+ PUBLIC_TERRAN:0,CLAN_EXCLUSIVE:1,CLASS_EXCLUSIVE:2,
 }
 const CHANNEL_SECONDARY_BONUS:Record<GearChannel,number>={
  PUBLIC_TERRAN:0,CLAN_EXCLUSIVE:0,CLASS_EXCLUSIVE:1,
