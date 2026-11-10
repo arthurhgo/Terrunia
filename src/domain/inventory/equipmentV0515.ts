@@ -136,6 +136,7 @@ export function getGearBonuses(save:GameSave){
   const offer=gearOfferById[item.definitionId]
   if(!offer)continue
   const isSimpleArmor=item.instanceId===save.equippedBasicArmor?.instanceId
+  if(isSimpleArmor&&save.character.bondedEquipment.armor)continue
   for(const {stat,value} of getGearStatEntries(offer,getGearGrade(item.refinementLevel))){
    if(isSimpleArmor&&stat==='mitigation')continue
    totals[stat]+=value
