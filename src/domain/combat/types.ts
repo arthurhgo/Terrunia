@@ -137,6 +137,7 @@ export type BattleCommand =
   | { type: 'rollInitiative' }
   | { type: 'attack'; targetId: string }
   | { type: 'areaAttack'; targetId?: string }
+  | { type: 'doubleAttack'; targetId: string }
   | { type: 'defend' }
   | { type: 'skill'; skillId: string; targetId: string }
   | { type: 'item'; itemInstanceId: string; targetId: string }
