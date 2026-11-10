@@ -40,8 +40,8 @@ describe('Mercado de Terran', () => {
 
   it('aplica preços progressivos mais altos às armaduras do Mercado', () => {
     expect(MARKET_STOCK.find((offer) => offer.itemId === 'equipment_worn_linen_tunic')?.price).toBe(22)
-    expect(MARKET_STOCK.some((offer) => offer.itemId === 'equipment_simple_leather_armor')).toBe(false)
-    expect(MARKET_STOCK.some((offer) => offer.itemId === 'equipment_terran_guard_armor')).toBe(false)
+    expect(MARKET_STOCK.map((offer) => offer.itemId as string).includes('equipment_simple_leather_armor')).toBe(false)
+    expect(MARKET_STOCK.map((offer) => offer.itemId as string).includes('equipment_terran_guard_armor')).toBe(false)
     expect(MARKET_STOCK.filter((offer) => offer.npcId === 'presence_neris').every((offer) => content.items[offer.itemId].basicArmor?.tier === 1)).toBe(true)
   })
 
