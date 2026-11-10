@@ -23,25 +23,26 @@ describe('Mercado de Terran', () => {
 
   it('vende melhorias permanentes de mochila e impede recompra ou salto de tier', () => {
     const save = base()
-    expect(buyMarketItem(save, 'presence_neris', 'backpack_arcane', 1, content, now))
+    expect(buyMarketItem(save, 'presence_edran', 'backpack_arcane', 1, content, now))
       .toMatchObject({ ok: false, code: 'BACKPACK_PREREQUISITE' })
-    const first = buyMarketItem(save, 'presence_neris', 'backpack_sturdy', 1, content, now)
+    const first = buyMarketItem(save, 'presence_edran', 'backpack_sturdy', 1, content, now)
     expect(first.ok).toBe(true)
     if (!first.ok) return
     expect(first.value.wallet.gold).toBe(405)
     expect(getBackpackCapacity(first.value)).toBe(18)
     expect(first.value.inventory).toEqual(save.inventory)
-    expect(buyMarketItem(first.value, 'presence_neris', 'backpack_sturdy', 1, content, now))
+    expect(buyMarketItem(first.value, 'presence_edran', 'backpack_sturdy', 1, content, now))
       .toMatchObject({ ok: false, code: 'BACKPACK_OWNED' })
-    const second = buyMarketItem(first.value, 'presence_neris', 'backpack_traveler', 1, content, now)
+    const second = buyMarketItem(first.value, 'presence_edran', 'backpack_traveler', 1, content, now)
     expect(second.ok).toBe(true)
     if (second.ok) expect(getBackpackCapacity(second.value)).toBe(24)
   })
 
   it('aplica preços progressivos mais altos às armaduras do Mercado', () => {
     expect(MARKET_STOCK.find((offer) => offer.itemId === 'equipment_worn_linen_tunic')?.price).toBe(22)
-    expect(MARKET_STOCK.find((offer) => offer.itemId === 'equipment_simple_leather_armor')?.price).toBe(60)
-    expect(MARKET_STOCK.find((offer) => offer.itemId === 'equipment_terran_guard_armor')?.price).toBe(135)
+    expect(MARKET_STOCK.some((offer) => offer.itemId === 'equipment_simple_leather_armor')).toBe(false)
+    expect(MARKET_STOCK.some((offer) => offer.itemId === 'equipment_terran_guard_armor')).toBe(false)
+    expect(MARKET_STOCK.filter((offer) => offer.npcId === 'presence_neris').every((offer) => content.items[offer.itemId].basicArmor?.tier === 1)).toBe(true)
   })
 
   it('mantém os seis comerciantes e especialistas mapeados sem alterar o ID do local', () => {
@@ -78,26 +79,16 @@ describe('Mercado de Terran', () => {
     save.world.currentLocationId = 'location_terran_portal_plaza'
     expect(buyMarketItem(save, 'presence_valmira', 'fragment_mycelial_essence', 1, content, now)).toMatchObject({ ok: false, code: 'MARKET_LOCATION' })
   })
-  it('desbloqueia Tier II e Tier III por progresso real sem vender equipamento permanente', () => {
-    const save = base()
-    const unchanged = structuredClone(save)
-    expect(buyMarketItem(save, 'presence_neris', 'equipment_simple_leather_armor', 1, content, now))
-      .toMatchObject({ ok: false, code: 'MARKET_TIER_LOCKED' })
-    expect(buyMarketItem(save, 'presence_neris', 'equipment_terran_guard_armor', 1, content, now))
-      .toMatchObject({ ok: false, code: 'MARKET_TIER_LOCKED' })
-    expect(save).toEqual(unchanged)
-    save.quests.rosetta_tutorial_refine.status = 'completed'
-    const tierTwo = buyMarketItem(save, 'presence_neris', 'equipment_simple_leather_armor', 1, content, now)
-    expect(tierTwo.ok).toBe(true)
-    if (!tierTwo.ok) return
-    expect(content.items[tierTwo.value.inventory.at(-1)!.definitionId].basicArmor?.tier).toBe(2)
-    expect(buyMarketItem(tierTwo.value, 'presence_neris', 'equipment_terran_guard_armor', 1, content, now))
-      .toMatchObject({ ok: false, code: 'MARKET_TIER_LOCKED' })
-    const advanced = structuredClone(tierTwo.value)
-    advanced.quests.main_astravel_lost_hunters.status = 'completed'
-    const tierThree = buyMarketItem(advanced, 'presence_neris', 'equipment_terran_guard_armor', 1, content, now)
-    expect(tierThree.ok).toBe(true)
-    if (tierThree.ok) expect(content.items[tierThree.value.inventory.at(-1)!.definitionId].basicArmor?.tier).toBe(3)
+  it('nega qualquer compra antiga Tier II/III de Neris mesmo após completar quests', () => {
+    const save=base()
+    save.quests.rosetta_tutorial_refine.status='completed'
+    save.quests.main_astravel_lost_hunters.status='completed'
+    const previous=structuredClone(save)
+    for(const itemId of ['equipment_simple_leather_armor','equipment_terran_guard_armor']){
+      expect(buyMarketItem(save,'presence_neris',itemId,1,content,now))
+        .toMatchObject({ok:false,code:'NERIS_TIER'})
+    }
+    expect(save).toEqual(previous)
   })
 
   it('oferece Poção Restauradora com consumo real na economia da Câmara', () => {
@@ -111,7 +102,7 @@ describe('Mercado de Terran', () => {
     expect(result.value.wallet.gold).toBe(save.wallet.gold - 56)
     expect(content.items.consumable_fungal_healing_potion.combatUseMode).toBe('freeHealingPotion')
     expect(buyMarketItem(save, 'presence_neris', 'consumable_fungal_healing_potion', 1, content, now))
-      .toMatchObject({ ok: false, code: 'MARKET_OFFER' })
+      .toMatchObject({ ok: false, code: 'NERIS_STOCK' })
   })
 
 })
