@@ -1,6 +1,7 @@
 import type { ContentCatalog } from '../../content/catalog'
 import { forgeUpgradeDefinitions, goldForgeUpgradeDefinitions } from '../../content/forge'
 import { getGearBonuses } from '../inventory/equipmentV0515'
+import { gearOfferById, getGearGrade, getCommercialArmorDefense } from '../../content/equipmentV0515'
 import { BALANCE } from '../../content/balance'
 import type { GameSave } from '../game/types'
 import { getFlatStatBonus } from '../skillTree/skillTree'
@@ -27,6 +28,12 @@ const sum = (contributions: StatContribution[]): DerivedStat => ({
 export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) => {
   const { attributes, bondedEquipment } = save.character
   const basicArmor = getEquippedBasicArmor(save, catalog)
+  const commercialArmor = basicArmor ? gearOfferById[basicArmor.instance.definitionId] : undefined
+  const armorDefense = basicArmor
+    ? commercialArmor
+      ? getCommercialArmorDefense(commercialArmor,getGearGrade(basicArmor.instance.refinementLevel))
+      : basicArmor.armor.mitigation + (basicArmor.instance.refinementLevel ?? 0)*ARMOR_REFINEMENT.mitigationPerLevel
+    : 0
   const gear = getGearBonuses(save)
   const weapon = bondedEquipment.weapon ? save.boundItems[bondedEquipment.weapon] : null
   const weaponBase = weapon ? catalog.boundItemBases[weapon.baseItemId] : null
@@ -85,7 +92,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
     defense: sum([
       { label: 'Vigor', value: Math.floor(getAttributeScore(attributes.vigor) / 4) },
       { label: 'Equipamentos', value: equipmentBonus('mitigation') + gear.mitigation },
-      { label: basicArmor?.definition.name ?? 'Proteção simples', value: basicArmor ? basicArmor.armor.mitigation + (basicArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel : 0 },
+      { label: basicArmor?.definition.name ?? 'Proteção simples', value: armorDefense },
       { label: 'Vínculos e Skills', value: defenseBonus },
       { label: 'Forja de Durnan', value: forgeDefense },
       { label: 'Clã', value: clanBonuses.mitigation ?? 0 },
