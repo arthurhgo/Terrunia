@@ -1,3 +1,4 @@
+import { rebalanceEnemyV05152 } from './enemyBalanceV05152'
 import type { EncounterDefinition, EnemyDefinition, ItemDefinition, TrailDefinition, TrailNodeDefinition } from './types'
 
 /**
@@ -50,7 +51,7 @@ export const biomeEnemyDefinitions: EnemyDefinition[] = species.map((entry) => (
   boss: 'boss' in entry && entry.boss === true,
   weaknessTags: entry.level >= 10 ? ['resonance'] : ['arcane'],
   assetId: 'enemy.' + entry.asset, status: 'BALANCE_DRAFT',
-}))
+})).map(rebalanceEnemyV05152)
 
 type SliceStage = {
   id: string; label: string; x: number; y: number; species: string[]
