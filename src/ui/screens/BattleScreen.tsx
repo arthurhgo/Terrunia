@@ -25,6 +25,8 @@ import { BATTLE_PRESENTATION } from '../battle/presentationTiming'
 import { groupBattleLoot } from '../../domain/inventory/battleLoot'
 import { canUseVictoryRecovery } from '../../domain/combat/victoryRecoveryV05152'
 import { DOUBLE_ATTACK_V05152 } from '../../content/combatActionRulesV05152'
+import { getEnemyReadouts, getImpactReadout } from '../../domain/combat/combatReadoutsV05153'
+import { playGameplaySfx } from '../../services/gameplaySfx'
 import './battlePixel.css'
 import './battleRemake.css'
 import './battleTimeline.css'
@@ -198,6 +200,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         setRevealedInitiative((current) => ({ ...current, [actorId]: total }))
       }
       if (event.kind === 'damage') {
+        playGameplaySfx(event.damage <= 0 ? 'blocked' : event.critical ? 'critical' : 'hit', Boolean(save?.settings.soundEnabled))
         setImpactEventId(event.id)
         if (!reducedMotion) setStrikeFx(getBattleStrikeFx(event))
       }
@@ -325,6 +328,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const victoryRecoveryItems = save.inventory.filter(item => canUseVictoryRecovery(save,item.instanceId,content))
 
   const playVisualRoll = (event: BattleDiceEvent) => {
+    playGameplaySfx('roll', save.settings.soundEnabled)
     const focusMs = reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs
       : BATTLE_PRESENTATION.dieSpinMs + BATTLE_PRESENTATION.dieResultHoldMs
     const impactMs = event.kind === 'damage' ? (reducedMotion ? 160 : 450) : 80
@@ -337,6 +341,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         setRevealedInitiative((current) => ({ ...current, [actorId]: total }))
       }
       if (event.kind === 'damage') {
+        playGameplaySfx(event.damage <= 0 ? 'blocked' : event.critical ? 'critical' : 'hit', save.settings.soundEnabled)
         if (event.targetId) {
           setStagedHp((current) => current ? {
             ...current,
@@ -500,7 +505,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
       <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} biome={battleBiome} />
       <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''} ${strikeFx?.actorId === player.id ? 'is-striking' : ''} ${strikeFx?.targetId === player.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === player.id ? 'is-acting' : ''} ${receivingId === player.id ? 'is-receiving' : ''}`}>
-        {damageRevealed && receivingId === player.id && <b className="pixel-battle__damage-number" role="status">−{activeDice?.damage}</b>}
+        {damageRevealed && receivingId === player.id && <b className="pixel-battle__damage-number" data-feedback={getImpactReadout(activeDice?.damage ?? 0, Boolean(activeDice?.critical))} role="status">{activeDice?.damage ? '−'+activeDice.damage : '0'} · {getImpactReadout(activeDice?.damage ?? 0, Boolean(activeDice?.critical))}</b>}
         <EquippedCharacter save={save} facing="right" alt={player.alive ? 'Terrírian voltado para os inimigos' : 'Terrírian derrotado'} />
       </div>
       <div className={`pixel-battle__enemies pixel-battle__enemies--${enemies.length}`}>
@@ -535,14 +540,17 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             motion={visualHp(enemy.id) <= 0 ? 'defeat'
               : strikeFx?.actorId === enemy.id ? 'attack'
                 : strikeFx?.targetId === enemy.id || receivingId === enemy.id ? 'hit' : 'idle'} />
-          {damageRevealed && receivingId === enemy.id && <b className="pixel-battle__damage-number" role="status">−{activeDice?.damage}{activeDice?.critical ? ' · CRÍTICO!' : ''}</b>}
+          {damageRevealed && receivingId === enemy.id && <b className="pixel-battle__damage-number" data-feedback={getImpactReadout(activeDice?.damage ?? 0, Boolean(activeDice?.critical))} role="status">{activeDice?.damage ? '−'+activeDice.damage : '0'} · {getImpactReadout(activeDice?.damage ?? 0, Boolean(activeDice?.critical))}</b>}
            <small>{enemy.name}</small>
+          {enemy.alive && getEnemyReadouts(enemy, player, isProtectedBoss(battle, enemy)).length > 0 &&
+            <span className="pixel-battle__threat-badge" aria-hidden="true">{getEnemyReadouts(enemy, player, isProtectedBoss(battle, enemy))[0]}</span>}
           {hoveredEnemyId === enemy.id && <span className="pixel-battle__enemy-tooltip" role="tooltip"
             aria-label={'Status de ' + enemy.name} id={'enemy-status-' + i}>
             <strong>{enemy.name}</strong>
             <span>Vida: {visualHp(enemy.id)}/{enemy.maxHp} · Mana: {enemy.mp}/{enemy.maxMp}</span>
             <span>{enemy.definitionId === 'enemy_granite_golem' ? 'Boss adaptativo (+10%)' : `Nível ${content.enemies[enemy.definitionId]?.level ?? 1}`} · Ataque: {enemy.attackPower} · Defesa: {enemy.mitigation}</span>
             <span>Iniciativa: {battle.phase === 'AwaitingInitiative' ? (revealedInitiative[enemy.id] ?? 'pendente') : enemy.initiative} · Dado d{enemy.attackDie ?? 4}</span>
+            <span>Alertas reais: {getEnemyReadouts(enemy, player, isProtectedBoss(battle, enemy)).join(' · ') || 'Nenhum'}</span>
             <span>{enemy.statusEffects.length ? enemy.statusEffects.map((status) =>
               content.statusEffects[status.definitionId]?.name ?? status.definitionId).join(', ') : 'Sem efeitos ativos'}</span>
           </span>}
@@ -569,7 +577,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           playerPortraitAssetId={save.character.portraitAssetId}
           enemyPortraitAssetId={activeDice.actorId && battle.combatants[activeDice.actorId]
             ? content.enemies[battle.combatants[activeDice.actorId].definitionId]?.assetId : undefined} />}
-      {damageRevealed && activeDice?.critical && <span className="pixel-battle__critical-flash" role="status" aria-live="polite">ACERTO CRÍTICO! · d{activeDice.sides}={activeDice.face}</span>}
+      {damageRevealed && activeDice?.critical && activeDice.damage > 0 && <span className="pixel-battle__critical-flash" role="status" aria-live="polite">ACERTO CRÍTICO! · d{activeDice.sides}={activeDice.face}</span>}
       {strikeFx && <span className={`pixel-battle__strike-fx
         ${strikeFx.actorId === player.id ? 'to-enemy' : 'to-player'} is-${strikeFx.style}`} aria-hidden="true" />}
       {defeated && <div className="pixel-battle__death" role="status" aria-label="Terrírian derrotado">
@@ -741,6 +749,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         </div> : <div className="pixel-battle__target-info">
           <AssetImage assetId={content.enemies[target.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} alt="" />
           <div><strong>{target.name}</strong>
+            {getEnemyReadouts(target, player, isProtectedBoss(battle, target)).length > 0 &&
+              <small className="pixel-battle__target-alert">{getEnemyReadouts(target, player, isProtectedBoss(battle, target)).join(' · ')}</small>}
             <div className="pixel-battle__meter hp" role="progressbar" aria-label="Vida do alvo" aria-valuenow={visualHp(target.id)} aria-valuemin={0} aria-valuemax={target.maxHp}><i style={{ width: clampPercent(visualHp(target.id), target.maxHp) + '%' }} /><span>VIDA {visualHp(target.id)} / {target.maxHp}</span></div></div>
         </div>}
         <p className="pixel-battle__hint"><Crosshair size={14} /> {battle.phase === 'Victory' ? 'Recolha tudo de uma vez e continue.' : battle.phase === 'Defeat' ? 'A expedição foi interrompida.' : 'Selecione um inimigo e escolha sua ação.'}</p>
