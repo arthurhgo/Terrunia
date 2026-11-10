@@ -9,6 +9,7 @@ const gearIcon = (id: string, refinement: number | undefined, fallback: string) 
 }
 
 import { content } from '../../content/catalog'
+import { previewCommercialEquip } from '../../domain/character/commercialGearPreviewV05152'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { getBackpackCapacity } from '../../domain/inventory/backpacks'
@@ -88,11 +89,11 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
   }
   const showTooltip = (instanceId: string, element: HTMLElement) => {
     const rect = element.getBoundingClientRect()
-    const width = 265
+    const width = 300
     setHovered({
       instanceId,
       x: rect.right + 10 + width < window.innerWidth ? rect.right + 10 : Math.max(8, rect.left - width - 10),
-      y: Math.max(8, Math.min(rect.top, window.innerHeight - 230)),
+      y: Math.max(8, Math.min(rect.top, window.innerHeight - 310)),
     })
   }
 
@@ -268,14 +269,25 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
         const definition = item && content.items[item.definitionId]
         if (!item || !definition) return null
         const armor = definition.basicArmor
+        const comparison=previewCommercialEquip(save,item,content)
         return createPortal(<aside className="inventory-hover-card" role="tooltip" aria-label={`Status de ${definition.name}`}
           style={{ left: hovered.x, top: hovered.y }}>
           <span className="inventory-hover-card__eyebrow">STATUS DO ITEM</span>
           <strong>{definition.name}{item.refinementLevel ? ` +${item.refinementLevel}` : ''}</strong>
           <small>{gearOfferById[item.definitionId] ? `Tier ${gearOfferById[item.definitionId].tier} · Grau ${getGearGrade(item.refinementLevel)} · ${formatGearStats(gearOfferById[item.definitionId],getGearGrade(item.refinementLevel))}` : armor ? `Tier ${armor.tier} · Proteção simples` : `${definition.category} · ${definition.rarity}`}</small>
-          {gearOfferById[item.definitionId] && <div className="inventory-hover-card__stats">
-            {formatGearStats(gearOfferById[item.definitionId],getGearGrade(item.refinementLevel))}
-          </div>}
+          {comparison && <>
+            <small>{comparison.offer.channel==='PUBLIC_TERRAN'?'Comum · Neris':
+              comparison.offer.channel==='CLAN_EXCLUSIVE'?'Exclusivo do Clã':'Exclusivo da Classe'} ·
+              {comparison.offer.slot} · {comparison.wearable?'PODE EQUIPAR':'BLOQUEADO'}</small>
+            <div className="inventory-hover-card__stats">
+              {comparison.stats.map(entry=><span key={entry.stat}>{entry.label}<b>+{entry.value}</b></span>)}
+              {comparison.nextGrade && <small>Próximo Grau: {comparison.nextGrade.map(entry=>entry.label+' +'+entry.value).join(' · ')}</small>}
+              <strong>ALTERAÇÃO NO PERSONAGEM</strong>
+              {comparison.wearable && comparison.deltas.length>0 ? comparison.deltas.map(delta=>
+                <span key={delta.key}>{delta.label}<b>{delta.before} → {delta.after}</b></span>) :
+                <small>{comparison.blockReason ?? 'Nenhum atributo derivado muda neste conjunto atual.'}</small>}
+            </div>
+          </>}
           {armor && !gearOfferById[item.definitionId] && <div className="inventory-hover-card__stats">
             <span>Defesa <b>+{armor.mitigation + (item.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel}</b></span>
             <span>Iniciativa <b>{armor.initiative > 0 ? '+' : ''}{armor.initiative}</b></span>
