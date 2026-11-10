@@ -178,3 +178,13 @@
 @media(max-width:850px){.pixel-battle__victory-bag{max-height:210px;}}
 @media(max-width:560px){.pixel-battle__victory-bag{max-height:none;}.pixel-battle__victory-drops,.pixel-battle__victory-recovery{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(prefers-reduced-motion:reduce){.pixel-battle__enemy.is-double-hit{animation:none;}}
+
+/* v0.5.15.3 — combat-only feedback. No damage or turn rules in CSS. */
+.pixel-battle__threat-badge{max-width:100%;padding:2px 4px;background:#38251de8;border:1px solid #cf9861;
+ color:#ffdca4;font:700 8px/1.1 var(--display);text-align:center;letter-spacing:.03em;white-space:nowrap;
+ text-shadow:1px 1px #000;pointer-events:none}
+.pixel-battle__target-alert{display:block;margin:2px 0;color:#f0ba79;font:700 9px/1.2 var(--display)}
+.pixel-battle__damage-number[data-feedback="CRÍTICO!"]{color:#ffe39b;text-shadow:0 0 12px #ffbd57,2px 2px #000}
+.pixel-battle__damage-number[data-feedback="SEM DANO"]{color:#c3dfed;text-shadow:0 0 8px #78c1e1,2px 2px #000}
+@media(max-width:560px){.pixel-battle__threat-badge{font-size:7px;white-space:normal}}
+@media(prefers-reduced-motion:reduce){.pixel-battle__damage-number{animation:none!important}}
