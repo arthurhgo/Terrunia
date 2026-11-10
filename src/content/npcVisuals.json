@@ -712,5 +712,38 @@
       "herbs",
       "hood"
     ]
+  },
+  {
+    "npcId": "npc_terran_weaponsmith",
+    "name": "Armeiro de Terran",
+    "assetId": "npc.terran-weaponsmith.portrait",
+    "path": "/assets/npcs/market_weaponsmith.svg",
+    "design": [
+      "market",
+      "functional_draft",
+      "weaponsmith"
+    ]
+  },
+  {
+    "npcId": "npc_terran_armorer",
+    "name": "Armadureiro de Terran",
+    "assetId": "npc.terran-armorer.portrait",
+    "path": "/assets/npcs/market_armorer.svg",
+    "design": [
+      "market",
+      "functional_draft",
+      "armorer"
+    ]
+  },
+  {
+    "npcId": "npc_terran_accessory_artisan",
+    "name": "Artesão de Acessórios",
+    "assetId": "npc.terran-accessory-artisan.portrait",
+    "path": "/assets/npcs/market_accessory_artisan.svg",
+    "design": [
+      "market",
+      "functional_draft",
+      "accessory_artisan"
+    ]
   }
 ]
