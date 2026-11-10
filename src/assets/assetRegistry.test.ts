@@ -125,13 +125,16 @@ describe('grade pixel art v0.1', () => {
       }
     }
     expect(ids.sort()).toEqual(Object.keys(assetRegistry).filter((id) =>
-      assetRegistry[id].pixelArt && !assetRegistry[id].draftPlaceholder && id !== 'character.terririan.map').sort())
+      assetRegistry[id].pixelArt && !assetRegistry[id].draftPlaceholder &&
+      !id.startsWith('equipment.v0515.') && !id.startsWith('npc.castle-merchant.') && id !== 'character.terririan.map').sort())
   })
 
   it('reserva IDs editáveis para os novos biomas sem exigir PNG não produzido', () => {
     const pending = Object.values(assetRegistry).filter((asset) => asset.draftPlaceholder)
     expect(pending.filter((asset) => !asset.id.startsWith('equipment.v0515.'))).toHaveLength(25)
-    expect(pending.filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(1400)
+    expect(pending.filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(0)
+    expect(Object.values(assetRegistry).filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(4200)
+    expect(Object.values(assetRegistry).filter((asset) => asset.id.startsWith('npc.castle-merchant.'))).toHaveLength(16)
     expect(pending.filter((asset) => asset.id.startsWith('item.complementary.'))).toHaveLength(5)
     for (const asset of pending) {
       expect(asset.pixelArt).toBe(true)
