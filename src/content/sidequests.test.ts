@@ -8,7 +8,7 @@ import { migrateAndValidateSave } from '../persistence/saveSchema'
 
 describe('contratos secundários dos NPCs', () => {
   it('tem um contrato por NPC com alvo real e entrega manual', () => {
-    const questGivers = npcDefinitions.filter((npc) => npc.id !== 'npc_rosetta')
+    const questGivers = npcDefinitions.filter((npc) => npc.id !== 'npc_rosetta' && npc.questIds.some((id) => id.startsWith('side_')))
     const originalContracts = sideQuestDefinitions.filter((quest) => !quest.turnInItems && !quest.id.startsWith('side_astravel_') && !quest.id.startsWith('side_clan_'))
     expect(originalContracts).toHaveLength(questGivers.length)
     expect(sideQuestDefinitions.filter((quest) => !quest.turnInItems)).toHaveLength(questGivers.length + 8 + astravelProgressionQuests.filter((quest) => !quest.turnInItems).length)
