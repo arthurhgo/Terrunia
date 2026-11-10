@@ -1,4 +1,5 @@
-import { GearShopV0515 } from './GearShopV0515'
+import { TerranSpecialistShopV05153 } from './TerranSpecialistShopV05153'
+import { isTerranGearMerchant } from '../../content/terranGearMerchantsV05153'
 import { useState } from 'react'
 import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
@@ -23,11 +24,18 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
   const equippedArmor = getEquippedBasicArmor(save, content)
   const currentMitigation = equippedArmor ? equippedArmor.armor.mitigation + (equippedArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel : 0
   const currentInitiative = equippedArmor?.armor.initiative ?? 0
-  const stock = MARKET_STOCK.filter((offer) => offer.npcId === npcId)
+  const needsTonic=save.quests.rosetta_tutorial_supply?.status==='active' &&
+    !save.eventLog.some(event=>event.startsWith('MarketPurchase:') && event.split(':')[2]==='consumable_minor_tonic')
+  const needsLeather=save.quests.rosetta_tutorial_armor?.status==='active' &&
+    !save.eventLog.some(event=>event.startsWith('MarketPurchase:') && event.split(':')[2]==='equipment_light_leather_vest')
+  const questId=needsTonic?'consumable_minor_tonic':needsLeather?'equipment_light_leather_vest':null
+  const stock=MARKET_STOCK.filter(offer=>offer.npcId===npcId)
+    .sort((a,b)=>Number(b.itemId===questId)-Number(a.itemId===questId))
   return <section className="terran-shop" aria-label="Comprar itens no Mercado">
     <h3><Backpack size={18} /> Mochila do vendedor · itens à venda</h3>
     <p className="terran-shop__wallet"><Coins size={16} /> {save.wallet.gold} Ouro</p>
-    {npcId === 'presence_neris' && <GearShopV0515 save={save} merchantId="presence_neris" />}
+    {isTerranGearMerchant(npcId)&&<TerranSpecialistShopV05153 save={save} merchantId={npcId}/>}
+    {npcId==='presence_neris'&&<p className="terran-shop__instruction">Poções, Mana, antídotos e consumíveis. Os equipamentos comuns são vendidos por Armeiro, Armadureiro e Artesão de Acessórios.</p>}
     <div className="terran-shop__stock">
       {stock.map((offer) => {
         const { itemId, price } = offer
@@ -38,14 +46,22 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
         const armor = item.basicArmor
         const gainDefense = armor ? armor.mitigation - currentMitigation : 0
         const gainInitiative = armor ? armor.initiative - currentInitiative : 0
-        return <article key={itemId} className="terran-shop__offer" onMouseEnter={() => setHoveredItem(itemId)}
+        return <article key={itemId} className="terran-shop__offer" data-market-category={item.category}
+          data-quest-item={itemId===questId?'true':undefined}
+          onMouseEnter={() => setHoveredItem(itemId)}
           onMouseLeave={() => setHoveredItem(null)} onFocus={() => setHoveredItem(itemId)} onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget)) setHoveredItem(null)
           }}>
           <AssetImage assetId={item.iconAssetId} />
           <div><strong>{item.name}{item.basicArmor ? ` · Tier ${item.basicArmor.tier}` : ''}</strong><small>{item.description}</small>
+            {itemId===questId && <small className="terran-shop__mission-item">✦ Item da missão de Rosetta</small>}
             {locked && gate && <small>Bloqueado: conclua “{gate.title}”.</small>}
             {armor && <small>Defesa +{armor.mitigation} · Iniciativa {armor.initiative >= 0 ? '+' : ''}{armor.initiative}</small>}
+            {item.category==='consumable' && <small className="terran-shop__stats">{item.combatEffects.map(effect=>
+              effect.type==='restoreHp'?'Vida +'+effect.value:effect.type==='restoreMp'?'Mana +'+effect.value:
+              effect.type==='cleanseHarmful'?'Remove efeitos negativos':
+              effect.type==='damage'?'Arremessável · Dano':effect.type==='applyStatus'?'Aplica efeito':'Suporte'
+            ).join(' · ')}{item.combatUseMode==='freeHealingPotion'?' · Cura instantânea sem ação':''}</small>}
             </div>
           <button type="button" aria-label={locked ? `Bloqueado: ${item.name}` : `Comprar ${item.name} por ${price} ouro`}
             disabled={locked || save.wallet.gold < price} onClick={() => buy(npcId, itemId)}>
