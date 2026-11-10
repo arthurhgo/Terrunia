@@ -1,0 +1,23 @@
+.gear-shop-v0515{display:grid;gap:12px;min-width:0}
+.gear-shop-v0515 header{display:flex;flex-direction:column;gap:5px}
+.gear-shop-v0515 header h3,.gear-shop-v0515 h4{margin:0;color:#eed6a5}
+.gear-shop-v0515 p{margin:3px 0;line-height:1.45}
+.gear-shop-v0515__filters{display:flex;flex-wrap:wrap;gap:8px}
+.gear-shop-v0515__filters label{display:grid;gap:3px;font-size:12px}
+.gear-shop-v0515 select{min-height:34px;background:#1b2627;color:#f1e3c7;border:1px solid #987b51;border-radius:5px;max-width:220px}
+.gear-shop-v0515__sets{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:6px;max-height:155px;overflow:auto}
+.gear-shop-v0515__sets button{display:flex;align-items:center;gap:6px;text-align:left;background:#203130;color:#e9deca;border:1px solid #586358;border-radius:5px;padding:6px;min-height:50px;cursor:pointer}
+.gear-shop-v0515__sets button.is-selected{border-color:#e7bf79;background:#35423c}
+.gear-shop-v0515__sets small,.gear-shop-v0515__items small{display:block;font-size:11px;opacity:.88;line-height:1.35}
+.gear-shop-v0515__swatch{width:19px;height:23px;border:2px solid;flex:none;box-shadow:inset -3px -3px 0 #0004}
+.gear-shop-v0515__heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.gear-shop-v0515__heading button,.gear-shop-v0515__items button{color:#201a14;background:#e6bb75;border:1px solid #8c6231;border-radius:5px;padding:7px;cursor:pointer;white-space:nowrap}
+.gear-shop-v0515 button:disabled{opacity:.45;cursor:not-allowed}
+.gear-shop-v0515__items{display:grid;gap:5px;max-height:340px;overflow:auto}
+.gear-shop-v0515__items article{display:flex;align-items:center;gap:9px;background:#172324cc;border-left:3px solid;padding:5px;border-radius:3px}
+.gear-shop-v0515__items article img{height:32px;width:32px;object-fit:contain;image-rendering:pixelated}
+.gear-shop-v0515__items article div{flex:1;min-width:0}
+.gear-shop-v0515__items article strong{font-size:12px}
+.gear-shop-v0515__note{font-size:11px;color:#c9c0a6}
+.gear-shop-v0515__items button:focus-visible,.gear-shop-v0515__sets button:focus-visible{outline:2px solid #e7bf79;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.gear-shop-v0515 *{animation:none!important}}

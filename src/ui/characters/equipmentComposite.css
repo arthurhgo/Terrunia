@@ -96,3 +96,12 @@
 @media(prefers-reduced-motion:reduce) {
   .character-composite > .equipped-character__layer {transition:none;}
 }
+
+/* v0.5.15: quality glow is cosmetic, non-blocking and reduced-motion safe. */
+.equipped-character__layer[data-forge-grade="1"]{animation:gear-grade-one 3.5s ease-in-out infinite}
+.equipped-character__layer[data-forge-grade="2"]{animation:gear-grade-two 2.8s ease-in-out infinite}
+.equipped-character__layer[data-forge-grade="3"]{animation:gear-grade-three 2.1s ease-in-out infinite}
+@keyframes gear-grade-one{50%{filter:brightness(1.15)}}
+@keyframes gear-grade-two{50%{filter:brightness(1.23) contrast(1.08)}}
+@keyframes gear-grade-three{50%{filter:brightness(1.30) saturate(1.2) drop-shadow(0 0 1px #e4d5a8)}}
+@media (prefers-reduced-motion:reduce){.equipped-character__layer[data-forge-grade]{animation:none}}

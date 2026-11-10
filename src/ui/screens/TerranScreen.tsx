@@ -36,6 +36,7 @@ import { streetNpcPlacements } from '../../content/streetNpcs'
 import type { WorldPoint } from '../terran/pixelCityArt'
 import { getCityCast } from '../terran/cityCast'
 import { BaseChest, BaseRecords, DaerynServices, HomeDrawer, QuestNpcPanel, VorrenBestiary } from '../terran/TerranServices'
+import { GearShopV0515 } from '../terran/GearShopV0515'
 import { MarketNpcPanel } from '../terran/MarketServices'
 import { isMarketNpc } from '../../domain/terran/market'
 import { BASE_LOCATION_ID, hasPlayerHomeKey, isPlayerHomeDoorOpen } from '../../domain/terran/base'
@@ -49,7 +50,7 @@ import { getReadyDeliveryQuestRoute, getRosettaQuestRoutes, getTrackedQuestRoute
 
 import './gameplayV057.css'
 
-type Drawer = 'location' | 'market' | 'home' | 'homeRecords' | 'chest' | 'records' | 'forge' | null
+type Drawer = 'gear' | 'location' | 'market' | 'home' | 'homeRecords' | 'chest' | 'records' | 'forge' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
 
 function DialogueBox({ save, presence, onClose }: { save: GameSave; presence: Presence; onClose: () => void }) {
@@ -71,7 +72,7 @@ function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
   return (
     <div className="terran-drawer__section">
       <p>{location.description}</p>
-      {location.viewKind === 'workshop' && <p>O Mercado de Terran distribui os serviços entre os moradores: Valmira e Edran vendem itens; Feril paga Ouro; Lorian transforma drops em Essência; Lithwynn e Talia aplicam melhorias aos Vínculos. Aproxime-se e converse com cada NPC.</p>}
+      {location.viewKind === 'workshop' && <p>O Mercado de Terran distribui os serviços entre os moradores: Neris vende equipamentos; Valmira negocia componentes e Edran fornece suprimentos; Feril paga Ouro; Lorian transforma drops em Essência; Lithwynn e Talia aplicam melhorias aos Vínculos. Aproxime-se e converse com cada NPC.</p>}
       {location.viewKind === 'clanHall' && <ClanHallPanel save={save} />}
       {location.viewKind === 'daeryn' && <DaerynServices save={save} />}
       {location.viewKind === 'vorren' && <VorrenBestiary save={save} />}
@@ -200,7 +201,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     showHomeInterior()
   }
   const openRoomServices = (id: TerranInteriorId) => {
-    setDrawer(id === PLAYER_HOME_INTERIOR_ID ? 'home' : id === 'location_terran_forge' ? 'forge' : 'location')
+    setDrawer(isClanCastleInteriorId(id) ? 'gear' : id === PLAYER_HOME_INTERIOR_ID ? 'home' : id === 'location_terran_forge' ? 'forge' : 'location')
     setLocalQuestId(null)
   }
   const inspectFurniture = (furniture: RoomFurniture) => {
@@ -314,7 +315,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setDialogue(presence)
   }
   const forgeQuest = getNpcActionableQuests(save, 'npc_durnan', content)[0]
-  const activeTitle = drawer === 'forge' ? 'Casa do Ferreiro' : drawer === 'location' ? (
+  const activeTitle = drawer === 'gear' ? 'Arsenal do Castelo' : drawer === 'forge' ? 'Casa do Ferreiro' : drawer === 'location' ? (
     localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
   ) : drawer === 'market' ? `Mercado · ${marketNpc?.label ?? 'Serviços'}` : drawer === 'home' ? 'Minha Base' : drawer === 'homeRecords' ? 'Registros da Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
 
@@ -340,7 +341,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                   if (interiorId === PLAYER_HOME_INTERIOR_ID) {
                     const bed = roomFurniture[PLAYER_HOME_INTERIOR_ID].find((furniture) => furniture.id === 'home_bed')
                     if (bed) inspectFurniture(bed)
-                  } else if (!isClanCastleInteriorId(interiorId)) openRoomServices(interiorId)
+                  } else openRoomServices(interiorId)
                 }}
                 onFurniture={inspectFurniture}
                 onExit={exitInterior} />
@@ -422,6 +423,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               <button type="button" onClick={() => { setDrawer(null); setLocalQuestId(null) }} aria-label="Fechar painel"><X size={19} /></button>
             </header>
             <div className="terran-game__drawer-content">
+              {drawer === 'gear' && interiorId && isClanCastleInteriorId(interiorId) && <GearShopV0515 save={save} channel="CASTLE" />}
               {drawer === 'forge' && <ForgePanel save={save} onClose={() => setDrawer(null)}
                 onQuest={forgeQuest ? () => { setLocalQuestId(forgeQuest.id); setDrawer('location') } : undefined} />}
               {drawer === 'location' && (localQuestId

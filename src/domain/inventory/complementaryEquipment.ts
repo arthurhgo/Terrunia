@@ -1,3 +1,5 @@
+import { gearOfferById } from '../../content/equipmentV0515'
+import { checkGearWear } from './equipmentV0515'
 import type { ContentCatalog } from '../../content/catalog'
 import type { GameSave } from '../game/types'
 import type { ComplementarySlot } from '../shared/types'
@@ -16,6 +18,8 @@ export function equipComplementaryItem(save: GameSave, slot: ComplementarySlot,
     catalog.items[incoming.definitionId]?.complementarySlot !== slot)) {
     return fail('WEAR_INVALID', 'Escolha uma peça compatível e desbloqueada da mochila.')
   }
+  const gear = incoming ? gearOfferById[incoming.definitionId] : undefined
+  if (gear) { const eligible = checkGearWear(save,gear); if (!eligible.ok) return eligible }
   const next = structuredClone(save)
   const equipped = next.equippedComplementary ?? {}
   if (instanceId) {

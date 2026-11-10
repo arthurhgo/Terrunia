@@ -31,6 +31,11 @@ export const armorPixels = (facing: ActorFacing): ArmorPixel[] => {
 
 export const armorPalette = (visual: VisualItem) => {
   // Color follows the exact worn piece; quality/rarity remain separate data.
+  if(visual.palette){
+    const p=visual.palette
+    const base=(visual.forgeGrade??1)===3?p.gradeThree:p.base
+    return {shade:base,base,light:(visual.forgeGrade??1)>=2?p.metallic:p.trim,rune:p.glow}
+  }
   const material = BASIC_ARMOR_MATERIAL_PALETTES[visual.itemId]
   if (material) return material
   const tier = visual.visualTier ?? 1

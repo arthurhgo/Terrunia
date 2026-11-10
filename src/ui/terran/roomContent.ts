@@ -59,6 +59,8 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
       behavior:'inspect' as const,description:'Identidade visual provisória do Clã.'},
     {id:castle.interiorId+'_council',name:'Salão do Conselho — futuro',point:{x:253,y:139},
       behavior:'inspect' as const,description:'NPCs, missões e serviços de Clã serão adicionados em versões futuras.'},
+    {id:castle.interiorId+'_arsenal',name:'Mercador de Equipamentos do Clã',point:{x:305,y:177},
+      behavior:'services' as const,description:'Peças avulsas e kits exclusivos de Clã e Classe. Somente Grau 1 à venda.'},
     {id:castle.interiorId+'_return',name:'Portal de Retorno ao Salão',point:{x:192,y:213},
       behavior:'portal' as const,description:'Retornar ao Salão dos Clãs em Terran.'},
   ]])) as unknown as Record<ClanCastleInteriorId, readonly RoomFurniture[]>),

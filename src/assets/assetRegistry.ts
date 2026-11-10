@@ -1,3 +1,4 @@
+import { equipmentOffersV0515 } from '../content/equipmentV0515'
 import { combatSkillDefinitions } from '../content/combat'
 import type { CombatSkillDefinition } from '../content/types'
 import { biomeMaterialDefinitions, biomeEnemyDefinitions } from '../content/biomeExpeditions'
@@ -29,6 +30,11 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
+  ...equipmentOffersV0515.map((gear) => ({
+    id:gear.assetId,path:'/assets/equipment/v0515/'+gear.id+'.png',fallback:'/assets/placeholders/item.svg',
+    alt:gear.name,pixelArt:true,draftPlaceholder:true as const,
+  })),
+
   {id:'action.attack-single',path:'/assets/actions/attack_single.png',fallback:'/assets/placeholders/skill.svg',alt:'Ataque Único',pixelArt:true},
   {id:'action.attack-area',path:'/assets/actions/attack_cleave.png',fallback:'/assets/placeholders/skill.svg',alt:'Ataque em Área',pixelArt:true},
   ...['status_resonant_fracture','status_clan_aegis','status_clan_rune_ward','status_clan_disjunction','status_clan_omen','status_clan_containment']

@@ -1,3 +1,5 @@
+import { checkGearWear } from './equipmentV0515'
+import { gearOfferById } from '../../content/equipmentV0515'
 import type { ContentCatalog } from '../../content/catalog'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
 import type { GameSave } from '../game/types'
@@ -19,6 +21,8 @@ export function equipBasicArmor(save: GameSave, instanceId: string | null, catal
     const item = save.inventory.find((entry) => entry.instanceId === instanceId)
     if (!item || item.quantity !== 1 || !catalog.items[item.definitionId]?.basicArmor) return fail('EQUIP_ITEM', 'Escolha uma proteção simples da sua mochila.')
     if (item.locked) return fail('EQUIP_LOCKED', 'Desbloqueie esta peça antes de equipar.')
+    const gear = gearOfferById[item.definitionId]
+    if (gear) { const permission = checkGearWear(save,gear); if (!permission.ok) return permission }
   }
   // Atomic transfer: one physical instance belongs either to backpack or the worn slot.
   const next = structuredClone(save)
@@ -38,6 +42,7 @@ export function checkBasicArmorRefinement(save: GameSave, instanceId: string, ca
     : save.inventory.find((entry) => entry.instanceId === instanceId)
   const armor = item && catalog.items[item.definitionId]?.basicArmor
   if (!item || !armor || item.quantity !== 1) return fail('REFINE_ITEM', 'Escolha uma proteção simples da mochila ou do slot equipado.')
+  if (gearOfferById[item.definitionId]) return fail('GEAR_FORGE_V0515','Use a Forja de Equipamentos Tier G1–G3 para esta peça.')
   if (item.locked || item.favorite) return fail('REFINE_PROTECTED', 'Desproteja a peça antes de aprimorar.')
   if ((item.refinementLevel ?? 0) >= armor.maxRefinement) return fail('REFINE_MAX', 'Esta proteção já está em +1.')
   if (save.wallet.gold < ARMOR_REFINEMENT.gold) return fail('REFINE_GOLD', 'São necessários 8 Ouro para o reforço.')

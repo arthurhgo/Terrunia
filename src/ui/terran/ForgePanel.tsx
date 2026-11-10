@@ -1,3 +1,5 @@
+import { gearOfferById } from '../../content/equipmentV0515'
+import { GearForgeV0515 } from './GearForgeV0515'
 import { Link } from 'react-router-dom'
 import type { GameSave } from '../../domain/game/types'
 import { content } from '../../content/catalog'
@@ -20,7 +22,7 @@ export function ForgePanel({ save, onClose, onQuest }: { save: GameSave; onClose
       <p>{save.wallet.gold} Ouro · Materiais protegidos e favoritos são preservados.</p>
       <Link to="/skill-tree" className="panel-link" onClick={onClose}>Ver caminhos da arma na Skill Tree →</Link>
       {onQuest && <button type="button" className="terran-service-action" onClick={onQuest}>Consultar missão de Durnan</button>}
-      {[...save.inventory, ...(save.equippedBasicArmor ? [save.equippedBasicArmor] : [])].some((item) => content.items[item.definitionId]?.basicArmor) && <section className="forge-starter" aria-label="Reforçar proteções simples"><h3>Primeiro reforço · +1</h3>
+      {[...save.inventory, ...(save.equippedBasicArmor ? [save.equippedBasicArmor] : [])].some((item) => content.items[item.definitionId]?.basicArmor && !gearOfferById[item.definitionId]) && <section className="forge-starter" aria-label="Reforçar proteções simples"><h3>Primeiro reforço · +1</h3>
         <p>Uma Linha de Linho e {ARMOR_REFINEMENT.gold} Ouro. A peça ganha 1 de Defesa.</p>
         {[...save.inventory, ...(save.equippedBasicArmor ? [save.equippedBasicArmor] : [])].filter((item) => content.items[item.definitionId]?.basicArmor).map((item) => {
           const definition = content.items[item.definitionId]
@@ -29,6 +31,7 @@ export function ForgePanel({ save, onClose, onQuest }: { save: GameSave; onClose
             <div><h3>{definition.name}{item.refinementLevel ? ' +1' : ''}</h3><small>{item.instanceId === save.equippedBasicArmor?.instanceId ? 'Equipada · ' : ''}{!permission.ok ? permission.message : 'Pronta para reforçar'}</small></div>
             <button type="button" disabled={!permission.ok} aria-label={`Aprimorar ${definition.name} para +1`} onClick={() => refine(item.instanceId)}>Aprimorar +1</button></article>
         })}</section>}
+      <GearForgeV0515 save={save} />
       <section className="forge-premium" aria-label="Melhorias permanentes em Ouro">
         <h3>Forja Magistral · Melhorias por Ouro</h3>
         <p>Uma melhoria cara por Vínculo, sem substituição de arma, escudo, armadura, colar ou pulseira. Custos e bônus: BALANCE_DRAFT.</p>

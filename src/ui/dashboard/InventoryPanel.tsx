@@ -2,6 +2,7 @@ import { Coins, Filter, FlaskConical, Gem, Heart, PackageOpen, Star } from 'luci
 import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './inventoryHover.css'
+import { gearOfferById, getGearGrade } from '../../content/equipmentV0515'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
@@ -21,6 +22,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
   const toggleFavorite = useGameStore((state) => state.toggleFavorite)
   const equipArmor = useGameStore((state) => state.equipArmor)
   const equipComplementary = useGameStore((state) => state.equipComplementary)
+  const equipGearStyle = useGameStore((state) => state.equipGearStyle)
   const [selected, setSelected] = useState<string | null>(null)
   const [hovered, setHovered] = useState<{ instanceId: string; x: number; y: number } | null>(null)
   const [action, setAction] = useState<Action>(null)
@@ -30,6 +32,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
   const selectedArmorDefinition = selectedArmorInstance && content.items[selectedArmorInstance.definitionId]
   const selectedComplementary = selectedArmorInstance && selectedArmorDefinition?.complementarySlot
     ? { instance: selectedArmorInstance, definition: selectedArmorDefinition, slot: selectedArmorDefinition.complementarySlot } : null
+  const selectedGear = selectedArmorInstance ? gearOfferById[selectedArmorInstance.definitionId] : undefined
   const selectedArmor = selectedArmorInstance && selectedArmorDefinition?.basicArmor
     ? { instance: selectedArmorInstance, definition: selectedArmorDefinition, armor: selectedArmorDefinition.basicArmor } : null
 
@@ -37,7 +40,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
     // Equipped starter protection stays in the save but is shown in its worn slot, not twice.
     if (instance.instanceId === save.character.basicArmorInstanceId) return false
     const definition = content.items[instance.definitionId]
-    if (filter === 'equipment') return Boolean(definition?.basicArmor || definition?.complementarySlot)
+    if (filter === 'equipment') return Boolean(definition?.basicArmor || definition?.complementarySlot || gearOfferById[instance.definitionId])
     if (filter === 'convertible') return definition?.convertToEssence
     if (filter === 'sellable') return definition?.sellable
     return true
@@ -136,7 +139,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
                 <span>{definition.name}</span>
                 {instance.quantity > 1 && <strong>{instance.quantity}</strong>}
                 {instance.favorite && <Star size={12} className="favorite-mark" fill="currentColor" />}
-                {Boolean(instance.refinementLevel) && <b className="refinement-mark">+{instance.refinementLevel}</b>}
+                {Boolean(instance.refinementLevel) && <b className="refinement-mark">{gearOfferById[instance.definitionId] ? `G${getGearGrade(instance.refinementLevel)}` : `+${instance.refinementLevel}`}</b>}
               </button>
             )
           })}
@@ -165,7 +168,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
           <AssetImage assetId={selectedArmor.definition.iconAssetId} />
           <div><strong>{selectedArmor.definition.name}{selectedArmor.instance.refinementLevel ? ' +1' : ''}</strong>{!compact && <p>Tier {selectedArmor.armor.tier} · {selectedArmor.definition.description}</p>}
             <small>Defesa +{selectedArmor.armor.mitigation + (selectedArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel} · Iniciativa +{selectedArmor.armor.initiative}</small></div>
-          {save.character.bondedEquipment.armor ? <p>Você já usa uma Armadura vinculada.</p> : <button type="button" disabled={Boolean(save.battle) || selectedArmor.instance.locked}
+          {save.character.bondedEquipment.armor ? (selectedGear ? <button type="button" disabled={Boolean(save.battle) || selectedArmor.instance.locked} onClick={() => { equipGearStyle('armor', selectedArmor.instance.instanceId); setSelected(null); setHovered(null) }}>Aplicar revestimento à Armadura vinculada</button> : <p>Você já usa uma Armadura vinculada.</p>) : <button type="button" disabled={Boolean(save.battle) || selectedArmor.instance.locked}
             onClick={() => { setSelected(null); setHovered(null); equipArmor(selectedArmor.instance.instanceId) }}>
             {`Equipar ${selectedArmor.definition.name}`}</button>}
         </section>}
@@ -175,10 +178,22 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
           aria-label={`Equipamento: ${selectedComplementary.definition.name}`}>
           <AssetImage assetId={selectedComplementary.definition.iconAssetId} />
           <div><strong>{selectedComplementary.definition.name}</strong>
-            <small>Peça complementar, sem bônus de atributos.</small></div>
+            <small>{selectedGear ? `${selectedGear.stat}: +${selectedGear.values[getGearGrade(selectedComplementary.instance.refinementLevel)-1]} · Tier ${selectedGear.tier} · Grau ${getGearGrade(selectedComplementary.instance.refinementLevel)}` : 'Peça complementar, sem bônus de atributos.'}</small></div>
           <button type="button" disabled={Boolean(save.battle) || selectedComplementary.instance.locked}
             onClick={() => { equipComplementary(selectedComplementary.slot, selectedComplementary.instance.instanceId); setSelected(null); setHovered(null) }}>
             Equipar {selectedComplementary.definition.name}
+          </button>
+        </section>}
+
+
+        {tradeMode === 'browse' && selectedGear && !selectedGear.slot.match(/^(helmet|pants|boots|accessoryA|accessoryB|armor)$/) && selectedArmorInstance && <section className="inventory-equipment-detail" aria-label={'Revestimento: '+selectedGear.name}>
+          <AssetImage assetId={selectedGear.assetId} />
+          <div><strong>{selectedGear.name}</strong>
+            <small>Tier {selectedGear.tier} · G{getGearGrade(selectedArmorInstance.refinementLevel)} · {selectedGear.stat} +{selectedGear.values[getGearGrade(selectedArmorInstance.refinementLevel)-1]}</small>
+            <small>Preserva Grau do Vínculo, Ressonância, Runas e Skill Tree.</small></div>
+          <button type="button" disabled={Boolean(save.battle)||selectedArmorInstance.locked||!save.character.bondedEquipment[selectedGear.slot as 'weapon'|'shield'|'necklace'|'bracelet']}
+            onClick={() => { equipGearStyle(selectedGear.slot as 'weapon'|'shield'|'necklace'|'bracelet',selectedArmorInstance.instanceId);setSelected(null);setHovered(null) }}>
+            Aplicar revestimento
           </button>
         </section>}
 
@@ -250,7 +265,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
           style={{ left: hovered.x, top: hovered.y }}>
           <span className="inventory-hover-card__eyebrow">STATUS DO ITEM</span>
           <strong>{definition.name}{item.refinementLevel ? ` +${item.refinementLevel}` : ''}</strong>
-          <small>{armor ? `Tier ${armor.tier} · Proteção simples` : `${definition.category} · ${definition.rarity}`}</small>
+          <small>{gearOfferById[item.definitionId] ? `Tier ${gearOfferById[item.definitionId].tier} · Grau ${getGearGrade(item.refinementLevel)}` : armor ? `Tier ${armor.tier} · Proteção simples` : `${definition.category} · ${definition.rarity}`}</small>
           {armor && <div className="inventory-hover-card__stats">
             <span>Defesa <b>+{armor.mitigation + (item.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel}</b></span>
             <span>Iniciativa <b>{armor.initiative > 0 ? '+' : ''}{armor.initiative}</b></span>

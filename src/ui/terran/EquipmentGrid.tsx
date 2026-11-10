@@ -2,6 +2,7 @@ import { Footprints, Gem, HardHat, Package, Shield, Shirt, Sword, Watch } from '
 import type { ComponentType } from 'react'
 import type { GameSave } from '../../domain/game/types'
 import type { BoundSlot, ComplementarySlot } from '../../domain/shared/types'
+import { gearOfferById, getGearGrade } from '../../content/equipmentV0515'
 import { content } from '../../content/catalog'
 import { useGameStore } from '../../state/gameStore'
 import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
@@ -27,6 +28,7 @@ const slots: Slot[] = [
 export function EquipmentGrid({ save }: { save: GameSave }) {
   const equipArmor = useGameStore((state) => state.equipArmor)
   const equipComplementary = useGameStore((state) => state.equipComplementary)
+  const equipGearStyle = useGameStore((state) => state.equipGearStyle)
   const basicArmor = getEquippedBasicArmor(save, content)
   const renderSlot = (slot: Slot) => {
     const boundId = slot.bound ? save.character.bondedEquipment[slot.bound] : null
@@ -35,10 +37,12 @@ export function EquipmentGrid({ save }: { save: GameSave }) {
     const worn = slot.complementary ? save.equippedComplementary?.[slot.complementary] : null
     const ordinary = worn ? content.items[worn.definitionId] : null
     const starter = slot.bound === 'armor' && !linked ? basicArmor : null
-    const assetId = linked && boundInstance ? (linked.assetIdByGrade[boundInstance.grade] ?? linked.assetIdByGrade[1])
-      : ordinary?.iconAssetId ?? starter?.definition.iconAssetId
-    const name = linked?.name ?? ordinary?.name ?? starter?.definition.name ?? 'Slot vazio'
-    const actionable = Boolean(worn || starter)
+    const shell = slot.bound ? save.equippedGearStyles?.[slot.bound] : null
+    const shellGear = shell ? gearOfferById[shell.definitionId] : null
+    const assetId = shellGear?.assetId ?? (linked && boundInstance ? (linked.assetIdByGrade[boundInstance.grade] ?? linked.assetIdByGrade[1])
+      : ordinary?.iconAssetId ?? starter?.definition.iconAssetId)
+    const name = shellGear?.name ?? linked?.name ?? ordinary?.name ?? starter?.definition.name ?? 'Slot vazio'
+    const actionable = Boolean(worn || starter || shell)
     const Icon = slot.icon
     return <button key={slot.id} type="button" className={`equipment-grid__slot ${assetId ? 'is-equipped' : 'is-empty'}`}
       aria-label={`${slot.label}: ${name}${actionable ? ', clique para desequipar' : ''}`}
@@ -46,22 +50,27 @@ export function EquipmentGrid({ save }: { save: GameSave }) {
       disabled={!actionable || Boolean(save.battle)}
       onClick={() => {
         if (slot.complementary && worn) equipComplementary(slot.complementary, null)
+        else if (shell && slot.bound) equipGearStyle(slot.bound, null)
         else if (starter) equipArmor(null)
       }}>
       {assetId ? <AssetImage assetId={assetId} alt="" /> : <Icon size={21} />}
       <span>{slot.label}</span>
-      {boundInstance && <small>G{boundInstance.grade}</small>}
+      {shellGear && shell && <small>T{shellGear.tier} G{getGearGrade(shell.refinementLevel)}</small>}
+      {boundInstance && !shellGear && <small>Vínculo G{boundInstance.grade}</small>}
     </button>
   }
   const braceletId = save.character.bondedEquipment.bracelet
   const bracelet = braceletId ? save.boundItems[braceletId] : null
   const braceletDef = bracelet ? content.boundItemBases[bracelet.baseItemId] : null
+  const braceletShell = save.equippedGearStyles?.bracelet
+  const braceletGear = braceletShell ? gearOfferById[braceletShell.definitionId] : null
   return <section className="equipment-grid" aria-label="Equipamentos do Terrírian">
     <div className="equipment-grid__slots">{slots.map(renderSlot)}</div>
-    <div className="equipment-grid__bracelet" title={braceletDef?.name ?? 'Pulseira não vinculada'}>
+    <div className="equipment-grid__bracelet" title={braceletGear?.name ?? braceletDef?.name ?? 'Pulseira não vinculada'}>
       <Watch size={14} aria-hidden="true" />
       <strong>Pulseira</strong>
-      <span>{braceletDef?.name ?? 'Vazia'}{bracelet ? ` · G${bracelet.grade}` : ''}</span>
+      <span>{braceletGear?.name ?? braceletDef?.name ?? 'Vazia'}{braceletGear ? ` · T${braceletGear.tier} G${getGearGrade(braceletShell?.refinementLevel)}` : bracelet ? ` · Vínculo G${bracelet.grade}` : ''}</span>
+      {braceletShell && <button type="button" disabled={Boolean(save.battle)} onClick={() => equipGearStyle('bracelet',null)}>Retirar revestimento</button>}
     </div>
     <p>Peças comuns são equipadas pela Mochila; Vínculos continuam permanentes.</p>
   </section>

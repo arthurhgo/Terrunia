@@ -13,6 +13,14 @@ const base = () => {
 }
 
 describe('Mercado de Terran', () => {
+  it('mantém Neris exclusiva de equipamentos e encaminha materiais e tônico para especialistas', () => {
+    expect(MARKET_STOCK.filter((offer) => offer.npcId === 'presence_neris')
+      .every((offer) => content.items[offer.itemId].category === 'equipment')).toBe(true)
+    expect(MARKET_STOCK.find((offer) => offer.itemId === 'consumable_minor_tonic')?.npcId).toBe('presence_edran')
+    expect(MARKET_STOCK.find((offer) => offer.itemId === 'material_linen_thread')?.npcId).toBe('presence_edran')
+    expect(MARKET_STOCK.find((offer) => offer.itemId === 'drop_ruin_shard')?.npcId).toBe('presence_valmira')
+  })
+
   it('vende melhorias permanentes de mochila e impede recompra ou salto de tier', () => {
     const save = base()
     expect(buyMarketItem(save, 'presence_neris', 'backpack_arcane', 1, content, now))

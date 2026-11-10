@@ -1,3 +1,4 @@
+import { gearOfferById } from '../content/equipmentV0515'
 import { z } from 'zod'
 import { refreshQuestAvailability, createQuestProgress, normalizeTrackedQuests } from '../domain/quests/questEngine'
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
@@ -160,7 +161,7 @@ const inventoryItemSchema = z.object({
   locked: z.boolean(),
   favorite: z.boolean(),
   acquiredAt: z.string(),
-  refinementLevel: z.number().int().min(0).max(1).optional(),
+  refinementLevel: z.number().int().min(0).max(2).optional(),
 })
 
 const questProgressSchema = z.object({
@@ -351,6 +352,10 @@ export const gameSaveSchema = z.object({
     boots: inventoryItemSchema.optional(), accessoryA: inventoryItemSchema.optional(),
     accessoryB: inventoryItemSchema.optional(),
   }).optional(),
+  equippedGearStyles: z.object({
+    weapon: inventoryItemSchema.optional(), shield: inventoryItemSchema.optional(), armor: inventoryItemSchema.optional(),
+    necklace: inventoryItemSchema.optional(), bracelet: inventoryItemSchema.optional(),
+  }).optional(),
   baseStorage: z.array(inventoryItemSchema),
   wallet: z.object({ gold: nonnegativeNumber }),
   vitals: z.object({ hp: nonnegativeNumber, mp: nonnegativeNumber }),
@@ -398,6 +403,13 @@ export const gameSaveSchema = z.object({
     }
     inventoryIds.add(item.instanceId)
   }
+  for (const [slot, item] of Object.entries(save.equippedGearStyles ?? {})) {
+    const gear = gearOfferById[item.definitionId]
+    if (!gear || gear.slot !== slot || item.quantity !== 1 || inventoryIds.has(item.instanceId) || !save.character.bondedEquipment[slot as keyof typeof save.character.bondedEquipment]) {
+      context.addIssue({ code: 'custom', path: ['equippedGearStyles', slot], message: 'Revestimento deve corresponder a um Vínculo existente, sem duplicar instâncias.' })
+    }
+    inventoryIds.add(item.instanceId)
+  }
   for (const [index, item] of save.inventory.entries()) {
     if (inventoryIds.has(item.instanceId)) {
       context.addIssue({
@@ -407,7 +419,7 @@ export const gameSaveSchema = z.object({
       })
     }
     inventoryIds.add(item.instanceId)
-    if (((content.items[item.definitionId]?.basicArmor || content.items[item.definitionId]?.complementarySlot) && item.quantity !== 1) || (item.refinementLevel && !content.items[item.definitionId]?.basicArmor)) {
+    if (((content.items[item.definitionId]?.basicArmor || content.items[item.definitionId]?.complementarySlot) && item.quantity !== 1) || (item.refinementLevel && !content.items[item.definitionId]?.basicArmor && !gearOfferById[item.definitionId])) {
       context.addIssue({ code: 'custom', path: ['inventory', index], message: 'Proteções simples são peças individuais; somente elas recebem reforço.' })
     }
     if (!content.items[item.definitionId]) {
