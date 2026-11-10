@@ -25,8 +25,10 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
   const [query,setQuery]=useState('')
   const [slot,setSlot]=useState('all')
   const [stat,setStat]=useState<Stat|'all'>('all')
+  const [sort,setSort]=useState('catalog')
   const [hovered,setHovered]=useState<string|null>(null)
   const buy=useGameStore(state=>state.buyGear)
+  const buyAndEquip=useGameStore(state=>state.buyAndEquipGear)
   const merchant=TERRAN_GEAR_MERCHANTS[merchantId]
   const stock=equipmentOffersV0515.filter(offer=>isTerranMerchantOffer(merchantId,offer))
   const visible=stock.filter(offer=>
@@ -35,7 +37,9 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
     (query.trim()==='' ||
       (offer.name+' '+(gearSetById[offer.setId]?.roleLabel??'')+' '+
         formatGearStats(offer,1)).toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR').trim()))
-  )
+  ).sort((a,b)=>sort==='price-asc'?a.price-b.price || a.name.localeCompare(b.name,'pt-BR'):
+    sort==='price-desc'?b.price-a.price || a.name.localeCompare(b.name,'pt-BR'):
+    sort==='name'?a.name.localeCompare(b.name,'pt-BR'):0)
   const worn=getWornGear(save)
   const inspect=hovered?stock.find(offer=>offer.id===hovered):undefined
   const comparison=inspect?previewCommercialEquip(save,itemPreview(inspect),content):null
@@ -69,6 +73,14 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
           {statOptions.map(([id,label])=><option key={id} value={id}>{label}</option>)}
         </select>
       </label>
+      <label>Ordenar
+        <select aria-label="Ordenar equipamentos" value={sort} onChange={e=>setSort(e.target.value)}>
+          <option value="catalog">Ordem original</option>
+          <option value="price-asc">Menor preço</option>
+          <option value="price-desc">Maior preço</option>
+          <option value="name">Nome A–Z</option>
+        </select>
+      </label>
     </div>
     <div className="terran-specialist__count" aria-live="polite">
       {visible.length} {visible.length===1?'item':'itens'} · {stock.length} disponíveis no catálogo
@@ -79,6 +91,8 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
         const equipped=worn.some(item=>item.definitionId===offer.id)
         const owned=save.inventory.some(item=>item.definitionId===offer.id)
         const profile=gearSetById[offer.setId]?.roleLabel
+        const canWear=offer.slot!=='weapon'||Boolean(save.character.bondedEquipment.weapon)
+        const canBuy=access.ok&&save.wallet.gold>=offer.price
         return <article key={offer.id} className="terran-specialist__offer"
           onMouseEnter={()=>setHovered(offer.id)}
           onMouseLeave={()=>setHovered(current=>current===offer.id?null:current)}
@@ -93,12 +107,21 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
             <span>{formatGearStats(offer,1)}</span>
             <small className="terran-specialist__state">{equipped?'Equipado':owned?'Na mochila':!access.ok?access.message:'Comum · Sem Clã ou Classe'}</small>
           </div>
-          <button type="button" disabled={!access.ok||save.wallet.gold<offer.price}
-            aria-label={'Comprar '+offer.name+' por '+offer.price+' ouro'}
-            title={!access.ok?access.message:save.wallet.gold<offer.price?'Ouro insuficiente':'Comprar peça individual'}
-            onClick={()=>buy(merchantId,[offer.id])}>
-            {offer.price} <Coins size={13} aria-hidden="true"/>
-          </button>
+          <div className="terran-specialist__actions">
+            <button type="button" disabled={!canBuy}
+              aria-label={'Comprar '+offer.name+' por '+offer.price+' ouro'}
+              title={!access.ok?access.message:!canBuy?'Ouro insuficiente':'Comprar e guardar na Mochila'}
+              onClick={()=>buy(merchantId,[offer.id])}>
+              {offer.price} <Coins size={13} aria-hidden="true"/>
+            </button>
+            <button type="button" className="terran-specialist__equip-now"
+              disabled={!canBuy||!canWear}
+              title={!canWear?'Adquira primeiro o Vínculo permanente deste slot.':!access.ok?access.message:'Comprar e equipar imediatamente'}
+              aria-label={'Comprar e equipar '+offer.name+' por '+offer.price+' ouro'}
+              onClick={()=>buyAndEquip(merchantId,offer.id)}>
+              <ShieldCheck size={12} aria-hidden="true"/> Comprar e Equipar
+            </button>
+          </div>
         </article>
       })}
       {visible.length===0&&<p>Nenhuma peça encontrada. Ajuste a busca ou os filtros.</p>}
