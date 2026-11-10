@@ -8,6 +8,7 @@ import { gearSetById, gearOfferById } from '../content/equipmentV0515'
 import { equipComplementaryItem } from '../domain/inventory/complementaryEquipment'
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
 import { create } from 'zustand'
+import { playGameplaySfx } from '../services/gameplaySfx'
 import { content } from '../content/catalog'
 import { BALANCE } from '../content/balance'
 import {
@@ -174,6 +175,7 @@ type GameState = {
   performGradeThreeRite: (boundItemId: string, gemInstanceId: string) => void
   unlockNode: (nodeId: string) => void
   resetCampaign: () => Promise<boolean>
+  setSoundEnabled: (enabled: boolean) => void
   clearNotification: () => void
   resetSession: () => void
 }
@@ -194,6 +196,12 @@ export const useGameStore = create<GameState>((set, get) => {
   ) => {
     notificationId += 1
     set({ notification: { id: notificationId, title, message, tone } })
+    if (tone === 'success' && get().save?.settings.soundEnabled) {
+      const cue = /compra|adquirid|equipad/i.test(title) ? 'purchase'
+        : /forja|aprimor|refin|rito|grau/i.test(title) ? 'upgrade'
+          : /missão|lição|recompensa/i.test(title) ? 'quest' : 'success'
+      playGameplaySfx(cue, true)
+    }
   }
 
   const persist = (save: GameSave) => {
@@ -1461,6 +1469,17 @@ export const useGameStore = create<GameState>((set, get) => {
         show('Reset não concluído', message, 'error')
         return false
       }
+    },
+
+    setSoundEnabled: (enabled) => {
+      const current = get().save
+      if (!current || current.settings.soundEnabled === enabled) return
+      const next = structuredClone(current)
+      next.settings.soundEnabled = enabled
+      next.revision += 1
+      next.updatedAt = nowIso()
+      commit(next)
+      if (enabled) playGameplaySfx('success', true)
     },
 
     clearNotification: () => set({ notification: null }),
