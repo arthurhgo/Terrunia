@@ -26,14 +26,15 @@ describe('v0.5.15 gear rules',()=>{
   expect(equipmentSetsV0515.filter(s=>s.channel==='CLASS_EXCLUSIVE')).toHaveLength(60)
   for(const set of equipmentSetsV0515)expect(new Set(set.itemIds.map(id=>gearOfferById[id].slot)).size).toBe(10)
  })
- it('reserves exactly one unique merchant per clan and one per class, with four residents in each castle',()=>{
-  expect(castleGearMerchantsV05151).toHaveLength(16)
-  expect(new Set(castleGearMerchantsV05151.map(m=>m.npcId)).size).toBe(16)
+ it('has exactly one unique merchant per Clan castle, each stocking Clan and Class items',()=>{
+  expect(castleGearMerchantsV05151).toHaveLength(4)
+  expect(new Set(castleGearMerchantsV05151.map(m=>m.npcId)).size).toBe(4)
   for(const castle of ['interior_clan_dunavar_castle','interior_clan_rustal_castle','interior_clan_cebios_esti_castle','interior_clan_estres_do_et_castle']){
     const merchants=castleGearMerchantsV05151.filter(m=>m.castleId===castle)
-    expect(merchants).toHaveLength(4)
-    expect(merchants.filter(m=>m.channel==='CLAN_EXCLUSIVE')).toHaveLength(1)
-    expect(merchants.filter(m=>m.channel==='CLASS_EXCLUSIVE')).toHaveLength(3)
+    expect(merchants).toHaveLength(1)
+    const offers=equipmentOffersV0515.filter(o=>o.castleId===castle)
+    expect(offers.filter(o=>o.channel==='CLAN_EXCLUSIVE')).toHaveLength(50)
+    expect(offers.filter(o=>o.channel==='CLASS_EXCLUSIVE')).toHaveLength(150)
   }
  })
  it('Neris sells only prereq-free Tier I G1, never a Tier II or any clan/class item',()=>{
@@ -49,19 +50,46 @@ describe('v0.5.15 gear rules',()=>{
   expect(purchaseGear(save,[publicTwo.id],NOW,'presence_neris')).toMatchObject({ok:false,code:'GEAR_NERIS_TIER'})
   expect(purchaseGear(save,[clan.id],NOW,'presence_neris')).toMatchObject({ok:false,code:'GEAR_NERIS_EXCLUSIVE'})
  })
- it('requires a different authorized merchant for every class within the same castle',()=>{
+ it('uses the same castle merchant for all three classes while strictly enforcing the unlocked Class',()=>{
   const save=base()
-  const item=equipmentOffersV0515.find(o=>o.channel==='CLASS_EXCLUSIVE'&&o.classId==='sentinela_da_luz'&&o.tier===1)!
+  const npc='presence_castle_merchant_clan_dunavar'
   save.world.currentLocationId='interior_clan_dunavar_castle'
   save.character.clan.clanId='dunavar'
+  const own=equipmentOffersV0515.find(o=>o.channel==='CLAN_EXCLUSIVE'&&o.tier===1&&o.clanId==='dunavar')!
+  const sentinela=equipmentOffersV0515.find(o=>o.channel==='CLASS_EXCLUSIVE'&&o.classId==='sentinela_da_luz'&&o.tier===1)!
+  const gladiador=equipmentOffersV0515.find(o=>o.channel==='CLASS_EXCLUSIVE'&&o.classId==='gladiador_da_barreira'&&o.tier===1)!
+  const batedor=equipmentOffersV0515.find(o=>o.channel==='CLASS_EXCLUSIVE'&&o.classId==='batedor_da_vigilia'&&o.tier===1)!
+  expect(checkGearAccess(save,own,npc)).toMatchObject({ok:true})
+  for(const gear of [sentinela,gladiador,batedor])
+   expect(checkGearAccess(save,gear,npc)).toMatchObject({ok:false,code:'GEAR_CLASS'})
+  const gold=save.wallet.gold
+  expect(purchaseGear(save,[sentinela.id],NOW,npc)).toMatchObject({ok:false,code:'GEAR_CLASS'})
+  expect(save.wallet.gold).toBe(gold)
+  expect(save.inventory).toHaveLength(0)
+  save.character.classProgression.classId='gladiador_da_barreira'
+  expect(checkGearAccess(save,gladiador,npc)).toMatchObject({ok:true})
+  expect(checkGearAccess(save,sentinela,npc)).toMatchObject({ok:false,code:'GEAR_CLASS'})
+  expect(checkGearAccess(save,batedor,npc)).toMatchObject({ok:false,code:'GEAR_CLASS'})
+  expect(checkGearAccess(save,gladiador,'presence_castle_merchant_class_gladiador_da_barreira'))
+   .toMatchObject({ok:false,code:'GEAR_MERCHANT'})
+  const paid=purchaseGear(save,[gladiador.id],NOW,npc)
+  expect(paid.ok).toBe(true)
+  if(paid.ok){
+    expect(paid.value.wallet.gold).toBe(gold-gladiador.price)
+    expect(paid.value.inventory[0].definitionId).toBe(gladiador.id)
+  }
+ })
+ it('denies cross-Clan sales even if the character is inside the other castle',()=>{
+  const save=base()
+  save.character.level=13
+  save.character.clan.clanId='dunavar'
   save.character.classProgression.classId='sentinela_da_luz'
-  expect(checkGearAccess(save,item,'presence_castle_merchant_class_gladiador_da_barreira'))
+  save.world.currentLocationId='interior_clan_dunavar_castle'
+  const other=equipmentOffersV0515.find(o=>o.channel==='CLASS_EXCLUSIVE'&&o.classId==='forjador_arcano')!
+  expect(checkGearAccess(save,other,'presence_castle_merchant_clan_dunavar'))
    .toMatchObject({ok:false,code:'GEAR_MERCHANT'})
-  expect(checkGearAccess(save,item,'presence_castle_merchant_clan_dunavar'))
-   .toMatchObject({ok:false,code:'GEAR_MERCHANT'})
-  expect(checkGearAccess(save,item,'presence_castle_merchant_class_sentinela_da_luz')).toMatchObject({ok:true})
-  expect(purchaseGear(save,[item.id],NOW,'presence_castle_merchant_class_gladiador_da_barreira'))
-   .toMatchObject({ok:false,code:'GEAR_MERCHANT'})
+  expect(checkGearAccess(save,other,'presence_castle_merchant_clan_rustal'))
+   .toMatchObject({ok:false,code:'GEAR_LOCATION'})
  })
  it('keeps T1 G3 strictly weaker than T2 G1 for every identical slot and lineage',()=>{
   for(const set of equipmentSetsV0515.filter(s=>s.tier<5)){
@@ -93,11 +121,11 @@ describe('v0.5.15 gear rules',()=>{
   expect(checkGearAccess(save,clan,'presence_castle_merchant_clan_dunavar')).toMatchObject({ok:false,code:'GEAR_CLAN'})
   save.character.clan.clanId='dunavar'
   expect(checkGearAccess(save,clan,'presence_castle_merchant_clan_dunavar')).toMatchObject({ok:true})
-  expect(checkGearAccess(save,cls,'presence_castle_merchant_class_sentinela_da_luz')).toMatchObject({ok:false,code:'GEAR_CLASS'})
+  expect(checkGearAccess(save,cls,'presence_castle_merchant_clan_dunavar')).toMatchObject({ok:false,code:'GEAR_CLASS'})
   save.character.classProgression.classId='sentinela_da_luz'
-  expect(checkGearAccess(save,cls,'presence_castle_merchant_class_sentinela_da_luz')).toMatchObject({ok:true})
+  expect(checkGearAccess(save,cls,'presence_castle_merchant_clan_dunavar')).toMatchObject({ok:true})
   save.world.currentLocationId='interior_clan_rustal_castle'
-  expect(checkGearAccess(save,cls,'presence_castle_merchant_class_sentinela_da_luz')).toMatchObject({ok:false,code:'GEAR_LOCATION'})
+  expect(checkGearAccess(save,cls,'presence_castle_merchant_clan_dunavar')).toMatchObject({ok:false,code:'GEAR_LOCATION'})
  })
 
  it('rejects wearing an exclusive complementary item after loss of its Clan or Class gate',()=>{
