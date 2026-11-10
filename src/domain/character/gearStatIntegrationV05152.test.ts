@@ -1,5 +1,6 @@
 import { describe,expect,it } from 'vitest'
 import { content } from '../../content/catalog'
+import { createBoundItem } from '../bond/boundItems'
 import { equipmentOffersV0515 } from '../../content/equipmentV0515'
 import { bindPrologueWeapon,createNewSave } from '../game/createSave'
 import { deriveCharacterStats } from './derivedStats'
@@ -84,4 +85,31 @@ describe('v0.5.15.2 — bonuses are applied to actual game/combat stats',()=>{
   expect(g3.life.value-before.life.value).toBe(gear.secondaryValues[2])
   expect(gameSaveSchema.safeParse(save).success).toBe(true)
  })
+ it('supports all seven permanent weapon archetypes through role-appropriate neutral gear',()=>{
+  const weaponStyles=[
+   ['bound_weapon_long_sword','sentinela_da_luz','physical'],
+   ['bound_weapon_war_axe','gladiador_da_barreira','physical'],
+   ['bound_weapon_long_bow','batedor_da_vigilia','physical'],
+   ['bound_weapon_dagger','cacador_de_constelacoes','physical'],
+   ['bound_weapon_arcane_scepter','guardiao_das_inscricoes','magical'],
+   ['bound_weapon_spellbook','astrologo_celestial','magical'],
+   ['bound_weapon_conjuration_staff','gravador_das_sombras','magical'],
+  ] as const
+  for(const [baseId,role,power] of weaponStyles){
+   const save=base()
+   const definition=content.boundItemBases[baseId]
+   expect(definition.powerType).toBe(power)
+   const weapon=createBoundItem(save.character.id,definition,NOW,'test-bound-'+baseId)
+   save.boundItems[weapon.id]=weapon
+   save.character.bondedEquipment.weapon=weapon.id
+   const before=deriveCharacterStats(save,content)
+   const gear=offer(role,'weapon')
+   expect(gear.stat).toBe(power==='physical'?'physicalAttack':'magicalAttack')
+   save.equippedGearStyles={weapon:instance(gear.id)}
+   const after=deriveCharacterStats(save,content)
+   expect(after.primaryAttack.value-before.primaryAttack.value,baseId).toBe(gear.values[0])
+   expect(after.primaryAttack.value,baseId).toBeGreaterThan(before.primaryAttack.value)
+  }
+ })
+
 })
