@@ -53,7 +53,7 @@ describe('v0.5.15.1 equipment sprite packs',()=>{
     expect(castleGearMerchantsV05151).toHaveLength(4)
     expect(manifest().merchantCount).toBe(4)
     const sourceFiles=castleGearMerchantsV05151.map(merchant=>resolveAsset(merchant.portraitAssetId).path)
-    expect(new Set(sourceFiles).size).toBe(16)
+    expect(new Set(sourceFiles).size).toBe(4)
     for(const path of sourceFiles){
       expect(existsSync(absolute(path)),path).toBe(true)
       expect(file(path).readUInt32BE(16),path).toBe(32)
