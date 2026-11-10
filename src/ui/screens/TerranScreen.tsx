@@ -36,6 +36,7 @@ import { streetNpcPlacements } from '../../content/streetNpcs'
 import type { WorldPoint } from '../terran/pixelCityArt'
 import { getCityCast } from '../terran/cityCast'
 import { BaseChest, BaseRecords, DaerynServices, HomeDrawer, QuestNpcPanel, VorrenBestiary } from '../terran/TerranServices'
+import { castleMerchantByPresenceId } from '../../content/castleMerchantsV05151'
 import { GearShopV0515 } from '../terran/GearShopV0515'
 import { MarketNpcPanel } from '../terran/MarketServices'
 import { isMarketNpc } from '../../domain/terran/market'
@@ -133,6 +134,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const [dialogue, setDialogue] = useState<Presence | null>(null)
   const [localQuestId, setLocalQuestId] = useState<string | null>(null)
   const [marketNpc, setMarketNpc] = useState<Presence | null>(null)
+  const [castleMerchantId, setCastleMerchantId] = useState<string | null>(null)
   const [cityLandmark, setCityLandmark] = useState<TerranLandmark | null>(null)
   const [baseDoorPrompt, setBaseDoorPrompt] = useState(false)
   const [homeMenuOpen, setHomeMenuOpen] = useState(false)
@@ -201,7 +203,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     showHomeInterior()
   }
   const openRoomServices = (id: TerranInteriorId) => {
-    setDrawer(isClanCastleInteriorId(id) ? 'gear' : id === PLAYER_HOME_INTERIOR_ID ? 'home' : id === 'location_terran_forge' ? 'forge' : 'location')
+    setDrawer(isClanCastleInteriorId(id) ? null : id === PLAYER_HOME_INTERIOR_ID ? 'home' : id === 'location_terran_forge' ? 'forge' : 'location')
     setLocalQuestId(null)
   }
   const inspectFurniture = (furniture: RoomFurniture) => {
@@ -258,6 +260,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setDialogue(null)
     setLocalQuestId(null)
     setMarketNpc(null)
+    setCastleMerchantId(null)
     setInspected(null)
     setActiveQuestObjectId(null)
     setMissionNpc(null)
@@ -315,7 +318,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     setDialogue(presence)
   }
   const forgeQuest = getNpcActionableQuests(save, 'npc_durnan', content)[0]
-  const activeTitle = drawer === 'gear' ? 'Arsenal do Castelo' : drawer === 'forge' ? 'Casa do Ferreiro' : drawer === 'location' ? (
+  const activeTitle = drawer === 'gear' ? (castleMerchantId ? castleMerchantByPresenceId[castleMerchantId]?.name ?? 'Mercador' : 'Mercador') : drawer === 'forge' ? 'Casa do Ferreiro' : drawer === 'location' ? (
     localQuestId && content.quests[localQuestId]?.giverNpcId.startsWith('npc_street_') ? 'Missão nas ruas de Terran' : location.name
   ) : drawer === 'market' ? `Mercado · ${marketNpc?.label ?? 'Serviços'}` : drawer === 'home' ? 'Minha Base' : drawer === 'homeRecords' ? 'Registros da Base' : drawer === 'records' ? 'Estante dos Registros' : 'Baú Pessoal'
 
@@ -336,7 +339,15 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             {interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
                 questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
                 showTrackedQuestRoute={Boolean(trackedRoute)} trackedQuestRoute={trackedRoute}
-                onTalk={(presence) => { if (interiorId !== PLAYER_HOME_INTERIOR_ID && !isClanCastleInteriorId(interiorId)) talk(presence, interiorId) }}
+                onTalk={(presence) => {
+                  if (interiorId && isClanCastleInteriorId(interiorId)) {
+                    const vendor = castleMerchantByPresenceId[presence.id]
+                    if (vendor && vendor.castleId === interiorId) {
+                      setCastleMerchantId(vendor.id)
+                      setDrawer('gear')
+                    }
+                  } else if (interiorId !== PLAYER_HOME_INTERIOR_ID) talk(presence, interiorId)
+                }}
                 onServices={() => {
                   if (interiorId === PLAYER_HOME_INTERIOR_ID) {
                     const bed = roomFurniture[PLAYER_HOME_INTERIOR_ID].find((furniture) => furniture.id === 'home_bed')
@@ -423,7 +434,9 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               <button type="button" onClick={() => { setDrawer(null); setLocalQuestId(null) }} aria-label="Fechar painel"><X size={19} /></button>
             </header>
             <div className="terran-game__drawer-content">
-              {drawer === 'gear' && interiorId && isClanCastleInteriorId(interiorId) && <GearShopV0515 save={save} channel="CASTLE" />}
+              {drawer === 'gear' && castleMerchantId && interiorId && isClanCastleInteriorId(interiorId) &&
+                castleMerchantByPresenceId[castleMerchantId]?.castleId === interiorId &&
+                <GearShopV0515 save={save} merchantId={castleMerchantId} />}
               {drawer === 'forge' && <ForgePanel save={save} onClose={() => setDrawer(null)}
                 onQuest={forgeQuest ? () => { setLocalQuestId(forgeQuest.id); setDrawer('location') } : undefined} />}
               {drawer === 'location' && (localQuestId
