@@ -117,6 +117,8 @@ export const gearSetById=Object.fromEntries(equipmentSetsV0515.map(s=>[s.id,s]))
 export const getGearGrade=(refinementLevel?:number):GearGrade=>
  Math.max(1,Math.min(3,(refinementLevel??0)+1)) as GearGrade
 export const gearValue=(offer:GearOffer,grade:GearGrade)=>offer.values[grade-1]
+/** Stable registry variant for each real 32px PNG texture. */
+export const gearSpriteId=(offer:GearOffer,grade:GearGrade=1)=>offer.assetId.replace(/\\.g1$/,'.g'+grade)
 const complementary=new Set<GearSlot>(['helmet','pants','boots','accessoryA','accessoryB'])
 export const gearItemDefinitionsV0515:ItemDefinition[]=equipmentOffersV0515.map(offer=>({
  id:offer.id,name:offer.name,
