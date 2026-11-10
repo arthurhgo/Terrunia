@@ -1,4 +1,7 @@
 import { classDefinitions, clanDefinitions } from './progression'
+import { CLAN_COMBAT_PROFILES, GEAR_STAT_LABELS, getGearStatPair, NERIS_COMBAT_PROFILES,
+  type GearStat } from './equipmentProfilesV05152'
+export type { GearStat } from './equipmentProfilesV05152'
 import type { ItemDefinition } from './types'
 import type { BoundSlot, ComplementarySlot } from '../domain/shared/types'
 
@@ -8,17 +11,18 @@ import type { BoundSlot, ComplementarySlot } from '../domain/shared/types'
 export type GearChannel = 'PUBLIC_TERRAN' | 'CLAN_EXCLUSIVE' | 'CLASS_EXCLUSIVE'
 export type GearSlot = BoundSlot | ComplementarySlot
 export type GearGrade = 1 | 2 | 3
-export type GearStat = 'maxHp' | 'maxMp' | 'attackPower' | 'mitigation' | 'initiative'
 export type GearPalette = { base: string; trim: string; metallic: string; gradeThree: string; glow: string }
 export type GearSet = {
   id: string; name: string; tier: number; channel: GearChannel; classId?: string
   recommendedClassId?: string; clanId?: string; castleId?: string
   level: number; palette: GearPalette; itemIds: string[]
+  roleLabel?: string; roleDescription?: string
 }
 export type GearOffer = {
   id: string; setId: string; name: string; slot: GearSlot; tier: number; channel: GearChannel
   classId?: string; recommendedClassId?: string; clanId?: string; castleId?: string
   level: number; stat: GearStat; values: readonly [number, number, number]
+  secondaryStat: GearStat; secondaryValues: readonly [number, number, number]
   price: number; forgeG2: number; forgeG3: number; palette: GearPalette; assetId: string
 }
 const TIERS = [1,2,3,4,5] as const
@@ -27,10 +31,21 @@ const TIER_PRICE = [1,2.6,6,12,23] as const
 const SLOTS:readonly GearSlot[]=['helmet','necklace','accessoryA','weapon','shield','armor','pants','boots','accessoryB','bracelet']
 const LABELS=['Capacete','Colar','Talismã','Arma','Protetor','Armadura','Calças','Botas','Insígnia','Pulseira'] as const
 const PRICES=[20,30,22,65,35,25,20,20,24,28] as const
-const VALUES=[[2,6,10,14,18],[2,6,10,14,18],[2,6,10,14,18],[3,7,11,15,19],
- [1,4,7,10,13],[1,4,7,10,13],[2,6,10,14,18],[1,4,7,10,13],
- [1,4,7,10,13],[2,6,10,14,18]] as const
-const BASE_STATS:readonly GearStat[]=['maxHp','maxMp','maxHp','attackPower','mitigation','mitigation','maxHp','initiative','attackPower','maxMp']
+/**
+ * BALANCE_DRAFT v0.5.15.2: controlled power budget. Every grade improves the
+ * item exactly once: G2 upgrades its support stat, G3 upgrades its main stat.
+ * Unlike the previous +1/+1 *per grade*, a full kit cannot multiply both
+ * damage and defense to trivialize a level-1 boss.
+ */
+const PRIMARY_BY_TIER=[1,2,3,4,5] as const
+const SECONDARY_BY_TIER=[0,1,1,2,2] as const
+const CHANNEL_PRIMARY_BONUS:Record<GearChannel,number>={
+ PUBLIC_TERRAN:0,CLAN_EXCLUSIVE:1,CLASS_EXCLUSIVE:2,
+}
+const CHANNEL_SECONDARY_BONUS:Record<GearChannel,number>={
+ PUBLIC_TERRAN:0,CLAN_EXCLUSIVE:0,CLASS_EXCLUSIVE:1,
+}
+const INITIAL_SECONDARY_SLOTS=new Set<GearSlot>(['weapon','armor','necklace','bracelet'])
 const CASTLES:Record<string,string>={
  dunavar:'interior_clan_dunavar_castle',rustal:'interior_clan_rustal_castle',
  cebios_esti:'interior_clan_cebios_esti_castle',estres_do_et:'interior_clan_estres_do_et_castle'}
@@ -77,24 +92,34 @@ export const equipmentSetsV0515:GearSet[]=[]
 export const equipmentOffersV0515:GearOffer[]=[]
 function addSet(id:string,name:string,tier:number,channel:GearChannel,base:string,trim:string,
  classId?:string,clanId?:string,recommendedClassId?:string){
+ const role=classId??recommendedClassId
+ const profile=(role?NERIS_COMBAT_PROFILES[role]:undefined) ??
+   (clanId?CLAN_COMBAT_PROFILES[clanId]:undefined)
+ if(!profile)throw new Error('Missing combat profile for equipment set '+id)
  const set:GearSet={id,name,tier,channel,classId,clanId,recommendedClassId,
+  ...(channel==='PUBLIC_TERRAN'?{roleLabel:profile.label,roleDescription:profile.description}:{}),
   ...(clanId?{castleId:CASTLES[clanId]}:{}),level:GEAR_LEVELS[tier-1],
   palette:palette(base,trim,tier,0),itemIds:[]}
  SLOTS.forEach((slot,index)=>{
   const sku=id.replace(/^set_/,'eq_')+'_'+slot.toLowerCase()
   const price=Math.round(PRICES[index]*TIER_PRICE[tier-1]*(channel==='PUBLIC_TERRAN'?1:channel==='CLAN_EXCLUSIVE'?1.1:1.2))
-  const v=VALUES[index][tier-1]
+  const [stat,secondaryStat]=getGearStatPair(profile,slot,role)
+  // Universal attack benefits either weapon type and is deliberately weaker
+  // than a dedicated physical/magical bonus. Exclusive power is added after
+  // that discount, preserving the stronger Class > Clan > neutral hierarchy.
+  const raw=PRIMARY_BY_TIER[tier-1]+(slot==='weapon'?1:0)
+  const core=stat==='attackPower'?(slot==='weapon'?tier:Math.max(1,Math.floor(raw*.7))):raw
+  const v=core+CHANNEL_PRIMARY_BONUS[channel]
+  const initialSupport=SECONDARY_BY_TIER[tier-1]+
+    (INITIAL_SECONDARY_SLOTS.has(slot)||((slot==='shield'||slot==='armor')&&secondaryStat==='mitigation')?1:0)
+  const sec=initialSupport+CHANNEL_SECONDARY_BONUS[channel]
   const pal=palette(base,trim,tier,index)
-  const role=classId??recommendedClassId
-  const magical=Boolean(role&&/arcano|inscricoes|sombras|astrologo|profeta|caos|ruina/.test(role))
-  const stat:GearStat=slot==='accessoryA'?(magical?'maxMp':'maxHp'):
-   slot==='accessoryB'?(magical?'maxMp':'attackPower'):
-   slot==='bracelet'?(magical?'maxMp':'maxHp'):BASE_STATS[index]
   const assetId='equipment.v0515.'+(channel==='PUBLIC_TERRAN'?'terran':channel==='CLAN_EXCLUSIVE'?'clan':'class')+
    '.'+(classId??clanId??recommendedClassId)+'.'+slot+'.t'+tier+'.g1'
   const offer:GearOffer={id:sku,setId:id,name:LABELS[index]+' '+name+' — Tier '+tier,
    slot,tier,channel,classId,clanId,recommendedClassId,...(clanId?{castleId:CASTLES[clanId]}:{}),
-   level:GEAR_LEVELS[tier-1],stat,values:[v,v+1,v+2],price,forgeG2:Math.round(price*.25),
+   level:GEAR_LEVELS[tier-1],stat,values:[v,v,v+1],
+   secondaryStat,secondaryValues:[sec,sec+1,sec+1],price,forgeG2:Math.round(price*.25),
    forgeG3:Math.round(price*.35),palette:pal,assetId}
   equipmentOffersV0515.push(offer);set.itemIds.push(sku)
  })
@@ -117,18 +142,30 @@ export const gearSetById=Object.fromEntries(equipmentSetsV0515.map(s=>[s.id,s]))
 export const getGearGrade=(refinementLevel?:number):GearGrade=>
  Math.max(1,Math.min(3,(refinementLevel??0)+1)) as GearGrade
 export const gearValue=(offer:GearOffer,grade:GearGrade)=>offer.values[grade-1]
+/** Published item defense is calculated from the actual Tier/G1–G3 catalog pair. */
+export const getCommercialArmorDefense=(offer:GearOffer,grade:GearGrade)=>
+ offer.stat==='mitigation'?offer.values[grade-1]:
+ offer.secondaryStat==='mitigation'?offer.secondaryValues[grade-1]:0
+/** UI and combat share the same effective, graded stat pair. */
+export const getGearStatEntries=(offer:GearOffer,grade:GearGrade)=>[
+  {stat:offer.stat,label:GEAR_STAT_LABELS[offer.stat],value:offer.values[grade-1]},
+  {stat:offer.secondaryStat,label:GEAR_STAT_LABELS[offer.secondaryStat],value:offer.secondaryValues[grade-1]},
+] as const
+export const formatGearStats=(offer:GearOffer,grade:GearGrade)=>
+ getGearStatEntries(offer,grade).map(entry=>entry.label+' +'+entry.value).join(' · ')
 /** Stable registry variant for each real 32px PNG texture. */
 export const gearSpriteId=(offer:GearOffer,grade:GearGrade=1)=>offer.assetId.replace(/\.g1$/,'.g'+grade)
 const complementary=new Set<GearSlot>(['helmet','pants','boots','accessoryA','accessoryB'])
 export const gearItemDefinitionsV0515:ItemDefinition[]=equipmentOffersV0515.map(offer=>({
  id:offer.id,name:offer.name,
- description:(offer.channel==='PUBLIC_TERRAN'?'Coleção comercial':offer.channel==='CLAN_EXCLUSIVE'?'Exclusivo de Clã':'Exclusivo de Classe')+
-  ' · Tier '+offer.tier+' · Grau 1. Pode ser combinado com outras peças.',
+ description:(offer.channel==='PUBLIC_TERRAN'?'Coleção neutra de Terran':offer.channel==='CLAN_EXCLUSIVE'?'Exclusivo de Clã':'Exclusivo de Classe')+
+  ' · Tier '+offer.tier+' · Grau 1. '+formatGearStats(offer,1)+'. Pode ser combinado com outras peças.',
  category:'equipment',rarity:offer.tier>=5?'epic':offer.tier>=3?'rare':offer.tier===2?'uncommon':'common',
  convertToEssence:false,essenceValue:0,sellable:true,sellValue:Math.floor(offer.price*.35),
  questLocked:false,canInfuseBoundItem:false,combatEffects:[],
  ...(complementary.has(offer.slot)?{complementarySlot:offer.slot as ComplementarySlot}:{}),
- ...(offer.slot==='armor'?{basicArmor:{tier:offer.tier as 1|2|3|4|5,mitigation:offer.values[0],
+ ...(offer.slot==='armor'?{basicArmor:{tier:offer.tier as 1|2|3|4|5,
+  mitigation:offer.stat==='mitigation'?offer.values[0]:offer.secondaryStat==='mitigation'?offer.secondaryValues[0]:0,
   initiative:0,maxRefinement:2}}:{}),
  affinityTags:['gear-v0515',offer.channel,offer.slot],iconAssetId:offer.assetId,status:'BALANCE_DRAFT',
 }))

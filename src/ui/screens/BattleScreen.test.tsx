@@ -51,6 +51,24 @@ describe('combate visual v0.17', () => {
     expect(attack).toBeEnabled()
   })
 
+  it('mostra Ataque Único, Duplo e em Área na mesma fileira quadrada com somente um foco manual',()=>{
+    vi.useFakeTimers()
+    createBattleSave()
+    render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    act(()=>vi.advanceTimersByTime(1950))
+    fireEvent.click(screen.getByRole('button',{name:'ATAQUE'}))
+    const picker=screen.getByLabelText('Escolher modo de ataque')
+    expect(picker.querySelectorAll('.pixel-battle__skill-card')).toHaveLength(3)
+    expect(picker).toHaveClass('pixel-battle__attack-grid')
+    for(const name of ['Ataque Único','Ataque Duplo','Ataque em Área'])
+      expect(screen.getByRole('button',{name:new RegExp('Usar '+name)})).toHaveTextContent('🎲')
+    fireEvent.click(screen.getByRole('button',{name:/Usar Ataque Duplo/}))
+    expect(screen.getAllByRole('button',{name:/Arrastar dado d/})).toHaveLength(1)
+    expect(useGameStore.getState().save?.battle?.log.filter(entry=>entry.roll?.action==='Ataque Duplo')).toHaveLength(0)
+    fireEvent.click(screen.getByRole('button',{name:'Voltar antes de lançar o dado'}))
+    expect(useGameStore.getState().save?.battle?.phase).toBe('AwaitingAction')
+  })
+
   it('Voltar do dado descarta preview sem gastar Mana, dano nem turno', () => {
     vi.useFakeTimers()
     createBattleSave()
@@ -224,6 +242,7 @@ describe('combate visual v0.17', () => {
   it('mostra drops repetidos agrupados e recolhe tudo com uma ação sem seleção individual', () => {
     const save = createBattleSave()
     save.battle!.phase = 'Victory'
+    for(const enemy of Object.values(save.battle!.combatants).filter(c=>c.side==='enemy')){enemy.hp=0;enemy.alive=false}
     save.battle!.waveIndex = 1
     save.battle!.rewards.lootDefinitionIds = [
       'drop_fungal_nucleus', 'drop_fungal_nucleus', 'drop_spore_cluster',
@@ -236,9 +255,13 @@ describe('combate visual v0.17', () => {
     })
     useGameStore.setState({ save })
     render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
-    const loot = screen.getByLabelText('Espólios disponíveis')
+    const loot = screen.getByLabelText('Mochila após a vitória')
     expect(loot).toHaveTextContent('Núcleo Fúngico ×2')
-    expect(loot.querySelectorAll('button')).toHaveLength(0)
+    expect(screen.getByRole('heading',{name:'MOCHILA · PREPARAÇÃO'})).toBeVisible()
+    expect(loot).toHaveTextContent('NOVOS DROPS')
+    expect(loot).toHaveTextContent('NOVO')
+
+    expect(loot.querySelectorAll('button')).toHaveLength(0) // only center-panel claim control
     fireEvent.click(screen.getByRole('button', { name: 'RECOLHER TODOS OS ESPÓLIOS' }))
     const updated = useGameStore.getState().save!
     expect(updated.battle?.claimed).toBe(true)

@@ -143,3 +143,38 @@
 .pixel-battle__status-strip{display:flex;align-items:center;gap:4px;flex-wrap:wrap;max-width:100%}
 .pixel-battle__status-strip>span{display:inline-flex;align-items:center;gap:2px;border:1px solid #8e754d;background:#112537d9;padding:2px;color:#f1d59a;font:700 10px/1 monospace}
 .pixel-battle__status-strip img{width:20px;height:20px;object-fit:contain;image-rendering:pixelated}
+
+/* v0.5.15.2 — one shared SkillCard grid across Attack, Skills and Magic. */
+.pixel-battle__actions .pixel-battle__submenu--skill-picker .pixel-battle__attack-grid{
+  --skill-columns:3;
+  --skill-rows:1;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-rows:minmax(0,1fr);
+  max-width:min(100%,324px);
+  justify-content:center;align-items:center;gap:6px;
+}
+.pixel-battle__victory-bag{display:flex;flex-direction:column;gap:8px;max-height:238px;overflow-y:auto;
+  padding:5px 3px;color:#f7dfb1;font:12px/1.25 var(--display);scrollbar-color:#c49858 #0a1625;}
+.pixel-battle__victory-bag>strong{color:#ffd88a;font-size:11px;}
+.pixel-battle__victory-drops,.pixel-battle__victory-recovery{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:5px;}
+.pixel-battle__victory-drop{border:1px solid #e4b862;background:linear-gradient(135deg,#203f39,#18242c);
+  padding:4px;display:grid;grid-template-columns:30px 1fr;grid-template-rows:auto auto;gap:3px 5px;
+  align-items:center;box-shadow:inset 0 0 5px #e3c37844;}
+.pixel-battle__victory-drop img,.pixel-battle__victory-recovery img{width:28px;height:28px;object-fit:contain;image-rendering:pixelated;grid-row:span 2;}
+.pixel-battle__victory-drop span,.pixel-battle__victory-recovery span{font-size:10px;overflow-wrap:anywhere;}
+.pixel-battle__victory-drop small{font-size:8px;color:#99e6bd;text-transform:uppercase;}
+.pixel-battle__victory-recovery button{display:flex;gap:5px;align-items:center;text-align:left;padding:5px;
+  min-height:42px;border:1px solid #8e9c64;background:#172e34;color:#dff2bb;cursor:pointer;}
+.pixel-battle__victory-recovery button:hover:not(:disabled){border-color:#fae09b;box-shadow:0 0 7px #eed19a5a;}
+.pixel-battle__victory-recovery button:disabled{opacity:.5;cursor:not-allowed;}
+.pixel-battle__victory-claim{padding:7px;background:#283c31;border:1px solid #e4b862;color:#ffe4a5;cursor:pointer;}
+.pixel-battle__enemy.is-double-hit{animation:terrunia-double-impact .5s steps(2,end) both;}
+@keyframes terrunia-double-impact{
+  0%,35%,70%{filter:none;transform:translateX(0)}
+  15%,55%{filter:brightness(2) saturate(1.8);transform:translateX(4px)}
+  100%{filter:none;transform:none}
+}
+@media(max-width:850px){.pixel-battle__victory-bag{max-height:210px;}}
+@media(max-width:560px){.pixel-battle__victory-bag{max-height:none;}.pixel-battle__victory-drops,.pixel-battle__victory-recovery{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(prefers-reduced-motion:reduce){.pixel-battle__enemy.is-double-hit{animation:none;}}

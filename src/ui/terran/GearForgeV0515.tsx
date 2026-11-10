@@ -1,5 +1,5 @@
 import type { GameSave } from '../../domain/game/types'
-import { gearOfferById, getGearGrade, gearSpriteId } from '../../content/equipmentV0515'
+import { gearOfferById, getGearGrade, gearSpriteId, formatGearStats } from '../../content/equipmentV0515'
 import { getWornGear } from '../../domain/inventory/equipmentV0515'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
@@ -19,7 +19,8 @@ export function GearForgeV0515({save}:{save:GameSave}){
    return <article key={item.instanceId} className="forge-recipe">
     <AssetImage assetId={gearSpriteId(offer,grade)} alt=""/>
     <div><h3>{offer.name} · T{offer.tier} G{grade}</h3>
-     <small>{offer.stat} +{offer.values[grade-1]}{grade<3?' → +'+offer.values[Math.min(2,grade)]:''}</small>
+     <small>{formatGearStats(offer,grade)}</small>
+     {grade<3 && <small>Próximo Grau: {formatGearStats(offer,(grade+1) as 2|3)}</small>}
      <small>{item.locked||item.favorite?'Peça protegida. Desproteja para forjar.':
       grade===3?'Grau máximo alcançado':price+' Ouro · materiais adicionais: OWNER_DECISION'}</small></div>
     <button type="button" disabled={!eligible}

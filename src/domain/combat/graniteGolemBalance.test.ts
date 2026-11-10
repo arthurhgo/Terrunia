@@ -97,7 +97,7 @@ describe('Golem de Granito v0.5.14.2 — duelo tático +10%', () => {
     expect(criticalFound).toBe(true)
   })
 
-  it('poção continua gratuita e restaura Vida em dois turnos durante o boss', () => {
+  it('poção continua gratuita e restaura Vida imediatamente durante o boss', () => {
     const { battle } = playerTurnBattle('granite-potion')
     const player = battle.combatants.combatant_player
     player.hp -= 6
@@ -111,8 +111,8 @@ describe('Golem de Granito v0.5.14.2 — duelo tático +10%', () => {
     expect(potionResult.ok).toBe(true)
     if (!potionResult.ok) return
     expect(potionResult.value.phase).toBe('AwaitingAction')
-    expect(potionResult.value.combatants.combatant_player.potionHealingRemaining)
-      .toBe(Math.ceil(player.maxHp * 0.1))
+    expect(potionResult.value.combatants.combatant_player.hp)
+      .toBe(player.hp + Math.ceil(player.maxHp * 0.1))
     expect(potionResult.value.consumedItemInstanceIds).toContain('potion-unit')
     expect(potionResult.value.round).toBe(1)
   })

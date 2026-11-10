@@ -23,6 +23,8 @@ import { previewCombatSkill } from '../../domain/combat/skillPreview'
 import type { CombatSkillDefinition } from '../../content/types'
 import { BATTLE_PRESENTATION } from '../battle/presentationTiming'
 import { groupBattleLoot } from '../../domain/inventory/battleLoot'
+import { canUseVictoryRecovery } from '../../domain/combat/victoryRecoveryV05152'
+import { DOUBLE_ATTACK_V05152 } from '../../content/combatActionRulesV05152'
 import './battlePixel.css'
 import './battleRemake.css'
 import './battleTimeline.css'
@@ -54,6 +56,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const save = useGameStore((state) => state.save)
   const submit = useGameStore((state) => state.submitBattleCommand)
   const claim = useGameStore((state) => state.claimBattleRewards)
+  const consumeVictoryItem = useGameStore((state) => state.consumeVictoryItem)
   const nextWave = useGameStore((state) => state.continuePortalWave)
   const finishBattleIntoExpedition = useGameStore((state) => state.finishBattleIntoExpedition)
   const returnToTerran = useGameStore((state) => state.returnToTerran)
@@ -253,7 +256,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     content.items[instance.definitionId]?.combatUseMode === 'freeHealingPotion' && instance.quantity > 0)
   const potionSkill: CombatSkillDefinition = {
     id: POTION_CARD_ID, name: 'Tomar Poção',
-    description: 'Usa 1 Poção Restauradora sem consumir a ação. Regenera 10% da Vida em dois turnos.',
+    description: 'Usa 1 Poção Restauradora sem consumir a ação. Recupera 10% da Vida instantaneamente (sem ação); recarga de dois turnos apenas em batalha.',
     target: 'self', mpCost: 0, cooldownTurns: 2, damageDieSteps: 0,
     iconAssetId: POTION_CARD_ID,
     effects: [{ type: 'restoreHp', value: Math.ceil(player.maxHp * 0.1) }],
@@ -261,7 +264,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }
   const potionInspected = menu === 'items' && (hoveredSkillId === POTION_CARD_ID || pinnedSkillId === POTION_CARD_ID)
   const potionUnavailable = !healingPotion ? 'Nenhuma Poção Restauradora'
-    : (player.potionCooldown ?? 0) > 0 || (player.potionHealingTicks ?? 0) > 0 ? 'Poção em recarga'
+    : (player.potionCooldown ?? 0) > 0 ? 'Poção em recarga'
       : player.hp >= player.maxHp ? 'Vida cheia' : null
   const consumables = save.inventory.filter((instance) => {
     const definition = content.items[instance.definitionId]
@@ -277,8 +280,13 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     : []
   const attackCards: CombatSkillDefinition[] = [
     {id:'attack_single_v05141',name:'Ataque Único',description:'Ataque concentrado no inimigo selecionado, com força integral.',target:'enemy',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-single',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
+    {id:'attack_double_v05152',name:'Ataque Duplo',description:`Uma rolagem, dois impactos no mesmo alvo. ${DOUBLE_ATTACK_V05152.fractionPerHit*100}% do dano original em cada impacto (BALANCE_DRAFT).`,target:'enemy',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-single',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
     {id:'skill_basic_area_attack',name:'Ataque em Área',description:'60% do ataque no alvo central + 30% desse dano no inimigo de cada lado.',target:'enemy',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-area',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
   ]
+  const attackCommand=(id:string):Parameters<typeof submit>[0] =>
+    id==='attack_single_v05141'?{type:'attack',targetId:target.id}:
+    id==='attack_double_v05152'?{type:'doubleAttack',targetId:target.id}:
+      {type:'areaAttack',targetId:target.id}
   const skillColumns = Math.max(1, Math.min(4, visibleSkills.length))
   const skillRows = Math.max(1, Math.ceil(visibleSkills.length / skillColumns))
   const hasUsefulSupplies = (kind: 'throwable' | 'rune' | 'essence') =>
@@ -314,6 +322,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const battleBiome = biome === 'cerrado' || biome === 'elduran' ? biome : 'astravel'
   const drops = battle.rewards.lootDefinitionIds
   const lootGroups = groupBattleLoot(drops)
+  const victoryRecoveryItems = save.inventory.filter(item => canUseVictoryRecovery(save,item.instanceId,content))
 
   const playVisualRoll = (event: BattleDiceEvent) => {
     const focusMs = reducedMotion ? BATTLE_PRESENTATION.reducedMotionDieMs
@@ -501,7 +510,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             '--enemy-width': `${getEnemyFormationSlot(i, enemies.length).widthPercent}%`,
             zIndex: getEnemyFormationSlot(i, enemies.length).layer } as React.CSSProperties}
           data-granite-golem={enemy.definitionId === 'enemy_granite_golem' ? 'true' : undefined}
-          className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
+          className={`pixel-battle__enemy ${activeDice?.action==='Ataque Duplo' && diceStage==='impact' && activeDice.targetId===enemy.id?'is-double-hit':''} ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
           onClick={() => enemy.alive && !isProtectedBoss(battle, enemy) && setTargetId(enemy.id)}
            disabled={!enemy.alive || isProtectedBoss(battle, enemy)}
           onMouseEnter={() => setHoveredEnemyId(enemy.id)} onMouseLeave={() => setHoveredEnemyId(null)}
@@ -572,15 +581,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         <small>Seu Nexo desperta na Base de Terran...</small>
         <button type="button" onClick={() => end(true)}>ACORDAR NA BASE</button>
       </div>}
-      {battle.phase === 'Victory' && !battle.claimed && <div className="pixel-battle__drops" aria-label="Espólios disponíveis">
-        <strong>ESPÓLIOS · RECOLHA TUDO EM UMA AÇÃO</strong>
-        {lootGroups.map(({ definitionId, quantity }) => <div key={definitionId} className="pixel-battle__loot-stack">
-          <AssetImage assetId={content.items[definitionId]?.iconAssetId ?? 'item.fungal-nucleus'}
-            alt={content.items[definitionId]?.name ?? definitionId} />
-          <span>{content.items[definitionId]?.name ?? definitionId}{quantity > 1 ? ` ×${quantity}` : ''}</span>
-        </div>)}
-        {lootGroups.length === 0 && <small>Nenhum item material. Ouro e XP serão recebidos normalmente.</small>}
-      </div>}
     </main>
     <div className="pixel-battle__foot">
       <section className="pixel-battle__panel pixel-battle__stats">
@@ -629,13 +629,15 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           {menu && <div className={`pixel-battle__submenu ${skillPickerOpen ? 'pixel-battle__submenu--skill-picker' : ''}`}
             aria-label={skillPickerOpen ? 'Seleção de habilidades sem rolagem' : undefined}>
             <button type="button" aria-label="Voltar sem executar a ação" onClick={() => setMenu(null)}>VOLTAR</button>
-            {menu === 'attack' && <div className="pixel-battle__skill-grid pixel-battle__attack-grid" aria-label="Escolher modo de ataque">
+            {menu === 'attack' && <div className="pixel-battle__skill-grid pixel-battle__attack-grid"
+                style={{'--skill-columns':3,'--skill-rows':1,'--skill-max-width':'324px'} as React.CSSProperties}
+                aria-label="Escolher modo de ataque">
               {attackCards.map((attack) => <SkillCard key={attack.id} skill={attack}
                 preview={previewCombatSkill(player,target,attack,content)} remaining={0}
                 unavailable={!isPlayerTurn?'Aguarde seu turno':!target.alive?'Alvo indisponível':null}
                 onInspect={()=>{setPinnedSkillId(null);setHoveredSkillId(attack.id)}} onLeave={()=>setHoveredSkillId(null)}
                 onPin={()=>setPinnedSkillId(attack.id)}
-                onUse={()=>send(attack.id==='attack_single_v05141'?{type:'attack',targetId:target.id}:{type:'areaAttack',targetId:target.id})}/>) }
+                onUse={()=>send(attackCommand(attack.id))}/>) }
             </div>}
             {(menu === 'skills'||menu === 'magic') && <>
               <div className="pixel-battle__skill-grid"
@@ -704,6 +706,35 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           <button onClick={() => end(true)}>DESPERTAR NA BASE</button></div>}
       </section>
       <section className="pixel-battle__panel pixel-battle__target">
+        {battle.phase === 'Victory' && !enemies.some(enemy=>enemy.alive) ? <>
+          <h2>MOCHILA · PREPARAÇÃO</h2>
+          <div className="pixel-battle__victory-bag" aria-label="Mochila após a vitória">
+            <strong>{battle.claimed ? 'ESPÓLIOS RECOLHIDOS' : 'NOVOS DROPS · RECOLHER'}</strong>
+            <div className="pixel-battle__victory-drops">
+              {lootGroups.map(({definitionId,quantity})=><div className="pixel-battle__victory-drop" key={definitionId}>
+                <AssetImage assetId={content.items[definitionId]?.iconAssetId ?? 'item.fungal-nucleus'} alt="" />
+                <span>{content.items[definitionId]?.name ?? definitionId} ×{quantity}</span>
+                <small>{content.items[definitionId]?.rarity ?? 'comum'} · {battle.claimed ? 'NA MOCHILA' : 'NOVO'}</small>
+              </div>)}
+              {!lootGroups.length && <small>Nenhum drop material nesta batalha.</small>}
+            </div>
+            <strong>RECUPERAÇÃO · VIDA {save.vitals.hp}/{player.maxHp} · MANA {save.vitals.mp}/{player.maxMp}</strong>
+            <div className="pixel-battle__victory-recovery">
+              {victoryRecoveryItems.map(item=>{
+                const definition=content.items[item.definitionId]
+                return <button type="button" key={item.instanceId}
+                  disabled={save.vitals.hp>=player.maxHp && save.vitals.mp>=player.maxMp &&
+                    !player.statusEffects.some(status=>content.statusEffects[status.definitionId]?.tone==='harmful')}
+                  onClick={()=>consumeVictoryItem(item.instanceId)} title={definition.description}>
+                  <AssetImage assetId={definition.iconAssetId ?? 'item.minor-tonic'} alt="" />
+                  <span>{definition.name} ×{item.quantity}</span>
+                </button>
+              })}
+              {!victoryRecoveryItems.length && <small>Sem consumíveis de recuperação. Compre poções ou encontre suprimentos.</small>}
+            </div>
+            <small>Use poções sem gastar turno. A Vida e a Mana atuais seguem para a próxima onda.</small>
+          </div>
+        </> : <>
         <h2>ALVO <button type="button" onClick={() => setShowLog(!showLog)} aria-expanded={showLog} aria-label="Abrir registro de combate"><ScrollText size={16} /></button></h2>
         {showLog ? <div className="pixel-battle__log" aria-live="polite">
           {battle.log.slice(-8).map((entry) => <p key={entry.id}>R{entry.round} · {entry.message}</p>)}
@@ -713,6 +744,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             <div className="pixel-battle__meter hp" role="progressbar" aria-label="Vida do alvo" aria-valuenow={visualHp(target.id)} aria-valuemin={0} aria-valuemax={target.maxHp}><i style={{ width: clampPercent(visualHp(target.id), target.maxHp) + '%' }} /><span>VIDA {visualHp(target.id)} / {target.maxHp}</span></div></div>
         </div>}
         <p className="pixel-battle__hint"><Crosshair size={14} /> {battle.phase === 'Victory' ? 'Recolha tudo de uma vez e continue.' : battle.phase === 'Defeat' ? 'A expedição foi interrompida.' : 'Selecione um inimigo e escolha sua ação.'}</p>
+        </>}
       </section>
     </div>
     {potionInspected && <SkillTooltip skill={potionSkill} preview={previewCombatSkill(player, player, potionSkill, content)}
@@ -724,7 +756,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     {menu==='attack' && attackCards.find(a=>a.id===(pinnedSkillId??hoveredSkillId)) && (()=>{const attack=attackCards.find(a=>a.id===(pinnedSkillId??hoveredSkillId))!;return <SkillTooltip skill={attack} preview={previewCombatSkill(player,target,attack,content)} remaining={0}
       unavailable={!isPlayerTurn?'Aguarde seu turno':!target.alive?'Alvo indisponível':null}
       onClose={()=>{setHoveredSkillId(null);setPinnedSkillId(null)}}
-      onUse={()=>{setHoveredSkillId(null);setPinnedSkillId(null);send(attack.id==='attack_single_v05141'?{type:'attack',targetId:target.id}:{type:'areaAttack',targetId:target.id})}}/>})()}
+      onUse={()=>{setHoveredSkillId(null);setPinnedSkillId(null);send(attackCommand(attack.id))}}/>})()}
     {(menu === 'skills' || menu === 'magic') && inspectedSkill && <SkillTooltip skill={inspectedSkill}
       preview={previewCombatSkill(player, inspectedSkill.target === 'self' ? player : target, inspectedSkill, content)}
       remaining={player.skillCooldowns?.[inspectedSkill.id] ?? 0}

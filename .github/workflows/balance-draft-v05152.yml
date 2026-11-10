@@ -1,0 +1,59 @@
+name: Terrúnia v0.5.15.2 Draft Validation (no deploy)
+
+on:
+  push:
+    branches:
+      - balance/v0.5.15.2-neris-gear-stats-draft
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check TypeScript, lint, unit/integration tests and production compilation
+        run: npm run check
+ 
+  browser-regression:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Select Chromium without external hosting
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install --with-deps chromium
+          fi
+      - name: E2E on local preview server (no Vercel)
+        run: npm run e2e -- --project=chromium
+        env:
+          VITE_ALLOW_DEV_GUEST: 'true'
+      - name: Screenshots when available
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v05152-local-browser-regression
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7

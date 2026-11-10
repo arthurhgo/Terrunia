@@ -13,9 +13,11 @@ const shortLabels: Record<BoundSlot, string> = {
   weapon: 'Arma', shield: 'Escudo', armor: 'Armadura', necklace: 'Colar', bracelet: 'Pulseira',
 }
 const summaryLabels: Record<BattleGearStatKey, string> = {
-  attack: 'Poder', defense: 'Def', life: 'Vida', mana: 'Mana', initiative: 'Inic',
+  attack: 'Poder', physicalAttack: 'Fís', magicalAttack: 'Mág',
+  defense: 'Def', life: 'Vida', mana: 'Mana', initiative: 'Inic',
 }
-const summaryOrder: BattleGearStatKey[] = ['attack', 'defense', 'life', 'mana', 'initiative']
+const summaryOrder: BattleGearStatKey[] =
+  ['attack','physicalAttack','magicalAttack','defense','life','mana','initiative']
 const signed = (value: number) => value > 0 ? `+${value}` : value === 0 ? '0' : String(value)
 
 function positionDetail(element: HTMLElement) {

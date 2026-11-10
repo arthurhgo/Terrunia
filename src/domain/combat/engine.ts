@@ -2,6 +2,7 @@ import type { ContentCatalog } from '../../content/catalog'
 import { BALANCE } from '../../content/balance'
 import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/fungalChambers'
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
+import { DOUBLE_ATTACK_V05152 } from '../../content/combatActionRulesV05152'
 import { nextCombatRandomSeed, rollSeededCombatDie } from './rng'
 import type {
   CombatEffectDefinition,
@@ -376,6 +377,35 @@ const applySplash=(state:BattleState,actor:Combatant,target:Combatant,damage:num
       {actorId:actor.id,targetId:other.id,sides,face,action,critical})
   }
 }
+/** Two animated impacts calculated from ONE authoritative die roll.
+ * One log entry owns the roll, so the UI never demands a second die.
+ * Each hit is 30% of the post-mitigation original attack (BALANCE_DRAFT).
+ */
+const resolveDoubleAttack=(state:BattleState,actor:Combatant,target:Combatant,catalog:ContentCatalog) => {
+ addPhase(state,'SelectingTarget');addPhase(state,'ResolvingAction')
+ if(isProtectedBoss(state,target))return
+ const sides=selectDamageDie(actor),face=rollCombatDie(state,sides)
+ const bonusFace=actor.weaponBonusDie?rollCombatDie(state,actor.weaponBonusDie):0
+ const guard=target.defending?BALANCE.defendMitigation:0
+ const base=calculateRolledDamage(getEffectiveAttackPower(actor,catalog)+bonusFace,
+  getEffectiveMitigation(target,catalog),face,sides,0,guard)
+ const each=Math.max(1,Math.floor(base.finalDamage*DOUBLE_ATTACK_V05152.fractionPerHit))
+ const hits:number[]=[]
+ for(let impact=0;impact<DOUBLE_ATTACK_V05152.impacts&&target.alive;impact++){
+   const damage=Math.min(target.hp,each)
+   target.hp=Math.max(0,target.hp-damage)
+   target.alive=target.hp>0
+   hits.push(damage)
+ }
+ target.defending=false
+ const total=hits.reduce((sum,n)=>sum+n,0)
+ addLog(state,`${actor.name} causa ${total} de dano em ${target.name} com Ataque Duplo (${hits.join(' + ')}; um único d${sides}=${face}).`,
+  'damage',{actorId:actor.id,targetId:target.id,sides,face,action:'Ataque Duplo',
+    critical:base.critical,damageBreakdown:{...base,finalDamage:total},
+    ...(actor.weaponBonusDie?{weaponBonusRoll:{sides:actor.weaponBonusDie,face:bonusFace}}:{})})
+ addPhase(state,'ResolvingReactions');addPhase(state,'ApplyingStatuses');addPhase(state,'CheckEndConditions')
+}
+
 const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,catalog:ContentCatalog) => {
   addPhase(state,'SelectingTarget');addPhase(state,'ResolvingAction')
   const sides=selectDamageDie(actor),face=rollCombatDie(state,sides)
@@ -735,7 +765,7 @@ export const submitBattleCommand = (
   let skill: CombatSkillDefinition | undefined
   let item: ItemDefinition | undefined
 
-  if (command.type === 'attack' || command.type === 'areaAttack') {
+  if (command.type === 'attack' || command.type === 'areaAttack' || command.type === 'doubleAttack') {
     target = battle.combatants[command.targetId ?? Object.values(battle.combatants).find(c=>c.side==='enemy'&&c.alive&&!isProtectedBoss(battle,c))?.id ?? '']
     if (!target || !validTarget(currentPlayer, target, 'enemy', battle)) {
       return fail('INVALID_TARGET', 'Escolha um alvo inimigo válido.')
@@ -781,17 +811,35 @@ export const submitBattleCommand = (
   const player = state.combatants[state.actorId]
   const resolvedTarget = target ? state.combatants[target.id] : undefined
 
-  if (command.type === 'item' && item?.combatUseMode === 'freeHealingPotion') {
-    if ((currentPlayer.potionCooldown ?? 0) > 0 || (currentPlayer.potionHealingTicks ?? 0) > 0)
-      return fail('POTION_COOLDOWN', 'Poção em recarga: aguarde a regeneração.')
-    if (currentPlayer.hp >= currentPlayer.maxHp)
-      return fail('POTION_NOT_NEEDED', 'Vida já está completa.')
-    player.potionCooldown = 2
-    player.potionHealingTicks = 2
-    player.potionHealingRemaining = Math.ceil(player.maxHp * 0.1)
-    addLog(state, `${player.name} toma Poção Restauradora: 10% da Vida em dois turnos, sem gastar ação.`, 'reward')
+  if (command.type === 'item' && item && resolvedTarget &&
+    item.combatTarget !== 'enemy' &&
+    (item.combatUseMode === 'freeHealingPotion' ||
+      (item.category === 'consumable' && item.combatEffects.every(effect =>
+        effect.type === 'restoreHp' || effect.type === 'restoreMp' ||
+        effect.type === 'cleanseHarmful')))) {
+    const specialPotion = item.combatUseMode === 'freeHealingPotion'
+    // Keep the legacy two-turn use cooldown IN BATTLE only. The heal itself is
+    // immediate; Victory preparation bypasses this battle-local cooldown.
+    if (specialPotion && (currentPlayer.potionCooldown ?? 0) > 0)
+      return fail('POTION_COOLDOWN', 'Poção em recarga: aguarde dois turnos.')
+    const healing = specialPotion
+      ? [{type:'restoreHp' as const,value:Math.ceil(player.maxHp*0.1)}]
+      : item.combatEffects
+    const useful = healing.some(effect =>
+      (effect.type === 'restoreHp' && player.hp < player.maxHp) ||
+      (effect.type === 'restoreMp' && player.mp < player.maxMp) ||
+      (effect.type === 'cleanseHarmful' && player.statusEffects.some(status =>
+        catalog.statusEffects[status.definitionId]?.tone === 'harmful')))
+    if (!useful) return fail('ITEM_NOT_NEEDED','O consumível não terá efeito útil agora.')
+    applyCombatEffects(state,player,resolvedTarget,healing,catalog,item.name)
+    if (specialPotion) {
+      player.potionCooldown=2
+      player.potionHealingTicks=0
+      player.potionHealingRemaining=0
+    }
+    addLog(state,`${player.name} usa ${item.name} instantaneamente, sem gastar a ação.`,'reward')
     state.consumedItemInstanceIds.push(command.itemInstanceId)
-    return ok(state) // Free action: NO turn advances and NO opponent reacts.
+    return ok(state) // Never advances the turn or initiates an enemy reaction.
   }
 
   if (command.type === 'defend') {
@@ -801,6 +849,9 @@ export const submitBattleCommand = (
     addPhase(state, 'ResolvingReactions')
     addPhase(state, 'ApplyingStatuses')
     addPhase(state, 'CheckEndConditions')
+  }
+  if (command.type === 'doubleAttack' && resolvedTarget) {
+    resolveDoubleAttack(state,player,resolvedTarget,catalog)
   }
   if (command.type === 'areaAttack' && resolvedTarget) {
     resolveAreaAttack(state,player,resolvedTarget,catalog)

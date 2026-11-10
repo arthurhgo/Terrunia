@@ -22,6 +22,7 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
     const { content } = await import('/src/content/catalog.ts')
     const { refreshQuestAvailability } = await import('/src/domain/quests/questEngine.ts')
     const { deriveCharacterStats } = await import('/src/domain/character/derivedStats.ts')
+    const { equipmentOffersV0515 } = await import('/src/content/equipmentV0515.ts')
     const store = () => useGameStore.getState()
     store().recordCutsceneViewed('terran_arrival'); store().recordCutsceneViewed('astravel_call')
     let save = structuredClone(store().save!)
@@ -31,6 +32,25 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
     save.world.trailNodeStates.astravel_fungorro_01 = 'completed'
     save.world.currentLocationId = 'location_terran_portal_plaza'
     save.character.attributes.strength.die = 12; save.character.attributes.vigor.die = 12
+    // This E2E checks movement, real initiative, battle UI, loot and quests;
+    // it already uses a prepared d12 character. Give it real neutral G3 gear
+    // so the rebudgeted Wave fights do not incorrectly test a naked endgame run.
+    const options = equipmentOffersV0515.filter(offer =>
+      offer.channel === 'PUBLIC_TERRAN' && offer.tier === 1 &&
+      offer.recommendedClassId === 'sentinela_da_luz')
+    for (const slot of ['weapon','armor','helmet','pants','boots','accessoryA','accessoryB'] as const) {
+      const offer = options.find(candidate => candidate.slot === slot)!
+      const equipped = {
+        instanceId: 'ui-qa-' + slot, definitionId: offer.id, quantity: 1,
+        rarity: 'common' as const, locked: false, favorite: false,
+        acquiredAt: '2026-11-10T12:00:00Z', refinementLevel: 2,
+      }
+      if (slot === 'weapon') save.equippedGearStyles = { weapon: equipped }
+      else if (slot === 'armor') {
+        save.equippedBasicArmor = equipped
+        save.character.basicArmorInstanceId = equipped.instanceId
+      } else save.equippedComplementary = { ...save.equippedComplementary, [slot]: equipped }
+    }
     const stats = deriveCharacterStats(save, content)
     save.vitals = { hp: stats.life.value, mp: stats.mana.value }
     save.wallet.gold = 0; save.settings.reducedMotion = true
