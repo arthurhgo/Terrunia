@@ -72,7 +72,7 @@ export function buyMarketItem(
     return fail('NERIS_TIER','Neris vende apenas equipamentos comuns Tier I, Grau 1.')
   if (npcId === 'presence_neris' && (!item || item.category !== 'equipment'))
     return fail('NERIS_STOCK','Neris vende somente equipamentos comuns.')
-  if (offer && 'requiresQuestId' in offer &&
+  if (offer && 'requiresQuestId' in offer && typeof offer.requiresQuestId === 'string' &&
       save.quests[offer.requiresQuestId]?.status !== 'completed') {
     return fail('MARKET_TIER_LOCKED', 'Este tier fica disponível depois da missão de progressão indicada.')
   }
