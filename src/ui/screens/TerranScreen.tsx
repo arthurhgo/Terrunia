@@ -277,6 +277,10 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     }
     const isStreetNpc = streetNpcPlacements.some((entry) => entry.id === presence.id)
     travel(sourceId)
+    if(sourceId==='location_terran_bond_workshop'&&
+      ['npc_terran_weaponsmith','npc_terran_armorer','npc_terran_accessory_artisan'].includes(presence.npcId??'')){
+      useGameStore.getState().recordMarketSpecialistConversation(presence.npcId!)
+    }
     setLocationId(sourceId)
     setLocalQuestId(null)
     setDialogue(null)
