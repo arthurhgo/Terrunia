@@ -93,3 +93,6 @@
 @media(max-width:600px){.terran-specialist__offers--grid{grid-template-columns:repeat(2,minmax(0,1fr))}.terran-specialist__offers--grid .terran-specialist__offer{min-height:225px}.terran-specialist__view span{margin-left:0}}
 @media(max-width:380px){.terran-specialist__offers--grid{grid-template-columns:1fr}}
 
+
+/* Stable inspector height prevents hover-driven layout shifts while clicking through goods. */
+.terran-specialist__compare{box-sizing:border-box;height:132px;min-height:132px;overflow-y:auto;overscroll-behavior:contain}
