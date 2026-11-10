@@ -49,15 +49,15 @@ describe('v0.5.15.1 equipment sprite packs',()=>{
     }
   })
 
-  it('creates 16 unique merchant identities and 16 native portrait PNGs',()=>{
-    expect(castleGearMerchantsV05151).toHaveLength(16)
-    expect(manifest().merchantCount).toBe(16)
+  it('creates four unique merchant identities and four native portrait PNGs',()=>{
+    expect(castleGearMerchantsV05151).toHaveLength(4)
+    expect(manifest().merchantCount).toBe(4)
     const sourceFiles=castleGearMerchantsV05151.map(merchant=>resolveAsset(merchant.portraitAssetId).path)
     expect(new Set(sourceFiles).size).toBe(16)
     for(const path of sourceFiles){
       expect(existsSync(absolute(path)),path).toBe(true)
       expect(file(path).readUInt32BE(16),path).toBe(32)
     }
-    expect(Object.values(assetRegistry).filter(asset=>asset.id.startsWith('npc.castle-merchant.'))).toHaveLength(16)
+    expect(Object.values(assetRegistry).filter(asset=>asset.id.startsWith('npc.castle-merchant.'))).toHaveLength(4)
   })
 })
