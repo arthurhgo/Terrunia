@@ -7,7 +7,7 @@ import { buildNpcConversation } from './npcConversation'
 import { getNpcQuestNotice } from '../quests/questSelectors'
 
 describe('conversas e sinalização dos NPCs', () => {
-  it('cobre os 51 personagens com falas próprias e respostas que levam a nós existentes', () => {
+  it('cobre os 54 personagens com falas próprias e respostas que levam a nós existentes', () => {
     const save = createNewSave('speaker', 'Aron', 'character.terririan.default', content)
     const before = structuredClone(save)
     const answers = new Set<string>()
@@ -20,7 +20,7 @@ describe('conversas e sinalização dos NPCs', () => {
         expect(conversation.nodes[choice.nextId], profile.name + ': ' + choice.label).toBeDefined()
       }
     }
-    expect(answers.size).toBe(153)
+    expect(answers.size).toBe(162)
     expect(save).toEqual(before)
   })
 
