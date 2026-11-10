@@ -239,7 +239,7 @@ describe('combate visual v0.17', () => {
     render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
     const loot = screen.getByLabelText('Mochila após a vitória')
     expect(loot).toHaveTextContent('Núcleo Fúngico ×2')
-    expect(loot.querySelectorAll('button')).toHaveLength(1) // one shared claim button, never per-drop buttons
+    expect(loot.querySelectorAll('button')).toHaveLength(0) // only center-panel claim control
     fireEvent.click(screen.getByRole('button', { name: 'RECOLHER TODOS OS ESPÓLIOS' }))
     const updated = useGameStore.getState().save!
     expect(updated.battle?.claimed).toBe(true)
