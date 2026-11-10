@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges" role="img" aria-label="Mercador de Terran">
+ <rect width="32" height="32" fill="#192b30"/><rect y="29" width="32" height="3" fill="#15191b"/>
+ <path d="M4 28v-8l5-5h14l5 5v8z" fill="#985c42"/>
+ <path d="M8 27v-8h4v8m8-8h4v8" fill="#c7d3d0"/>
+ <path d="M11 6h11v12H11z" fill="#bd8c6a"/>
+ <path d="M9 9V5h3V3h11v3h1v7h-2V8h-5V7h-5v6H9z" fill="#3a2420"/>
+ <rect x="12" y="12" width="2" height="1" fill="#1a1a1e"/><rect x="19" y="12" width="2" height="1" fill="#1a1a1e"/>
+ <rect x="14" y="16" width="5" height="1" fill="#754b43"/><rect x="14" y="18" width="5" height="3" fill="#ae8668"/>
+ <rect x="4" y="21" width="5" height="8" fill="#985c42"/><rect x="23" y="21" width="5" height="8" fill="#985c42"/>
+ <rect x="11" y="22" width="11" height="6" fill="#3a363c"/>
+ <path d="M22 6h3v10h-2v5h-2v-5h-2V9h3z" fill="#d2d6ae"/><path d="M18 10h9v2h-9z" fill="#947a53"/>
+ </svg>
