@@ -172,7 +172,9 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
         {tradeMode === 'browse' && selectedArmor && <section className="inventory-equipment-detail" aria-label={`Equipamento: ${selectedArmor.definition.name}`}>
           <AssetImage assetId={gearIcon(selectedArmor.instance.definitionId, selectedArmor.instance.refinementLevel, selectedArmor.definition.iconAssetId)} />
           <div><strong>{selectedArmor.definition.name}{selectedArmor.instance.refinementLevel ? ' +1' : ''}</strong>{!compact && <p>Tier {selectedArmor.armor.tier} · {selectedArmor.definition.description}</p>}
-            <small>Defesa +{selectedArmor.armor.mitigation + (selectedArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel} · Iniciativa +{selectedArmor.armor.initiative}</small></div>
+            {selectedGear
+              ? <small>{formatGearStats(selectedGear,getGearGrade(selectedArmor.instance.refinementLevel))}</small>
+              : <small>Defesa +{selectedArmor.armor.mitigation + (selectedArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel} · Iniciativa +{selectedArmor.armor.initiative}</small>}</div>
           {save.character.bondedEquipment.armor ? (selectedGear ? <button type="button" disabled={Boolean(save.battle) || selectedArmor.instance.locked} onClick={() => { equipGearStyle('armor', selectedArmor.instance.instanceId); setSelected(null); setHovered(null) }}>Aplicar revestimento à Armadura vinculada</button> : <p>Você já usa uma Armadura vinculada.</p>) : <button type="button" disabled={Boolean(save.battle) || selectedArmor.instance.locked}
             onClick={() => { setSelected(null); setHovered(null); equipArmor(selectedArmor.instance.instanceId) }}>
             {`Equipar ${selectedArmor.definition.name}`}</button>}
@@ -271,7 +273,10 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
           <span className="inventory-hover-card__eyebrow">STATUS DO ITEM</span>
           <strong>{definition.name}{item.refinementLevel ? ` +${item.refinementLevel}` : ''}</strong>
           <small>{gearOfferById[item.definitionId] ? `Tier ${gearOfferById[item.definitionId].tier} · Grau ${getGearGrade(item.refinementLevel)} · ${formatGearStats(gearOfferById[item.definitionId],getGearGrade(item.refinementLevel))}` : armor ? `Tier ${armor.tier} · Proteção simples` : `${definition.category} · ${definition.rarity}`}</small>
-          {armor && <div className="inventory-hover-card__stats">
+          {gearOfferById[item.definitionId] && <div className="inventory-hover-card__stats">
+            {formatGearStats(gearOfferById[item.definitionId],getGearGrade(item.refinementLevel))}
+          </div>}
+          {armor && !gearOfferById[item.definitionId] && <div className="inventory-hover-card__stats">
             <span>Defesa <b>+{armor.mitigation + (item.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel}</b></span>
             <span>Iniciativa <b>{armor.initiative > 0 ? '+' : ''}{armor.initiative}</b></span>
             <span>Refinamento <b>+{item.refinementLevel ?? 0}/{armor.maxRefinement}</b></span>
