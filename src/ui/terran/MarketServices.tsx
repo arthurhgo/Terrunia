@@ -33,7 +33,7 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
         const { itemId, price } = offer
         const item = content.items[itemId]
         if (!item) return null
-        const gate = 'requiresQuestId' in offer ? content.quests[offer.requiresQuestId] : null
+        const gate = 'requiresQuestId' in offer && typeof offer.requiresQuestId === 'string' ? content.quests[offer.requiresQuestId] : null
         const locked = Boolean(gate && save.quests[gate.id]?.status !== 'completed')
         const armor = item.basicArmor
         const gainDefense = armor ? armor.mitigation - currentMitigation : 0
