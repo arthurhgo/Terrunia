@@ -37,10 +37,10 @@ const VALUES=[[2,6,10,14,18],[2,6,10,14,18],[2,6,10,14,18],[3,7,11,15,19],
 /** Secondary values grow by Tier without letting an improved lower Tier exceed the next Tier. */
 const SECONDARY_BY_TIER = [1,4,7,10,13] as const
 const CHANNEL_PRIMARY_BONUS: Record<GearChannel,number> = {
- PUBLIC_TERRAN:0,CLAN_EXCLUSIVE:2,CLASS_EXCLUSIVE:4,
+ PUBLIC_TERRAN:0,CLAN_EXCLUSIVE:3,CLASS_EXCLUSIVE:5,
 }
 const CHANNEL_SECONDARY_BONUS: Record<GearChannel,number> = {
- PUBLIC_TERRAN:0,CLAN_EXCLUSIVE:2,CLASS_EXCLUSIVE:3,
+ PUBLIC_TERRAN:0,CLAN_EXCLUSIVE:3,CLASS_EXCLUSIVE:5,
 }
 const CASTLES:Record<string,string>={
  dunavar:'interior_clan_dunavar_castle',rustal:'interior_clan_rustal_castle',
