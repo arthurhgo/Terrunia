@@ -1,5 +1,6 @@
+import { emptyGearStats } from '../../content/equipmentProfilesV05152'
 import { castleMerchantByPresenceId } from '../../content/castleMerchantsV05151'
-import { gearOfferById, gearSetById, getGearGrade, type GearOffer, type GearSlot } from '../../content/equipmentV0515'
+import { gearOfferById, gearSetById, getGearGrade, getGearStatEntries, type GearOffer, type GearSlot } from '../../content/equipmentV0515'
 import type { GameSave, InventoryItemInstance } from '../game/types'
 import type { BoundSlot } from '../shared/types'
 import { fail, ok, type Result } from '../shared/types'
@@ -125,16 +126,23 @@ export function getWornGear(save:GameSave):InventoryItemInstance[]{
   ...Object.values(save.equippedComplementary??{}),...Object.values(save.equippedGearStyles??{})]
   .filter((item):item is InventoryItemInstance=>Boolean(item))
 }
+/** Combat uses primary + secondary bonuses of the current grade.
+ * A simple armor's Defense is already counted by the basic-armor system.
+ * All its OTHER bonuses still apply; this avoids double-counting mitigation.
+ */
 export function getGearBonuses(save:GameSave){
- const totals:Record<'maxHp'|'maxMp'|'attackPower'|'mitigation'|'initiative',number>={
-  maxHp:0,maxMp:0,attackPower:0,mitigation:0,initiative:0}
- // Starter armor is accounted for by the existing simple-armor defense calculation.
+ const totals=emptyGearStats()
  for(const item of getWornGear(save)){
   const offer=gearOfferById[item.definitionId]
-  if(!offer||item.instanceId===save.equippedBasicArmor?.instanceId)continue
-  totals[offer.stat]+=offer.values[getGearGrade(item.refinementLevel)-1]
+  if(!offer)continue
+  const isSimpleArmor=item.instanceId===save.equippedBasicArmor?.instanceId
+  for(const {stat,value} of getGearStatEntries(offer,getGearGrade(item.refinementLevel))){
+   if(isSimpleArmor&&stat==='mitigation')continue
+   totals[stat]+=value
+  }
  }
  return totals
 }
+
 export const getSetPrice=(setId:string)=>
  gearSetById[setId]?.itemIds.reduce((sum,id)=>sum+gearOfferById[id].price,0)??0
