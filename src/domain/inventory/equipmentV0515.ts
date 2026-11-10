@@ -1,4 +1,5 @@
 import { emptyGearStats } from '../../content/equipmentProfilesV05152'
+import { getTerranMerchantForSlot, isTerranMerchantOffer } from '../../content/terranGearMerchantsV05153'
 import { castleMerchantByPresenceId } from '../../content/castleMerchantsV05151'
 import { gearOfferById, gearSetById, getGearGrade, getGearStatEntries, type GearOffer, type GearSlot } from '../../content/equipmentV0515'
 import type { GameSave, InventoryItemInstance } from '../game/types'
@@ -8,11 +9,9 @@ import { createRandomId } from '../shared/randomId'
 
 /** Market authorization is validated again in the domain, never only in disabled UI buttons. */
 export function checkGearAccess(save:GameSave,offer:GearOffer,merchantId:string):Result<true>{
- if (merchantId === 'presence_neris') {
-   if (offer.channel !== 'PUBLIC_TERRAN' || offer.clanId || offer.classId)
-     return fail('GEAR_NERIS_EXCLUSIVE','Neris não vende equipamentos de Clã ou Classe.')
-   if (offer.tier !== 1)
-     return fail('GEAR_NERIS_TIER','Neris vende apenas Tier I, Grau 1.')
+ if (offer.channel === 'PUBLIC_TERRAN') {
+   if (!isTerranMerchantOffer(merchantId,offer))
+     return fail('GEAR_MERCHANT','Este item comum pertence ao comerciante especializado em '+getTerranMerchantForSlot(offer.slot)+'.')
  } else {
    const merchant = castleMerchantByPresenceId[merchantId]
    if (!merchant || !offer.castleId || offer.castleId !== merchant.castleId ||
