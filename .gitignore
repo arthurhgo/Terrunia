@@ -34,3 +34,7 @@ test-results
 # Generated Python cache
 __pycache__/
 *.pyc
+
+# Deterministic v0.5.15.1 pixel sprites built from canonical catalog
+public/assets/equipment/v05151/
+public/assets/npcs/castle_merchants/
