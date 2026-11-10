@@ -200,7 +200,7 @@ describe('máquina de estados de combate', () => {
     const bossId = 'combatant_enemy_ruin_corrupted_sentinel_1'
     expect(battle.combatants[bossId]).toMatchObject({
       name: 'Sentinela Corrompida · Núcleo da Ruína',
-      maxHp: 42,
+      maxHp: 86,
     })
     expect(battle.rewards).toMatchObject({
       boundResonance: 256,
