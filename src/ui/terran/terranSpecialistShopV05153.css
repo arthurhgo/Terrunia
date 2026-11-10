@@ -1,0 +1,31 @@
+/* v0.5.15.3 · Unified horizontal market offers, no collection swatch grid. */
+.terran-specialist{--merchant-accent:#cb895a;display:grid;gap:9px;min-width:0}
+.terran-specialist--armor{--merchant-accent:#779bb9}
+.terran-specialist--accessory{--merchant-accent:#ae91d0}
+.terran-specialist header h3{margin:0;color:#f6deb2;font-size:15px}
+.terran-specialist header p{margin:3px 0;font-size:12px;color:#d2d0be}
+.terran-specialist header small{font-size:11px;color:#b8c9bc}
+.terran-specialist__filters{display:flex;flex-wrap:wrap;gap:6px}
+.terran-specialist__filters label{display:flex;align-items:center;gap:5px;font-size:11px;color:#e9d8b6}
+.terran-specialist__filters input,.terran-specialist__filters select{min-height:30px;min-width:0;max-width:180px;background:#16272b;color:#f1e5cb;border:1px solid #66776e;border-radius:3px;padding:4px 5px;font:inherit}
+.terran-specialist__filters input{max-width:175px}
+.terran-specialist__filters input:focus-visible,.terran-specialist__filters select:focus-visible,.terran-specialist__offer button:focus-visible{outline:2px solid #f5cd75;outline-offset:2px}
+.terran-specialist__count{color:#c4cdbf;font-size:11px}
+.terran-specialist__offers{display:grid;gap:5px;max-height:380px;overflow-y:auto;padding-right:3px;scrollbar-color:#947953 #182322}
+.terran-specialist__offer{display:flex;align-items:center;gap:8px;min-width:0;min-height:64px;padding:6px 8px;border:1px solid #485f59;border-left:3px solid var(--merchant-accent);background:#172524e8;border-radius:3px}
+.terran-specialist__offer:hover,.terran-specialist__offer:focus-within{border-color:var(--merchant-accent);background:#23322e}
+.terran-specialist__icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:1px solid;border-radius:2px;background:#101d21}
+.terran-specialist__icon img{width:34px;height:34px;object-fit:contain;image-rendering:pixelated}
+.terran-specialist__copy{display:grid;gap:2px;min-width:0;flex:1}
+.terran-specialist__copy strong{font-size:12px;color:#f0d49d;overflow-wrap:anywhere;line-height:1.15}
+.terran-specialist__copy small{font-size:10px;color:#b8c8c2;line-height:1.2}
+.terran-specialist__copy>span{font-size:11px;color:#e4e9d7;line-height:1.15}
+.terran-specialist__copy .terran-specialist__state{color:#93c9ab}
+.terran-specialist__offer>button{flex:0 0 auto;display:flex;align-items:center;gap:3px;padding:7px 9px;min-width:58px;justify-content:center;border:1px solid #caa364;border-radius:3px;background:#30311f;color:#ffd57c;cursor:pointer;font:600 12px/1.1 inherit}
+.terran-specialist__offer>button:hover:not(:disabled){background:#494126}
+.terran-specialist__offer>button:disabled{opacity:.55;cursor:not-allowed}
+.terran-specialist__compare{display:grid;gap:3px;padding:7px;border:1px solid var(--merchant-accent);background:#102323;color:#f1d5a4;font-size:11px}
+.terran-specialist__compare strong{display:flex;align-items:center;gap:4px}
+.terran-specialist__compare small{font-size:10px;color:#cee7d0}
+@media(max-width:600px){.terran-specialist__filters{display:grid;grid-template-columns:1fr 1fr}.terran-specialist__filters label{display:grid}.terran-specialist__filters input,.terran-specialist__filters select{width:100%;max-width:none}.terran-specialist__filters label:first-child{grid-column:1/-1}.terran-specialist__offers{max-height:300px}.terran-specialist__offer{padding:5px;gap:5px}.terran-specialist__copy strong{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.terran-specialist *{animation:none!important}}
