@@ -44,7 +44,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
         <span className="eyebrow">TUTORIAL · LIÇÃO {lessonIndex} DE {ROSETTA_CORE_LESSON_IDS.length}</span>
         <h3>{lesson.title}</h3>
         {lesson.objectives.map((objective) => <p key={objective.id} className="rosetta-tutorial__objective"><CheckCircle2 size={14} /><span>{objective.label}</span><strong>{progress.objectives[objective.id] ?? 0}/{objective.required}</strong></p>)}
-        {nextObjective && <div className="rosetta-guide__focus" role="status" aria-live="polite">
+        {nextObjective && <div className="rosetta-guide__focus" role="status" aria-label="Próximo passo da lição" aria-live="polite">
           <strong>PRÓXIMO PASSO · {lessonIndex}/{ROSETTA_CORE_LESSON_IDS.length}</strong>
           <p>{nextObjective.label}</p>
           <small>Progresso: {progress.objectives[nextObjective.id]??0} de {nextObjective.required}</small>
