@@ -198,7 +198,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
           <div><strong>{selectedGear.name}</strong>
             <small>Tier {selectedGear.tier} · G{getGearGrade(selectedArmorInstance.refinementLevel)} · {formatGearStats(selectedGear,getGearGrade(selectedArmorInstance.refinementLevel))}</small>
             <small>Preserva Grau do Vínculo, Ressonância, Runas e Skill Tree.</small></div>
-          <button type="button" disabled={Boolean(save.battle)||selectedArmorInstance.locked||!save.character.bondedEquipment[selectedGear.slot as 'weapon'|'shield'|'necklace'|'bracelet']}
+          <button type="button" disabled={Boolean(save.battle)||selectedArmorInstance.locked||!save.character.bondedEquipment[selectedGear.slot as 'weapon'|'shield'|'necklace'|'bracelet'] && selectedGear.slot === 'weapon'}
             onClick={() => { equipGearStyle(selectedGear.slot as 'weapon'|'shield'|'necklace'|'bracelet',selectedArmorInstance.instanceId);setSelected(null);setHovered(null) }}>
             Aplicar revestimento
           </button>
