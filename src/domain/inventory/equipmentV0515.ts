@@ -81,7 +81,11 @@ export function equipGearStyle(save:GameSave,instanceId:string|null,slot:BoundSl
  if(offer){
   const eligible=checkGearWear(save,offer)
   if(!eligible.ok)return eligible
-  if(!save.character.bondedEquipment[slot])return fail('GEAR_BOND','Obtenha primeiro o Vínculo permanente deste slot.')
+  // Starter commercial shells for protection/necklace/bracelet are allowed before the
+  // permanent Bond exists. Once the Bond is earned this same instance remains worn
+  // as its shell, never creating or replacing a Bond.
+  if(!save.character.bondedEquipment[slot] && !['shield','necklace','bracelet'].includes(slot))
+   return fail('GEAR_BOND','Obtenha primeiro o Vínculo permanente deste slot.')
  }
  const next=structuredClone(save)
  next.equippedGearStyles??={}
