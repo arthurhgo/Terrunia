@@ -29,9 +29,9 @@ Guarda (Físico + Defesa), Vanguarda (Físico + Vida), Agilidade (Físico + Inic
 | Comum Tier I G2 | principal sem alteração | secundário +1 | Primeiro aprimoramento da forja |
 | Comum Tier I G3 | principal +1 | secundário mantém G2 | Segundo aprimoramento |
 | Exclusivo de Clã G1 | principal comum +1 | secundário comum | Superior ao comum de mesmo Tier/Grau |
-| Exclusivo de Classe G1 | principal comum +1 | secundário comum +1 | Superior ao Clã em orçamento total do mesmo Tier/Grau |
+| Exclusivo de Classe G1 | principal comum +2 | secundário comum +1 | Superior ao Clã em orçamento total do mesmo Tier/Grau |
 
-O valor-base do atributo principal progride conforme o Tier (I–V: +1/+2/+3/+4/+5); armas partem de +2 e o ataque universal recebe desconto de 30% antes da bonificação exclusiva. O secundário pode iniciar em zero, com função desbloqueada na forja G2; armaduras mantêm Defesa positiva desde G1. Os tiers superiores exigem os níveis existentes **1/4/7/10/13**.
+O valor-base do atributo principal progride conforme o Tier (I–V: +1/+2/+3/+4/+5), com apoio adicional em Tiers II e IV; armas partem de +2 e o ataque universal recebe desconto de 30% antes da bonificação exclusiva. O secundário pode iniciar em zero, com função desbloqueada na forja G2; armaduras mantêm Defesa positiva desde G1. Os tiers superiores exigem os níveis existentes **1/4/7/10/13**.
 
 **Importante:** a hierarquia proposta é avaliada em **mesmo Tier e Grau**. Um item comum G3 pode superar um exclusivo G1 em um atributo individual, pois o investimento na forja tem valor. Não se deve aplicar o antigo +3/+5 em ambos os atributos a cada peça; isso gerava invulnerabilidade ou abates instantâneos.
 
