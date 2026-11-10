@@ -51,7 +51,7 @@ test('Mercado v0.5.15.3: Neris só vende consumíveis, 3 NPCs vendem peças ilus
    await expect(dialog.getByRole('combobox',{name:'Filtrar bônus de equipamento'})).toBeVisible()
    await expect(dialog.getByRole('button',{name:/Comprar .* ouro/}).first()).toBeEnabled()
    await expect(dialog.getByRole('group',{name:'Conjuntos disponíveis'})).toHaveCount(0)
-   if(index===2)await expect(dialog.getByText('Túnica de Linho Gasta',{exact:true})).toBeVisible()
+   if(index===2)await expect(dialog.getByText(/Túnica de Linho Gasta · Tier 1/)).toBeVisible()
   }
   await page.keyboard.press('Escape')
  }
