@@ -14,9 +14,10 @@ export function checkGearAccess(save:GameSave,offer:GearOffer,merchantId:string)
      return fail('GEAR_NERIS_TIER','Neris vende apenas Tier I, Grau 1.')
  } else {
    const merchant = castleMerchantByPresenceId[merchantId]
-   if (!merchant || merchant.channel !== offer.channel || merchant.clanId !== offer.clanId ||
-       merchant.classId !== offer.classId || merchant.castleId !== offer.castleId)
-     return fail('GEAR_MERCHANT','Esta peça pertence a outro mercador.')
+   if (!merchant || !offer.castleId || offer.castleId !== merchant.castleId ||
+       offer.clanId !== merchant.clanId ||
+       (offer.channel !== 'CLAN_EXCLUSIVE' && offer.channel !== 'CLASS_EXCLUSIVE'))
+     return fail('GEAR_MERCHANT','Este equipamento pertence a outro Clã ou mercador.')
  }
 
  if(save.battle)return fail('GEAR_BATTLE','Comércio indisponível durante o combate.')
