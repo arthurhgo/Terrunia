@@ -8,8 +8,6 @@ export const MARKET_LOCATION_ID = 'location_terran_bond_workshop' as const
 
 /** BALANCE_DRAFT: trade offers are separated by the NPC who actually sells them. */
 export const MARKET_STOCK = [
-  { npcId: 'presence_neris', itemId: 'equipment_simple_leather_armor', price: 60, requiresQuestId: 'rosetta_tutorial_refine' },
-  { npcId: 'presence_neris', itemId: 'equipment_terran_guard_armor', price: 135, requiresQuestId: 'main_astravel_lost_hunters' },
   { npcId: 'presence_neris', itemId: 'equipment_light_leather_vest', price: 25 },
   { npcId: 'presence_neris', itemId: 'equipment_worn_linen_tunic', price: 22 },
   { npcId: 'presence_neris', itemId: 'equipment_apprentice_tunic', price: 28 },
@@ -70,6 +68,10 @@ export function buyMarketItem(
   }
   const offer = MARKET_STOCK.find((entry) => entry.npcId === npcId && entry.itemId === itemId)
   const item = catalog.items[itemId]
+  if (npcId === 'presence_neris' && item?.basicArmor && item.basicArmor.tier !== 1)
+    return fail('NERIS_TIER','Neris vende apenas equipamentos comuns Tier I, Grau 1.')
+  if (npcId === 'presence_neris' && (!item || item.category !== 'equipment'))
+    return fail('NERIS_STOCK','Neris vende somente equipamentos comuns.')
   if (offer && 'requiresQuestId' in offer &&
       save.quests[offer.requiresQuestId]?.status !== 'completed') {
     return fail('MARKET_TIER_LOCKED', 'Este tier fica disponível depois da missão de progressão indicada.')
