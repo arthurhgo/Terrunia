@@ -49,7 +49,10 @@ describe('v0.5.15.3 — matrix of 25 encounters with real FSM and no canon chang
     expect(results).toHaveLength(50)
     for (const outcome of results) {
       expect(['Victory', 'Defeat'], outcome.enemyId).toContain(outcome.result)
-      expect(outcome.actions, outcome.enemyId).toBeGreaterThan(0)
+      // Powerful enemies may win initiative and defeat an ungeared character
+      // before their first action. This is valid battle telemetry, not a hang.
+      expect(outcome.actions, outcome.enemyId).toBeGreaterThanOrEqual(0)
+      if (outcome.actions === 0) expect(outcome.result).toBe('Defeat')
       expect(outcome.actions, outcome.enemyId).toBeLessThan(80)
       expect(outcome.hp, outcome.enemyId).toBeGreaterThanOrEqual(0)
       expect(outcome.hp, outcome.enemyId).toBeLessThanOrEqual(outcome.maxHp)
