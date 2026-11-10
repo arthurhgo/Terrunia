@@ -20,6 +20,8 @@ import { BACKPACK_UPGRADES, backpackFlag, getBackpackCapacity } from '../../doma
 
 function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
   const buy = useGameStore((state) => state.buyFromMarket)
+  const buyAndEquipArmor = useGameStore((state) => state.buyAndEquipMarketArmor)
+  const [quantities,setQuantities]=useState<Record<string,number>>({})
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
   const equippedArmor = getEquippedBasicArmor(save, content)
   const currentMitigation = equippedArmor ? equippedArmor.armor.mitigation + (equippedArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel : 0
@@ -40,6 +42,11 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
       {stock.map((offer) => {
         const { itemId, price } = offer
         const item = content.items[itemId]
+        const quantity = item?.category==='consumable' ? (quantities[itemId]??1):1
+        const total = price*quantity
+        const owned = save.inventory.filter(entry=>entry.definitionId===itemId)
+          .reduce((n,entry)=>n+entry.quantity,0)
+        const equipped = save.equippedBasicArmor?.definitionId===itemId
         if (!item) return null
         const gate = 'requiresQuestId' in offer && typeof offer.requiresQuestId === 'string' ? content.quests[offer.requiresQuestId] : null
         const locked = Boolean(gate && save.quests[gate.id]?.status !== 'completed')
@@ -55,6 +62,8 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
           <AssetImage assetId={item.iconAssetId} />
           <div><strong>{item.name}{item.basicArmor ? ` · Tier ${item.basicArmor.tier}` : ''}</strong><small>{item.description}</small>
             {itemId===questId && <small className="terran-shop__mission-item">✦ Item da missão de Rosetta</small>}
+            {equipped && <small className="terran-shop__owned">Equipado</small>}
+            {!equipped&&owned>0&&<small className="terran-shop__owned">Na mochila ×{owned}</small>}
             {locked && gate && <small>Bloqueado: conclua “{gate.title}”.</small>}
             {armor && <small>Defesa +{armor.mitigation} · Iniciativa {armor.initiative >= 0 ? '+' : ''}{armor.initiative}</small>}
             {item.category==='consumable' && <small className="terran-shop__stats">{item.combatEffects.map(effect=>
@@ -63,10 +72,27 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
               effect.type==='damage'?'Arremessável · Dano':effect.type==='applyStatus'?'Aplica efeito':'Suporte'
             ).join(' · ')}{item.combatUseMode==='freeHealingPotion'?' · Cura instantânea sem ação':''}</small>}
             </div>
-          <button type="button" aria-label={locked ? `Bloqueado: ${item.name}` : `Comprar ${item.name} por ${price} ouro`}
-            disabled={locked || save.wallet.gold < price} onClick={() => buy(npcId, itemId)}>
-            {price} <Coins size={13} />
-          </button>
+          <div className="terran-shop__actions">
+            {item.category==='consumable'&&<label className="terran-shop__quantity">
+              Quantidade
+              <input aria-label={'Quantidade de '+item.name} type="number" min={1} max={99} step={1}
+                value={quantity} onChange={event=>{
+                  const next=Math.floor(Number(event.target.value))
+                  setQuantities(current=>({...current,[itemId]:Number.isFinite(next)?
+                    Math.max(1,Math.min(99,next)):1}))
+                }}/>
+            </label>}
+            <button type="button" aria-label={locked ? `Bloqueado: ${item.name}` :
+              `Comprar ${item.name} por ${total} ouro`}
+              disabled={locked || save.wallet.gold < total} onClick={() => buy(npcId, itemId, quantity)}>
+              {total} <Coins size={13} />
+            </button>
+            {Boolean(armor)&&!save.character.bondedEquipment.armor&&
+              <button type="button" className="terran-shop__equip-now"
+                aria-label={'Comprar e equipar '+item.name+' por '+price+' ouro'}
+                disabled={locked || save.wallet.gold < price}
+                onClick={()=>buyAndEquipArmor(npcId,itemId)}>Comprar e Equipar</button>}
+          </div>
           {hoveredItem === itemId && <aside className="terran-shop__tooltip" role="tooltip" aria-label={`Comparação: ${item.name}`}>
             <strong>{item.name}</strong>
             <small>PREÇO · {price} OURO</small>
