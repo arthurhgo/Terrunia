@@ -732,7 +732,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               })}
               {!victoryRecoveryItems.length && <small>Sem consumíveis de recuperação. Compre poções ou encontre suprimentos.</small>}
             </div>
-            {!battle.claimed && <button type="button" className="pixel-battle__victory-claim" onClick={claim}>RECOLHER TODOS OS ESPÓLIOS</button>}
             <small>Use poções sem gastar turno. A Vida e a Mana atuais seguem para a próxima onda.</small>
           </div>
         </> : <>
