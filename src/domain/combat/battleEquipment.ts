@@ -1,5 +1,5 @@
 import type { ContentCatalog } from '../../content/catalog'
-import { gearOfferById, getGearGrade, getGearStatEntries, gearSpriteId, type GearOffer } from '../../content/equipmentV0515'
+import { gearOfferById, getGearGrade, getGearStatEntries, getCommercialArmorDefense, gearSpriteId, type GearOffer } from '../../content/equipmentV0515'
 import type { GearStat } from '../../content/equipmentProfilesV05152'
 import { forgeUpgradeDefinitions } from '../../content/forge'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
@@ -97,7 +97,9 @@ export function getBattleGearSummary(save: GameSave, catalog: ContentCatalog): B
       const refinement = instance.refinementLevel ?? 0
       const stats: BattleGearStat[] = [{
         key: 'defense', label: 'Defesa',
-        value: armor.mitigation + refinement * ARMOR_REFINEMENT.mitigationPerLevel,
+        value: gearOfferById[instance.definitionId]
+          ? getCommercialArmorDefense(gearOfferById[instance.definitionId],getGearGrade(refinement))
+          : armor.mitigation + refinement * ARMOR_REFINEMENT.mitigationPerLevel,
       }]
       if (armor.initiative !== 0) stats.push({ key: 'initiative', label: 'Iniciativa', value: armor.initiative })
       const armorOffer=gearOfferById[instance.definitionId]
