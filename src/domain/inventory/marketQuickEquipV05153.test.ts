@@ -106,6 +106,35 @@ describe('v0.5.15.3 — atomic shop Buy & Equip and persistent bonuses',()=>{
     expect(bonded.wallet.gold).toBe(1000)
     expect(save).toEqual(before)
   })
+  it('round-trips a sequence of shop purchases and equips without losing Gold, missions, items or IDs',()=>{
+    const initial=make()
+    initial.essence.current=73
+    initial.quests.rosetta_tutorial_supply.status='active'
+    const original=structuredClone(initial)
+    let current=initial
+    const purchases=['shield','necklace','helmet'] as const
+    const spent=purchases.reduce((total,slot)=>total+common(slot).price,0)
+    for(const slot of purchases){
+      const result=purchaseAndEquipGear(current,vendor(slot),common(slot).id,content,NOW)
+      expect(result.ok,slot).toBe(true)
+      if(!result.ok)return
+      current=result.value
+    }
+    const stored=migrateAndValidateSave(current)
+    const worn=[...Object.values(stored.equippedGearStyles??{}),
+      ...Object.values(stored.equippedComplementary??{}),
+      ...(stored.equippedBasicArmor?[stored.equippedBasicArmor]:[])]
+      .filter((item):item is NonNullable<typeof item>=>Boolean(item))
+    const ids=[...stored.inventory,...worn,...stored.baseStorage].map(item=>item.instanceId)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(stored.wallet.gold).toBe(1000-spent)
+    expect(stored.quests.rosetta_tutorial_supply.status).toBe('active')
+    expect(stored.essence.current).toBe(73)
+    expect(stored.character.bondedEquipment).toEqual(original.character.bondedEquipment)
+    expect(worn).toHaveLength(3)
+    expect(migrateAndValidateSave(stored)).toEqual(stored)
+    expect(initial).toEqual(original)
+  })
   it('maintains the Rosetta tutorial budget: 32 Ouro pays tonic 18 + upgrade 8, no grinding',()=>{
     const tonic=content.items.consumable_minor_tonic
     expect(tonic).toBeDefined()
