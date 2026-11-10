@@ -19,7 +19,8 @@ export function GearShopV0515({ save, merchantId }: { save: GameSave; merchantId
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const merchant = castleMerchantByPresenceId[merchantId]
   const isNeris = merchantId === 'presence_neris'
-  if (!isNeris && !merchant) return <p>Mercador desconhecido.</p>
+  if (isNeris) return <p>O catálogo comum de Terran agora fica com o Armeiro, Armadureiro e Artesão de Acessórios. Neris vende apenas consumíveis.</p>
+  if (!merchant) return <p>Mercador desconhecido.</p>
 
   const sets = equipmentSetsV0515.filter((set) =>
     (isNeris
