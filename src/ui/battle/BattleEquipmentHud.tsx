@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { content } from '../../content/catalog'
 import { boundSlotPreviewAssetIds } from '../../assets/assetRegistry'
 import { getBattleGearSummary, type BattleGearStatKey } from '../../domain/combat/battleEquipment'
+import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import type { GameSave } from '../../domain/game/types'
 import type { BoundSlot } from '../../domain/shared/types'
 import { AssetImage } from '../components/AssetImage'
@@ -34,6 +35,7 @@ function positionDetail(element: HTMLElement) {
  */
 export function BattleEquipmentHud({ save }: { save: GameSave }) {
   const { slots, totals } = useMemo(() => getBattleGearSummary(save, content), [save])
+  const effective = useMemo(() => deriveCharacterStats(save, content), [save])
   const [visible, setVisible] = useState<VisibleDetail | null>(null)
   const tooltipId = useId()
   const selected = visible ? slots.find((slot) => slot.slot === visible.slot) : null
@@ -94,6 +96,13 @@ export function BattleEquipmentHud({ save }: { save: GameSave }) {
       <div className="battle-gear__summary" aria-label="Bônus diretos dos equipamentos">
         <strong>BÔNUS DOS EQUIPAMENTOS</strong>
         <small>{bonuses.length ? bonuses.join(' · ') : 'Nenhum bônus direto ativo'}</small>
+        <strong>ATRIBUTOS EFETIVOS AO ENTRAR EM COMBATE</strong>
+        <small aria-label="Valores calculados pelo mesmo motor de atributos usado pelo combate">
+          Ataque {effective.primaryAttack.value} · Defesa {effective.defense.value} ·
+          Vida máx. {effective.life.value} · Mana máx. {effective.mana.value} ·
+          Iniciativa {effective.initiative.value}
+        </small>
+        <small className="battle-gear__note">Totais incluem personagem e equipamento; não incluem efeitos temporários da batalha.</small>
       </div>
     </div>
     {selected && visible && createPortal(
