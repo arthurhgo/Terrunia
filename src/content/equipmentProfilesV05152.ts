@@ -169,11 +169,16 @@ const buildNeutralPairs=()=>{
    .filter(([a,b])=>a!==b&&(!anchor||a===anchor||b===anchor))
   const cost=roles.map(role=>{
    const profile=NERIS_COMBAT_PROFILES[role],preferred=preferredPair(profile,slot)
-   const already=new Set(Object.values(allocations[role]).map(pair=>pair!.join(':')))
+   const assigned=Object.values(allocations[role])
+   const already=new Set(assigned.map(pair=>pair!.join(':')))
+   const count=(stat:GearStat)=>assigned.reduce((n,pair)=>n+(pair!.includes(stat)?1:0),0)
+   const costly:readonly GearStat[]=['mitigation','physicalAttack','magicalAttack','attackPower','initiative']
    return choices.map(([a,b],index)=>
     (a===preferred[0]?0:9)+(b===preferred[1]?0:5)+
     ([a,b].includes(profile.focus)?0:3)+([a,b].includes(profile.support)?0:2)+
-    (already.has(a+':'+b)?10000:0)+index*.0001)
+    (already.has(a+':'+b)?10000:0)+
+    (costly.includes(a)?Math.max(0,count(a)-2)*25:0)+
+    (costly.includes(b)?Math.max(0,count(b)-2)*25:0)+index*.0001)
   })
   const match=assignPairs(cost)
   for(let i=0;i<roles.length;i++){
