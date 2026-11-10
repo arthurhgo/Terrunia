@@ -96,3 +96,8 @@
 
 /* Stable inspector height prevents hover-driven layout shifts while clicking through goods. */
 .terran-specialist__compare{box-sizing:border-box;height:132px;min-height:132px;overflow-y:auto;overscroll-behavior:contain}
+
+/* Keep actionable controls above neighboring flex cards while a scroll container moves. */
+.terran-specialist__offer{position:relative;isolation:isolate}
+.terran-specialist__actions{position:relative;z-index:1}
+.terran-specialist__offer:hover,.terran-specialist__offer:focus-within{z-index:2}
