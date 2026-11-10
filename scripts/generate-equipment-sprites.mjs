@@ -257,6 +257,41 @@ function paintMerchant(merchant) {
   return c.pixels
 }
 
+/** Market professionals have native 32x32 original portraits like other NPCs.
+ * Job-specific color and tool emblems are deterministic, not hidden gameplay rules.
+ * The 32px PNGs can be replaced under /assets/npcs/manual without code changes.
+ */
+const terranSpecialists=[
+  {slug:'weaponsmith',base:'#A97646',trim:'#D2C5A0',hair:'#42312D',tool:'sword'},
+  {slug:'armorer',base:'#55728A',trim:'#C8D5D9',hair:'#574536',tool:'shield'},
+  {slug:'accessory_artisan',base:'#756096',trim:'#B5D9DB',hair:'#362C3C',tool:'jewel'},
+]
+function paintTerranMerchant(profile){
+ const c=canvas(),skin=color('#D2A184'),base=color(profile.base),trim=color(profile.trim),hair=color(profile.hair)
+ const dark=mix(base,INK,.65),light=mix(trim,WHITE,.28)
+ c.poly([[8,18],[24,18],[29,30],[3,30]],INK)
+ c.poly([[10,19],[22,19],[26,29],[6,29]],base)
+ c.rect(13,17,6,5,skin)
+ c.rect(11,7,11,12,INK);c.rect(12,8,9,10,skin)
+ c.rect(10,6,13,4,hair);c.rect(10,9,2,6,hair);c.rect(22,9,2,6,hair)
+ c.rect(13,12,2,1,INK);c.rect(19,12,2,1,INK)
+ c.rect(15,16,4,1,dark)
+ c.rect(7,22,4,7,base);c.rect(22,22,4,7,base)
+ c.rect(12,21,9,8,dark);c.rect(13,22,7,2,trim)
+ c.rect(14,26,5,2,light)
+ if(profile.tool==='sword'){
+  c.line(24,6,24,22,trim,2);c.line(20,16,28,16,INK,2);c.rect(22,21,4,2,color('#704D34'))
+ }else if(profile.tool==='shield'){
+  c.poly([[20,7],[28,8],[28,17],[24,21],[20,17]],trim)
+  c.poly([[22,9],[26,10],[26,16],[24,19],[22,16]],base)
+ }else{
+  c.poly([[23,6],[29,13],[23,20],[17,13]],trim)
+  c.poly([[23,9],[26,13],[23,17],[20,13]],color('#70B9C1'))
+  c.rect(20,23,7,1,light)
+ }
+ return c.pixels
+}
+
 let produced=0
 const manifest=[]
 for(const gear of equipmentOffersV0515)for(const grade of [1,2,3]){
@@ -282,6 +317,16 @@ for(const merchant of castleGearMerchantsV05151){
       throw Error('Manual merchant portrait needs a 32x32 RGBA PNG: '+manual)
     copyFileSync(manual,target)
   }else writePng(target,paintMerchant(merchant))
+}
+for(const specialist of terranSpecialists){
+ const path=join(root,'public/assets/npcs/market_'+specialist.slug+'_portrait.png')
+ const manual=join(root,'public/assets/npcs/manual/market_'+specialist.slug+'_portrait.png')
+ if(existsSync(manual)){
+  const bytes=readFileSync(manual)
+  if(bytes.readUInt32BE(16)!==SIZE||bytes.readUInt32BE(20)!==SIZE||bytes[25]!==6)
+   throw Error('Manual NPC sprite must be a 32x32 RGBA PNG: '+manual)
+  copyFileSync(manual,path)
+ }else writePng(path,paintTerranMerchant(specialist))
 }
 writeFileSync(join(destination,'manifest.json'),JSON.stringify({
   schemaVersion:'0.5.15.1',kind:'pixel-art-png',pixelSize:SIZE,
