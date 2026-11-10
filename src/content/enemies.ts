@@ -1,7 +1,8 @@
 import type { EnemyDefinition } from './types'
+import { rebalanceEnemyV05152 } from './enemyBalanceV05152'
 import { biomeEnemyDefinitions } from './biomeExpeditions'
 
-export const enemyDefinitions = [
+export const enemyDefinitions = ([
   {
     id: 'enemy_granite_golem', name: 'Golem de Granito · Guardião de Korduun',
     // Baseline fallback; the v0.5.14.2 boss encounter derives real stats from the player.
@@ -197,4 +198,4 @@ export const enemyDefinitions = [
     skillIds: ['skill_blackroot_crush'], aiSkillEveryRounds: 3,
     weaknessTags: ['light', 'fire'], assetId: 'enemy.blackroot-titan', status: 'BALANCE_DRAFT',
   },
-  ...biomeEnemyDefinitions] satisfies EnemyDefinition[]
+  ...biomeEnemyDefinitions] satisfies EnemyDefinition[]).map(rebalanceEnemyV05152)
