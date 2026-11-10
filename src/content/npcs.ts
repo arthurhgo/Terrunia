@@ -123,7 +123,7 @@ const baseNpcDefinitions = [
   {
     id: 'npc_neris', name: 'Neris', title: 'Mercadora de Equipamentos', settlementId: 'terran',
     roles: ['vendor', 'questGiver'], questIds: [], portraitAssetId: 'npc.neris.portrait',
-    dialogue: ['Cada armadura possui uma história possível. Trago equipamentos e conjuntos de todos os estilos para os viajantes de Terran.', 'Durnan aprimora cada peça na Casa do Ferreiro. Seus Vínculos permanecem intactos enquanto você cria seu próprio visual.'],
+    dialogue: ['Vendo somente equipamentos comuns de início de jornada, Tier I e Grau 1. Os itens de Clã e Classe são exclusivos dos castelos.', 'Durnan aprimora cada peça na Casa do Ferreiro. Seus Vínculos permanecem intactos enquanto você cria seu próprio visual.'],
     status: 'CONTENT_DRAFT',
   },
   {
