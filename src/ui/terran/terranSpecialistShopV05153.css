@@ -70,3 +70,25 @@
 .terran-shop__quantity input:focus-visible,.terran-shop__actions button:focus-visible{outline:2px solid #f2d187;outline-offset:2px}
 .terran-shop__owned{color:#a1dac3!important;font-weight:700}
 @media(max-width:560px){.terran-shop__actions{flex-basis:98px}.terran-shop__actions button{font-size:10px}}
+
+/* v0.5.15.3 · Optional readable sprite grid. List remains the default. */
+.terran-specialist__view{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.terran-specialist__view button,.terran-specialist__inspect{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:5px 8px;
+  border:1px solid #6c7770;background:#172c2e;color:#c6dcd4;border-radius:3px;cursor:pointer;font:600 11px/1.2 var(--display)}
+.terran-specialist__view button[aria-pressed="true"],.terran-specialist__inspect[aria-pressed="true"]{border-color:#e3bc75;background:#3b3321;color:#ffe2a8}
+.terran-specialist__view span{margin-left:auto;color:#e9c785;font-size:11px;font-weight:700}
+.terran-specialist__offers--grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));align-items:start}
+.terran-specialist__offers--grid .terran-specialist__offer{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;align-content:start;gap:7px;min-height:210px;text-align:center}
+.terran-specialist__offers--grid .terran-specialist__icon{width:62px;height:62px;flex-basis:auto}
+.terran-specialist__offers--grid .terran-specialist__icon img{width:56px;height:56px}
+.terran-specialist__offers--grid .terran-specialist__copy{width:100%}
+.terran-specialist__offers--grid .terran-specialist__actions{width:100%;flex-basis:auto}
+.terran-specialist__duplicate{color:#f0ce8d!important}
+.terran-specialist__blocked{color:#e6aa93!important}
+.terran-specialist__deltas{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:4px}
+.terran-specialist__deltas span{border-left:3px solid currentColor;padding:3px 6px;color:#dbcfae}
+.terran-specialist__deltas span[data-trend="positive"]{color:#a7e3b8}
+.terran-specialist__deltas span[data-trend="negative"]{color:#f0a5a5}
+.terran-specialist__view button:focus-visible,.terran-specialist__inspect:focus-visible{outline:2px solid #f3ca7c;outline-offset:2px}
+@media(max-width:600px){.terran-specialist__offers--grid{grid-template-columns:repeat(2,minmax(0,1fr))}.terran-specialist__offers--grid .terran-specialist__offer{min-height:225px}.terran-specialist__view span{margin-left:0}}
+@media(max-width:380px){.terran-specialist__offers--grid{grid-template-columns:1fr}}
