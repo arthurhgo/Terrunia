@@ -37,18 +37,22 @@ describe('v0.5.15 gear rules',()=>{
     expect(offers.filter(o=>o.channel==='CLASS_EXCLUSIVE')).toHaveLength(150)
   }
  })
- it('Neris sells only prereq-free Tier I G1, never a Tier II or any clan/class item',()=>{
+ it('limits common Tier I gear to the exact specialist without Clã or Classe',()=>{
   const save=base()
-  const publicOne=equipmentOffersV0515.find(o=>o.channel==='PUBLIC_TERRAN'&&o.tier===1)!
-  const publicTwo=equipmentOffersV0515.find(o=>o.channel==='PUBLIC_TERRAN'&&o.tier===2)!
+  const armor=equipmentOffersV0515.find(o=>o.channel==='PUBLIC_TERRAN'&&o.tier===1&&o.slot==='armor')!
+  const weapon=equipmentOffersV0515.find(o=>o.channel==='PUBLIC_TERRAN'&&o.tier===1&&o.slot==='weapon')!
+  const necklace=equipmentOffersV0515.find(o=>o.channel==='PUBLIC_TERRAN'&&o.tier===1&&o.slot==='necklace')!
+  const tierTwo=equipmentOffersV0515.find(o=>o.channel==='PUBLIC_TERRAN'&&o.tier===2&&o.slot==='armor')!
   const clan=equipmentOffersV0515.find(o=>o.channel==='CLAN_EXCLUSIVE')!
-  const cls=equipmentOffersV0515.find(o=>o.channel==='CLASS_EXCLUSIVE')!
-  expect(checkGearAccess(save,publicOne,'presence_neris')).toMatchObject({ok:true})
-  expect(checkGearAccess(save,publicTwo,'presence_neris')).toMatchObject({ok:false,code:'GEAR_NERIS_TIER'})
-  expect(checkGearAccess(save,clan,'presence_neris')).toMatchObject({ok:false,code:'GEAR_NERIS_EXCLUSIVE'})
-  expect(checkGearAccess(save,cls,'presence_neris')).toMatchObject({ok:false,code:'GEAR_NERIS_EXCLUSIVE'})
-  expect(purchaseGear(save,[publicTwo.id],NOW,'presence_neris')).toMatchObject({ok:false,code:'GEAR_NERIS_TIER'})
-  expect(purchaseGear(save,[clan.id],NOW,'presence_neris')).toMatchObject({ok:false,code:'GEAR_NERIS_EXCLUSIVE'})
+  expect(checkGearAccess(save,armor,'presence_terran_armorer')).toMatchObject({ok:true})
+  expect(checkGearAccess(save,weapon,'presence_terran_weaponsmith')).toMatchObject({ok:true})
+  expect(checkGearAccess(save,necklace,'presence_terran_accessory_artisan')).toMatchObject({ok:true})
+  for(const offer of [armor,weapon,necklace,tierTwo,clan]){
+    expect(checkGearAccess(save,offer,'presence_neris')).toMatchObject({ok:false,code:'GEAR_MERCHANT'})
+  }
+  expect(checkGearAccess(save,weapon,'presence_terran_armorer')).toMatchObject({ok:false,code:'GEAR_MERCHANT'})
+  expect(checkGearAccess(save,tierTwo,'presence_terran_armorer')).toMatchObject({ok:false,code:'GEAR_MERCHANT'})
+  expect(purchaseGear(save,[weapon.id],NOW,'presence_neris')).toMatchObject({ok:false,code:'GEAR_MERCHANT'})
  })
  it('uses the same castle merchant for all three classes while strictly enforcing the unlocked Class',()=>{
   const save=base()
@@ -101,18 +105,25 @@ describe('v0.5.15 gear rules',()=>{
   }
  })
 
- it('only allows public sets in Terran without requiring clan/class, with atomic all-or-nothing payment',()=>{
+ it('does not sell mixed-slot kits: players choose each piece from its own specialist',()=>{
   const save=base()
   const set=equipmentSetsV0515.find(s=>s.channel==='PUBLIC_TERRAN'&&s.tier===1)!
   const cost=getSetPrice(set.id)
-  const bought=purchaseGear(save,set.itemIds,NOW,'presence_neris')
-  expect(bought.ok).toBe(true)
-  if(!bought.ok)return
-  expect(bought.value.inventory).toHaveLength(10)
-  expect(bought.value.wallet.gold).toBe(save.wallet.gold-cost)
+  expect(cost).toBeGreaterThan(0)
+  expect(purchaseGear(save,set.itemIds,NOW,'presence_terran_armorer'))
+   .toMatchObject({ok:false,code:'GEAR_MERCHANT'})
+  for(const slot of ['weapon','armor','necklace'] as const){
+    const offer=gearOfferById[set.itemIds.find(id=>gearOfferById[id].slot===slot)!]
+    const merchant=slot==='weapon'?'presence_terran_weaponsmith':slot==='armor'?
+      'presence_terran_armorer':'presence_terran_accessory_artisan'
+    const result=purchaseGear(save,[offer.id],NOW,merchant)
+    expect(result.ok,slot).toBe(true)
+    if(result.ok){
+      expect(result.value.wallet.gold).toBe(save.wallet.gold-offer.price)
+      expect(result.value.inventory[0].definitionId).toBe(offer.id)
+    }
+  }
   expect(save.inventory).toHaveLength(0)
-  const broke={...save,wallet:{gold:cost-1}}
-  expect(purchaseGear(broke,set.itemIds,NOW,'presence_neris')).toMatchObject({ok:false,code:'GEAR_GOLD'})
  })
  it('rejects buying clan/class exclusives from Terran, another castle or before initiation',()=>{
   const save=base()
@@ -146,7 +157,7 @@ describe('v0.5.15 gear rules',()=>{
  it('forges G1→G2→G3 only at Durnan, charges Gold and preserves Tier',()=>{
   const save=base()
   const offer=equipmentOffersV0515.find(o=>o.channel==='PUBLIC_TERRAN'&&o.slot==='helmet'&&o.tier===1)!
-  const paid=purchaseGear(save,[offer.id],NOW,'presence_neris')
+  const paid=purchaseGear(save,[offer.id],NOW,'presence_terran_armorer')
   if(!paid.ok)throw Error('missing purchase')
   const itemId=paid.value.inventory[0].instanceId
   expect(refineCatalogGear(paid.value,itemId,NOW)).toMatchObject({ok:false,code:'GEAR_FORGE_LOCATION'})
@@ -169,7 +180,7 @@ describe('v0.5.15 gear rules',()=>{
   save.boundItems[linked.id]=linked
   save.character.bondedEquipment.weapon=linked.id
   const weapon=equipmentOffersV0515.find(o=>o.channel==='PUBLIC_TERRAN'&&o.slot==='weapon'&&o.tier===1)!
-  const purchased=purchaseGear(save,[weapon.id],NOW,'presence_neris')
+  const purchased=purchaseGear(save,[weapon.id],NOW,'presence_terran_weaponsmith')
   if(!purchased.ok)throw Error('missing weapon purchase')
   const worn=equipGearStyle(purchased.value,purchased.value.inventory[0].instanceId,'weapon',NOW)
   if(!worn.ok)throw Error('missing equip')
