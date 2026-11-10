@@ -86,7 +86,10 @@ export function getTrackedQuestRoute(save: GameSave, catalog: ContentCatalog): T
       npcId = objective.targetId
       locationId = getRosettaNpcLocation(npcId, catalog)
     } else if (objective?.type === 'purchase') {
-      npcId = 'npc_neris'
+      // Guide to the merchant that actually sells this quest's exact SKU.
+      // Existing objective IDs and recorded purchases remain unchanged.
+      npcId = objective.targetId === 'equipment_light_leather_vest'
+        ? 'npc_terran_armorer' : 'npc_neris'
       locationId = 'location_terran_bond_workshop'
     } else if (objective?.type === 'refine') {
       npcId = 'npc_durnan'
