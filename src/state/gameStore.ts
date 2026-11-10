@@ -17,7 +17,7 @@ import {
 import { createBattle, submitBattleCommand } from '../domain/combat/engine'
 import { useFieldConsumable as applyFieldConsumable } from '../domain/exploration/fieldConsumables'
 import { createWaveBattle } from '../domain/combat/waves'
-import { useVictoryRecovery } from '../domain/combat/victoryRecoveryV05152'
+import { applyVictoryRecovery } from '../domain/combat/victoryRecoveryV05152'
 import { canStartPortalHunt } from '../domain/combat/portalHunts'
 import type { BattleCommand } from '../domain/combat/types'
 import {
@@ -1083,7 +1083,7 @@ export const useGameStore = create<GameState>((set, get) => {
     consumeVictoryItem: (instanceId) => {
       const save=get().save
       if(!save)return failAction('Nenhum Terrírian ativo.')
-      const result=useVictoryRecovery(save,instanceId,content,nowIso())
+      const result=applyVictoryRecovery(save,instanceId,content,nowIso())
       if(!result.ok)return failAction(result.message)
       commit(result.value)
       show('Preparação concluída','Consumível utilizado sem avançar a onda ou gastar turno.','success')
