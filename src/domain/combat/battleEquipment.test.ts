@@ -127,6 +127,25 @@ describe('HUD de equipamentos da batalha', () => {
     expect(summary.totals.initiative).toBe(profile.secondaryValues[0])
     expect(summary.totals.attack).toBe(content.boundItemBases.bound_weapon_prologue_base.basePower)
   })
+  it('renders commercial protector and necklace before their permanent Bonds, with real direct bonuses',()=>{
+    const save=makeSave()
+    const shield=equipmentOffersV0515.find(o=>o.channel==='PUBLIC_TERRAN'&&o.tier===1&&o.slot==='shield')!
+    const necklace=equipmentOffersV0515.find(o=>o.channel==='PUBLIC_TERRAN'&&o.tier===1&&o.slot==='necklace')!
+    save.equippedGearStyles={
+      shield:{instanceId:'shell-shield',definitionId:shield.id,quantity:1,rarity:'common',
+        locked:false,favorite:false,acquiredAt:now,refinementLevel:0},
+      necklace:{instanceId:'shell-necklace',definitionId:necklace.id,quantity:1,rarity:'common',
+        locked:false,favorite:false,acquiredAt:now,refinementLevel:0},
+    }
+    const {slots,totals}=getBattleGearSummary(save,content)
+    expect(slots[1]).toMatchObject({state:'simple',name:shield.name,resonance:null})
+    expect(slots[3]).toMatchObject({state:'simple',name:necklace.name,resonance:null})
+    expect(slots[1].stats).toHaveLength(2)
+    expect(slots[3].stats).toHaveLength(2)
+    expect(Object.values(totals).some(value=>value>0)).toBe(true)
+    expect(save.character.bondedEquipment.shield).toBeNull()
+    expect(save.character.bondedEquipment.necklace).toBeNull()
+  })
   it('sums the two bonuses of complementary equipment even though only five Bound cards exist',()=>{
     const save=makeSave()
     const profile=equipmentOffersV0515.find(offer=>offer.channel==='PUBLIC_TERRAN' &&
