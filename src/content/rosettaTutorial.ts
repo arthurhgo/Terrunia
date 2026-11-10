@@ -51,6 +51,16 @@ const lessons: Omit<QuestDefinition, 'giverNpcId' | 'turnInNpcId' | 'category' |
     rewards: [{ type: 'characterXp', value: 5 }, { type: 'gold', value: 4 }],
     prerequisites: [{ type: 'questCompleted', questId: 'rosetta_tutorial_refine' }], initialStatus: 'locked',
     terranFlow: { active: 'location_terran_bond_workshop' } },
+  { id: 'rosetta_tutorial_market_specialists', title: 'Os Ofícios do Mercado (Opcional)',
+    summary: 'Converse com o Armeiro, o Armadureiro e o Artesão de Acessórios no Mercado de Terran. Cada especialista apresenta uma categoria de equipamentos comuns.',
+    contextNote: 'Não é necessário comprar nada. Conhecer os vendedores não concede Vínculos, Clã ou Classe.',
+    objectives: [
+      { id: 'talk_weaponsmith', type: 'talk', targetId: 'npc_terran_weaponsmith', required: 1, label: 'Converse com o Armeiro de Terran' },
+      { id: 'talk_armorer', type: 'talk', targetId: 'npc_terran_armorer', required: 1, label: 'Converse com o Armadureiro de Terran' },
+      { id: 'talk_accessories', type: 'talk', targetId: 'npc_terran_accessory_artisan', required: 1, label: 'Converse com o Artesão de Acessórios' },
+    ],
+    rewards: [], prerequisites: [{ type: 'questCompleted', questId: 'rosetta_tutorial_supply' }],
+    initialStatus: 'locked', terranFlow: { active: 'location_terran_bond_workshop' } },
   { id: 'rosetta_tutorial_refine', title: 'O Primeiro Aprimoramento',
     summary: 'Leve uma proteção simples a Durnan. Use a linha entregue por Rosetta e 8 Ouro para reforçar a peça em +1.',
     contextNote: 'Você pode reforçar a proteção que escolheu no início, sem comprar outra peça.',
@@ -65,5 +75,5 @@ const lessons: Omit<QuestDefinition, 'giverNpcId' | 'turnInNpcId' | 'category' |
 export const ROSETTA_CORE_LESSON_IDS = ['rosetta_tutorial_equip', 'rosetta_tutorial_supply', 'rosetta_tutorial_refine'] as const
 
 export const rosettaTutorialQuests: QuestDefinition[] = lessons.map((quest) => ({ ...quest, giverNpcId: 'npc_rosetta', turnInNpcId: 'npc_rosetta',
-  category: quest.id === 'rosetta_tutorial_armor' ? 'secondary' : 'main',
+  category: ['rosetta_tutorial_armor','rosetta_tutorial_market_specialists'].includes(quest.id) ? 'secondary' : 'main',
   terranFlow: { ...quest.terranFlow, ready_to_turn_in: 'location_terran_portal_plaza' }, status: 'CONTENT_DRAFT' }))
