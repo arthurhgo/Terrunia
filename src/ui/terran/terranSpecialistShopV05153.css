@@ -29,3 +29,11 @@
 .terran-specialist__compare small{font-size:10px;color:#cee7d0}
 @media(max-width:600px){.terran-specialist__filters{display:grid;grid-template-columns:1fr 1fr}.terran-specialist__filters label{display:grid}.terran-specialist__filters input,.terran-specialist__filters select{width:100%;max-width:none}.terran-specialist__filters label:first-child{grid-column:1/-1}.terran-specialist__offers{max-height:300px}.terran-specialist__offer{padding:5px;gap:5px}.terran-specialist__copy strong{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.terran-specialist *{animation:none!important}}
+
+/* Shared category language across legacy introductory pieces and new vendor cards. */
+.terran-shop__instruction{font-size:11px;color:#adcfc4;line-height:1.4}
+.terran-shop__offer[data-market-category="consumable"]{border-left:3px solid #54bba6}
+.terran-shop__offer[data-market-category="equipment"]{border-left:3px solid #779bb9}
+.terran-shop__offer[data-quest-item="true"]{border-color:#c8a568;box-shadow:inset 0 0 8px #c8a5683a}
+.terran-shop__mission-item{color:#f0d480!important;font-weight:700}
+.terran-shop__stats{color:#9ed8bb!important}
