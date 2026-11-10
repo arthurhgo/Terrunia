@@ -405,8 +405,10 @@ export const gameSaveSchema = z.object({
   }
   for (const [slot, item] of Object.entries(save.equippedGearStyles ?? {})) {
     const gear = gearOfferById[item.definitionId]
-    if (!gear || gear.slot !== slot || item.quantity !== 1 || inventoryIds.has(item.instanceId) || !save.character.bondedEquipment[slot as keyof typeof save.character.bondedEquipment]) {
-      context.addIssue({ code: 'custom', path: ['equippedGearStyles', slot], message: 'Revestimento deve corresponder a um Vínculo existente, sem duplicar instâncias.' })
+    if (!gear || gear.slot !== slot || item.quantity !== 1 || inventoryIds.has(item.instanceId) ||
+      (!save.character.bondedEquipment[slot as keyof typeof save.character.bondedEquipment] &&
+        !['shield','necklace','bracelet'].includes(slot))) {
+      context.addIssue({ code: 'custom', path: ['equippedGearStyles', slot], message: 'Equipamento comercial deve corresponder ao slot, sem duplicar instâncias. Vínculo permanente segue independente.' })
     }
     inventoryIds.add(item.instanceId)
   }
