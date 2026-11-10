@@ -1,6 +1,5 @@
 import { describe,expect,it } from 'vitest'
 import { content } from '../../content/catalog'
-import { equipmentOffersV0515 } from '../../content/equipmentV0515'
 import { createNewSave,bindPrologueWeapon } from '../game/createSave'
 import type { InventoryItemInstance } from '../game/types'
 import { createBattle,submitBattleCommand,calculateRolledDamage } from './engine'
