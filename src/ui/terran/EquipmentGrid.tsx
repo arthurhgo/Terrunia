@@ -39,7 +39,7 @@ export function EquipmentGrid({ save }: { save: GameSave }) {
     const starter = slot.bound === 'armor' && !linked ? basicArmor : null
     const shell = slot.bound ? save.equippedGearStyles?.[slot.bound] : null
     const shellGear = shell ? gearOfferById[shell.definitionId] : null
-    const assetId = shellGear && shell ? gearSpriteId(shellGear,getGearGrade(shell.refinementLevel)) ?? (linked && boundInstance ? (linked.assetIdByGrade[boundInstance.grade] ?? linked.assetIdByGrade[1])
+    const assetId = (shellGear && shell ? gearSpriteId(shellGear,getGearGrade(shell.refinementLevel)) : null) ?? (linked && boundInstance ? (linked.assetIdByGrade[boundInstance.grade] ?? linked.assetIdByGrade[1])
       : ordinary?.iconAssetId ?? starter?.definition.iconAssetId)
     const name = shellGear?.name ?? linked?.name ?? ordinary?.name ?? starter?.definition.name ?? 'Slot vazio'
     const actionable = Boolean(worn || starter || shell)
