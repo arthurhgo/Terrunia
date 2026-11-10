@@ -51,9 +51,33 @@ test('Mercado v0.5.15.3: Neris só vende consumíveis, 3 NPCs vendem peças ilus
    await expect(dialog.getByRole('combobox',{name:'Filtrar bônus de equipamento'})).toBeVisible()
    await expect(dialog.getByRole('button',{name:/Comprar .* ouro/}).first()).toBeEnabled()
    await expect(dialog.getByRole('group',{name:'Conjuntos disponíveis'})).toHaveCount(0)
-   if(index===2)await expect(dialog.getByText(/Túnica de Linho Gasta · Tier 1/)).toBeVisible()
+   if(index===2){
+    await expect(dialog.getByText(/Túnica de Linho Gasta · Tier 1/)).toBeVisible()
+    const before=await page.evaluate(async()=>{
+      const {useGameStore}=await import('/src/state/gameStore.ts')
+      const {deriveCharacterStats}=await import('/src/domain/character/derivedStats.ts')
+      const {content}=await import('/src/content/catalog.ts')
+      const save=useGameStore.getState().save!
+      return {gold:save.wallet.gold,defense:deriveCharacterStats(save,content).defense.value}
+    })
+    const buyAndWear=dialog.getByRole('button',{name:/Comprar e equipar Armadura Treino do Guarda/})
+    await expect(buyAndWear).toBeEnabled()
+    await buyAndWear.click()
+    const after=await page.evaluate(async()=>{
+      const {useGameStore}=await import('/src/state/gameStore.ts')
+      const {deriveCharacterStats}=await import('/src/domain/character/derivedStats.ts')
+      const {content}=await import('/src/content/catalog.ts')
+      const save=useGameStore.getState().save!
+      return {gold:save.wallet.gold,defense:deriveCharacterStats(save,content).defense.value,
+        armor:save.equippedBasicArmor?.definitionId}
+    })
+    expect(after.gold).toBeLessThan(before.gold)
+    expect(after.defense).toBeGreaterThan(before.defense)
+    expect(after.armor).toMatch(/^eq_v0515_terran_/)
+   }
   }
   await page.keyboard.press('Escape')
+  await expect(page.locator('.terran-game__drawer')).toHaveCount(0)
  }
  expect(errors).toEqual([])
 })
