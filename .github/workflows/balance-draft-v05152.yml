@@ -1,0 +1,23 @@
+name: Terrúnia v0.5.15.2 Draft Validation (no deploy)
+
+on:
+  push:
+    branches:
+      - balance/v0.5.15.2-neris-gear-stats-draft
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check TypeScript, lint, unit/integration tests and production compilation
+        run: npm run check
