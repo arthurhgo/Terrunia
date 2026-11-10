@@ -4,7 +4,7 @@ const voice = (question: string, work: string, place: string, advice: string): N
 
 /** Spoken mission briefs are distinct from the journal's third-person descriptions. */
 export const npcQuestBriefs: Record<string, string> = {
-  rosetta_tutorial_equip: 'Vou lhe entregar duas túnicas simples. Abra o Inventário, selecione uma delas na Mochila e escolha Equipar. A de linho protege um pouco; a de aprendiz favorece o movimento. Depois volte para receber o Ouro das próximas compras.',
+  rosetta_tutorial_equip: 'Visite o Mercado e volte à Praça. Vou oferecer uma escolha de proteção Tier I: a de linho protege um pouco, a de aprendiz favorece o movimento e o gibão tem Defesa maior. Depois, equipe a peça escolhida na Mochila.',
   rosetta_tutorial_supply: 'Vá ao Mercado e procure Neris. Compre um Tônico de Campo por 18 Ouro. O frasco ficará na mochila para os combates; não precisa usá-lo agora. Retorne quando terminar a compra.',
   rosetta_tutorial_armor: 'Agora procure o Armadureiro no Mercado e compre um Gibão de Couro Leve por 25 Ouro. Abra a Mochila, selecione a peça e equipe. Ela oferece mais proteção que as túnicas. Quando tiver uma Armadura vinculada, as peças de treino não a substituirão.',
   rosetta_tutorial_market_specialists: 'Os vendedores têm ofícios diferentes. Converse com o Armeiro, o Armadureiro e o Artesão de Acessórios dentro do Mercado. Não precisa comprar nada para esta lição.',
