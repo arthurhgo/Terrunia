@@ -8,20 +8,21 @@ import { classDefinitions, clanDefinitions } from './progression'
 import { enterClanCastle } from '../domain/progression/clanCastle'
 
 describe('v0.5.15.1 castelos e mercadores',()=>{
-  it('places exactly four real vendor presences in each of four separated castle maps',()=>{
+  it('places one real Clan merchant in each of four separate castles',()=>{
     const save=createNewSave('owner','Teste','character.terririan.default',content)
     for(const clan of clanDefinitions){
       const id=getClanCastleId(clan.id)!
       const residents=getInteriorResidents(save,id)
       const merchants=castleMerchantsForInterior(id)
-      expect(residents).toHaveLength(4)
-      expect(merchants).toHaveLength(4)
+      expect(residents).toHaveLength(1)
+      expect(merchants).toHaveLength(1)
       expect(residents.map(r=>r.presence.id)).toEqual(merchants.map(m=>m.id))
-      expect(new Set(residents.map(r=>r.position.x+':'+r.position.y)).size).toBe(4)
-      expect(merchants[0].channel).toBe('CLAN_EXCLUSIVE')
-      for(const m of merchants.slice(1))expect(m.channel).toBe('CLASS_EXCLUSIVE')
+      expect(new Set(residents.map(r=>r.position.x+':'+r.position.y)).size).toBe(1)
+      expect(merchants[0].clanId).toBe(clan.id)
     }
-    expect(castleGearMerchantsV05151).toHaveLength(4+classDefinitions.length)
+    expect(castleGearMerchantsV05151).toHaveLength(clanDefinitions.length)
+    expect(classDefinitions).toHaveLength(12)
+    expect(new Set(castleGearMerchantsV05151.map(m=>m.id)).size).toBe(4)
   })
   it('portal routes only after proper clan recruitment, never to the wrong castle',()=>{
     const save=createNewSave('owner','Teste','character.terririan.default',content)

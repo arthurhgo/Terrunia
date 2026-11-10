@@ -60,7 +60,7 @@ export const roomFurniture: Record<TerranInteriorId, readonly RoomFurniture[]> =
     {id:castle.interiorId+'_council',name:'Salão do Conselho — futuro',point:{x:253,y:139},
       behavior:'inspect' as const,description:'NPCs, missões e serviços de Clã serão adicionados em versões futuras.'},
     {id:castle.interiorId+'_arsenal',name:'Balcão de Comércio do Castelo',point:{x:310,y:187},
-      behavior:'inspect' as const,description:'Converse diretamente com o Intendente de Clã ou um dos três Armeiros de Classe para negociar.'},
+      behavior:'inspect' as const,description:'Converse com o Intendente do Clã para comprar equipamentos exclusivos do Clã e de suas três Classes.'},
     {id:castle.interiorId+'_return',name:'Portal de Retorno ao Salão',point:{x:192,y:213},
       behavior:'portal' as const,description:'Retornar ao Salão dos Clãs em Terran.'},
   ]])) as unknown as Record<ClanCastleInteriorId, readonly RoomFurniture[]>),

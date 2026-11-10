@@ -1,6 +1,6 @@
 /**
  * Terrúnia v0.5.15.1 — deterministic original 32x32 pixel-art PNGs.
- * 1,400 equipment SKUs x 3 forge grades = 4,200 final sprites, plus 16 NPC portraits.
+ * 1,400 equipment SKUs x 3 forge grades = 4,200 final sprites, plus 4 Clan merchant portraits.
  * This tool reads the authoritative TypeScript catalogs; no divergent art inventory.
  * Generated files are build artifacts and may be replaced individually by hand.
  */
@@ -236,7 +236,7 @@ function paintGear(gear,grade) {
 }
 function paintMerchant(merchant) {
   const c=canvas(),h=seeded(merchant.id)
-  const offer=equipmentOffersV0515.find(gear=>gear.clanId===merchant.clanId && gear.channel===merchant.channel)
+  const offer=equipmentOffersV0515.find(gear=>gear.clanId===merchant.clanId && gear.channel==='CLAN_EXCLUSIVE')
   const base=color(offer?.palette.base??'#445466')
   const trim=color(offer?.palette.trim??'#CDBA85')
   const cloak=mix(base,INK,.38)
@@ -253,8 +253,7 @@ function paintMerchant(merchant) {
   c.rect(6,26,5,2,trim);c.rect(21,26,5,2,trim)
   c.rect(13,19,7,2,trim)
   c.rect(16,22,2,2,WHITE)
-  if(merchant.channel==='CLASS_EXCLUSIVE'){c.rect(12,6,10,3,trim);c.rect(15,4,4,3,base)}
-  else {c.rect(10,7,12,2,trim);c.rect(8,9,3,6,trim);c.rect(22,9,3,6,trim)}
+  c.rect(10,7,12,2,trim);c.rect(8,9,3,6,trim);c.rect(22,9,3,6,trim)
   return c.pixels
 }
 
@@ -289,6 +288,6 @@ writeFileSync(join(destination,'manifest.json'),JSON.stringify({
   equipmentCount:equipmentOffersV0515.length,grades:3,merchantCount:castleGearMerchantsV05151.length,
   entries:manifest,
 },null,2))
-if(produced!==4200||castleGearMerchantsV05151.length!==16)throw Error('Unexpected sprite count '+produced)
+if(produced!==4200||castleGearMerchantsV05151.length!==4)throw Error('Unexpected sprite count '+produced)
 if(!existsSync(join(destination,equipmentOffersV0515[0].id+'_g1.png')))throw Error('First sprite not found')
-console.log('Terrúnia v0.5.15.1: '+produced+' PNG sprites and 16 merchant portraits generated.')
+console.log('Terrúnia v0.5.15.1: '+produced+' PNG sprites and 4 merchant portraits generated.')

@@ -134,7 +134,7 @@ describe('grade pixel art v0.1', () => {
     expect(pending.filter((asset) => !asset.id.startsWith('equipment.v0515.'))).toHaveLength(25)
     expect(pending.filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(0)
     expect(Object.values(assetRegistry).filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(4200)
-    expect(Object.values(assetRegistry).filter((asset) => asset.id.startsWith('npc.castle-merchant.'))).toHaveLength(16)
+    expect(Object.values(assetRegistry).filter((asset) => asset.id.startsWith('npc.castle-merchant.'))).toHaveLength(4)
     expect(pending.filter((asset) => asset.id.startsWith('item.complementary.'))).toHaveLength(5)
     for (const asset of pending) {
       expect(asset.pixelArt).toBe(true)
