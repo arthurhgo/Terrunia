@@ -29,6 +29,10 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
   const recommendations = getClanRecommendations(save,content)
   const lesson = rosettaTutorialQuests.find((quest) => (ROSETTA_CORE_LESSON_IDS as readonly string[]).includes(quest.id) && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status))
   const progress = lesson ? save.quests[lesson.id] : null
+  const nextObjective = lesson && progress?.status === 'active'
+    ? lesson.objectives.find(objective => (progress.objectives[objective.id] ?? 0) < objective.required)
+    : undefined
+  const lessonIndex = lesson ? ROSETTA_CORE_LESSON_IDS.findIndex(id => id === lesson.id) + 1 : 0
   const marketTour=content.quests.rosetta_tutorial_market_specialists
   const marketTourProgress=save.quests.rosetta_tutorial_market_specialists
   const offered = progress && ['available', 'offered'].includes(progress.status)
@@ -37,9 +41,18 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
     lines={content.npcs.npc_rosetta.dialogue} quest={lesson} onClose={onClose}>
     <div className="rosetta-guide__content">
       {lesson && progress ? <section className="rosetta-tutorial" aria-label="Lição de Rosetta">
-        <span className="eyebrow">TUTORIAL · LIÇÃO {ROSETTA_CORE_LESSON_IDS.findIndex((id) => id === lesson.id) + 1} DE {ROSETTA_CORE_LESSON_IDS.length}</span>
+        <span className="eyebrow">TUTORIAL · LIÇÃO {lessonIndex} DE {ROSETTA_CORE_LESSON_IDS.length}</span>
         <h3>{lesson.title}</h3>
         {lesson.objectives.map((objective) => <p key={objective.id} className="rosetta-tutorial__objective"><CheckCircle2 size={14} /><span>{objective.label}</span><strong>{progress.objectives[objective.id] ?? 0}/{objective.required}</strong></p>)}
+        {nextObjective && <div className="rosetta-guide__focus" role="status" aria-live="polite">
+          <strong>PRÓXIMO PASSO · {lessonIndex}/{ROSETTA_CORE_LESSON_IDS.length}</strong>
+          <p>{nextObjective.label}</p>
+          <small>Progresso: {progress.objectives[nextObjective.id]??0} de {nextObjective.required}</small>
+          <button type="button" onClick={nextObjective.type==='equip'&&onOpenInventory
+            ? onOpenInventory : onShowPaths??onOpenQuests}>
+            {nextObjective.type==='equip'&&onOpenInventory?'Abrir mochila e equipar':'Ver caminho ou objetivo no Diário'}
+          </button>
+        </div>}
         <QuestContextNote note={lesson.contextNote} />
         {offered && lesson.acceptanceItems && <div className="rosetta-tutorial__gifts"><small>Você recebe ao aceitar</small>{lesson.acceptanceItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />{input.quantity}× {content.items[input.itemId].name}</span>)}</div>}
         <small>Ao entregar: {lesson.rewards.map((reward) => `${reward.value} ${reward.type === 'gold' ? 'Ouro' : 'XP'}`).join(' · ')}
@@ -61,7 +74,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
         <div className="rosetta-tutorial__actions">
           {offered && <><button type="button" onClick={() => { if (progress.status === 'offered') decline(lesson.id); onClose() }}>Agora não</button>
             <button type="button" className="rosetta-tutorial__accept" onClick={() => { if (progress.status === 'available') offer(lesson.id); accept(lesson.id) }}>Aceitar missão</button></>}
-          {progress.status === 'active' && onOpenInventory && lesson.objectives.some((objective) => objective.type === 'equip') && <button type="button" onClick={onOpenInventory}>Abrir mochila</button>}
+          {progress.status === 'active' && onOpenInventory && !nextObjective && lesson.objectives.some((objective) => objective.type === 'equip') && <button type="button" onClick={onOpenInventory}>Abrir mochila</button>}
           {progress.status === 'ready_to_turn_in' && <button type="button" className="rosetta-tutorial__accept"
             disabled={Boolean(lesson.choiceRewardItemIds?.length) && !rewardChoice}
             onClick={() => complete(lesson.id, 'npc_rosetta', lesson.choiceRewardItemIds?.length ? rewardChoice ?? undefined : undefined)}>
