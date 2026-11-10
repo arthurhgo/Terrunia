@@ -224,6 +224,7 @@ describe('combate visual v0.17', () => {
   it('mostra drops repetidos agrupados e recolhe tudo com uma ação sem seleção individual', () => {
     const save = createBattleSave()
     save.battle!.phase = 'Victory'
+    for(const enemy of Object.values(save.battle!.combatants).filter(c=>c.side==='enemy')){enemy.hp=0;enemy.alive=false}
     save.battle!.waveIndex = 1
     save.battle!.rewards.lootDefinitionIds = [
       'drop_fungal_nucleus', 'drop_fungal_nucleus', 'drop_spore_cluster',
@@ -236,9 +237,9 @@ describe('combate visual v0.17', () => {
     })
     useGameStore.setState({ save })
     render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
-    const loot = screen.getByLabelText('Espólios disponíveis')
+    const loot = screen.getByLabelText('Mochila após a vitória')
     expect(loot).toHaveTextContent('Núcleo Fúngico ×2')
-    expect(loot.querySelectorAll('button')).toHaveLength(0)
+    expect(loot.querySelectorAll('button')).toHaveLength(1) // one shared claim button, never per-drop buttons
     fireEvent.click(screen.getByRole('button', { name: 'RECOLHER TODOS OS ESPÓLIOS' }))
     const updated = useGameStore.getState().save!
     expect(updated.battle?.claimed).toBe(true)
