@@ -30,7 +30,7 @@ const baseNpcDefinitions = [
     portraitAssetId: 'npc.rosetta.portrait',
     dialogue: [
       'Bem-vindo a Terran. Sou Rosetta. Antes da estrada, vamos aprender a usar sua mochila, vestir uma proteção e negociar no Mercado.',
-      'Cada lição pede uma ação sua. Vou lhe dar duas túnicas simples e orientar suas primeiras compras e o primeiro reforço com Durnan.',
+      'Cada lição pede uma ação sua. Você escolherá uma proteção de treino, comprará consumíveis com Neris e conhecerá os especialistas do Mercado antes do primeiro reforço com Durnan.',
       'Na Biblioteca de Eldamar há uma Estante dos Registros. Leia seus manuais e relatos sempre que precisar de orientação.',
       'No nível quatro posso orientar seu único juramento: Dûn\'Avar protege, Rustal grava runas, Cebios Esti interpreta presságios e Estres do Ét domina fluxos instáveis.',
     ],
