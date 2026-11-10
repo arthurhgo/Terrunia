@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Coins, ShieldCheck } from 'lucide-react'
+import { Search, Coins, ShieldCheck, LayoutGrid, List, Info } from 'lucide-react'
 import type { GameSave, InventoryItemInstance } from '../../domain/game/types'
 import { equipmentOffersV0515, gearSetById, formatGearStats, type GearOffer } from '../../content/equipmentV0515'
 import { GEAR_STAT_LABELS } from '../../content/equipmentProfilesV05152'
@@ -27,6 +27,8 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
   const [stat,setStat]=useState<Stat|'all'>('all')
   const [sort,setSort]=useState('catalog')
   const [hovered,setHovered]=useState<string|null>(null)
+  const [inspected,setInspected]=useState<string|null>(null)
+  const [viewMode,setViewMode]=useState<'list'|'grid'>('list')
   const buy=useGameStore(state=>state.buyGear)
   const buyAndEquip=useGameStore(state=>state.buyAndEquipGear)
   const merchant=TERRAN_GEAR_MERCHANTS[merchantId]
@@ -41,7 +43,8 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
     sort==='price-desc'?b.price-a.price || a.name.localeCompare(b.name,'pt-BR'):
     sort==='name'?a.name.localeCompare(b.name,'pt-BR'):0)
   const worn=getWornGear(save)
-  const inspect=hovered?stock.find(offer=>offer.id===hovered):undefined
+  const inspectId=hovered??inspected
+  const inspect=inspectId?stock.find(offer=>offer.id===inspectId):undefined
   const comparison=inspect?previewCommercialEquip(save,itemPreview(inspect),content):null
 
   return <section className={'terran-specialist terran-specialist--'+merchant.tone}
@@ -51,6 +54,11 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
       <p>{merchant.description} Sem exigência de Clã ou Classe. Tier I · Grau 1.</p>
       <small>Escolha uma peça avulsa; não é necessário comprar um conjunto.</small>
     </header>
+    <div className="terran-specialist__view" role="group" aria-label="Visualização dos equipamentos">
+      <button type="button" aria-pressed={viewMode==='list'} onClick={()=>setViewMode('list')}><List size={14}/> Lista detalhada</button>
+      <button type="button" aria-pressed={viewMode==='grid'} onClick={()=>setViewMode('grid')}><LayoutGrid size={14}/> Grade de sprites</button>
+      <span>{save.wallet.gold} Ouro disponível</span>
+    </div>
     <div className="terran-specialist__filters">
       <label><Search size={13} /> Buscar
         <input type="search" aria-label="Buscar equipamentos pelo nome ou atributos"
@@ -85,7 +93,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
     <div className="terran-specialist__count" aria-live="polite">
       {visible.length} {visible.length===1?'item':'itens'} · {stock.length} disponíveis no catálogo
     </div>
-    <div className="terran-specialist__offers" aria-label="Equipamentos individuais à venda">
+    <div className={'terran-specialist__offers'+(viewMode==='grid'?' terran-specialist__offers--grid':'')} aria-label="Equipamentos individuais à venda">
       {visible.map(offer=>{
         const access=checkGearAccess(save,offer,merchantId)
         const equipped=worn.some(item=>item.definitionId===offer.id)
@@ -94,7 +102,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
         const profile=gearSetById[offer.setId]?.roleLabel
         const canWear=offer.slot!=='weapon'||Boolean(save.character.bondedEquipment.weapon)
         const canBuy=access.ok&&save.wallet.gold>=offer.price
-        return <article key={offer.id} className="terran-specialist__offer"
+        return <article key={offer.id} className="terran-specialist__offer" data-ownership={equipped?'equipped':owned?'backpack':stored?'storage':'new'}
           onMouseEnter={()=>setHovered(offer.id)}
           onMouseLeave={()=>setHovered(current=>current===offer.id?null:current)}
           onFocus={()=>setHovered(offer.id)}
@@ -107,8 +115,14 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
             <small>Tier {offer.tier} · Grau 1 · {profile??'Equipamento comum'}</small>
             <span>{formatGearStats(offer,1)}</span>
             <small className="terran-specialist__state">{equipped?'Equipado':owned?'Na mochila':stored?'No baú da Base':!access.ok?access.message:'Comum · Sem Clã ou Classe'}</small>
+            {(equipped||owned||stored)&&<small className="terran-specialist__duplicate">Você já possui esta peça; confirme a necessidade de outra antes da compra.</small>}
+            {!canWear&&<small className="terran-specialist__blocked">Equipar requer Vínculo de Arma; é possível comprar e guardar.</small>}
           </div>
           <div className="terran-specialist__actions">
+            <button type="button" className="terran-specialist__inspect" aria-pressed={inspected===offer.id}
+              aria-label={'Inspecionar '+offer.name} onClick={()=>setInspected(current=>current===offer.id?null:offer.id)}>
+              <Info size={12} aria-hidden="true"/> {inspected===offer.id?'Fechar detalhes':'Detalhes'}
+            </button>
             <button type="button" disabled={!canBuy}
               aria-label={'Comprar '+offer.name+' por '+offer.price+' ouro'}
               title={!access.ok?access.message:!canBuy?'Ouro insuficiente':'Comprar e guardar na Mochila'}
@@ -127,12 +141,17 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
       })}
       {visible.length===0&&<p>Nenhuma peça encontrada. Ajuste a busca ou os filtros.</p>}
     </div>
-    {comparison&&<aside className="terran-specialist__compare" role="tooltip" aria-label={'Atributos: '+comparison.offer.name}>
+    {comparison&&<aside className="terran-specialist__compare" role="region" aria-live="polite" aria-label={'Atributos: '+comparison.offer.name}>
       <strong><ShieldCheck size={13}/> Comparar · {comparison.offer.name}</strong>
       <small>{comparison.stats.map(entry=>entry.label+' +'+entry.value).join(' · ')}</small>
+      <small>Preço: {comparison.offer.price} Ouro · Saldo após compra: {save.wallet.gold-comparison.offer.price} Ouro</small>
+      {!comparison.wearable&&<strong className="terran-specialist__blocked">{comparison.blockReason??'Não é possível equipar esta peça agora.'}</strong>}
       {comparison.deltas.length>0
-        ? <small>{comparison.deltas.map(delta=>delta.label+' '+delta.before+' → '+delta.after).join(' · ')}</small>
-        : <small>{comparison.blockReason??'A peça não altera atributos nesta configuração.'}</small>}
+        ? <div className="terran-specialist__deltas">{comparison.deltas.map(delta=>
+            <span key={delta.key} data-trend={delta.difference>0?'positive':'negative'}>
+              {delta.label}: {delta.before} → {delta.after} ({delta.difference>0?'+':''}{delta.difference})
+            </span>)}</div>
+        : <small>{comparison.blockReason??'Nenhum atributo derivado muda com esta peça.'}</small>}
       <small>G2: {formatGearStats(comparison.offer,2)} · G3: {formatGearStats(comparison.offer,3)}</small>
       <small>Seu equipamento vinculado permanece permanente.</small>
     </aside>}
