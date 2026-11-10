@@ -108,7 +108,7 @@ function addSet(id:string,name:string,tier:number,channel:GearChannel,base:strin
   // than a dedicated physical/magical bonus. Exclusive power is added after
   // that discount, preserving the stronger Class > Clan > neutral hierarchy.
   const raw=PRIMARY_BY_TIER[tier-1]+(slot==='weapon'?1:0)
-  const core=stat==='attackPower'?Math.max(1,Math.floor(raw*.7)):raw
+  const core=stat==='attackPower'?(slot==='weapon'?tier:Math.max(1,Math.floor(raw*.7))):raw
   const v=core+CHANNEL_PRIMARY_BONUS[channel]
   const initialSupport=SECONDARY_BY_TIER[tier-1]+
     (INITIAL_SECONDARY_SLOTS.has(slot)||((slot==='shield'||slot==='armor')&&secondaryStat==='mitigation')?1:0)
