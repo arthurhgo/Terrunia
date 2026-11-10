@@ -99,10 +99,13 @@ function addSet(id:string,name:string,tier:number,channel:GearChannel,base:strin
  SLOTS.forEach((slot,index)=>{
   const sku=id.replace(/^set_/,'eq_')+'_'+slot.toLowerCase()
   const price=Math.round(PRICES[index]*TIER_PRICE[tier-1]*(channel==='PUBLIC_TERRAN'?1:channel==='CLAN_EXCLUSIVE'?1.1:1.2))
-  const v=VALUES[index][tier-1]+CHANNEL_PRIMARY_BONUS[channel]
+  const [stat,secondaryStat]=getGearStatPair(profile,slot)
+  // Universal attack strengthens both physical and magical builds; its numeric
+  // budget is deliberately lower than a dedicated physical/magical bonus.
+  const raw=VALUES[index][tier-1]+CHANNEL_PRIMARY_BONUS[channel]
+  const v=stat==='attackPower'?Math.max(1,Math.round(raw*.75)):raw
   const sec=SECONDARY_BY_TIER[tier-1]+CHANNEL_SECONDARY_BONUS[channel]
   const pal=palette(base,trim,tier,index)
-  const [stat,secondaryStat]=getGearStatPair(profile,slot)
   const assetId='equipment.v0515.'+(channel==='PUBLIC_TERRAN'?'terran':channel==='CLAN_EXCLUSIVE'?'clan':'class')+
    '.'+(classId??clanId??recommendedClassId)+'.'+slot+'.t'+tier+'.g1'
   const offer:GearOffer={id:sku,setId:id,name:LABELS[index]+' '+name+' — Tier '+tier,
