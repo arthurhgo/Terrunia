@@ -35,7 +35,7 @@ export function GearForgeV0515({ save }: { save: GameSave }) {
           {next && <div className="forge-recipe__projection" aria-label={'Prévia de forja G' + grade + ' para G' + next}>
             <strong>G{grade} → G{next} · {price} Ouro</strong>
             {currentStats.map((stat, index) => {
-              const following = nextStats[index]
+              const following = nextStats[index] ?? stat
               return <small key={stat.stat + index}>
                 {stat.label}: {stat.value} → {following.value} ({following.value - stat.value > 0 ? '+' : ''}{following.value - stat.value})
               </small>
