@@ -85,7 +85,7 @@ export const astravelCombatNodes: TrailNodeDefinition[] = stages.map((stage, i) 
   id: stage.id, index: i + 1, type: i === 14 ? 'boss' : 'battle', label: stage.label,
   encounterId: stage.encounterId ?? `encounter_${stage.id}`, actionLabel: `Enfrentar ${stage.label}`,
   position: { x: stage.x, y: stage.y }, description: stage.description, tacticalHint: stage.tacticalHint,
-  sectorId: getAstravelSector(i + 1).id, recommendedLevel: 1 + Math.floor(i / 5), checkpoint: stage.checkpoint,
+  sectorId: getAstravelSector(i + 1).id, recommendedLevel: [1,1,1,2,2,2,3,3,4,4,4,5,5,5,6][i], checkpoint: stage.checkpoint,
   // One gate per sector: acceptance remains explicit, never automatic.
   requiresQuestId: i === 0 ? 'vs_astravel_first_contact' : i >= 10 ? 'main_astravel_corruption' : i >= 5 ? 'main_astravel_lost_hunters' : undefined,
 }))
