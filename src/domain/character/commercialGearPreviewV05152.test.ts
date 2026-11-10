@@ -74,6 +74,6 @@ describe('v0.5.15.2 — every equipment bonus has a live stat delta and Bond-saf
   const preview=previewCommercialEquip(save,item(offer.id),content)!
   expect(preview.wearable).toBe(true)
   expect(preview.deltas.some(d=>d.key==='defense'&&d.difference>0)).toBe(true)
-  expect(preview.stats[0].label).toBe('Defesa')
+  expect(preview.stats.some(stat=>stat.stat==='mitigation' && stat.value>0)).toBe(true)
  })
 })
