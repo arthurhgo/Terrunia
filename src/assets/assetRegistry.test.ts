@@ -66,7 +66,7 @@ describe('grade pixel art v0.1', () => {
       expect(bytes.subarray(1, 4).toString('ascii')).toBe('PNG')
       const native32 = new Set(["skill.skill_clan_dunavar_aegis","skill.skill_clan_dunavar_barrier_shock","skill.skill_clan_rustal_ward","skill.skill_clan_rustal_disjunction","skill.skill_clan_cebios_omen","skill.skill_clan_cebios_orbit_shards","skill.skill_clan_estres_containment","skill.skill_clan_estres_discharge","action.attack-single","action.attack-area","status.status_resonant_fracture","status.status_clan_aegis","status.status_clan_rune_ward","status.status_clan_disjunction","status.status_clan_omen","status.status_clan_containment"])
       const dimensions = native32.has(entry.id) ? 32 : entry.id === 'enemy.colossus-mycelium' ? 48 :
-        entry.path.startsWith('/assets/characters/') || entry.path.startsWith('/assets/npcs/') ||
+        entry.path.startsWith('/assets/equipment/v05151/') || entry.path.startsWith('/assets/characters/') || entry.path.startsWith('/assets/npcs/') ||
         entry.path.startsWith('/assets/enemies/') ? 32 : 16
       expect(bytes.readUInt32BE(16), entry.id).toBe(dimensions)
       expect(bytes.readUInt32BE(20), entry.id).toBe(dimensions)
