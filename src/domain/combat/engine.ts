@@ -781,17 +781,35 @@ export const submitBattleCommand = (
   const player = state.combatants[state.actorId]
   const resolvedTarget = target ? state.combatants[target.id] : undefined
 
-  if (command.type === 'item' && item?.combatUseMode === 'freeHealingPotion') {
-    if ((currentPlayer.potionCooldown ?? 0) > 0 || (currentPlayer.potionHealingTicks ?? 0) > 0)
-      return fail('POTION_COOLDOWN', 'Poção em recarga: aguarde a regeneração.')
-    if (currentPlayer.hp >= currentPlayer.maxHp)
-      return fail('POTION_NOT_NEEDED', 'Vida já está completa.')
-    player.potionCooldown = 2
-    player.potionHealingTicks = 2
-    player.potionHealingRemaining = Math.ceil(player.maxHp * 0.1)
-    addLog(state, `${player.name} toma Poção Restauradora: 10% da Vida em dois turnos, sem gastar ação.`, 'reward')
+  if (command.type === 'item' && item && resolvedTarget &&
+    item.combatTarget !== 'enemy' &&
+    (item.combatUseMode === 'freeHealingPotion' ||
+      (item.category === 'consumable' && item.combatEffects.every(effect =>
+        effect.type === 'restoreHp' || effect.type === 'restoreMp' ||
+        effect.type === 'cleanseHarmful')))) {
+    const specialPotion = item.combatUseMode === 'freeHealingPotion'
+    // Keep the legacy two-turn use cooldown IN BATTLE only. The heal itself is
+    // immediate; Victory preparation bypasses this battle-local cooldown.
+    if (specialPotion && (currentPlayer.potionCooldown ?? 0) > 0)
+      return fail('POTION_COOLDOWN', 'Poção em recarga: aguarde dois turnos.')
+    const healing = specialPotion
+      ? [{type:'restoreHp' as const,value:Math.ceil(player.maxHp*0.1)}]
+      : item.combatEffects
+    const useful = healing.some(effect =>
+      (effect.type === 'restoreHp' && player.hp < player.maxHp) ||
+      (effect.type === 'restoreMp' && player.mp < player.maxMp) ||
+      (effect.type === 'cleanseHarmful' && player.statusEffects.some(status =>
+        catalog.statusEffects[status.definitionId]?.tone === 'harmful')))
+    if (!useful) return fail('ITEM_NOT_NEEDED','O consumível não terá efeito útil agora.')
+    applyCombatEffects(state,player,resolvedTarget,healing,catalog,item.name)
+    if (specialPotion) {
+      player.potionCooldown=2
+      player.potionHealingTicks=0
+      player.potionHealingRemaining=0
+    }
+    addLog(state,`${player.name} usa ${item.name} instantaneamente, sem gastar a ação.`,'reward')
     state.consumedItemInstanceIds.push(command.itemInstanceId)
-    return ok(state) // Free action: NO turn advances and NO opponent reacts.
+    return ok(state) // Never advances the turn or initiates an enemy reaction.
   }
 
   if (command.type === 'defend') {
