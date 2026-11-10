@@ -55,3 +55,18 @@
   .terran-specialist__filters{grid-template-columns:1fr 1fr}
 }
 @media(max-width:375px){.terran-specialist__offer{flex-wrap:wrap}.terran-specialist__actions{flex:1 1 100%;flex-direction:row}.terran-specialist__actions button{flex:1}}
+
+/* Existing single-SKU market offers share the same purchase language. */
+.terran-shop__actions{display:flex;flex:0 0 122px;flex-direction:column;gap:5px;align-items:stretch;min-width:0}
+.terran-shop__actions>button{display:flex;justify-content:center;align-items:center;gap:4px;min-height:30px;
+  padding:5px 6px;border:1px solid #c59d61;background:#302c1f;color:#f3d18c;
+  border-radius:3px;cursor:pointer;font:600 11px/1.2 var(--display)}
+.terran-shop__actions>button:hover:not(:disabled){border-color:#f9d988;background:#473c29}
+.terran-shop__actions>button:disabled{opacity:.5;cursor:not-allowed}
+.terran-shop__actions>.terran-shop__equip-now{border-color:#75ac96;background:#1b3933;color:#d1f1dc;font-size:10px}
+.terran-shop__quantity{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:10px;color:#a8ddca}
+.terran-shop__quantity input{box-sizing:border-box;width:49px;min-height:26px;text-align:center;
+  border:1px solid #76a599;border-radius:3px;background:#142a2a;color:#f4e1bf;font-size:12px}
+.terran-shop__quantity input:focus-visible,.terran-shop__actions button:focus-visible{outline:2px solid #f2d187;outline-offset:2px}
+.terran-shop__owned{color:#a1dac3!important;font-weight:700}
+@media(max-width:560px){.terran-shop__actions{flex-basis:98px}.terran-shop__actions button{font-size:10px}}
