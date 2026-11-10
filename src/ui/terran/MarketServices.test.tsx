@@ -73,7 +73,7 @@ describe('NPCs do Mercado', () => {
       expect(offers.querySelectorAll('article')).toHaveLength(count)
       expect(offers.querySelectorAll('img')).toHaveLength(count)
       expect(screen.queryByRole('group',{name:'Conjuntos disponíveis'})).not.toBeInTheDocument()
-      const buy=offers.querySelector('button')!
+      const buy=offers.querySelector('button[aria-label^="Comprar "]:not([aria-label^="Comprar e equipar"])')!
       expect(buy).toBeEnabled()
       fireEvent.click(buy)
       const next=useGameStore.getState().save!
