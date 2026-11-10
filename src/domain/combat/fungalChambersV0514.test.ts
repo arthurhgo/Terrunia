@@ -130,7 +130,7 @@ describe('v0.5.14 · combate das Câmaras Fúngicas', () => {
     const first = submitBattleCommand(applied.value, { type: 'defend' }, content)
     expect(first.ok).toBe(true)
     if (!first.ok) return
-    expect(first.value.combatants.combatant_player.hp).toBeGreaterThanOrEqual(22)
+    expect(first.value.combatants.combatant_player.potionHealingRemaining).toBe(0)
     const second = submitBattleCommand(first.value, { type: 'defend' }, content)
     expect(second.ok).toBe(true)
     if (!second.ok) return
