@@ -31,9 +31,6 @@ const TIER_PRICE = [1,2.6,6,12,23] as const
 const SLOTS:readonly GearSlot[]=['helmet','necklace','accessoryA','weapon','shield','armor','pants','boots','accessoryB','bracelet']
 const LABELS=['Capacete','Colar','Talismã','Arma','Protetor','Armadura','Calças','Botas','Insígnia','Pulseira'] as const
 const PRICES=[20,30,22,65,35,25,20,20,24,28] as const
-const VALUES=[[2,6,10,14,18],[2,6,10,14,18],[2,6,10,14,18],[3,7,11,15,19],
- [1,4,7,10,13],[1,4,7,10,13],[2,6,10,14,18],[1,4,7,10,13],
- [1,4,7,10,13],[2,6,10,14,18]] as const
 /**
  * BALANCE_DRAFT v0.5.15.2: controlled power budget. Every grade improves the
  * item exactly once: G2 upgrades its support stat, G3 upgrades its main stat.
