@@ -52,7 +52,8 @@ export const ROOM_PLANS: Record<TerranInteriorId, RoomPlan> = {
     obstacles: [rect(166, 126, 52, 21)],
     spawn: point(192, 219), exit: point(192, 233), service: point(310, 198),
     residents: [point(75, 113), point(142, 111), point(235, 111), point(307, 115),
-      point(102, 162), point(281, 162), point(191, 182)],
+      point(102, 162), point(281, 162), point(191, 182),
+      point(56, 208), point(142, 194), point(328, 167)],
     tile: 'arcane',
   },
   location_terran_zareth_barracks: {
