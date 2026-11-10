@@ -3,6 +3,7 @@ import { gearOfferById, getGearGrade, getGearStatEntries, gearSpriteId, formatGe
 import { getWornGear } from '../../domain/inventory/equipmentV0515'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
+import './gearForgeV05153.css'
 
 /** Read-only projected forge results. Costs and attribute deltas come exclusively from the catalog. */
 export function GearForgeV0515({ save }: { save: GameSave }) {
