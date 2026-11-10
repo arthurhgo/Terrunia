@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { content } from '../content/catalog'
+import { equipmentOffersV0515 } from '../content/equipmentV0515'
 import { deriveCharacterStats } from '../domain/character/derivedStats'
 import { getLatestLocalSave } from '../persistence/localSaveRepository'
 import { flushPersistence, useGameStore } from '../state/gameStore'
@@ -123,6 +124,29 @@ describe('vertical slice integrada', () => {
     store().adjustAttribute('vigor', 1); store().adjustAttribute('vigor', 1); store().adjustAttribute('vigor', 1); store().adjustAttribute('vigor', 1)
     store().adjustAttribute('agility', 1)
     store().bindPrologueWeapon()
+    // Prepared quest-regression fixture: representative neutral G3 items,
+    // without granting a Clan/Class, altering campaign rewards, or bypassing
+    // gameplay rules in production. The equipment economy is tested separately.
+    const preparedGear=structuredClone(store().save!)
+    const options=equipmentOffersV0515.filter(offer=>offer.channel==='PUBLIC_TERRAN' &&
+      offer.tier===1 && offer.recommendedClassId==='sentinela_da_luz')
+    for(const slot of ['weapon','armor','helmet','pants','boots','accessoryA','accessoryB'] as const){
+      const offer=options.find(candidate=>candidate.slot===slot)!
+      const gear={
+        instanceId:'quest-fixture-'+slot,definitionId:offer.id,
+        quantity:1,rarity:'common' as const,locked:false,favorite:false,
+        acquiredAt:'2026-11-10T12:00:00Z',refinementLevel:2,
+      }
+      if(slot==='weapon')preparedGear.equippedGearStyles={weapon:gear}
+      else if(slot==='armor'){
+        preparedGear.equippedBasicArmor=gear
+        preparedGear.character.basicArmorInstanceId=gear.instanceId
+      }else preparedGear.equippedComplementary={...preparedGear.equippedComplementary,[slot]:gear}
+    }
+    const derivedFixture=deriveCharacterStats(preparedGear,content)
+    preparedGear.vitals.hp=derivedFixture.life.value
+    preparedGear.vitals.mp=derivedFixture.mana.value
+    useGameStore.setState({save:preparedGear})
     const weaponId = store().save!.character.bondedEquipment.weapon!
     const visit = (id: string) => store().travelInTerran(id)
     const accept = (id: string) => { store().offerQuest(id); store().acceptQuest(id) }
