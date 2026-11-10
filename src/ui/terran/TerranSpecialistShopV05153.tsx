@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Coins, ShieldCheck, LayoutGrid, List, Info } from 'lucide-react'
+import { Search, Coins, ShieldCheck, LayoutGrid, List } from 'lucide-react'
 import type { GameSave, InventoryItemInstance } from '../../domain/game/types'
 import { equipmentOffersV0515, gearSetById, formatGearStats, type GearOffer } from '../../content/equipmentV0515'
 import { GEAR_STAT_LABELS } from '../../content/equipmentProfilesV05152'
@@ -104,10 +104,15 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
         const canBuy=access.ok&&save.wallet.gold>=offer.price
         return <article key={offer.id} className="terran-specialist__offer" data-ownership={equipped?'equipped':owned?'backpack':stored?'storage':'new'}
           title={offer.name+' · '+formatGearStats(offer,1)+' · Use Detalhes para comparação completa.'}>
-          <div className="terran-specialist__icon" style={{borderColor:offer.palette.trim}}
-            onMouseEnter={()=>setHovered(offer.id)} onMouseLeave={()=>setHovered(null)}>
-            <AssetImage assetId={offer.assetId} alt={offer.name}/>
-          </div>
+          <button type="button" className="terran-specialist__icon" style={{borderColor:offer.palette.trim}}
+            title={'Inspecionar '+offer.name} aria-label={'Inspecionar '+offer.name}
+            aria-pressed={inspected===offer.id}
+            onMouseEnter={()=>setHovered(offer.id)} onMouseLeave={()=>setHovered(null)}
+            onFocus={()=>setHovered(offer.id)}
+            onBlur={()=>setHovered(null)}
+            onClick={()=>setInspected(current=>current===offer.id?null:offer.id)}>
+            <AssetImage assetId={offer.assetId} alt="" aria-hidden="true"/>
+          </button>
           <div className="terran-specialist__copy"
             onMouseEnter={()=>setHovered(offer.id)} onMouseLeave={()=>setHovered(null)}>
             <strong>{offer.name}</strong>
@@ -118,10 +123,6 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
             {!canWear&&<small className="terran-specialist__blocked">Equipar requer Vínculo de Arma; é possível comprar e guardar.</small>}
           </div>
           <div className="terran-specialist__actions">
-            <button type="button" className="terran-specialist__inspect" aria-pressed={inspected===offer.id}
-              aria-label={'Inspecionar '+offer.name} onClick={()=>setInspected(current=>current===offer.id?null:offer.id)}>
-              <Info size={12} aria-hidden="true"/> {inspected===offer.id?'Fechar detalhes':'Detalhes'}
-            </button>
             <button type="button" disabled={!canBuy}
               aria-label={'Comprar '+offer.name+' por '+offer.price+' ouro'}
               title={!access.ok?access.message:!canBuy?'Ouro insuficiente':'Comprar e guardar na Mochila'}
