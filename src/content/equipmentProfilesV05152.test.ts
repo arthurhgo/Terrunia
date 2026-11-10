@@ -81,8 +81,14 @@ describe('v0.5.15.2 — Neris: cobertura real e variedade de status',()=>{
   for(const item of equipmentOffersV0515.filter(o=>o.channel==='CLAN_EXCLUSIVE'&&o.tier===1)){
    for(const publicItem of common.filter(o=>o.slot===item.slot)){
     expect(item.values[0]+item.secondaryValues[0])
-     .toBeGreaterThan(publicItem.values[0]+publicItem.secondaryValues[0])
+     .toBeGreaterThan(publicItem.values[2]+publicItem.secondaryValues[2])
    }
+  }
+  for(const restricted of equipmentOffersV0515.filter(o=>o.channel==='CLASS_EXCLUSIVE'&&o.tier===1)){
+   const matchingClan=equipmentOffersV0515.find(o=>o.channel==='CLAN_EXCLUSIVE' &&
+    o.tier===1 && o.clanId===restricted.clanId && o.slot===restricted.slot)!
+   expect(restricted.values[0]+restricted.secondaryValues[0])
+    .toBeGreaterThan(matchingClan.values[0]+matchingClan.secondaryValues[0])
   }
   expect(classDefinitions.every(cls=>NERIS_COMBAT_PROFILES[cls.id])).toBe(true)
  })
