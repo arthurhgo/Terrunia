@@ -2,7 +2,7 @@ import { Coins, Filter, FlaskConical, Gem, Heart, PackageOpen, Star } from 'luci
 import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './inventoryHover.css'
-import { gearOfferById, getGearGrade, gearSpriteId } from '../../content/equipmentV0515'
+import { gearOfferById, getGearGrade, gearSpriteId, formatGearStats } from '../../content/equipmentV0515'
 const gearIcon = (id: string, refinement: number | undefined, fallback: string) => {
   const gear = gearOfferById[id]
   return gear ? gearSpriteId(gear, getGearGrade(refinement)) : fallback
@@ -183,7 +183,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
           aria-label={`Equipamento: ${selectedComplementary.definition.name}`}>
           <AssetImage assetId={gearIcon(selectedComplementary.instance.definitionId, selectedComplementary.instance.refinementLevel, selectedComplementary.definition.iconAssetId)} />
           <div><strong>{selectedComplementary.definition.name}</strong>
-            <small>{selectedGear ? `${selectedGear.stat}: +${selectedGear.values[getGearGrade(selectedComplementary.instance.refinementLevel)-1]} · Tier ${selectedGear.tier} · Grau ${getGearGrade(selectedComplementary.instance.refinementLevel)}` : 'Peça complementar, sem bônus de atributos.'}</small></div>
+            <small>{selectedGear ? `${formatGearStats(selectedGear,getGearGrade(selectedComplementary.instance.refinementLevel))} · Tier ${selectedGear.tier} · Grau ${getGearGrade(selectedComplementary.instance.refinementLevel)}` : 'Peça complementar, sem bônus de atributos.'}</small></div>
           <button type="button" disabled={Boolean(save.battle) || selectedComplementary.instance.locked}
             onClick={() => { equipComplementary(selectedComplementary.slot, selectedComplementary.instance.instanceId); setSelected(null); setHovered(null) }}>
             Equipar {selectedComplementary.definition.name}
@@ -194,7 +194,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
         {tradeMode === 'browse' && selectedGear && !selectedGear.slot.match(/^(helmet|pants|boots|accessoryA|accessoryB|armor)$/) && selectedArmorInstance && <section className="inventory-equipment-detail" aria-label={'Revestimento: '+selectedGear.name}>
           <AssetImage assetId={gearSpriteId(selectedGear, getGearGrade(selectedArmorInstance.refinementLevel))} />
           <div><strong>{selectedGear.name}</strong>
-            <small>Tier {selectedGear.tier} · G{getGearGrade(selectedArmorInstance.refinementLevel)} · {selectedGear.stat} +{selectedGear.values[getGearGrade(selectedArmorInstance.refinementLevel)-1]}</small>
+            <small>Tier {selectedGear.tier} · G{getGearGrade(selectedArmorInstance.refinementLevel)} · {formatGearStats(selectedGear,getGearGrade(selectedArmorInstance.refinementLevel))}</small>
             <small>Preserva Grau do Vínculo, Ressonância, Runas e Skill Tree.</small></div>
           <button type="button" disabled={Boolean(save.battle)||selectedArmorInstance.locked||!save.character.bondedEquipment[selectedGear.slot as 'weapon'|'shield'|'necklace'|'bracelet']}
             onClick={() => { equipGearStyle(selectedGear.slot as 'weapon'|'shield'|'necklace'|'bracelet',selectedArmorInstance.instanceId);setSelected(null);setHovered(null) }}>
@@ -270,7 +270,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
           style={{ left: hovered.x, top: hovered.y }}>
           <span className="inventory-hover-card__eyebrow">STATUS DO ITEM</span>
           <strong>{definition.name}{item.refinementLevel ? ` +${item.refinementLevel}` : ''}</strong>
-          <small>{gearOfferById[item.definitionId] ? `Tier ${gearOfferById[item.definitionId].tier} · Grau ${getGearGrade(item.refinementLevel)}` : armor ? `Tier ${armor.tier} · Proteção simples` : `${definition.category} · ${definition.rarity}`}</small>
+          <small>{gearOfferById[item.definitionId] ? `Tier ${gearOfferById[item.definitionId].tier} · Grau ${getGearGrade(item.refinementLevel)} · ${formatGearStats(gearOfferById[item.definitionId],getGearGrade(item.refinementLevel))}` : armor ? `Tier ${armor.tier} · Proteção simples` : `${definition.category} · ${definition.rarity}`}</small>
           {armor && <div className="inventory-hover-card__stats">
             <span>Defesa <b>+{armor.mitigation + (item.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel}</b></span>
             <span>Iniciativa <b>{armor.initiative > 0 ? '+' : ''}{armor.initiative}</b></span>
