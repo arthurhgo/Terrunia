@@ -1,0 +1,58 @@
+name: Terrúnia v0.5.15.3 — Market Specialists (local-only)
+
+on:
+  push:
+    branches:
+      - fix/v0.5.15.3-terran-market-specialists
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: TypeScript, lint, unit tests and build
+        run: npm run check
+  browser:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Use Chromium for local UI tests
+        shell: bash
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v chromium)" >> "$GITHUB_ENV"
+          else
+            npx playwright install --with-deps chromium
+          fi
+      - name: Run Playwright on local Vite server (no Vercel)
+        run: npm run e2e -- --project=chromium
+        env:
+          VITE_ALLOW_DEV_GUEST: 'true'
+      - name: Record regression artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terrunia-v05153-market-browser
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
