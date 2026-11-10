@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
+import { equipmentOffersV0515 } from '../../content/equipmentV0515'
 import { createBoundItem } from '../bond/boundItems'
 import { deriveCharacterStats } from '../character/derivedStats'
 import { bindPrologueWeapon, createNewSave } from '../game/createSave'
@@ -107,4 +108,41 @@ describe('HUD de equipamentos da batalha', () => {
       { key: 'initiative', label: 'Iniciativa', value: 1 },
     ]))
   })
+  it('shows two real bonuses of Neris commercial shells, without mislabeling them as Bound grade',()=>{
+    const save=makeSave()
+    const profile=equipmentOffersV0515.find(offer=>offer.channel==='PUBLIC_TERRAN' &&
+      offer.tier===1 && offer.slot==='weapon' && offer.recommendedClassId==='batedor_da_vigilia')!
+    save.equippedGearStyles={weapon:{
+      instanceId:'merchant-weapon',definitionId:profile.id,quantity:1,rarity:'common',
+      locked:false,favorite:false,acquiredAt:now,refinementLevel:0,
+    }}
+    const summary=getBattleGearSummary(save,content)
+    expect(summary.slots[0].tierLabel).toContain('Vínculo · Grau 1')
+    expect(summary.slots[0].tierLabel).toContain('Revestimento T1 G1')
+    expect(summary.slots[0].stats).toEqual(expect.arrayContaining([
+      {key:'physicalAttack',label:'Ataque físico · revestimento',value:profile.values[0]},
+      {key:'initiative',label:'Iniciativa · revestimento',value:profile.secondaryValues[0]},
+    ]))
+    expect(summary.totals.physicalAttack).toBe(profile.values[0])
+    expect(summary.totals.initiative).toBe(profile.secondaryValues[0])
+    expect(summary.totals.attack).toBe(content.boundItemBases.bound_weapon_prologue_base.basePower)
+  })
+  it('sums the two bonuses of complementary equipment even though only five Bound cards exist',()=>{
+    const save=makeSave()
+    const profile=equipmentOffersV0515.find(offer=>offer.channel==='PUBLIC_TERRAN' &&
+      offer.tier===1 && offer.slot==='boots' && offer.recommendedClassId==='astrologo_celestial')!
+    save.equippedComplementary={boots:{
+      instanceId:'merchant-boots',definitionId:profile.id,quantity:1,rarity:'common',
+      locked:false,favorite:false,acquiredAt:now,refinementLevel:0,
+    }}
+    const summary=getBattleGearSummary(save,content)
+    expect(summary.slots).toHaveLength(5)
+    expect(summary.totals.initiative).toBe(profile.values[0])
+    expect(summary.totals.maxMp).toBeUndefined()
+    expect(summary.totals.mana).toBe(profile.secondaryValues[0])
+    const derived=deriveCharacterStats(save,content)
+    expect(derived.initiative.contributions.find(c=>c.label==='Equipamentos')?.value).toBe(profile.values[0])
+    expect(derived.mana.contributions.find(c=>c.label==='Equipamentos')?.value).toBe(profile.secondaryValues[0])
+  })
+
 })
