@@ -27,7 +27,7 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
   return <section className="terran-shop" aria-label="Comprar itens no Mercado">
     <h3><Backpack size={18} /> Mochila do vendedor · itens à venda</h3>
     <p className="terran-shop__wallet"><Coins size={16} /> {save.wallet.gold} Ouro</p>
-    {npcId === 'presence_neris' && <GearShopV0515 save={save} channel="PUBLIC_TERRAN" />}
+    {npcId === 'presence_neris' && <GearShopV0515 save={save} merchantId="presence_neris" />}
     <div className="terran-shop__stock">
       {stock.map((offer) => {
         const { itemId, price } = offer
