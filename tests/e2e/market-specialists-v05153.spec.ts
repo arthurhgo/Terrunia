@@ -32,7 +32,7 @@ test('Mercado v0.5.15.3: Neris só vende consumíveis, 3 NPCs vendem peças ilus
   await expect(dialog).toBeVisible()
   if(index===0){
    await expect(dialog.getByText('Tônico de Campo',{exact:true})).toBeVisible()
-   await expect(dialog.getByText('Poção Restauradora',{exact:true})).toBeVisible()
+   await expect(dialog.getByRole('button',{name:'Comprar Poção Restauradora por 28 ouro'})).toBeVisible()
    await expect(dialog.getByRole('group',{name:'Conjuntos disponíveis'})).toHaveCount(0)
    const buy=dialog.getByRole('button',{name:'Comprar Tônico de Campo por 18 ouro'})
    const tonic=buy.locator('xpath=ancestor::article')
