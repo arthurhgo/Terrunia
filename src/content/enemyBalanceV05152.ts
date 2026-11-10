@@ -39,7 +39,7 @@ export const ENEMY_BUDGET_V05152:Record<string,EnemyBudget>={
  enemy_chacal_sombras: {maxHp:44,mitigation:3,attackPower:9},
  enemy_escorpiao_aco: {maxHp:52,mitigation:5,attackPower:9},
  enemy_serpente_solar: {maxHp:48,mitigation:2,attackPower:10},
- enemy_golem_areia: {maxHp:105,mitigation:6,attackPower:12},
+ enemy_golem_areia: {maxHp:135,mitigation:7,attackPower:13},
 }
 
 export const rebalanceEnemyV05152=(enemy:EnemyDefinition):EnemyDefinition=>({
