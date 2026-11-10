@@ -144,10 +144,16 @@ function Upgrade({ save, grade }: { save: GameSave; grade: 2 | 3 }) {
       const componentDefinition = fragment
         ? content.items[fragment.definitionId]
         : gemCandidate ? content.items[gemCandidate.itemDefinitionId] : null
-      const ready = item.grade === grade - 1 && item.resonance >= item.resonanceThreshold && Boolean(componentId)
+      const requirements = [
+        item.grade !== grade - 1 ? 'Requer Grau ' + (grade - 1) + ' (atual G' + item.grade + ')' : '',
+        item.resonance < item.resonanceThreshold ? 'Faltam ' + (item.resonanceThreshold - item.resonance) + ' pontos de Ressonância' : '',
+        !componentId ? 'Obtenha um componente compatível com Valmira' : '',
+      ].filter(Boolean)
+      const ready = requirements.length === 0
       return <article className="market-upgrade__item" key={slot}>
         <strong>{BOUND_SLOT_LABELS[slot]} · {definition?.name ?? 'Vínculo'} · G{item.grade}</strong>
         <small>Ressonância {item.resonance}/{item.resonanceThreshold} · {componentDefinition ? `Material: ${componentDefinition.name}` : 'Material compatível ausente'}</small>
+        <small role="status">{ready ? 'Requisitos completos · rito disponível' : 'Próximo passo: ' + requirements.join(' · ')}</small>
         <button className="terran-service-action" type="button" disabled={!ready} onClick={() => {
           if (!componentId) return
           if (grade === 2) evolveTwo(item.id, componentId)
