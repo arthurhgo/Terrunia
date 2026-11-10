@@ -1,4 +1,4 @@
-import { gearOfferById, getGearGrade, type GearPalette } from '../../content/equipmentV0515'
+import { gearOfferById, getGearGrade, gearSpriteId, type GearPalette } from '../../content/equipmentV0515'
 import type { ComplementarySlot } from '../../domain/shared/types'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
@@ -27,7 +27,7 @@ export function getVisualEquipment(save: GameSave, sheathed = false): VisualItem
     const wornShell = save.equippedGearStyles?.[slot]
     const gearShell = wornShell ? gearOfferById[wornShell.definitionId] : undefined
     if (gearShell && save.character.bondedEquipment[slot]) {
-      items.push({slot,assetId:gearShell.assetId,itemId:gearShell.id,itemName:gearShell.name,
+      items.push({slot,assetId:gearSpriteId(gearShell,getGearGrade(wornShell?.refinementLevel)),itemId:gearShell.id,itemName:gearShell.name,
         forged:getGearGrade(wornShell?.refinementLevel)>1,forgeGrade:getGearGrade(wornShell?.refinementLevel),
         visualTier:gearShell.tier,palette:gearShell.palette,sheathed:slot==='weapon'&&sheathed})
       continue
@@ -42,7 +42,7 @@ export function getVisualEquipment(save: GameSave, sheathed = false): VisualItem
       const definition = content.items[save.equippedBasicArmor.definitionId]
       if (definition?.basicArmor && definition.iconAssetId) {
         const catalog = gearOfferById[definition.id]
-        items.push({slot,assetId:definition.iconAssetId,itemId:definition.id,itemName:definition.name,
+        items.push({slot,assetId:catalog?gearSpriteId(catalog,getGearGrade(save.equippedBasicArmor.refinementLevel)):definition.iconAssetId,itemId:definition.id,itemName:definition.name,
           forged:Boolean(save.equippedBasicArmor.refinementLevel),rarity:definition.rarity,
           visualTier:definition.basicArmor.tier,...(catalog?{palette:catalog.palette,forgeGrade:getGearGrade(save.equippedBasicArmor.refinementLevel)}:{})})
       }
@@ -53,7 +53,7 @@ export function getVisualEquipment(save: GameSave, sheathed = false): VisualItem
     const worn=save.equippedComplementary?.[slot]
     const definition=worn&&content.items[worn.definitionId]
     const gear=worn&&gearOfferById[worn.definitionId]
-    if (worn && definition && gear) items.push({slot,assetId:gear.assetId,itemId:gear.id,itemName:gear.name,
+    if (worn && definition && gear) items.push({slot,assetId:gearSpriteId(gear,getGearGrade(worn.refinementLevel)),itemId:gear.id,itemName:gear.name,
       forged:getGearGrade(worn.refinementLevel)>1,forgeGrade:getGearGrade(worn.refinementLevel),
       visualTier:gear.tier,palette:gear.palette,rarity:definition.rarity})
   }
