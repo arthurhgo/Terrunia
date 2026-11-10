@@ -32,7 +32,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
   const [selected, setSelected] = useState<string | null>(null)
   const [hovered, setHovered] = useState<{ instanceId: string; x: number; y: number } | null>(null)
   const [action, setAction] = useState<Action>(null)
-  const [filter, setFilter] = useState<'all' | 'equipment' | 'convertible' | 'sellable'>('all')
+  const [filter, setFilter] = useState<'all' | 'equipment' | 'consumables' | 'materials' | 'quest' | 'bond' | 'convertible' | 'sellable'>('all')
   const [page, setPage] = useState(0)
   const selectedArmorInstance = selected ? save.inventory.find((item) => selected === item.instanceId) : null
   const selectedArmorDefinition = selectedArmorInstance && content.items[selectedArmorInstance.definitionId]
@@ -47,6 +47,10 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
     if (instance.instanceId === save.character.basicArmorInstanceId) return false
     const definition = content.items[instance.definitionId]
     if (filter === 'equipment') return Boolean(definition?.basicArmor || definition?.complementarySlot || gearOfferById[instance.definitionId])
+    if (filter === 'consumables') return definition?.category === 'consumable'
+    if (filter === 'materials') return Boolean(definition && ['material', 'fragment', 'essence_source', 'rune', 'jewel', 'drop'].includes(definition.category))
+    if (filter === 'quest') return Boolean(definition?.questLocked || getPendingItemDeliveries(instance.definitionId, save, content).length)
+    if (filter === 'bond') return Boolean(definition?.canInfuseBoundItem || definition?.gemComponentId)
     if (filter === 'convertible') return definition?.convertToEssence
     if (filter === 'sellable') return definition?.sellable
     return true
@@ -117,7 +121,11 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
             <Filter size={14} />
             <select aria-label="Filtrar itens da mochila" value={filter} onChange={(event) => { setFilter(event.target.value as typeof filter); setSelected(null); setPage(0) }}>
               <option value="all">Todos</option>
-              <option value="equipment">Equipamentos simples</option>
+              <option value="equipment">Equipamentos comerciais</option>
+              <option value="consumables">Consumíveis</option>
+              <option value="materials">Drops e materiais</option>
+              <option value="quest">Itens de missões</option>
+              <option value="bond">Materiais de Vínculo</option>
               <option value="convertible">Conversíveis</option>
               <option value="sellable">Vendáveis</option>
             </select>
@@ -134,6 +142,8 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
                 type="button"
                 key={instance.instanceId}
                 className={`inventory-slot rarity-${instance.rarity} ${isSelected ? 'selected' : ''}`}
+                data-item-kind={definition.category}
+                title={definition.questLocked ? 'Item protegido de missão' : definition.category === 'consumable' ? 'Consumível' : definition.category}
                 onClick={() => toggleSelection(instance.instanceId)}
                 onMouseEnter={(event) => showTooltip(instance.instanceId, event.currentTarget)}
                 onMouseLeave={() => setHovered(null)}
@@ -144,6 +154,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
                 <AssetImage assetId={gearIcon(instance.definitionId, instance.refinementLevel, definition.iconAssetId)} alt="" aria-hidden="true" />
                 <span>{definition.name}</span>
                 {instance.quantity > 1 && <strong>{instance.quantity}</strong>}
+                {definition.questLocked && <span className="inventory-slot__quest-mark" aria-label="Protegido: missão">Q</span>}
                 {instance.favorite && <Star size={12} className="favorite-mark" fill="currentColor" />}
                 {Boolean(instance.refinementLevel) && <b className="refinement-mark">{gearOfferById[instance.definitionId] ? `G${getGearGrade(instance.refinementLevel)}` : `+${instance.refinementLevel}`}</b>}
               </button>
