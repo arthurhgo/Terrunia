@@ -101,3 +101,8 @@
 .terran-specialist__offer{position:relative;isolation:isolate}
 .terran-specialist__actions{position:relative;z-index:1}
 .terran-specialist__offer:hover,.terran-specialist__offer:focus-within{z-index:2}
+
+/* Sprite doubles as an accessible detail control; buying keeps a stable two-button column. */
+.terran-specialist__icon{padding:0;cursor:help;color:inherit}
+.terran-specialist__icon:focus-visible{outline:2px solid #f1cf87;outline-offset:2px}
+.terran-specialist__icon[aria-pressed="true"]{box-shadow:0 0 0 2px #d6ae69,inset 0 0 0 1px #d6ae69}
