@@ -96,7 +96,7 @@ describe('v0.5.14 · combate das Câmaras Fúngicas', () => {
     expect(revived.value.log.some((entry) => entry.message.includes('A Sentinela ressuscita'))).toBe(true)
   })
 
-  it('poção é gratuita, exige item real, não adianta turno e recupera 10% totais em 2 turnos', () => {
+  it('poção é gratuita, exige item real, não adianta turno e cura 10% imediatamente', () => {
     const battle = createBattle(makeSave(), content.encounters.encounter_fungorro_01,
       content, 'potion-free-action', { manualInitiative: true })
     const player = battle.combatants.combatant_player
@@ -120,8 +120,8 @@ describe('v0.5.14 · combate das Câmaras Fúngicas', () => {
     if (!applied.ok) return
     expect(applied.value.phase).toBe('AwaitingAction')
     expect(applied.value.round).toBe(1)
-    expect(applied.value.combatants.combatant_player.hp).toBe(18)
-    expect(applied.value.combatants.combatant_player.potionHealingRemaining).toBe(4)
+    expect(applied.value.combatants.combatant_player.hp).toBe(22)
+    expect(applied.value.combatants.combatant_player.potionHealingRemaining).toBe(0)
     expect(applied.value.consumedItemInstanceIds).toEqual(['healing-1'])
     expect(submitBattleCommand(applied.value,
       { type: 'item', itemInstanceId: item.instanceId, targetId: player.id }, content, [item]))
@@ -130,15 +130,15 @@ describe('v0.5.14 · combate das Câmaras Fúngicas', () => {
     const first = submitBattleCommand(applied.value, { type: 'defend' }, content)
     expect(first.ok).toBe(true)
     if (!first.ok) return
-    expect(first.value.combatants.combatant_player.potionHealingRemaining).toBe(2)
+    expect(first.value.combatants.combatant_player.hp).toBeGreaterThanOrEqual(22)
     const second = submitBattleCommand(first.value, { type: 'defend' }, content)
     expect(second.ok).toBe(true)
     if (!second.ok) return
     expect(second.value.combatants.combatant_player.potionHealingRemaining).toBe(0)
     expect(second.value.combatants.combatant_player.potionCooldown).toBe(0)
-    const logs = second.value.log.filter((entry) => entry.message.includes('Poção Restauradora recupera'))
-    expect(logs).toHaveLength(2)
-    expect(logs.every((entry) => entry.message.includes('recupera 2'))).toBe(true)
+    const logs = applied.value.log.filter((entry) => entry.message.includes('recupera 4 de Vida'))
+    expect(logs).toHaveLength(1)
+    expect(applied.value.log.some(e=>e.message.includes('sem gastar a ação'))).toBe(true)
   })
 
   it('arma vinculada aplica dado adicional verdadeiro e informa prévia sem consumir RNG', () => {
