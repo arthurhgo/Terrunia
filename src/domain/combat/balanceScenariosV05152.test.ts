@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { equipmentOffersV0515, GEAR_LEVELS } from '../../content/equipmentV0515'
 import { deriveCharacterStats } from '../character/derivedStats'
+import { createBoundItem } from '../bond/boundItems'
 import { bindPrologueWeapon,createNewSave } from '../game/createSave'
 import type { GameSave, InventoryItemInstance } from '../game/types'
 import { calculateRolledDamage, createBattle, submitBattleCommand } from './engine'
@@ -36,6 +37,29 @@ function equip(style:string,tier:number,grade:1|2|3,exclusive=false):GameSave{
    save.character.basicArmorInstanceId=wearing.instanceId
   }else if(slot==='weapon')save.equippedGearStyles={weapon:wearing}
   else save.equippedComplementary={...save.equippedComplementary,[slot]:wearing}
+ }
+ if(tier>=3){
+  // Representative advanced save: these are the pre-existing permanent Bonds,
+  // not replacement weapons. Tier III and V users have spent earned attribute
+  // points on Vigor and Strength rather than remaining at four-sided dice.
+  save.character.attributes.vigor.die=tier>=5?10:8
+  save.character.attributes.strength.die=tier>=5?10:6
+  const boundBases={
+   shield:'bound_shield_round',armor:'bound_armor_leather',
+   necklace:'bound_necklace_moon',bracelet:'bound_bracelet_leather',
+  } as const
+  for(const [slot,baseId] of Object.entries(boundBases) as
+     Array<[keyof typeof boundBases,string]>){
+   const base=content.boundItemBases[baseId]
+   const permanent=createBoundItem(save.character.id,base,NOW,'sim-bound-'+slot)
+   save.boundItems[permanent.id]=permanent
+   save.character.bondedEquipment[slot]=permanent.id
+   const offer=offers.find(o=>o.slot===slot)!
+   const shell=slot==='armor'?save.equippedBasicArmor!:item(offer.id,grade)
+   save.equippedGearStyles={...save.equippedGearStyles,[slot]:shell}
+  }
+  save.equippedBasicArmor=null
+  save.character.basicArmorInstanceId=null
  }
  const derived=deriveCharacterStats(save,content)
  save.vitals.hp=derived.life.value
