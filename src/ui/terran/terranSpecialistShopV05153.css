@@ -93,10 +93,3 @@
 @media(max-width:600px){.terran-specialist__offers--grid{grid-template-columns:repeat(2,minmax(0,1fr))}.terran-specialist__offers--grid .terran-specialist__offer{min-height:225px}.terran-specialist__view span{margin-left:0}}
 @media(max-width:380px){.terran-specialist__offers--grid{grid-template-columns:1fr}}
 
-/* Focused tutorial step; uses the current objective and existing path/inventory actions. */
-.rosetta-guide__focus{display:grid;gap:5px;margin:9px 0;padding:11px;border:1px solid #ad8a51;background:#1b302f}
-.rosetta-guide__focus strong{color:#f0cd8b;font:700 11px var(--display)}
-.rosetta-guide__focus p{margin:0;color:#f1e8d1;font-size:13px}
-.rosetta-guide__focus small{color:#b1ccbf}
-.rosetta-guide__focus button{justify-self:start;padding:6px 9px;border:1px solid #c9a96b;background:#34311e;color:#f8dca7;cursor:pointer;font:700 11px var(--display)}
-.rosetta-guide__focus button:focus-visible{outline:2px solid #f8dc94;outline-offset:2px}
