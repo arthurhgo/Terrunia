@@ -1,5 +1,5 @@
 import { cleanup,fireEvent,render,screen } from '@testing-library/react'
-import { afterEach,describe,expect,it } from 'vitest'
+import { afterEach,describe,expect,it,vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../../domain/game/createSave'
@@ -44,5 +44,25 @@ describe('v0.5.15.3 Rosetta optional merchant introduction',()=>{
   expect(done.character.bondedEquipment).toEqual(before)
   expect(done.inventory).toEqual(save.inventory)
   expect(done.wallet.gold).toBe(save.wallet.gold)
+ })
+ it('highlights the next real lesson objective and links to existing guidance, without new quest flags',()=>{
+  const save=createNewSave('owner','Guia','character.terririan.default',content,NOW)
+  save.quests.rosetta_tutorial_equip.status='active'
+  const lesson=content.quests.rosetta_tutorial_equip
+  const next=lesson.objectives.find(objective=>
+    (save.quests[lesson.id].objectives[objective.id]??0)<objective.required)!
+  const snapshot=structuredClone(save)
+  const showPaths=vi.fn()
+  const openInventory=vi.fn()
+  useGameStore.setState({status:'ready',ownerId:save.ownerId,syncMode:'local',syncStatus:'saved',save})
+  render(<MemoryRouter><RosettaGuide save={save} onClose={()=>{}}
+    onOpenQuests={()=>{}} onShowPaths={showPaths} onOpenInventory={openInventory}/></MemoryRouter>)
+  expect(screen.getByText('PRÓXIMO PASSO · 1/3')).toBeInTheDocument()
+  const focus=screen.getByRole('status')
+  expect(focus).toHaveTextContent(next.label)
+  fireEvent.click(screen.getByRole('button',{name:next.type==='equip'?'Abrir mochila e equipar':'Ver caminho ou objetivo no Diário'}))
+  if(next.type==='equip')expect(openInventory).toHaveBeenCalledOnce()
+  else expect(showPaths).toHaveBeenCalledOnce()
+  expect(save).toEqual(snapshot)
  })
 })
