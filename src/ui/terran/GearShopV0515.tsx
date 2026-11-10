@@ -16,6 +16,7 @@ export function GearShopV0515({ save, merchantId }: { save: GameSave; merchantId
   const buySet = useGameStore((state) => state.buyGearSet)
   const [tier, setTier] = useState(1)
   const [classFilter, setClassFilter] = useState('all')
+  const [lineFilter, setLineFilter] = useState<'all' | 'clan' | 'class'>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const merchant = castleMerchantByPresenceId[merchantId]
   const isNeris = merchantId === 'presence_neris'
@@ -24,10 +25,11 @@ export function GearShopV0515({ save, merchantId }: { save: GameSave; merchantId
   const sets = equipmentSetsV0515.filter((set) =>
     (isNeris
       ? set.channel === 'PUBLIC_TERRAN' && set.tier === 1 && !set.clanId && !set.classId
-      : set.channel === merchant.channel && set.castleId === merchant.castleId &&
-        set.clanId === merchant.clanId && set.classId === merchant.classId &&
-        set.tier === tier) &&
-    (classFilter === 'all' || (isNeris && set.recommendedClassId === classFilter))
+      : merchant && set.channel !== 'PUBLIC_TERRAN' &&
+        set.castleId === merchant.castleId && set.clanId === merchant.clanId &&
+        set.tier === tier &&
+        (lineFilter === 'all' || (lineFilter === 'clan' ? set.channel === 'CLAN_EXCLUSIVE' : set.channel === 'CLASS_EXCLUSIVE'))) &&
+    (classFilter === 'all' || (isNeris ? set.recommendedClassId === classFilter : set.classId === classFilter))
   )
   const selected = sets.find((set) => set.id === selectedId) ?? sets[0]
   const cost = selected ? getSetPrice(selected.id) : 0
@@ -39,9 +41,7 @@ export function GearShopV0515({ save, merchantId }: { save: GameSave; merchantId
       <h3>{isNeris ? 'Neris · Equipamentos comuns' : merchant.name}</h3>
       <p>{isNeris
         ? 'Somente equipamentos comuns Tier I, Grau 1. Nenhum requisito de Clã ou Classe. As coleções são apenas estilos sugeridos.'
-        : merchant.channel === 'CLAN_EXCLUSIVE'
-          ? 'Arsenal exclusivo do Clã. A compra exige filiação e nível compatíveis.'
-          : 'Arsenal exclusivo da Classe. A compra exige filiação, Classe desbloqueada e nível compatível.'}
+        : 'Arsenal exclusivo do seu Clã e das suas três Classes. Itens de Clã exigem filiação; itens de Classe exigem também a disciplina conquistada. Ambas as linhas respeitam o nível.'}
         {' '}Grau de Forja 2–3 é aprimorado exclusivamente com Durnan.</p>
       <strong>Ouro: {save.wallet.gold.toLocaleString('pt-BR')}</strong>
     </header>
@@ -49,6 +49,18 @@ export function GearShopV0515({ save, merchantId }: { save: GameSave; merchantId
       {!isNeris && <label>Tier <select aria-label="Filtrar tier de equipamento" value={tier}
         onChange={(event) => { setTier(Number(event.target.value)); setSelectedId(null) }}>
         {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Tier {n} · Nível {1 + (n - 1) * 3}</option>)}
+      </select></label>}
+      {!isNeris && <label>Linha <select aria-label="Filtrar itens exclusivos do castelo" value={lineFilter}
+        onChange={(event) => { setLineFilter(event.target.value as typeof lineFilter); setClassFilter('all'); setSelectedId(null) }}>
+        <option value="all">Clã + Classes</option>
+        <option value="clan">Somente Clã</option>
+        <option value="class">Somente Classes</option>
+      </select></label>}
+      {!isNeris && <label>Classe <select aria-label="Filtrar Classe do castelo" value={classFilter}
+        onChange={(event) => { setClassFilter(event.target.value); if (event.target.value !== 'all') setLineFilter('class'); setSelectedId(null) }}>
+        <option value="all">Todas as Classes</option>
+        {classDefinitions.filter((cls) => cls.clanId === merchant?.clanId).map((cls) =>
+          <option key={cls.id} value={cls.id}>{cls.name}</option>)}
       </select></label>}
       {isNeris && <label>Estilo <select aria-label="Filtrar estilo comercial" value={classFilter}
         onChange={(event) => { setClassFilter(event.target.value); setSelectedId(null) }}>
@@ -61,7 +73,7 @@ export function GearShopV0515({ save, merchantId }: { save: GameSave; merchantId
         className={selected?.id === set.id ? 'is-selected' : ''} onClick={() => setSelectedId(set.id)}>
         <span className="gear-shop-v0515__swatch"
           style={{ background: set.palette.base, borderColor: set.palette.trim }} />
-        <span><strong>{set.name}</strong><small>Tier {set.tier} · Grau 1 · 10 peças</small></span>
+        <span><strong>{set.name}</strong><small>{set.channel === 'CLAN_EXCLUSIVE' ? 'Exclusivo do Clã' : set.channel === 'CLASS_EXCLUSIVE' ? 'Exclusivo de Classe' : 'Comum'} · Tier {set.tier} · Grau 1 · 10 peças</small></span>
       </button>)}
     </div>
     {selected ? <div className="gear-shop-v0515__selected">
