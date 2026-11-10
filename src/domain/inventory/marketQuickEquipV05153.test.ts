@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { equipmentOffersV0515 } from '../../content/equipmentV0515'
+import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
+import { MARKET_STOCK } from '../terran/market'
 import { createNewSave, bindPrologueWeapon } from '../game/createSave'
 import { deriveCharacterStats } from '../character/derivedStats'
 import { gameSaveSchema, migrateAndValidateSave } from '../../persistence/saveSchema'
@@ -105,9 +107,11 @@ describe('v0.5.15.3 — atomic shop Buy & Equip and persistent bonuses',()=>{
   it('maintains the Rosetta tutorial budget: 32 Ouro pays tonic 18 + upgrade 8, no grinding',()=>{
     const tonic=content.items.consumable_minor_tonic
     expect(tonic).toBeDefined()
-    // Starting optional training protection is rewarded, not purchased.
-    // Gold after first reward = 32; mandatory spending = 18+8.
-    const remaining=32-18-8
+    const reward=content.quests.rosetta_tutorial_equip.rewards.find(x=>x.type==='gold')?.value??0
+    const tonicPrice=MARKET_STOCK.find(x=>x.npcId==='presence_neris'&&x.itemId===tonic.id)?.price
+    expect(tonicPrice).toBe(18)
+    // Use real catalog values; Rosetta gives the protection, and the forge material is gifted.
+    const remaining=reward-(tonicPrice??0)-ARMOR_REFINEMENT.gold
     expect(remaining).toBe(6)
     expect(remaining).toBeGreaterThanOrEqual(0)
   })
