@@ -120,7 +120,7 @@ export function getBattleGearSummary(save: GameSave, catalog: ContentCatalog): B
     // Commercial protection/necklace/bracelet shells can be equipped before a
     // permanent Bond is earned. They are real worn gear, not empty placeholders.
     const temporaryStyle = save.equippedGearStyles?.[slot]
-    const temporaryOffer = temporaryStyle ? gearOfferById(temporaryStyle.definitionId) : undefined
+    const temporaryOffer = temporaryStyle ? gearOfferById[temporaryStyle.definitionId] : undefined
     if (temporaryStyle && temporaryOffer && temporaryOffer.slot === slot &&
         ['shield', 'necklace', 'bracelet'].includes(slot)) {
       const grade = getGearGrade(temporaryStyle.refinementLevel)
