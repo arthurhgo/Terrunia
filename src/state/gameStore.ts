@@ -818,7 +818,7 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(result.value)
       show('Compra realizada', BACKPACK_UPGRADES.find((upgrade) => upgrade.id === itemId)
         ? 'Capacidade da mochila expandida e salva no personagem.'
-        : `${quantity}× ${content.items[itemId].name} recebido no Mercado.`, 'success')
+        : `${quantity}× ${content.items[itemId].name} recebido no Mercado. Investimento: ${save.wallet.gold-result.value.wallet.gold} Ouro · Saldo: ${result.value.wallet.gold} Ouro.`, 'success')
     },
 
     buyAndEquipGear: (merchantId, offerId) => {
@@ -828,7 +828,7 @@ export const useGameStore = create<GameState>((set, get) => {
       if(!result.ok)return failAction(result.message)
       commit(result.value)
       show('Comprado e equipado',
-        (gearOfferById[offerId]?.name ?? 'Equipamento')+' equipado com os bônus aplicados. O Vínculo permanente foi preservado.',
+        (gearOfferById[offerId]?.name ?? 'Equipamento')+' equipado com os bônus aplicados. Custo: '+(save.wallet.gold-result.value.wallet.gold)+' Ouro · Saldo: '+result.value.wallet.gold+' Ouro. O Vínculo permanente foi preservado.',
         'success')
     },
 
@@ -839,7 +839,7 @@ export const useGameStore = create<GameState>((set, get) => {
       if(!result.ok)return failAction(result.message)
       commit(result.value)
       show('Proteção comprada e equipada',
-        (content.items[itemId]?.name ?? 'Armadura')+' equipada. Seus atributos foram atualizados.',
+        (content.items[itemId]?.name ?? 'Armadura')+' equipada. Custo: '+(save.wallet.gold-result.value.wallet.gold)+' Ouro · Saldo: '+result.value.wallet.gold+' Ouro. Seus atributos foram atualizados.',
         'success')
     },
 
@@ -849,7 +849,7 @@ export const useGameStore = create<GameState>((set, get) => {
       const result = purchaseGear(save, offerIds, nowIso(), merchantId)
       if (!result.ok) return failAction(result.message)
       commit(result.value)
-      show('Equipamentos adquiridos', offerIds.length + ' peça(s) do catálogo adicionada(s) à mochila ou ao baú da Base.', 'success')
+      show('Equipamentos adquiridos', offerIds.length + ' peça(s) guardada(s). Custo: ' + (save.wallet.gold-result.value.wallet.gold) + ' Ouro · Saldo: ' + result.value.wallet.gold + ' Ouro. Confira o destino na Mochila ou no Baú da Base.', 'success')
     },
 
     buyGearSet: (merchantId, setId) => {
