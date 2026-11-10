@@ -1,4 +1,5 @@
-import { equipmentOffersV0515 } from '../content/equipmentV0515'
+import { castleGearMerchantsV05151 } from '../content/castleMerchantsV05151'
+import { equipmentOffersV0515, gearSpriteId, type GearGrade } from '../content/equipmentV0515'
 import { combatSkillDefinitions } from '../content/combat'
 import type { CombatSkillDefinition } from '../content/types'
 import { biomeMaterialDefinitions, biomeEnemyDefinitions } from '../content/biomeExpeditions'
@@ -30,9 +31,19 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
-  ...equipmentOffersV0515.map((gear) => ({
-    id:gear.assetId,path:'/assets/equipment/v0515/'+gear.id+'.png',fallback:'/assets/placeholders/item.svg',
-    alt:gear.name,pixelArt:true,draftPlaceholder:true as const,
+  ...equipmentOffersV0515.flatMap((gear) => ([1,2,3] as GearGrade[]).map((grade) => ({
+    id: gearSpriteId(gear,grade),
+    path: '/assets/equipment/v05151/' + gear.id + '_g' + grade + '.png',
+    fallback: '/assets/placeholders/item.svg',
+    alt: gear.name + ' · Grau ' + grade,
+    pixelArt: true,
+  }))),
+  ...castleGearMerchantsV05151.map((merchant) => ({
+    id: merchant.portraitAssetId,
+    path: '/assets/npcs/castle_merchants/' + merchant.npcId + '.png',
+    fallback: '/assets/placeholders/npc.svg',
+    alt: merchant.name,
+    pixelArt: true,
   })),
 
   {id:'action.attack-single',path:'/assets/actions/attack_single.png',fallback:'/assets/placeholders/skill.svg',alt:'Ataque Único',pixelArt:true},

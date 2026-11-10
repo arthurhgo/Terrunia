@@ -1,3 +1,4 @@
+import { castleMerchantsForInterior } from '../../content/castleMerchantsV05151'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { TerranNpcPresence } from '../../content/types'
@@ -35,7 +36,16 @@ const paletteByTone: Record<string, string> = {
 
 /** Layout is independent of sprite paths and of quest/combat logic. */
 export function getInteriorResidents(save: GameSave, id: TerranInteriorId): InteriorResident[] {
-  if (id === PLAYER_HOME_INTERIOR_ID || isClanCastleInteriorId(id) || !hasTerranInterior(id)) return []
+  if (isClanCastleInteriorId(id)) {
+    const positions = getRoomPlan(id).residents
+    return castleMerchantsForInterior(id).map((merchant,index) => ({
+      presence: merchant.presence,
+      position: positions[index],
+      palette: 'clan',
+      marker: null,
+    }))
+  }
+  if (id === PLAYER_HOME_INTERIOR_ID || !hasTerranInterior(id)) return []
   const location = content.terranLocations[id]
   const positions = getRoomPlan(id).residents
   return getVisibleNpcsInLocation(save, id).slice(0, positions.length).map(({ presence }, index) => {

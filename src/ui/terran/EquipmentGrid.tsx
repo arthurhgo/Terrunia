@@ -2,7 +2,7 @@ import { Footprints, Gem, HardHat, Package, Shield, Shirt, Sword, Watch } from '
 import type { ComponentType } from 'react'
 import type { GameSave } from '../../domain/game/types'
 import type { BoundSlot, ComplementarySlot } from '../../domain/shared/types'
-import { gearOfferById, getGearGrade } from '../../content/equipmentV0515'
+import { gearOfferById, getGearGrade, gearSpriteId } from '../../content/equipmentV0515'
 import { content } from '../../content/catalog'
 import { useGameStore } from '../../state/gameStore'
 import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
@@ -39,7 +39,7 @@ export function EquipmentGrid({ save }: { save: GameSave }) {
     const starter = slot.bound === 'armor' && !linked ? basicArmor : null
     const shell = slot.bound ? save.equippedGearStyles?.[slot.bound] : null
     const shellGear = shell ? gearOfferById[shell.definitionId] : null
-    const assetId = shellGear?.assetId ?? (linked && boundInstance ? (linked.assetIdByGrade[boundInstance.grade] ?? linked.assetIdByGrade[1])
+    const assetId = (shellGear && shell ? gearSpriteId(shellGear,getGearGrade(shell.refinementLevel)) : null) ?? (linked && boundInstance ? (linked.assetIdByGrade[boundInstance.grade] ?? linked.assetIdByGrade[1])
       : ordinary?.iconAssetId ?? starter?.definition.iconAssetId)
     const name = shellGear?.name ?? linked?.name ?? ordinary?.name ?? starter?.definition.name ?? 'Slot vazio'
     const actionable = Boolean(worn || starter || shell)

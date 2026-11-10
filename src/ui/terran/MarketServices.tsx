@@ -27,13 +27,13 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
   return <section className="terran-shop" aria-label="Comprar itens no Mercado">
     <h3><Backpack size={18} /> Mochila do vendedor · itens à venda</h3>
     <p className="terran-shop__wallet"><Coins size={16} /> {save.wallet.gold} Ouro</p>
-    {npcId === 'presence_neris' && <GearShopV0515 save={save} channel="PUBLIC_TERRAN" />}
+    {npcId === 'presence_neris' && <GearShopV0515 save={save} merchantId="presence_neris" />}
     <div className="terran-shop__stock">
       {stock.map((offer) => {
         const { itemId, price } = offer
         const item = content.items[itemId]
         if (!item) return null
-        const gate = 'requiresQuestId' in offer ? content.quests[offer.requiresQuestId] : null
+        const gate = 'requiresQuestId' in offer && typeof offer.requiresQuestId === 'string' ? content.quests[offer.requiresQuestId] : null
         const locked = Boolean(gate && save.quests[gate.id]?.status !== 'completed')
         const armor = item.basicArmor
         const gainDefense = armor ? armor.mitigation - currentMitigation : 0
@@ -66,7 +66,7 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
         </article>
       })}
     </div>
-    {npcId === 'presence_neris' && <section className="terran-shop__backpacks" aria-label="Mochilas de expansão">
+    {npcId === 'presence_edran' && <section className="terran-shop__backpacks" aria-label="Mochilas de expansão">
       <h3><Backpack size={18} /> Mochilas · {save.inventory.length}/{getBackpackCapacity(save)} espaços</h3>
       <p>Uma melhoria permanente de capacidade, separada dos cinco Vínculos.</p>
       <div className="terran-shop__stock">{BACKPACK_UPGRADES.map((upgrade) => {

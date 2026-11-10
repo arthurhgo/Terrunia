@@ -1,5 +1,5 @@
 import type { GameSave } from '../../domain/game/types'
-import { gearOfferById, getGearGrade } from '../../content/equipmentV0515'
+import { gearOfferById, getGearGrade, gearSpriteId } from '../../content/equipmentV0515'
 import { getWornGear } from '../../domain/inventory/equipmentV0515'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
@@ -17,7 +17,7 @@ export function GearForgeV0515({save}:{save:GameSave}){
    const price=grade===1?offer.forgeG2:grade===2?offer.forgeG3:0
    const eligible=grade<3&&!item.locked&&!item.favorite&&save.wallet.gold>=price&&!save.battle
    return <article key={item.instanceId} className="forge-recipe">
-    <AssetImage assetId={offer.assetId} alt=""/>
+    <AssetImage assetId={gearSpriteId(offer,grade)} alt=""/>
     <div><h3>{offer.name} · T{offer.tier} G{grade}</h3>
      <small>{offer.stat} +{offer.values[grade-1]}{grade<3?' → +'+offer.values[Math.min(2,grade)]:''}</small>
      <small>{item.locked||item.favorite?'Peça protegida. Desproteja para forjar.':

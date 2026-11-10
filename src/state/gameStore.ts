@@ -140,8 +140,8 @@ type GameState = {
   equipComplementary: (slot: ComplementarySlot, instanceId: string | null) => void
   refineArmor: (instanceId: string) => void
   buyFromMarket: (npcId: string, itemId: string, quantity?: number) => void
-  buyGear: (offerIds: string[]) => void
-  buyGearSet: (setId: string) => void
+  buyGear: (merchantId: string, offerIds: string[]) => void
+  buyGearSet: (merchantId: string, setId: string) => void
   equipGearStyle: (slot: BoundSlot, instanceId: string | null) => void
   refineGear: (instanceId: string) => void
   recordCutsceneViewed: (sceneId: CutsceneId) => void
@@ -796,19 +796,19 @@ export const useGameStore = create<GameState>((set, get) => {
         : `${quantity}× ${content.items[itemId].name} recebido no Mercado.`, 'success')
     },
 
-    buyGear: (offerIds) => {
+    buyGear: (merchantId, offerIds) => {
       const save = get().save
       if (!save) return
-      const result = purchaseGear(save, offerIds, nowIso())
+      const result = purchaseGear(save, offerIds, nowIso(), merchantId)
       if (!result.ok) return failAction(result.message)
       commit(result.value)
       show('Equipamentos adquiridos', offerIds.length + ' peça(s) do catálogo adicionada(s) à mochila ou ao baú da Base.', 'success')
     },
 
-    buyGearSet: (setId) => {
+    buyGearSet: (merchantId, setId) => {
       const setDefinition = gearSetById[setId]
       if (!setDefinition) return failAction('Kit não encontrado.')
-      get().buyGear(setDefinition.itemIds)
+      get().buyGear(merchantId, setDefinition.itemIds)
     },
 
     equipGearStyle: (slot, instanceId) => {

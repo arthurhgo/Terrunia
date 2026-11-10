@@ -280,7 +280,7 @@ export function PixelInteriorCanvas({
         }}>
         {locationId === PLAYER_HOME_INTERIOR_ID
           ? <span className="pixel-interior__bed-label"><strong>Cama</strong><small>descansar e recuperar</small></span>
-          : isClanCastleInteriorId(locationId) ? 'FUNÇÕES FUTURAS' : 'Serviços'}
+          : isClanCastleInteriorId(locationId) ? 'Fale com os mercadores' : 'Serviços'}
       </button>
       <button type="button" disabled={!enabled}
         className="pixel-interior__exit"

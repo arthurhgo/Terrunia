@@ -66,7 +66,7 @@ describe('grade pixel art v0.1', () => {
       expect(bytes.subarray(1, 4).toString('ascii')).toBe('PNG')
       const native32 = new Set(["skill.skill_clan_dunavar_aegis","skill.skill_clan_dunavar_barrier_shock","skill.skill_clan_rustal_ward","skill.skill_clan_rustal_disjunction","skill.skill_clan_cebios_omen","skill.skill_clan_cebios_orbit_shards","skill.skill_clan_estres_containment","skill.skill_clan_estres_discharge","action.attack-single","action.attack-area","status.status_resonant_fracture","status.status_clan_aegis","status.status_clan_rune_ward","status.status_clan_disjunction","status.status_clan_omen","status.status_clan_containment"])
       const dimensions = native32.has(entry.id) ? 32 : entry.id === 'enemy.colossus-mycelium' ? 48 :
-        entry.path.startsWith('/assets/characters/') || entry.path.startsWith('/assets/npcs/') ||
+        entry.path.startsWith('/assets/equipment/v05151/') || entry.path.startsWith('/assets/characters/') || entry.path.startsWith('/assets/npcs/') ||
         entry.path.startsWith('/assets/enemies/') ? 32 : 16
       expect(bytes.readUInt32BE(16), entry.id).toBe(dimensions)
       expect(bytes.readUInt32BE(20), entry.id).toBe(dimensions)
@@ -125,13 +125,16 @@ describe('grade pixel art v0.1', () => {
       }
     }
     expect(ids.sort()).toEqual(Object.keys(assetRegistry).filter((id) =>
-      assetRegistry[id].pixelArt && !assetRegistry[id].draftPlaceholder && id !== 'character.terririan.map').sort())
+      assetRegistry[id].pixelArt && !assetRegistry[id].draftPlaceholder &&
+      !id.startsWith('equipment.v0515.') && !id.startsWith('npc.castle-merchant.') && id !== 'character.terririan.map').sort())
   })
 
   it('reserva IDs editáveis para os novos biomas sem exigir PNG não produzido', () => {
     const pending = Object.values(assetRegistry).filter((asset) => asset.draftPlaceholder)
     expect(pending.filter((asset) => !asset.id.startsWith('equipment.v0515.'))).toHaveLength(25)
-    expect(pending.filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(1400)
+    expect(pending.filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(0)
+    expect(Object.values(assetRegistry).filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(4200)
+    expect(Object.values(assetRegistry).filter((asset) => asset.id.startsWith('npc.castle-merchant.'))).toHaveLength(16)
     expect(pending.filter((asset) => asset.id.startsWith('item.complementary.'))).toHaveLength(5)
     for (const asset of pending) {
       expect(asset.pixelArt).toBe(true)
