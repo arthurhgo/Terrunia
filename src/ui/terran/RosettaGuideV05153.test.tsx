@@ -17,7 +17,7 @@ const create=()=>{
 }
 afterEach(()=>{cleanup();useGameStore.getState().resetSession()})
 
-describe('v0.5.15.3 Rosetta's optional merchant introduction',()=>{
+describe('v0.5.15.3 Rosetta optional merchant introduction',()=>{
  it('allows accepting and finishing an optional no-purchase tour without affecting permanent Bonds',()=>{
   const save=create()
   const before=structuredClone(save.character.bondedEquipment)
