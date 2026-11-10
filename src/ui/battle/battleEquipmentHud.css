@@ -163,3 +163,6 @@
 @media (prefers-reduced-motion: reduce) {
   .battle-gear__slot, .battle-gear-tooltip { transition: none; animation: none; }
 }
+
+/* Equipment preview distinguishes direct bonuses from derived entry stats. */
+.battle-gear__summary .battle-gear__note{color:#a6b8b9;font-size:10px;font-style:italic}
