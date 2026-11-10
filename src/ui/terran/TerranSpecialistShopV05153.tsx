@@ -103,14 +103,13 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
         const canWear=offer.slot!=='weapon'||Boolean(save.character.bondedEquipment.weapon)
         const canBuy=access.ok&&save.wallet.gold>=offer.price
         return <article key={offer.id} className="terran-specialist__offer" data-ownership={equipped?'equipped':owned?'backpack':stored?'storage':'new'}
-          onMouseEnter={()=>setHovered(offer.id)}
-          onMouseLeave={()=>setHovered(current=>current===offer.id?null:current)}
-          onFocus={()=>setHovered(offer.id)}
-          onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))setHovered(null)}}>
-          <div className="terran-specialist__icon" style={{borderColor:offer.palette.trim}}>
+          title={offer.name+' · '+formatGearStats(offer,1)+' · Use Detalhes para comparação completa.'}>
+          <div className="terran-specialist__icon" style={{borderColor:offer.palette.trim}}
+            onMouseEnter={()=>setHovered(offer.id)} onMouseLeave={()=>setHovered(null)}>
             <AssetImage assetId={offer.assetId} alt={offer.name}/>
           </div>
-          <div className="terran-specialist__copy">
+          <div className="terran-specialist__copy"
+            onMouseEnter={()=>setHovered(offer.id)} onMouseLeave={()=>setHovered(null)}>
             <strong>{offer.name}</strong>
             <small>Tier {offer.tier} · Grau 1 · {profile??'Equipamento comum'}</small>
             <span>{formatGearStats(offer,1)}</span>
