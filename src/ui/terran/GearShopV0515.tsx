@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import type { GameSave } from '../../domain/game/types'
 import { castleMerchantByPresenceId } from '../../content/castleMerchantsV05151'
-import { equipmentSetsV0515, gearOfferById } from '../../content/equipmentV0515'
+import { equipmentSetsV0515, formatGearStats, gearOfferById } from '../../content/equipmentV0515'
+import { NERIS_COMBAT_PROFILES } from '../../content/equipmentProfilesV05152'
 import { classDefinitions } from '../../content/progression'
 import { checkGearAccess, getSetPrice } from '../../domain/inventory/equipmentV0515'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
 import './gearShopV0515.css'
-
-const STAT_LABELS = { maxHp: 'Vida', maxMp: 'Mana', attackPower: 'Ataque', mitigation: 'Proteção', initiative: 'Iniciativa' }
 
 /** v0.5.15.1: One real merchant = one authorized inventory, no shop-wide castle bypass. */
 export function GearShopV0515({ save, merchantId }: { save: GameSave; merchantId: string }) {
@@ -40,7 +39,7 @@ export function GearShopV0515({ save, merchantId }: { save: GameSave; merchantId
     <header>
       <h3>{isNeris ? 'Neris · Equipamentos comuns' : merchant.name}</h3>
       <p>{isNeris
-        ? 'Somente equipamentos comuns Tier I, Grau 1. Nenhum requisito de Clã ou Classe. As coleções são apenas estilos sugeridos.'
+        ? 'Somente equipamentos comuns Tier I, Grau 1. Sem Clã ou Classe obrigatórios. Compare Vida, Mana, Defesa, Ataque Físico, Ataque Mágico e Iniciativa: cada perfil oferece vantagens diferentes.'
         : 'Arsenal exclusivo do seu Clã e das suas três Classes. Itens de Clã exigem filiação; itens de Classe exigem também a disciplina conquistada. Ambas as linhas respeitam o nível.'}
         {' '}Grau de Forja 2–3 é aprimorado exclusivamente com Durnan.</p>
       <strong>Ouro: {save.wallet.gold.toLocaleString('pt-BR')}</strong>
@@ -62,10 +61,10 @@ export function GearShopV0515({ save, merchantId }: { save: GameSave; merchantId
         {classDefinitions.filter((cls) => cls.clanId === merchant?.clanId).map((cls) =>
           <option key={cls.id} value={cls.id}>{cls.name}</option>)}
       </select></label>}
-      {isNeris && <label>Estilo <select aria-label="Filtrar estilo comercial" value={classFilter}
+      {isNeris && <label>Necessidade <select aria-label="Filtrar perfil de combate" value={classFilter}
         onChange={(event) => { setClassFilter(event.target.value); setSelectedId(null) }}>
-        <option value="all">Todos os estilos (sem requisitos)</option>
-        {classDefinitions.map((cls) => <option key={cls.id} value={cls.id}>{cls.name}</option>)}
+        <option value="all">Todos os perfis (sem requisitos)</option>
+        {classDefinitions.map((cls) => <option key={cls.id} value={cls.id}>{NERIS_COMBAT_PROFILES[cls.id]?.label ?? cls.name}</option>)}
       </select></label>}
     </div>
     <div className="gear-shop-v0515__sets" role="group" aria-label="Conjuntos disponíveis">
@@ -73,12 +72,14 @@ export function GearShopV0515({ save, merchantId }: { save: GameSave; merchantId
         className={selected?.id === set.id ? 'is-selected' : ''} onClick={() => setSelectedId(set.id)}>
         <span className="gear-shop-v0515__swatch"
           style={{ background: set.palette.base, borderColor: set.palette.trim }} />
-        <span><strong>{set.name}</strong><small>{set.channel === 'CLAN_EXCLUSIVE' ? 'Exclusivo do Clã' : set.channel === 'CLASS_EXCLUSIVE' ? 'Exclusivo de Classe' : 'Comum'} · Tier {set.tier} · Grau 1 · 10 peças</small></span>
+        <span><strong>{set.roleLabel ? set.roleLabel + ' · ' : ''}{set.name}</strong><small>{set.channel === 'CLAN_EXCLUSIVE' ? 'Exclusivo do Clã' : set.channel === 'CLASS_EXCLUSIVE' ? 'Exclusivo de Classe' : 'Comum'} · Tier {set.tier} · Grau 1 · 10 peças</small></span>
       </button>)}
     </div>
     {selected ? <div className="gear-shop-v0515__selected">
       <div className="gear-shop-v0515__heading">
-        <div><h4>{selected.name}</h4><small>Tier {selected.tier} · Nível {selected.level} · Dez peças combináveis</small>
+        <div><h4>{selected.roleLabel ? selected.roleLabel + ' · ' : ''}{selected.name}</h4>
+          {selected.roleDescription && <small className="gear-shop-v0515__role">{selected.roleDescription}</small>}
+          <small>Tier {selected.tier} · Nível {selected.level} · Dez peças combináveis</small>
           {permission && !permission.ok && <p role="status">{permission.message}</p>}
         </div>
         <button type="button" disabled={!permission?.ok || save.wallet.gold < cost}
@@ -91,8 +92,9 @@ export function GearShopV0515({ save, merchantId }: { save: GameSave; merchantId
           return <article key={id} style={{ borderLeftColor: offer.palette.trim }}>
             <AssetImage assetId={offer.assetId} alt="" aria-hidden="true" />
             <div><strong>{offer.name}</strong>
-              <small>{STAT_LABELS[offer.stat]} +{offer.values[0]} · Grau 1</small>
-              <small>Forja G2 +{offer.values[1]} · G3 +{offer.values[2]}</small>
+              <small>{formatGearStats(offer,1)} · Grau 1</small>
+              <small>Forja G2: {formatGearStats(offer,2)}</small>
+              <small>Forja G3: {formatGearStats(offer,3)}</small>
               {!access.ok && <small>{access.message}</small>}
             </div>
             <button type="button" disabled={!access.ok || save.wallet.gold < offer.price}
