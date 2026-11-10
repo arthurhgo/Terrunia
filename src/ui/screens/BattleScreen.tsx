@@ -510,7 +510,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             '--enemy-width': `${getEnemyFormationSlot(i, enemies.length).widthPercent}%`,
             zIndex: getEnemyFormationSlot(i, enemies.length).layer } as React.CSSProperties}
           data-granite-golem={enemy.definitionId === 'enemy_granite_golem' ? 'true' : undefined}
-          className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
+          className={`pixel-battle__enemy ${activeDice?.action==='Ataque Duplo' && diceStage==='impact' && activeDice.targetId===enemy.id?'is-double-hit':''} ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
           onClick={() => enemy.alive && !isProtectedBoss(battle, enemy) && setTargetId(enemy.id)}
            disabled={!enemy.alive || isProtectedBoss(battle, enemy)}
           onMouseEnter={() => setHoveredEnemyId(enemy.id)} onMouseLeave={() => setHoveredEnemyId(null)}
@@ -580,15 +580,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         <strong>O TERRÍRIAN CAIU</strong>
         <small>Seu Nexo desperta na Base de Terran...</small>
         <button type="button" onClick={() => end(true)}>ACORDAR NA BASE</button>
-      </div>}
-      {battle.phase === 'Victory' && !battle.claimed && <div className="pixel-battle__drops" aria-label="Espólios disponíveis">
-        <strong>ESPÓLIOS · RECOLHA TUDO EM UMA AÇÃO</strong>
-        {lootGroups.map(({ definitionId, quantity }) => <div key={definitionId} className="pixel-battle__loot-stack">
-          <AssetImage assetId={content.items[definitionId]?.iconAssetId ?? 'item.fungal-nucleus'}
-            alt={content.items[definitionId]?.name ?? definitionId} />
-          <span>{content.items[definitionId]?.name ?? definitionId}{quantity > 1 ? ` ×${quantity}` : ''}</span>
-        </div>)}
-        {lootGroups.length === 0 && <small>Nenhum item material. Ouro e XP serão recebidos normalmente.</small>}
       </div>}
     </main>
     <div className="pixel-battle__foot">
