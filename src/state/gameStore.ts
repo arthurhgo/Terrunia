@@ -3,6 +3,7 @@ import { BACKPACK_UPGRADES, routeNewItemOverflow } from '../domain/inventory/bac
 import { executeForgeRecipe, executeGoldForgeUpgrade } from '../domain/terran/forge'
 import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmor'
 import { purchaseGear, equipGearStyle, refineCatalogGear } from '../domain/inventory/equipmentV0515'
+import { purchaseAndEquipGear, purchaseAndEquipStarterArmor } from '../domain/inventory/marketQuickEquipV05153'
 import { gearSetById, gearOfferById } from '../content/equipmentV0515'
 import { equipComplementaryItem } from '../domain/inventory/complementaryEquipment'
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
@@ -142,6 +143,8 @@ type GameState = {
   refineArmor: (instanceId: string) => void
   recordMarketSpecialistConversation: (npcId: string) => void
   buyFromMarket: (npcId: string, itemId: string, quantity?: number) => void
+  buyAndEquipGear: (merchantId: string, offerId: string) => void
+  buyAndEquipMarketArmor: (merchantId: string, itemId: string) => void
   buyGear: (merchantId: string, offerIds: string[]) => void
   buyGearSet: (merchantId: string, setId: string) => void
   equipGearStyle: (slot: BoundSlot, instanceId: string | null) => void
@@ -816,6 +819,28 @@ export const useGameStore = create<GameState>((set, get) => {
       show('Compra realizada', BACKPACK_UPGRADES.find((upgrade) => upgrade.id === itemId)
         ? 'Capacidade da mochila expandida e salva no personagem.'
         : `${quantity}× ${content.items[itemId].name} recebido no Mercado.`, 'success')
+    },
+
+    buyAndEquipGear: (merchantId, offerId) => {
+      const save=get().save
+      if(!save)return
+      const result=purchaseAndEquipGear(save,merchantId,offerId,content,nowIso())
+      if(!result.ok)return failAction(result.message)
+      commit(result.value)
+      show('Comprado e equipado',
+        (gearOfferById[offerId]?.name ?? 'Equipamento')+' equipado com os bônus aplicados. O Vínculo permanente foi preservado.',
+        'success')
+    },
+
+    buyAndEquipMarketArmor: (merchantId, itemId) => {
+      const save=get().save
+      if(!save)return
+      const result=purchaseAndEquipStarterArmor(save,merchantId,itemId,content,nowIso())
+      if(!result.ok)return failAction(result.message)
+      commit(result.value)
+      show('Proteção comprada e equipada',
+        (content.items[itemId]?.name ?? 'Armadura')+' equipada. Seus atributos foram atualizados.',
+        'success')
     },
 
     buyGear: (merchantId, offerIds) => {
