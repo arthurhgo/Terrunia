@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { castleGearMerchantsV05151 } from '../../content/castleMerchantsV05151'
-import { equipmentOffersV0515, equipmentSetsV0515, gearOfferById, gearSetById, getGearGrade } from '../../content/equipmentV0515'
+import { equipmentOffersV0515, equipmentSetsV0515, gearOfferById, getGearGrade } from '../../content/equipmentV0515'
 import { equipComplementaryItem } from './complementaryEquipment'
 import { createNewSave } from '../game/createSave'
 import { createBoundItem } from '../bond/boundItems'
