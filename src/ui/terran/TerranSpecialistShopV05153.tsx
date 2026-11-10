@@ -90,6 +90,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
         const access=checkGearAccess(save,offer,merchantId)
         const equipped=worn.some(item=>item.definitionId===offer.id)
         const owned=save.inventory.some(item=>item.definitionId===offer.id)
+        const stored=save.baseStorage.some(item=>item.definitionId===offer.id)
         const profile=gearSetById[offer.setId]?.roleLabel
         const canWear=offer.slot!=='weapon'||Boolean(save.character.bondedEquipment.weapon)
         const canBuy=access.ok&&save.wallet.gold>=offer.price
@@ -105,7 +106,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
             <strong>{offer.name}</strong>
             <small>Tier {offer.tier} · Grau 1 · {profile??'Equipamento comum'}</small>
             <span>{formatGearStats(offer,1)}</span>
-            <small className="terran-specialist__state">{equipped?'Equipado':owned?'Na mochila':!access.ok?access.message:'Comum · Sem Clã ou Classe'}</small>
+            <small className="terran-specialist__state">{equipped?'Equipado':owned?'Na mochila':stored?'No baú da Base':!access.ok?access.message:'Comum · Sem Clã ou Classe'}</small>
           </div>
           <div className="terran-specialist__actions">
             <button type="button" disabled={!canBuy}
