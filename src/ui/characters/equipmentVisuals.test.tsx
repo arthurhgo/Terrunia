@@ -6,6 +6,7 @@ import { bindPrologueWeapon, createNewSave } from '../../domain/game/createSave'
 import { createBoundItem } from '../../domain/bond/boundItems'
 import { CharacterComposite, EquippedCharacter } from './EquippedCharacter'
 import { getEquipmentAnchor, getVisualEquipment, VISUAL_EQUIPMENT_ORDER } from './equipmentVisuals'
+import { equipmentOffersV0515 } from '../../content/equipmentV0515'
 import { readCosmeticAvatar, rememberCosmeticAvatar } from './deviceAvatar'
 
 afterEach(() => { cleanup(); localStorage.clear() })
@@ -88,6 +89,23 @@ describe('visual do equipamento vinculado: fonte única', () => {
     }
     expect(getEquipmentAnchor(visuals.find((item) => item.slot === 'shield')!, 'up').layer).toBe('back')
     expect(save.character.level).toBe(1) // visual fixtures do not grant equipment requirements.
+  })
+
+  it('mostra protetor, colar e pulseira comerciais sem criar Vínculos', () => {
+    const save = armed()
+    const slots = ['shield','necklace','bracelet'] as const
+    for (const slot of slots) {
+      const offer = equipmentOffersV0515.find(item => item.channel === 'PUBLIC_TERRAN' && item.slot === slot && item.tier === 1)!
+      save.equippedGearStyles = { ...save.equippedGearStyles, [slot]: {
+        instanceId: 'commercial-'+slot, definitionId: offer.id, quantity: 1,
+        rarity: 'common', locked: false, favorite: false, acquiredAt: save.updatedAt, refinementLevel: 0,
+      }}
+    }
+    const visuals = getVisualEquipment(save)
+    expect(visuals.map(v => v.slot)).toEqual(['necklace','bracelet','shield','weapon'])
+    for (const slot of slots) expect(save.character.bondedEquipment[slot]).toBeNull()
+    const { container } = render(<EquippedCharacter save={save} />)
+    for (const slot of slots) expect(container.querySelector('[data-slot="'+slot+'"]')).toBeInTheDocument()
   })
 
   it('login só reutiliza dados COSMÉTICOS do dispositivo, sem nome nem identidade da conta', () => {
