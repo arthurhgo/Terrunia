@@ -117,6 +117,23 @@ export function getBattleGearSummary(save: GameSave, catalog: ContentCatalog): B
         description: item.description, resonance: null, stats,
       }
     }
+    // Commercial protection/necklace/bracelet shells can be equipped before a
+    // permanent Bond is earned. They are real worn gear, not empty placeholders.
+    const temporaryStyle = save.equippedGearStyles?.[slot]
+    const temporaryOffer = temporaryStyle ? gearOfferById(temporaryStyle.definitionId) : undefined
+    if (temporaryStyle && temporaryOffer && temporaryOffer.slot === slot &&
+        ['shield', 'necklace', 'bracelet'].includes(slot)) {
+      const grade = getGearGrade(temporaryStyle.refinementLevel)
+      return {
+        slot, label: BOUND_SLOT_LABELS[slot], state: 'simple',
+        name: temporaryOffer.name,
+        tierLabel: `Equipamento comercial · Tier ${temporaryOffer.tier} · Grau ${grade}`,
+        assetId: gearSpriteId(temporaryOffer,grade),
+        description: 'Peça comercial removível. O Vínculo permanente ainda não foi adquirido.',
+        resonance: null,
+        stats: commercialStats(temporaryOffer,grade),
+      }
+    }
     return emptySlot(slot)
   })
   const totals: Record<BattleGearStatKey, number> = {
