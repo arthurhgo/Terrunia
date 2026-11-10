@@ -141,7 +141,9 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
       })}
       {visible.length===0&&<p>Nenhuma peça encontrada. Ajuste a busca ou os filtros.</p>}
     </div>
-    {comparison&&<aside className="terran-specialist__compare" role="region" aria-live="polite" aria-label={'Atributos: '+comparison.offer.name}>
+    <aside className="terran-specialist__compare" role="region" aria-live="polite"
+      aria-label={comparison ? 'Atributos: '+comparison.offer.name : 'Ajuda de comparação de equipamentos'}>
+      {comparison ? <>
       <strong><ShieldCheck size={13}/> Comparar · {comparison.offer.name}</strong>
       <small>{comparison.stats.map(entry=>entry.label+' +'+entry.value).join(' · ')}</small>
       <small>Preço: {comparison.offer.price} Ouro · Saldo após compra: {save.wallet.gold-comparison.offer.price} Ouro</small>
@@ -154,6 +156,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
         : <small>{comparison.blockReason??'Nenhum atributo derivado muda com esta peça.'}</small>}
       <small>G2: {formatGearStats(comparison.offer,2)} · G3: {formatGearStats(comparison.offer,3)}</small>
       <small>Seu equipamento vinculado permanece permanente.</small>
-    </aside>}
+      </> : <small>Inspecione uma peça para comparar os efeitos reais e o Ouro necessário. O Vínculo permanente não será substituído.</small>}
+    </aside>
   </section>
 }
