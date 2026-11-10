@@ -1,3 +1,4 @@
+import { castleMerchantByPresenceId } from '../../content/castleMerchantsV05151'
 import { gearOfferById, gearSetById, getGearGrade, type GearOffer, type GearSlot } from '../../content/equipmentV0515'
 import type { GameSave, InventoryItemInstance } from '../game/types'
 import type { BoundSlot } from '../shared/types'
@@ -5,7 +6,19 @@ import { fail, ok, type Result } from '../shared/types'
 import { createRandomId } from '../shared/randomId'
 
 /** Market authorization is validated again in the domain, never only in disabled UI buttons. */
-export function checkGearAccess(save:GameSave,offer:GearOffer):Result<true>{
+export function checkGearAccess(save:GameSave,offer:GearOffer,merchantId:string):Result<true>{
+ if (merchantId === 'presence_neris') {
+   if (offer.channel !== 'PUBLIC_TERRAN' || offer.clanId || offer.classId)
+     return fail('GEAR_NERIS_EXCLUSIVE','Neris não vende equipamentos de Clã ou Classe.')
+   if (offer.tier !== 1)
+     return fail('GEAR_NERIS_TIER','Neris vende apenas Tier I, Grau 1.')
+ } else {
+   const merchant = castleMerchantByPresenceId[merchantId]
+   if (!merchant || merchant.channel !== offer.channel || merchant.clanId !== offer.clanId ||
+       merchant.classId !== offer.classId || merchant.castleId !== offer.castleId)
+     return fail('GEAR_MERCHANT','Esta peça pertence a outro mercador.')
+ }
+
  if(save.battle)return fail('GEAR_BATTLE','Comércio indisponível durante o combate.')
  const location=offer.channel==='PUBLIC_TERRAN'?'location_terran_bond_workshop':offer.castleId
  if(save.world.currentLocationId!==location)return fail('GEAR_LOCATION','Este item só pode ser comprado no vendedor correto.')
@@ -22,7 +35,7 @@ const addItem=(offer:GearOffer,now:string):InventoryItemInstance=>({
  rarity:offer.tier>=5?'epic':offer.tier>=3?'rare':offer.tier===2?'uncommon':'common',
  locked:false,favorite:false,acquiredAt:now,refinementLevel:0,
 })
-export function purchaseGear(save:GameSave,offerIds:readonly string[],now:string):Result<GameSave>{
+export function purchaseGear(save:GameSave,offerIds:readonly string[],now:string,merchantId:string):Result<GameSave>{
  if(offerIds.length===0||offerIds.length>10||new Set(offerIds).size!==offerIds.length)
   return fail('GEAR_SET','Escolha uma peça ou um kit completo sem duplicações.')
  const offers=offerIds.map(id=>gearOfferById[id])
@@ -32,14 +45,14 @@ export function purchaseGear(save:GameSave,offerIds:readonly string[],now:string
   if(!set||set.itemIds.length!==offerIds.length||set.itemIds.some(id=>!offerIds.includes(id)))
    return fail('GEAR_SET','A compra conjunta deve conter todas as dez peças de um kit.')
  }
- for(const offer of offers){const access=checkGearAccess(save,offer);if(!access.ok)return access}
+ for(const offer of offers){const access=checkGearAccess(save,offer,merchantId);if(!access.ok)return access}
  const cost=offers.reduce((sum,offer)=>sum+offer.price,0)
  if(save.wallet.gold<cost)return fail('GEAR_GOLD','Ouro insuficiente: '+cost+' necessário.')
  const next=structuredClone(save)
  next.wallet.gold-=cost
  next.inventory.push(...offers.map(offer=>addItem(offer,now)))
  next.updatedAt=now;next.revision+=1
- next.eventLog.push('GearPurchased:v0515:'+offers[0].setId+':'+offerIds.length+':'+cost)
+ next.eventLog.push('GearPurchased:v05151:'+merchantId+':'+offers[0].setId+':'+offerIds.length+':'+cost)
  return ok(next)
 }
 
