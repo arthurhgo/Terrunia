@@ -53,12 +53,16 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
   const weaponClanContribution = weaponBase?.powerType === 'magical'
     ? clanBonuses.magicalAttack ?? 0
     : clanBonuses.physicalAttack ?? 0
+  // The universal attack applies to both damage types; weapon-specific attack
+  // applies only to its actual bound weapon type, without changing weapon/Bond.
+  const equippedAttack = gear.attackPower +
+    (weaponBase?.powerType === 'magical' ? gear.magicalAttack : gear.physicalAttack)
   const primaryAttack = sum([
     { label: weaponBase ? `Escala de ${attributeLabels[weaponBase.scalingAttribute]}` : 'Força', value: weaponAttributeContribution },
     { label: weaponBase?.name ?? 'Sem Arma vinculada', value: weaponBase?.basePower ?? 1 },
     { label: 'Vínculos e Skills', value: attackBonus },
     { label: 'Forja de Durnan', value: forgeAttack },
-    { label: 'Equipamento Tier', value: gear.attackPower },
+    { label: 'Equipamento Tier · geral e afinidade da arma', value: equippedAttack },
     { label: 'Clã', value: weaponClanContribution },
   ])
 
@@ -91,7 +95,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: weaponBase?.powerType === 'physical' ? weaponBase.name : 'Ataque desarmado', value: weaponBase?.powerType === 'physical' ? weaponBase.basePower : 1 },
       { label: 'Vínculos e Skills', value: attackBonus },
       { label: 'Forja de Durnan', value: weaponBase?.powerType === 'physical' ? forgeAttack : 0 },
-      { label: 'Equipamento Tier', value: gear.attackPower },
+      { label: 'Equipamento Tier · físico e geral', value: gear.physicalAttack + gear.attackPower },
       { label: 'Clã', value: clanBonuses.physicalAttack ?? 0 },
     ]),
     magicalAttack: sum([
@@ -99,7 +103,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: weaponBase ? `Escala de ${attributeLabels[weaponBase.scalingAttribute]}` : 'Astúcia', value: weaponBase?.powerType === 'magical' ? weaponAttributeContribution : Math.floor(getAttributeScore(attributes.cunning) / 2) },
       { label: weaponBase?.powerType === 'magical' ? weaponBase.name : 'Sem foco mágico', value: weaponBase?.powerType === 'magical' ? weaponBase.basePower : 0 },
       { label: 'Forja de Durnan', value: weaponBase?.powerType === 'magical' ? forgeAttack : 0 },
-      { label: 'Equipamento Tier', value: gear.attackPower },
+      { label: 'Equipamento Tier · mágico e geral', value: gear.magicalAttack + gear.attackPower },
       { label: 'Clã', value: clanBonuses.magicalAttack ?? 0 },
     ]),
     primaryAttack,
