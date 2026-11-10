@@ -84,7 +84,7 @@ describe('v0.5.15.2 — 1400 balanced options; no redundant neutral offers',()=>
    const candidate=neutral.get(o.classId+':'+o.slot)!
    expect(candidate).toBeTruthy()
    expect([o.stat,o.secondaryStat]).toEqual([candidate.stat,candidate.secondaryStat])
-   expect(o.values[0]+o.secondaryValues[0]).toBe(candidate.values[0]+candidate.secondaryValues[0]+2)
+   expect(o.values[0]+o.secondaryValues[0]).toBe(candidate.values[0]+candidate.secondaryValues[0]+3)
   }
   for(const o of equipmentOffersV0515.filter(o=>o.channel==='CLAN_EXCLUSIVE'&&o.tier===1)){
    expect(o.values[0]).toBeGreaterThanOrEqual(2)
