@@ -8,26 +8,35 @@ export const MARKET_LOCATION_ID = 'location_terran_bond_workshop' as const
 
 /** BALANCE_DRAFT: trade offers are separated by the NPC who actually sells them. */
 export const MARKET_STOCK = [
-  { npcId: 'presence_neris', itemId: 'equipment_light_leather_vest', price: 25 },
-  { npcId: 'presence_neris', itemId: 'equipment_worn_linen_tunic', price: 22 },
-  { npcId: 'presence_neris', itemId: 'equipment_apprentice_tunic', price: 28 },
+  // Neris: early-game consumables ONLY. Prices without a prior live offer
+  // (Éter / Antídoto) are BALANCE_DRAFT and need owner approval.
+  { npcId: 'presence_neris', itemId: 'consumable_minor_tonic', price: 18 },
+  { npcId: 'presence_neris', itemId: 'consumable_fungal_healing_potion', price: 28 },
+  { npcId: 'presence_neris', itemId: 'consumable_field_compress', price: 8 },
+  { npcId: 'presence_neris', itemId: 'consumable_simple_ether', price: 18 },
+  { npcId: 'presence_neris', itemId: 'consumable_antidote', price: 16 },
+  { npcId: 'presence_neris', itemId: 'consumable_vital_essence', price: 26 },
+  { npcId: 'presence_neris', itemId: 'consumable_resonance_flask', price: 24 },
+  // Legacy Rosetta protection SKU IDs belong to the armorer, not Neris.
+  { npcId: 'presence_terran_armorer', itemId: 'equipment_light_leather_vest', price: 25 },
+  { npcId: 'presence_terran_armorer', itemId: 'equipment_worn_linen_tunic', price: 22 },
+  { npcId: 'presence_terran_armorer', itemId: 'equipment_apprentice_tunic', price: 28 },
+  // Edran: permanent backpack capacity and non-consumable utility materials.
   { npcId: 'presence_edran', itemId: 'material_linen_thread', price: 4 },
+  // Valmira: special components and runes.
   { npcId: 'presence_valmira', itemId: 'drop_ruin_shard', price: 60 },
   { npcId: 'presence_valmira', itemId: 'drop_mycelial_fiber', price: 48 },
   { npcId: 'presence_valmira', itemId: 'drop_blackroot_core', price: 72 },
-  { npcId: 'presence_edran', itemId: 'consumable_minor_tonic', price: 18 },
   { npcId: 'presence_valmira', itemId: 'fragment_mycelial_essence', price: 180 },
   { npcId: 'presence_valmira', itemId: 'item_gem_esmeralda_crescimento', price: 260 },
   { npcId: 'presence_valmira', itemId: 'consumable_field_rune', price: 30 },
-  { npcId: 'presence_edran', itemId: 'consumable_resonance_flask', price: 24 },
-  { npcId: 'presence_edran', itemId: 'consumable_vital_essence', price: 26 },
-  { npcId: 'presence_edran', itemId: 'consumable_field_compress', price: 8 },
-  // BALANCE_DRAFT: new free-action potion supply. Price is adjustable after owner review.
-  { npcId: 'presence_edran', itemId: 'consumable_fungal_healing_potion', price: 28 },
 ] as const
 
 export const MARKET_SERVICES = {
   presence_neris: 'merchant',
+  presence_terran_weaponsmith: 'merchant',
+  presence_terran_armorer: 'merchant',
+  presence_terran_accessory_artisan: 'merchant',
   presence_lithwynn: 'infusion',
   presence_valmira: 'merchant',
   presence_talia: 'lapidation',
@@ -68,10 +77,10 @@ export function buyMarketItem(
   }
   const offer = MARKET_STOCK.find((entry) => entry.npcId === npcId && entry.itemId === itemId)
   const item = catalog.items[itemId]
-  if (npcId === 'presence_neris' && item?.basicArmor && item.basicArmor.tier !== 1)
-    return fail('NERIS_TIER','Neris vende apenas equipamentos comuns Tier I, Grau 1.')
-  if (npcId === 'presence_neris' && (!item || item.category !== 'equipment'))
-    return fail('NERIS_STOCK','Neris vende somente equipamentos comuns.')
+  if (npcId === 'presence_neris' && (!item || item.category !== 'consumable'))
+    return fail('NERIS_STOCK','Neris vende apenas consumíveis.')
+  if (npcId === 'presence_terran_armorer' && item?.basicArmor && item.basicArmor.tier !== 1)
+    return fail('ARMORER_TIER','O Armadureiro vende apenas proteções comuns Tier I, Grau 1.')
   if (offer && 'requiresQuestId' in offer && typeof offer.requiresQuestId === 'string' &&
       save.quests[offer.requiresQuestId]?.status !== 'completed') {
     return fail('MARKET_TIER_LOCKED', 'Este tier fica disponível depois da missão de progressão indicada.')
