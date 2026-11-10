@@ -52,7 +52,7 @@ Custo de compra e forja permanece configurável; a aquisição de materiais adic
 | Chefe | Colosso Micélio | 68 | 4 | 9 |
 | Chefe protegido | Sentinela Corrompida | 86 | 5 | 9 |
 | Cerrado | Serpente-Tempestade | 82 | 4 | 10 |
-| Elduran | Golem de Areia | 105 | 6 | 12 |
+| Elduran | Golem de Areia | 135 | 7 | 13 |
 
 O Golem de Granito mantém seu comportamento prévio de espelhar/elevar atributos do jogador; evitar Defesa multiplicada por dezenas de pontos reduz travamentos nessa luta. Os **15 encontros de Astravél** preservam a ordem e missões; os níveis recomendados passam a 1–6. Câmaras Fúngicas seguem com quatro salas, ondas, guardiões e invocações originais.
 
