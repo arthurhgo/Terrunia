@@ -42,7 +42,7 @@ const species = [
   { id: 'golem_areia', name: 'Golem de Areia', level: 14, hp: 62, armor: 5, attack: 10, loot: 'drop_elduran_animated_sand', asset: 'golem-areia', boss: true },
 ] as const
 
-export const biomeEnemyDefinitions: EnemyDefinition[] = species.map((entry) => ({
+export const biomeEnemyDefinitions: EnemyDefinition[] = species.map((entry): EnemyDefinition => ({
   id: 'enemy_' + entry.id, name: entry.name, level: entry.level,
   maxHp: entry.hp, mitigation: entry.armor, attackPower: entry.attack,
   xpReward: entry.level * 9, goldReward: entry.level * 4,
