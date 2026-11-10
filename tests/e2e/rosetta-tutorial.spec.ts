@@ -86,8 +86,8 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
   await page.getByRole('button', { name: 'Mostrar Status' }).click()
   await page.locator('.terran-character-hud__backpack > button').click()
   await page.getByRole('button', { name: 'Ir para Mercado', exact: true }).click()
-  await page.getByRole('button', { name: 'Falar com Edran dentro do local', exact: true }).click()
-  let shop = page.getByRole('dialog', { name: 'Edran', exact: true })
+  await page.getByRole('button', { name: 'Falar com Neris dentro do local', exact: true }).click()
+  let shop = page.getByRole('dialog', { name: 'Neris', exact: true })
   await shop.getByRole('button', { name: 'Comprar Tônico de Campo por 18 ouro', exact: true }).click()
   await leaveRoom(page)
   guide = await meetRosetta(page)
@@ -134,7 +134,7 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
       lessons: Object.values(save.quests).filter((quest) => quest.questId.startsWith('rosetta_tutorial_')).map((quest) => quest.status),
       spareTunics: save.inventory.filter((item) => item.definitionId.includes('tunic')).length }
   })
-  expect(persisted).toMatchObject({ schema: 17, gold: 11, armor: { definitionId: 'equipment_worn_linen_tunic', refinementLevel: 1 }, lessons: ['completed','completed','available','completed'], spareTunics: 0 })
+  expect(persisted).toMatchObject({ schema: 17, gold: 11, armor: { definitionId: 'equipment_worn_linen_tunic', refinementLevel: 1 }, lessons: ['completed','completed','available','available','completed'], spareTunics: 0 })
   expect(persisted.equippedId).toBe(persisted.armor?.instanceId)
 
   // Only this extra offer is a visual fixture, to check a secondary route without replaying the story.
