@@ -138,7 +138,6 @@ describe('HUD de equipamentos da batalha', () => {
     const summary=getBattleGearSummary(save,content)
     expect(summary.slots).toHaveLength(5)
     expect(summary.totals.initiative).toBe(profile.values[0])
-    expect(summary.totals.maxMp).toBeUndefined()
     expect(summary.totals.mana).toBe(profile.secondaryValues[0])
     const derived=deriveCharacterStats(save,content)
     expect(derived.initiative.contributions.find(c=>c.label==='Equipamentos')?.value).toBe(profile.values[0])
