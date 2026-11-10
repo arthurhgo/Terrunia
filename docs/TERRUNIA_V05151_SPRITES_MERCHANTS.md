@@ -6,11 +6,11 @@
 
 As mochilas (utilitários, não equipamentos Tier) foram transferidas a **Edran**. Valmira continua vendendo materiais, e Rosetta permanece com suas três lições principais. A missão secundária opcional `rosetta_tutorial_armor` foi adaptada a uma segunda proteção comum Tier I em vez de exigir uma compra Tier II que agora seria impossível.
 
-**Castelos de Clã:** o miniportal atual, no Salão dos Clãs, continua levando somente ao castelo do Clã efetivamente conquistado. Cada castelo tem **quatro NPCs comerciantes separados**:
-- **1 Intendente do Clã** → cinco conjuntos Tier I–V exclusivos do Clã.
-- **3 Armeiros de Classe** → cinco conjuntos Tier I–V para cada uma das três Classes do Clã.
+**Castelos de Clã:** o miniportal atual, no Salão dos Clãs, continua levando somente ao castelo do Clã efetivamente conquistado. Cada castelo tem **um único Intendente** que vende, em uma mesma loja:
+- **Linha do Clã** → cinco conjuntos Tier I–V exclusivos de seu Clã.
+- **Três linhas de Classe** → cinco conjuntos Tier I–V por Classe pertencente àquele Clã.
 
-São 4 castelos × 4 mercadores = **16 NPCs únicos**. Seus IDs, paletas, retratos, posições e estoques são independentes. Os nomes funcionais são `CONTENT_DRAFT`, **não** personagens históricos ou lore canônico. Nome próprio, biografia e diálogo extenso: `OWNER_DECISION`.
+São **4 castelos × 1 Intendente = 4 NPCs mercadores**. Cada mercador tem ID, retrato, localização e estoque exclusivos, e o menu permite filtrar por Clã, Classe e Tier. Itens de Classe continuam bloqueados até o personagem conquistar a disciplina. Os nomes funcionais são `CONTENT_DRAFT`; nomes pessoais e biografias: `OWNER_DECISION`. A revisão conserva os IDs anteriores dos quatro Intendentes.
 
 ## Bloqueio obrigatório de compra
 
@@ -27,7 +27,7 @@ Sem essas condições a operação falha **sem debitar Ouro nem gerar itens**. N
 ## Sprites nativos
 
 - **1.400 equipamentos × 3 versões G1/G2/G3 = 4.200 PNGs RGBA de 32×32 px**, fundo transparente.
-- **16 retratos de NPCs** também em PNG RGBA 32×32 px.
+- **4 retratos dos Intendentes de castelo** também em PNG RGBA 32×32 px.
 - Formas diferentes para cada slot: capacete, colar, acessório I, arma, escudo/protetor, armadura, calças, botas, acessório II e pulseira.
 - Paletas de categoria, Classe, Clã, Tier, efeito de G2 metálico e G3 emissivo.
 - A geração é **procedural e determinística**, não arte final desenhada individualmente. Garante que o jogo tenha sprites funcionais para todas as 4.200 variantes, com personalização independente.
@@ -48,14 +48,14 @@ O gerador dá **prioridade ao override manual** e copia o arquivo para o destino
 
 - Fonte de aquisição das **480 peças comerciais comuns dos Tiers II–V**. Preservadas no catálogo sem vendedor atribuído; não aparecem em Neris nem são desviadas aos castelos exclusivos.
 - Materiais e requisitos adicionais da forja G2/G3 e ranks avançados não definidos na MASTER_SPEC v0.4.
-- Nomes pessoais e histórias dos 16 novos mercadores, caso sejam necessários.
+- Nomes pessoais e histórias dos quatro Intendentes, caso sejam necessários.
 - Substituição posterior da arte procedural por sprites manuais finalizados, sem alterar lógica nem progresso.
 
 ## Critérios de aceite
 
-- Catálogo: 140 conjuntos, 1.400 peças, 4.200 variantes de sprite, 16 retratos.
+- Catálogo: 140 conjuntos, 1.400 peças, 4.200 variantes de sprite, 4 retratos.
 - Neris: apenas Tier I Grau 1 comum; inclusive a loja antiga não oferece Tier II/III e utilitários passam para Edran.
-- Castelos: quatro residentes comerciantes por castelo; compra no NPC correspondente à linha, sem trocar a Classe no menu.
+- Castelos: um mercador por castelo; a mesma loja reúne as linhas de Clã e Classe, sem dispensar requisitos.
 - Anti-bypass: chamadas diretas ao domínio falham sem requisitos.
 - Saves de versões anteriores preservados; cinco Vínculos intactos.
 - `npm run check` e `npm run e2e` aprovados antes do merge.
