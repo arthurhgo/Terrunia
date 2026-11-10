@@ -23,7 +23,7 @@ export const ROOM_PLANS: Record<TerranInteriorId, RoomPlan> = {
     floor:[rect(55,68,274,172),rect(88,44,208,45)],
     obstacles:[rect(174,112,36,18)],
     spawn:point(192,210),exit:point(192,233),service:point(260,177),
-    residents:[],tile:castle.tile,
+    residents:[point(93,155),point(148,172),point(235,172),point(293,155)],tile:castle.tile,
   }])) as unknown as Record<ClanCastleInteriorId, RoomPlan>),
   location_terran_forge: {
     floor: [rect(49, 73, 288, 167), rect(83, 57, 69, 35)],
