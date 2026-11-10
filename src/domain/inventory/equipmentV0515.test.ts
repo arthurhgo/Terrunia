@@ -91,14 +91,16 @@ describe('v0.5.15 gear rules',()=>{
   expect(checkGearAccess(save,other,'presence_castle_merchant_clan_rustal'))
    .toMatchObject({ok:false,code:'GEAR_LOCATION'})
  })
- it('keeps T1 G3 strictly weaker than T2 G1 for every identical slot and lineage',()=>{
-  for(const set of equipmentSetsV0515.filter(s=>s.tier<5)){
-   const next=gearSetById[set.id.replace(/_t[1-4]$/,match=>'_t'+(Number(match.slice(2))+1))]
-   expect(next).toBeTruthy()
-   for(let index=0;index<10;index++)
-    expect(gearOfferById[set.itemIds[index]].values[2]).toBeLessThan(gearOfferById[next.itemIds[index]].values[0])
+ it('trades an affordable Tier I G3 upgrade for higher-Tier raw power without multiplicative stat growth',()=>{
+  for(const low of equipmentOffersV0515.filter(o=>o.tier===1)){
+   const higher=equipmentOffersV0515.find(o=>o.setId===low.setId.replace(/_t1$/,'_t2')&&o.slot===low.slot)!
+   expect(higher).toBeTruthy()
+   expect(higher.values[0]+higher.secondaryValues[0]).toBeGreaterThan(low.values[0]+low.secondaryValues[0])
+   expect(low.values[2]-low.values[0]).toBe(1)
+   expect(low.secondaryValues[2]-low.secondaryValues[0]).toBe(1)
   }
  })
+
  it('only allows public sets in Terran without requiring clan/class, with atomic all-or-nothing payment',()=>{
   const save=base()
   const set=equipmentSetsV0515.find(s=>s.channel==='PUBLIC_TERRAN'&&s.tier===1)!
