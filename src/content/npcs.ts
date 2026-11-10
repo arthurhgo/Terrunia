@@ -1,3 +1,4 @@
+import { castleMerchantNpcsV05151 } from './castleMerchantsV05151'
 import type { NPCDefinition } from './types'
 import { streetNpcDefinitions } from './streetNpcs'
 import { collectionQuestIdsForNpc } from './collectionContracts'
@@ -139,4 +140,5 @@ export const npcDefinitions: NPCDefinition[] = [
     questIds: npc.id === 'npc_rosetta' ? [...rosettaTutorialQuests.map((quest) => quest.id), 'main_rosetta_clan_guidance_v05141'] : [...npc.questIds, 'side_' + npc.id, ...(clanSidequestIdsByNpc[npc.id] ?? []), ...collectionQuestIdsForNpc(npc.id)],
   })),
   ...streetNpcDefinitions,
+  ...castleMerchantNpcsV05151,
 ]
