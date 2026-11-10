@@ -5,6 +5,10 @@ on:
     branches:
       - fix/v0.5.15.3-terran-market-specialists
 
+concurrency:
+  group: v05153-market-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
