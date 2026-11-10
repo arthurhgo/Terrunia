@@ -23,7 +23,7 @@ A v0.5.15.3 divide os **120 SKUs comuns Tier I/G1** entre três especialistas, m
 
 **OWNER_DECISION / BALANCE_DRAFT:** preço de Éter Simples (18) e Antídoto (16) adotado provisoriamente para viabilizar loja com todas as funções de recuperação. Ajustável apenas no catálogo; não é cânon de economia.
 
-**OWNER_DECISION / CONTENT_DRAFT:** os três NPCs aparecem sob nomes **funcionais**, sem biografias/nome próprio canônico. Têm retratos únicos em `public/assets/npcs/market_*.svg`, substituíveis por sprites definitivos via `npcVisuals.json`/assetRegistry, sem alterar IDs, gameplay ou saves.
+**OWNER_DECISION / CONTENT_DRAFT:** os três NPCs aparecem sob nomes **funcionais**, sem biografias/nome próprio canônico. Têm retratos originais nativos em PNG 32×32, gerados pelo pipeline `scripts/generate-equipment-sprites.mjs` em `public/assets/npcs/market_*_portrait.png`. Cada ID no `npcVisuals.json` pode ser substituído manualmente por arte definitiva sem alterar IDs, gameplay ou saves.
 
 ## UI, UX e economia
 
@@ -34,6 +34,15 @@ A v0.5.15.3 divide os **120 SKUs comuns Tier I/G1** entre três especialistas, m
 - O domínio `checkGearAccess` autoriza apenas oferta `PUBLIC_TERRAN` Tier I do **NPC exato para seu slot**. Neris e mercadores de castelo não conseguem burlar a separação. Regras de Clã e Classe continuam exclusivas aos castelos.
 - `buyMarketItem` valida itens antigos e consumíveis por NPC, local, estoque, Ouro e transação; `purchaseGear` gerencia os 120 SKUs em peças individuais.
 - A interface original de conjuntos do componente `GearShopV0515` permanece exclusiva para castelos; o acesso de Neris ao antigo menu é recusado, inclusive por chamada direta.
+
+## Revisão de UX e integridade (v0.5.15.3)
+
+- **Interações sem bloqueio:** ao encerrar o diálogo de um vendedor, `TerranScreen` fecha o painel do Mercado e devolve o controle ao interior; os demais NPCs tornam-se clicáveis novamente, inclusive após pressionar Escape.
+- **Compra e Equipamento em uma transação:** `src/domain/inventory/marketQuickEquipV05153.ts` combina compra individual + equipamento do mesmo item. Se o Vínculo, slot, nível, loja ou Ouro impedir equipar, a transação falha sem descontar Ouro e sem introduzir itens parciais no save. Armaduras iniciais mantêm a rota `equipBasicArmor`; armas e revestimentos usam `equipGearStyle`; complementares usam `equipComplementaryItem`. Vínculos não são concedidos nem substituídos.
+- **Controles na loja:** cada cartão mostra dois botões separados (**Comprar e guardar** e **Comprar e Equipar**, quando permitido), identificação Equipado/Na Mochila/No Baú da Base, filtros por slot/atributo, busca e ordenação por preço/nome. Neris exibe quantidade de consumíveis (1–99) e preço total, sem confundir kits.
+- **Integridade do save:** `purchaseGear` verifica IDs de instância já presentes na mochila, no Baú e nos slots equipados, inclusive sob UUIDs determinísticos, antes de criar uma nova peça. Evita colisões no uso repetido de comprar/equipar e preserva o histórico de atributos.
+- **Economia da Rosetta:** o teste usa valores obtidos do catálogo: recompensa obrigatória de 32 Ouro, Tônico por 18 e primeiro reforço por 8; saldo obrigatório mínimo de 6 Ouro, sem farm. Missões opcionais são independentes.
+- **Validação de release, sem Vercel:** execução GitHub Actions `42889042595`: 123 arquivos de testes unitários/integração aprovados, TypeScript/lint/build aprovados, **16 testes Playwright Chromium aprovados** no Vite local. Inclui o teste E2E do clique nos quatro comerciantes, da compra da poção e do bônus real de Defesa ao comprar/equipar uma armadura. Nenhuma publicação em produção.
 
 ## Rosetta: missões e migração
 
