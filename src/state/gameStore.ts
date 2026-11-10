@@ -140,6 +140,7 @@ type GameState = {
   equipArmor: (instanceId: string | null) => void
   equipComplementary: (slot: ComplementarySlot, instanceId: string | null) => void
   refineArmor: (instanceId: string) => void
+  recordMarketSpecialistConversation: (npcId: string) => void
   buyFromMarket: (npcId: string, itemId: string, quantity?: number) => void
   buyGear: (merchantId: string, offerIds: string[]) => void
   buyGearSet: (merchantId: string, setId: string) => void
@@ -785,6 +786,25 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!result.ok) return failAction(result.message)
       commit(result.value)
       show('Forja Magistral', 'O Vínculo foi aprimorado permanentemente com Ouro.', 'success')
+    },
+
+    recordMarketSpecialistConversation: (npcId) => {
+      const save=get().save
+      if(!save||save.battle||save.world.currentLocationId!=='location_terran_bond_workshop')return
+      const specialists=['npc_terran_weaponsmith','npc_terran_armorer','npc_terran_accessory_artisan']
+      if(!specialists.includes(npcId))return
+      const flag='MarketSpecialistTalk:'+npcId
+      const now=nowIso()
+      const next=applyQuestEvent(save,{type:'talk',targetId:npcId},content,now)
+      if(save.eventLog.includes(flag)){
+        // Avoid a redundant save write for every repeat conversation.
+        if(next.quests.rosetta_tutorial_market_specialists?.status===
+          save.quests.rosetta_tutorial_market_specialists?.status)return
+      }
+      next.eventLog.push(flag)
+      next.updatedAt=now
+      next.revision+=1
+      commit(next)
     },
 
     buyFromMarket: (npcId, itemId, quantity = 1) => {
