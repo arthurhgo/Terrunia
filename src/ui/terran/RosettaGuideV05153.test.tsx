@@ -58,7 +58,7 @@ describe('v0.5.15.3 Rosetta optional merchant introduction',()=>{
   render(<MemoryRouter><RosettaGuide save={save} onClose={()=>{}}
     onOpenQuests={()=>{}} onShowPaths={showPaths} onOpenInventory={openInventory}/></MemoryRouter>)
   expect(screen.getByText('PRÓXIMO PASSO · 1/3')).toBeInTheDocument()
-  const focus=screen.getByRole('status')
+  const focus=screen.getByRole('status',{name:'Próximo passo da lição'})
   expect(focus).toHaveTextContent(next.label)
   fireEvent.click(screen.getByRole('button',{name:next.type==='equip'?'Abrir mochila e equipar':'Ver caminho ou objetivo no Diário'}))
   if(next.type==='equip')expect(openInventory).toHaveBeenCalledOnce()
