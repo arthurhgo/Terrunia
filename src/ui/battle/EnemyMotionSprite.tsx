@@ -1,5 +1,5 @@
 import { biomeEnemyDefinitions } from '../../content/biomeExpeditions'
-import type { CSSProperties } from 'react'
+import { memo, type CSSProperties } from 'react'
 import { resolveAsset } from '../../assets/assetRegistry'
 import { AssetImage } from '../components/AssetImage'
 import './enemyMotion.css'
@@ -29,7 +29,7 @@ export const legacyEnemyMotion: Record<string, { idleMs: number; lunge: number; 
 }
 
 /** Presentation-only animation: domain controls damage, attack timing and death. */
-export function EnemyMotionSprite({ assetId, motion = 'idle', reducedMotion = false, throwRock = false }: {
+export const EnemyMotionSprite = memo(function EnemyMotionSprite({ assetId, motion = 'idle', reducedMotion = false, throwRock = false }: {
   assetId: string; motion?: EnemyMotionState; reducedMotion?: boolean; throwRock?: boolean
 }) {
   const asset = resolveAsset(assetId)
@@ -61,4 +61,4 @@ export function EnemyMotionSprite({ assetId, motion = 'idle', reducedMotion = fa
     data-motion={motion}
     data-asset={assetId}
     style={style} aria-hidden="true" />
-}
+})
