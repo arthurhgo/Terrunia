@@ -18,7 +18,7 @@ export const canUseVictoryRecovery=(save:GameSave,instanceId:string,catalog:Cont
      effect.type==='restoreHp'||effect.type==='restoreMp'||effect.type==='cleanseHarmful'))))
 }
 
-export function useVictoryRecovery(save:GameSave,instanceId:string,catalog:ContentCatalog,
+export function applyVictoryRecovery(save:GameSave,instanceId:string,catalog:ContentCatalog,
  now:string):Result<GameSave>{
  if(save.battle?.phase!=='Victory' || Object.values(save.battle.combatants).some(c=>c.side==='enemy'&&c.alive))
   return fail('VICTORY_PREP_LOCKED','Use suprimentos de preparação somente após derrotar todos os inimigos.')
