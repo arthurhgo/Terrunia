@@ -61,7 +61,9 @@ describe('v0.5.15.3 — atomic shop Buy & Equip and persistent bonuses',()=>{
       expect(worn?.quantity).toBe(1)
       expect(save.inventory.some(item=>item.instanceId===worn?.instanceId)).toBe(false)
       expect(save.character.bondedEquipment[slot as 'armor'|'shield'|'necklace'|'bracelet']??null).toBeNull()
-      expect(gameSaveSchema.safeParse(save).success).toBe(true)
+      const validated=gameSaveSchema.safeParse(save)
+      expect(validated.success,slot+': '+(validated.success?'':validated.error.issues.map(i=>
+        i.path.join('.')+' = '+i.message).join('; '))).toBe(true)
       expect(before.wallet.gold).toBe(previousGold)
     }
     const final=deriveCharacterStats(save,content)
