@@ -31,8 +31,8 @@ export function checkGearAccess(save:GameSave,offer:GearOffer,merchantId:string)
  return ok(true)
 }
 
-const addItem=(offer:GearOffer,now:string):InventoryItemInstance=>({
- instanceId:'gear_'+createRandomId(),definitionId:offer.id,quantity:1,
+const addItem=(offer:GearOffer,now:string,instanceId:string):InventoryItemInstance=>({
+ instanceId,definitionId:offer.id,quantity:1,
  rarity:offer.tier>=5?'epic':offer.tier>=3?'rare':offer.tier===2?'uncommon':'common',
  locked:false,favorite:false,acquiredAt:now,refinementLevel:0,
 })
@@ -51,7 +51,18 @@ export function purchaseGear(save:GameSave,offerIds:readonly string[],now:string
  if(save.wallet.gold<cost)return fail('GEAR_GOLD','Ouro insuficiente: '+cost+' necessário.')
  const next=structuredClone(save)
  next.wallet.gold-=cost
- next.inventory.push(...offers.map(offer=>addItem(offer,now)))
+ // Never reuse a physical item's ID across backpack, equipped slots or Base
+ // storage, even on deterministic test origins or faulty UUID providers.
+ const occupied=new Set([...save.inventory,...getWornGear(save),...save.baseStorage]
+   .map(item=>item.instanceId))
+ const added=offers.map(offer=>{
+   const base='gear_'+createRandomId()
+   let instanceId=base,attempt=1
+   while(occupied.has(instanceId))instanceId=base+'_'+attempt++
+   occupied.add(instanceId)
+   return addItem(offer,now,instanceId)
+ })
+ next.inventory.push(...added)
  next.updatedAt=now;next.revision+=1
  next.eventLog.push('GearPurchased:v05151:'+merchantId+':'+offers[0].setId+':'+offerIds.length+':'+cost)
  return ok(next)
