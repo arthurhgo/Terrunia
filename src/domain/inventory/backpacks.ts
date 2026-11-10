@@ -2,9 +2,9 @@ import type { GameSave } from '../game/types'
 
 /** BALANCE_DRAFT: slot limits and Gold costs are configurable; never alter bound equipment. */
 export const BACKPACK_UPGRADES = [
-  { id: 'backpack_sturdy', npcId: 'presence_neris', name: 'Mochila Reforçada', capacity: 18, price: 95, previousId: null },
-  { id: 'backpack_traveler', npcId: 'presence_neris', name: 'Mochila do Viajante', capacity: 24, price: 210, previousId: 'backpack_sturdy' },
-  { id: 'backpack_arcane', npcId: 'presence_neris', name: 'Mochila Arcana', capacity: 36, price: 420, previousId: 'backpack_traveler' },
+  { id: 'backpack_sturdy', npcId: 'presence_edran', name: 'Mochila Reforçada', capacity: 18, price: 95, previousId: null },
+  { id: 'backpack_traveler', npcId: 'presence_edran', name: 'Mochila do Viajante', capacity: 24, price: 210, previousId: 'backpack_sturdy' },
+  { id: 'backpack_arcane', npcId: 'presence_edran', name: 'Mochila Arcana', capacity: 36, price: 420, previousId: 'backpack_traveler' },
 ] as const
 
 export const BASE_BACKPACK_CAPACITY = 12
