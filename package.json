@@ -13,7 +13,12 @@
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "check": "npm run lint && npm run typecheck && npm run test:run && npm run build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sprites:equipment": "node scripts/generate-equipment-sprites.mjs",
+    "predev": "npm run sprites:equipment",
+    "prebuild": "npm run sprites:equipment",
+    "pretest:run": "npm run sprites:equipment",
+    "pree2e": "npm run sprites:equipment"
   },
   "dependencies": {
     "firebase": "^12.17.1",
