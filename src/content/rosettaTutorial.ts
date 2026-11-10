@@ -45,7 +45,7 @@ const lessons: Omit<QuestDefinition, 'giverNpcId' | 'turnInNpcId' | 'category' |
     terranFlow: { active: 'location_terran_bond_workshop' } },
   { id: 'rosetta_tutorial_armor', title: 'Proteção Alternativa (Opcional)',
     summary: 'Experimente outra proteção comum Tier I de Terran: compre um Gibão de Couro Leve com Neris e equipe-o.',
-    contextNote: 'Esta compra é opcional: sua proteção anterior continua útil. Tiers superiores sem fonte definida aguardam OWNER_DECISION; Neris só vende Tier I.',
+    contextNote: 'Esta compra é opcional: sua proteção anterior continua útil.',
     objectives: [{ id: 'buy_armor', type: 'purchase', targetId: 'equipment_light_leather_vest', required: 1, label: 'Compre o Gibão de Couro Leve por 25 Ouro' },
       { id: 'wear_leather', type: 'equip', targetId: 'equipment_light_leather_vest', required: 1, label: 'Equipe o Gibão de Couro Leve na mochila' }],
     rewards: [{ type: 'characterXp', value: 5 }, { type: 'gold', value: 4 }],
