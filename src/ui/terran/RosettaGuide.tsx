@@ -74,7 +74,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
         <div className="rosetta-tutorial__actions">
           {offered && <><button type="button" onClick={() => { if (progress.status === 'offered') decline(lesson.id); onClose() }}>Agora não</button>
             <button type="button" className="rosetta-tutorial__accept" onClick={() => { if (progress.status === 'available') offer(lesson.id); accept(lesson.id) }}>Aceitar missão</button></>}
-          {progress.status === 'active' && onOpenInventory && !nextObjective && lesson.objectives.some((objective) => objective.type === 'equip') && <button type="button" onClick={onOpenInventory}>Abrir mochila</button>}
+          {progress.status === 'active' && onOpenInventory && lesson.objectives.some((objective) => objective.type === 'equip') && <button type="button" onClick={onOpenInventory}>Abrir mochila</button>}
           {progress.status === 'ready_to_turn_in' && <button type="button" className="rosetta-tutorial__accept"
             disabled={Boolean(lesson.choiceRewardItemIds?.length) && !rewardChoice}
             onClick={() => complete(lesson.id, 'npc_rosetta', lesson.choiceRewardItemIds?.length ? rewardChoice ?? undefined : undefined)}>
