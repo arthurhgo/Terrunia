@@ -4,7 +4,7 @@
  * This tool reads the authoritative TypeScript catalogs; no divergent art inventory.
  * Generated files are build artifacts and may be replaced individually by hand.
  */
-import { readFileSync, mkdirSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, mkdirSync, writeFileSync, existsSync, copyFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { deflateSync } from 'node:zlib'
 import ts from 'typescript'
@@ -263,13 +263,26 @@ const manifest=[]
 for(const gear of equipmentOffersV0515)for(const grade of [1,2,3]){
   const rel='assets/equipment/v05151/'+gear.id+'_g'+grade+'.png'
   const file=join(root,'public',rel)
-  writePng(file,paintGear(gear,grade))
+  const manual=join(root,'public/assets/equipment/manual/v05151',gear.id+'_g'+grade+'.png')
+  if(existsSync(manual)){
+    const b=readFileSync(manual)
+    if(b.readUInt32BE(16)!==SIZE||b.readUInt32BE(20)!==SIZE||b[25]!==6)
+      throw Error('Manual sprite needs a 32x32 RGBA PNG: '+manual)
+    copyFileSync(manual,file)
+  }else writePng(file,paintGear(gear,grade))
   manifest.push({assetId:gear.assetId.replace(/\.g1$/,'.g'+grade),path:'/'+rel,
     grade,slot:gear.slot,tier:gear.tier,channel:gear.channel,width:SIZE,height:SIZE})
   produced++
 }
 for(const merchant of castleGearMerchantsV05151){
-  writePng(join(npcDestination,merchant.npcId+'.png'),paintMerchant(merchant))
+  const target=join(npcDestination,merchant.npcId+'.png')
+  const manual=join(root,'public/assets/npcs/castle_merchants_manual',merchant.npcId+'.png')
+  if(existsSync(manual)){
+    const b=readFileSync(manual)
+    if(b.readUInt32BE(16)!==SIZE||b.readUInt32BE(20)!==SIZE||b[25]!==6)
+      throw Error('Manual merchant portrait needs a 32x32 RGBA PNG: '+manual)
+    copyFileSync(manual,target)
+  }else writePng(target,paintMerchant(merchant))
 }
 writeFileSync(join(destination,'manifest.json'),JSON.stringify({
   schemaVersion:'0.5.15.1',kind:'pixel-art-png',pixelSize:SIZE,
