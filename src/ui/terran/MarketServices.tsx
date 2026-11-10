@@ -66,7 +66,7 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
         </article>
       })}
     </div>
-    {npcId === 'presence_neris' && <section className="terran-shop__backpacks" aria-label="Mochilas de expansão">
+    {npcId === 'presence_edran' && <section className="terran-shop__backpacks" aria-label="Mochilas de expansão">
       <h3><Backpack size={18} /> Mochilas · {save.inventory.length}/{getBackpackCapacity(save)} espaços</h3>
       <p>Uma melhoria permanente de capacidade, separada dos cinco Vínculos.</p>
       <div className="terran-shop__stock">{BACKPACK_UPGRADES.map((upgrade) => {
