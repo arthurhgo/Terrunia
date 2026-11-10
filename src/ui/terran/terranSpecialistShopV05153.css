@@ -106,3 +106,12 @@
 .terran-specialist__icon{padding:0;cursor:help;color:inherit}
 .terran-specialist__icon:focus-visible{outline:2px solid #f1cf87;outline-offset:2px}
 .terran-specialist__icon[aria-pressed="true"]{box-shadow:0 0 0 2px #d6ae69,inset 0 0 0 1px #d6ae69}
+
+/* v0.5.15.3 performance: skip drawing long, off-screen sprite cards; keep their
+   approximate space to prevent scroll jumping. Catalog IDs and DOM remain intact. */
+@supports (content-visibility: auto) {
+  .terran-specialist__offers--grid .terran-specialist__offer {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 225px;
+  }
+}
