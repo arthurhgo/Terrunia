@@ -2,7 +2,7 @@ import { Footprints, Gem, HardHat, Package, Shield, Shirt, Sword, Watch } from '
 import type { ComponentType } from 'react'
 import type { GameSave } from '../../domain/game/types'
 import type { BoundSlot, ComplementarySlot } from '../../domain/shared/types'
-import { gearOfferById, getGearGrade, gearSpriteId } from '../../content/equipmentV0515'
+import { gearOfferById, getGearGrade, gearSpriteId, formatGearStats } from '../../content/equipmentV0515'
 import { content } from '../../content/catalog'
 import { useGameStore } from '../../state/gameStore'
 import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
@@ -46,7 +46,7 @@ export function EquipmentGrid({ save }: { save: GameSave }) {
     const Icon = slot.icon
     return <button key={slot.id} type="button" className={`equipment-grid__slot ${assetId ? 'is-equipped' : 'is-empty'}`}
       aria-label={`${slot.label}: ${name}${actionable ? ', clique para desequipar' : ''}`}
-      title={`${slot.label} · ${name}${actionable ? ' · desequipar' : ''}`}
+      title={`${slot.label} · ${name}${shellGear && shell ? ' · '+formatGearStats(shellGear,getGearGrade(shell.refinementLevel)) : ''}${actionable ? ' · desequipar' : ''}`}
       disabled={!actionable || Boolean(save.battle)}
       onClick={() => {
         if (slot.complementary && worn) equipComplementary(slot.complementary, null)
@@ -66,7 +66,7 @@ export function EquipmentGrid({ save }: { save: GameSave }) {
   const braceletGear = braceletShell ? gearOfferById[braceletShell.definitionId] : null
   return <section className="equipment-grid" aria-label="Equipamentos do Terrírian">
     <div className="equipment-grid__slots">{slots.map(renderSlot)}</div>
-    <div className="equipment-grid__bracelet" title={braceletGear?.name ?? braceletDef?.name ?? 'Pulseira não vinculada'}>
+    <div className="equipment-grid__bracelet" title={`${braceletGear?.name ?? braceletDef?.name ?? 'Pulseira não vinculada'}${braceletGear && braceletShell ? ' · '+formatGearStats(braceletGear,getGearGrade(braceletShell.refinementLevel)) : ''}`}>
       <Watch size={14} aria-hidden="true" />
       <strong>Pulseira</strong>
       <span>{braceletGear?.name ?? braceletDef?.name ?? 'Vazia'}{braceletGear ? ` · T${braceletGear.tier} G${getGearGrade(braceletShell?.refinementLevel)}` : bracelet ? ` · Vínculo G${bracelet.grade}` : ''}</span>
