@@ -138,6 +138,7 @@ export function getGearBonuses(save:GameSave){
   const isSimpleArmor=item.instanceId===save.equippedBasicArmor?.instanceId
   if(isSimpleArmor&&save.character.bondedEquipment.armor)continue
   for(const {stat,value} of getGearStatEntries(offer,getGearGrade(item.refinementLevel))){
+   // Commercial armor's mitigation is already counted as basic armor in derivedStats.
    if(isSimpleArmor&&stat==='mitigation')continue
    totals[stat]+=value
   }
