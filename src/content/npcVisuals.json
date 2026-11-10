@@ -717,7 +717,7 @@
     "npcId": "npc_terran_weaponsmith",
     "name": "Armeiro de Terran",
     "assetId": "npc.terran-weaponsmith.portrait",
-    "path": "/assets/npcs/market_weaponsmith.svg",
+    "path": "/assets/npcs/market_weaponsmith_portrait.png",
     "design": [
       "market",
       "functional_draft",
@@ -728,7 +728,7 @@
     "npcId": "npc_terran_armorer",
     "name": "Armadureiro de Terran",
     "assetId": "npc.terran-armorer.portrait",
-    "path": "/assets/npcs/market_armorer.svg",
+    "path": "/assets/npcs/market_armorer_portrait.png",
     "design": [
       "market",
       "functional_draft",
@@ -739,7 +739,7 @@
     "npcId": "npc_terran_accessory_artisan",
     "name": "Artesão de Acessórios",
     "assetId": "npc.terran-accessory-artisan.portrait",
-    "path": "/assets/npcs/market_accessory_artisan.svg",
+    "path": "/assets/npcs/market_accessory_artisan_portrait.png",
     "design": [
       "market",
       "functional_draft",
