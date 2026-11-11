@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96" viewBox="0 0 32 48" shape-rendering="crispEdges" role="img" aria-label="Brenna, Armadureira de Terran">
+
+<ellipse cx="16" cy="46" rx="11" ry="2" fill="#0A0D16" opacity=".65"/>
+<path d="M10 33h12v9H10z" fill="#3B3436" stroke="#111724" stroke-width="1"/>
+<path d="M10 41h5v4h-6v-2zm8 0h5v4h-6v-2z" fill="#302B2D" stroke="#111724"/>
+<path d="M8 19h16l2 12-3 8H9L6 31z" fill="#7A604B" stroke="#111724"/>
+<path d="M8 21h-3v11h4zm17 0h3v11h-4z" fill="#3B3436" stroke="#111724"/>
+<path d="M13 6h8l4 5-2 10H10L8 13z" fill="#6D3326" stroke="#111724"/>
+<path d="M12 13h11v8H12z" fill="#E7AA8C" stroke="#111724"/>
+<path d="M12 19h11v2H12z" fill="#6D3326" opacity=".33"/>
+<rect x="14" y="16" width="2" height="1" fill="#101520"/><rect x="20" y="16" width="2" height="1" fill="#101520"/>
+<path d="M8 22h16v3H8zM11 29h12v2H11z" fill="#C5AA7F" opacity=".9"/>
+<path d="M9 25h3v12H9zm13 0h2v12h-2z" fill="#3B3436"/>
+<path d="M13 32h7v5h-7z" fill="#C5AA7F" stroke="#111724"/>
+<path d="M24 23l6-2v11l-6 5-4-6v-9z" fill="#6A4F3B" stroke="#151722"/><path d="M25 24h4v7h-4z" fill="#9A8057"/><rect x="26" y="22" width="2" height="13" fill="#D4B685"/><path d="M9 21h16v3H9z" fill="#AB8560"/>
+
+</svg>
