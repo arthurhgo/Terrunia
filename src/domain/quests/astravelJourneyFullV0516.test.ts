@@ -3,6 +3,7 @@ import { content as catalog } from '../../content/catalog'
 import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_ROOM_IDS } from '../../content/fungalChambers'
 import type { EncounterDefinition, TrailNodeDefinition } from '../../content/types'
 import { createNewSave } from '../game/createSave'
+import { migrateAndValidateSave } from '../../persistence/saveSchema'
 import type { GameSave } from '../game/types'
 import { createBattle, isProtectedBoss, submitBattleCommand } from '../combat/engine'
 import { checkTrailQuestGate, completeTrailNode } from '../exploration/trailEngine'
@@ -123,9 +124,18 @@ describe('v0.5.16 — auditoria integral de 15 marcos (FSM + desbloqueio + 4 sal
       if (node.index === 5) {
         expect(save.world.trailNodeStates.astravel_camp_03).toBe('completed')
         expect(save.quests.vs_astravel_first_contact.status).toBe('ready_to_turn_in')
+        // Simulate a closed/reopened game after chapter I: no lost state.
+        save = migrateAndValidateSave(structuredClone(save))
+        expect(save.world.trailNodeStates.astravel_camp_03).toBe('completed')
+        expect(save.world.trailNodeStates.astravel_hunter_tracks_06).toBe('current')
+        expect(save.quests.vs_astravel_first_contact.status).toBe('ready_to_turn_in')
       }
       if (node.index === 10) {
         expect(save.world.trailNodeStates.astravel_hunter_refuge_10).toBe('completed')
+        expect(save.quests.main_astravel_lost_hunters.status).toBe('ready_to_turn_in')
+        save = migrateAndValidateSave(structuredClone(save))
+        expect(save.world.trailNodeStates.astravel_hunter_refuge_10).toBe('completed')
+        expect(save.world.trailNodeStates.astravel_ruin_watch_11).toBe('current')
         expect(save.quests.main_astravel_lost_hunters.status).toBe('ready_to_turn_in')
       }
     }
@@ -177,7 +187,10 @@ describe('v0.5.16 — auditoria integral de 15 marcos (FSM + desbloqueio + 4 sal
     expect(report.totalEncounters).toBe(15)
     expect(report.chapter).toBe('aftermath')
     expect(report.discoveries).toHaveLength(8)
-    expect(getQuestCadenceMetricsV0516(save, catalog).combats).toBe(15)
+    expect(getQuestCadenceMetricsV0516(save, catalog)).toMatchObject({
+      combats: 15, accepted: 3, maxAcceptancesBetweenCombats: 1,
+      elapsedMinutesBetweenCombats: null,
+    })
     expect(save.quests.vs_astravel_first_contact.status).toBe('completed')
     expect(save.quests.main_astravel_lost_hunters.status).toBe('completed')
     expect(save.quests.main_astravel_corruption.status).toBe('completed')
