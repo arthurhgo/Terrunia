@@ -16,6 +16,8 @@ const ready = () => {
   // This fixture represents a veteran who has already used Daeryn's key.
   save.world.worldFlags.push('player_home_door_opened', 'player_home_key_used')
   save.eventLog.push('DaerynKeyUsedOnHomeDoor')
+  // Collection contracts are post-arc optional work in v0.5.16.
+  save.world.trailNodeStates.astravel_boss_preview = 'completed'
   return refreshQuestAvailability(save, content, instant)
 }
 const add = (save: GameSave, id: string, quantity: number, favorite = false) => save.inventory.push({
