@@ -17,7 +17,7 @@ import { AstravelPixelCanvas } from '../expedition/AstravelPixelCanvas'
 import { ExpeditionStatusHud } from '../expedition/ExpeditionStatusHud'
 import { getVisualEquipment } from '../characters/equipmentVisuals'
 import { ExpeditionReportV0516 } from '../quests/ExpeditionReportV0516'
-import { ASTRAVEL_DISCOVERIES_V0516 } from '../../domain/quests/questFlowV0516'
+import { ASTRAVEL_DISCOVERIES_V0516, getChapterContinuationV0516 } from '../../domain/quests/questFlowV0516'
 import './gameplayV057.css'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
@@ -145,7 +145,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
           </button>
           <div className="terran-game__quest"><Trees size={17} />
             <span>{activeNode ? `Siga até: ${activeNode.label}` : 'Expedição concluída · retorne a Terran'}
-              <small>{activeGate && !activeGate.ok ? activeGate.message : 'WASD / setas / toque para caminhar · E para investigar · combate por turnos'}</small></span>
+              <small>{activeGate && !activeGate.ok ? activeGate.message : getChapterContinuationV0516(save) ?? 'WASD / setas / toque para caminhar · E para investigar · combate por turnos'}</small></span>
           </div>
         </section>
         {drawer && <>
