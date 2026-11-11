@@ -16,6 +16,8 @@ import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { AstravelPixelCanvas } from '../expedition/AstravelPixelCanvas'
 import { ExpeditionStatusHud } from '../expedition/ExpeditionStatusHud'
 import { getVisualEquipment } from '../characters/equipmentVisuals'
+import { ExpeditionReportV0516 } from '../quests/ExpeditionReportV0516'
+import { ASTRAVEL_DISCOVERIES_V0516 } from '../../domain/quests/questFlowV0516'
 import './gameplayV057.css'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
@@ -29,6 +31,8 @@ function NodeDrawer({ node, trail, status, save, onAction, onReturn }: {
   const gate = status === 'completed' ? { ok: true as const } : checkTrailQuestGate(save, node, content)
   const encounter = node.encounterId ? content.encounters[node.encounterId] : null
   const drops = encounter ? [...new Set(encounter.rewards.lootDefinitionIds)].map((id) => content.items[id]) : []
+  const recorded = trail.regionId === 'astravel' && status === 'completed'
+    ? ASTRAVEL_DISCOVERIES_V0516.find(entry => entry.nodeId === node.id) : null
   return <article className="expedition-node-detail">
     <span className="eyebrow">ENCONTRO {node.index}/{trail.nodes.length - 1} · {(trail.regionId === 'astravel' ? getAstravelSector(node.index).name : trail.name).toUpperCase()}</span>
     <h3>{node.label}</h3><p>{node.description}</p>
@@ -50,6 +54,11 @@ function NodeDrawer({ node, trail, status, save, onAction, onReturn }: {
       {node.type === 'boss' ? 'Adentrar Câmaras Fúngicas' : node.actionLabel ?? 'Explorar'}
     </button>}
     {status === 'completed' && <span className="expedition-node-detail__done">✓ Registro preservado na campanha</span>}
+    {recorded && <details className="expedition-report-v0516 expedition-record-v0516" aria-label={'Investigar vestígio de ' + node.label}>
+      <summary>Investigar vestígio · {recorded.title}</summary>
+      <p>{recorded.description}</p>
+      <small>Este registro pertence ao marco já vencido. Não cria uma nova missão, combate ou recompensa.</small>
+    </details>}
   </article>
 }
 
@@ -197,6 +206,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
               </section>
             </>}
             {drawer === 'quests' && <div className="expedition-route-list">
+              {isAstravel && <ExpeditionReportV0516 save={save} />}
               {quests.length === 0 && <p>Converse com os responsáveis em Terran para aceitar a próxima missão.</p>}
               {quests.map(({ definition, progress }) => <section key={definition.id} className="expedition-route-sector">
                 <h3>{definition.title}</h3><p>{definition.summary}</p>
