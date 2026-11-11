@@ -53,6 +53,37 @@ const prerequisitesMet = (save: GameSave, definition: QuestDefinition) =>
 export const refreshQuestAvailability = (save: GameSave, catalog: ContentCatalog, now: string): GameSave => {
   const next = structuredClone(save)
   let changed = false
+  // v0.5.16: existing accepted field reports keep their progress if a
+  // historical battle became permanent checkpoint evidence. Never auto-turn-in
+  // or generate rewards; only mark objectives already proved by the save.
+  const checkpointReports = new Set([
+    'side_astravel_spore_shells',
+    'side_astravel_mycelial_tracking',
+    'side_astravel_ruin_wardens',
+  ])
+  const reducedSingleEncounter = new Set([
+    'side_astravel_thornback_signs', 'side_street_liora',
+    'side_street_siven', 'side_street_nara', 'side_astravel_forge_chitin',
+  ])
+  for (const questId of [...checkpointReports, ...reducedSingleEncounter]) {
+    const definition = catalog.quests[questId]
+    const progress = next.quests[questId]
+    if (!definition || !progress || progress.status !== 'active') continue
+    if (checkpointReports.has(questId)) {
+      for (const objective of definition.objectives) {
+        if (objective.type !== 'visit' || next.world.trailNodeStates[objective.targetId] !== 'completed') continue
+        if ((progress.objectives[objective.id] ?? 0) >= objective.required) continue
+        progress.objectives[objective.id] = objective.required
+        next.eventLog.push('QuestEvidenceReconciledV0516:' + questId + ':' + objective.targetId)
+        changed = true
+      }
+    }
+    if (definition.objectives.every(objective => (progress.objectives[objective.id] ?? 0) >= objective.required)) {
+      progress.status = 'ready_to_turn_in'
+      next.eventLog.push('QuestReadyReconciledV0516:' + questId)
+      changed = true
+    }
+  }
   for (const definition of Object.values(catalog.quests)) {
     const progress = next.quests[definition.id]
     if (!progress || progress.status !== 'locked' || !prerequisitesMet(next, definition)) continue
