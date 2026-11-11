@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 32 32" shape-rendering="crispEdges" role="img" aria-label="Cota de Guarda de Terran">
+<path d="M11 4h10l8 6-5 8-3-2v13H11V16l-3 2-5-8z" fill="#37414A" stroke="#171923" stroke-width="2"/><path d="M12 6h8l7 5-3 5-4-3v13H12V13l-4 3-3-5z" fill="#72808A"/><path d="M12 6h8l-2 6h-4z" fill="#B9C8C8"/><path d="M11 25h10v3H11z" fill="#37414A"/><path d="M10 8h13v17H10z" fill="#B9C8C8" stroke="#37414A"/><rect x="13" y="11" width="7" height="11" fill="#72808A"/><path d="M16 11h2v12h-2zM11 17h12v2H11z" fill="#D3B977"/><rect x="14" y="25" width="5" height="3" fill="#D3B977"/>
+</svg>
