@@ -5,7 +5,7 @@ import type { GameSave } from '../../domain/game/types'
 import { getQuestJournalEntries, getQuestStatusLabel, type QuestJournalEntry } from '../../domain/quests/questSelectors'
 import { useGameStore } from '../../state/gameStore'
 import { ExpeditionReportV0516 } from '../quests/ExpeditionReportV0516'
-import { getNarrativeLeadV0516 } from '../../domain/quests/questFlowV0516'
+import { getNarrativeLeadV0516, getChapterContinuationV0516 } from '../../domain/quests/questFlowV0516'
 import { ASTRAVEL_QUEST_CHAPTERS_V0516, currentQuestChapterV0516, isQuestInCurrentChapterV0516 } from '../../domain/quests/questPacingV0516'
 import './terranFixedSidebar.css'
 
@@ -20,6 +20,7 @@ export function TerranQuickJournal({ save }: { save: GameSave }) {
   const chapter = currentQuestChapterV0516(save)
   const chapterInfo = ASTRAVEL_QUEST_CHAPTERS_V0516[chapter]
   const nextLead = getNarrativeLeadV0516(save, content)
+  const continuation = getChapterContinuationV0516(save)
   const secondaryActive = active.filter(({ definition }) => definition.category !== 'main')
   const stageMatches = secondaryActive.filter(({ definition }) => isQuestInCurrentChapterV0516(save, definition))
   // Focus is a presentation limit only. Never remove, expire or change an accepted quest.
@@ -70,6 +71,7 @@ export function TerranQuickJournal({ save }: { save: GameSave }) {
         ? 'Contratos extras opcionais; consulte o Diário para o histórico completo.'
         : 'Trilha ' + chapterInfo.from + '–' + chapterInfo.to + ' · Combates e objetivos do mesmo capítulo.'}</small>
     </div>
+    {continuation && <div className="terran-quick-journal__intro" role="note" aria-label="Jornada contínua"><strong>Continue a expedição</strong><small>{continuation}</small></div>}
     {nextLead && <div className="terran-quick-journal__intro" role="note" aria-label="Próximo capítulo de Astravél">
       <strong>Próximo contato · {nextLead.npcName}</strong>
       <small>{nextLead.message}</small>
