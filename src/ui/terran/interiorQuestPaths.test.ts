@@ -48,6 +48,8 @@ describe('Rastreamento de missões dentro de casas', () => {
   it('Rosetta continua preview das missões dentro da casa e não inventa rota ao equipar', () => {
     const save = fresh()
     save.quests.side_npc_daeryn.status = 'available'
+    // Generic sidequests become optional post-Astravél work in v0.5.16.
+    save.world.trailNodeStates.astravel_boss_preview = 'completed'
     save.quests.vs_astravel_first_contact.status = 'active'
     const room = 'location_terran_daeryn_house' as const
     const paths = getInteriorQuestPaths(room, getRoomPlan(room).spawn,
