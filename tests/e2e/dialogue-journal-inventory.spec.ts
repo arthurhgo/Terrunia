@@ -66,12 +66,12 @@ test('conversas interativas, aceite cinza, diário em linhas e mochila antes dos
 
   await arlen.getByRole('button', { name: 'Aceitar missão', exact: true }).click()
   const marker = page.locator('[aria-label="Conversar com Arlen"] .npc-quest-marker')
-  // Other Arlen offers are still stage-gated; the accepted quest remains the visible marker.
+  // Arlen's material contract now becomes available in chapter II and takes marker precedence.
   expect(await page.evaluate(async () => {
     const { useGameStore } = await import('/src/state/gameStore.ts')
     return useGameStore.getState().save!.quests.side_street_arlen.status
   })).toBe('active')
-  await expect(marker).toHaveAttribute('data-quest-state', 'active')
+  await expect(marker).toHaveAttribute('data-quest-state', 'available')
   await expect(page.locator('.notification--neutral')).toContainText('Missão aceita')
   await page.keyboard.press('Escape')
   await page.getByRole('button', { name: 'Conversar com Arlen', exact: true }).click()
