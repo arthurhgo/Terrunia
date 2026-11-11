@@ -9,6 +9,7 @@ import { refreshTutorialQuestProgress } from './tutorialProgress'
 import { chooseClanCandidate } from '../progression/clanOrientation'
 import { clanTableQuestId } from '../../content/clanProgressionV05142'
 import { isLegacyClanTrialQuestId } from '../../content/clanTrials'
+import { isQuestOfferUnlockedV0516 } from './questPacingV0516'
 
 export const SLOT_OCCUPYING_QUEST_STATUSES = ['active', 'ready_to_turn_in'] as const
 
@@ -85,6 +86,9 @@ export const offerQuest = (
   }
   if (!prerequisitesMet(save, catalog.quests[questId])) {
     return fail('QUEST_PREREQUISITES_NOT_MET', 'Os requisitos desta missão não estão mais válidos.')
+  }
+  if (!isQuestOfferUnlockedV0516(save, catalog.quests[questId])) {
+    return fail('QUEST_CHAPTER_NOT_REACHED', 'A oferta pertence a outro trecho de Astravél. Avance na trilha e retorne ao NPC.')
   }
   if (catalog.quests[questId].category === 'clan') {
     const clan = Object.values(catalog.clans).find((entry) => entry.recruiterNpcId === catalog.quests[questId].giverNpcId)
