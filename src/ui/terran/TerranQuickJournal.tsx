@@ -4,6 +4,7 @@ import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import { getQuestJournalEntries, getQuestStatusLabel, type QuestJournalEntry } from '../../domain/quests/questSelectors'
 import { useGameStore } from '../../state/gameStore'
+import { ASTRAVEL_QUEST_CHAPTERS_V0516, currentQuestChapterV0516, isQuestInCurrentChapterV0516 } from '../../domain/quests/questPacingV0516'
 import './terranFixedSidebar.css'
 
 /** Accepted missions only: offers belong to Rosetta and NPCs, not the journal. */
@@ -14,6 +15,16 @@ export function TerranQuickJournal({ save }: { save: GameSave }) {
   const ready = entries.filter(({ progress }) => progress.status === 'ready_to_turn_in')
   const completed = entries.filter(({ progress }) => progress.status === 'completed')
   const showIntroduction = ['available', 'offered'].includes(save.quests.rosetta_tutorial_equip?.status ?? 'locked')
+  const chapter = currentQuestChapterV0516(save)
+  const chapterInfo = ASTRAVEL_QUEST_CHAPTERS_V0516[chapter]
+  const secondaryActive = active.filter(({ definition }) => definition.category !== 'main')
+  const stageMatches = secondaryActive.filter(({ definition }) => isQuestInCurrentChapterV0516(save, definition))
+  // Focus is a presentation limit only. Never remove, expire or change an accepted quest.
+  const featuredSide = (stageMatches.length ? stageMatches : secondaryActive).slice(0, 3)
+  const featuredIds = new Set(featuredSide.map(({ progress }) => progress.questId))
+  const otherSide = secondaryActive.filter(({ progress }) => !featuredIds.has(progress.questId))
+  const visibleReady = ready.slice(0, 3)
+  const otherReady = ready.slice(3)
 
   const renderLine = ({ definition, progress }: QuestJournalEntry) => {
     const objective = definition.objectives.find((item) => (progress.objectives[item.id] ?? 0) < item.required)
@@ -50,9 +61,23 @@ export function TerranQuickJournal({ save }: { save: GameSave }) {
       <strong>01 · Falar com Rosetta</strong>
       <small>Praça do Portal · Inicie sua jornada</small>
     </div>}
-    {renderGroup('ready', 'Prontas para entrega', ready)}
+    <div className="terran-quick-journal__intro" role="note" aria-label="Etapa da expedição">
+      <strong>{chapter === 'aftermath' ? 'Astravél · Arco concluído' : 'Astravél · ' + chapterInfo.label}</strong>
+      <small>{chapter === 'aftermath'
+        ? 'Contratos extras opcionais; consulte o Diário para o histórico completo.'
+        : 'Trilha ' + chapterInfo.from + '–' + chapterInfo.to + ' · Combates e objetivos do mesmo capítulo.'}</small>
+    </div>
+    {renderGroup('ready', 'Prontas para entrega', visibleReady)}
+    {otherReady.length > 0 && <details className="terran-quick-journal__history" aria-label="Mais entregas prontas">
+      <summary>Mais entregas prontas <small>{otherReady.length}</small></summary>
+      {otherReady.map(renderLine)}
+    </details>}
     {renderGroup('main', 'Principais', active.filter(({ definition }) => definition.category === 'main'))}
-    {renderGroup('side', 'Outras missões', active.filter(({ definition }) => definition.category !== 'main'))}
+    {renderGroup('side', 'Secundárias da etapa', featuredSide)}
+    {otherSide.length > 0 && <details className="terran-quick-journal__history" aria-label="Outras missões aceitas">
+      <summary>Outras missões ativas <small>{otherSide.length}</small></summary>
+      {otherSide.map(renderLine)}
+    </details>}
     <details className="terran-quick-journal__history">
       <summary>Concluídas <small>{completed.length}</small></summary>
       {completed.length ? completed.map(renderLine)
