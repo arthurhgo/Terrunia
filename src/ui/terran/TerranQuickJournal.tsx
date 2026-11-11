@@ -4,6 +4,8 @@ import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
 import { getQuestJournalEntries, getQuestStatusLabel, type QuestJournalEntry } from '../../domain/quests/questSelectors'
 import { useGameStore } from '../../state/gameStore'
+import { ExpeditionReportV0516 } from '../quests/ExpeditionReportV0516'
+import { getNarrativeLeadV0516 } from '../../domain/quests/questFlowV0516'
 import { ASTRAVEL_QUEST_CHAPTERS_V0516, currentQuestChapterV0516, isQuestInCurrentChapterV0516 } from '../../domain/quests/questPacingV0516'
 import './terranFixedSidebar.css'
 
@@ -17,6 +19,7 @@ export function TerranQuickJournal({ save }: { save: GameSave }) {
   const showIntroduction = ['available', 'offered'].includes(save.quests.rosetta_tutorial_equip?.status ?? 'locked')
   const chapter = currentQuestChapterV0516(save)
   const chapterInfo = ASTRAVEL_QUEST_CHAPTERS_V0516[chapter]
+  const nextLead = getNarrativeLeadV0516(save, content)
   const secondaryActive = active.filter(({ definition }) => definition.category !== 'main')
   const stageMatches = secondaryActive.filter(({ definition }) => isQuestInCurrentChapterV0516(save, definition))
   // Focus is a presentation limit only. Never remove, expire or change an accepted quest.
@@ -67,6 +70,11 @@ export function TerranQuickJournal({ save }: { save: GameSave }) {
         ? 'Contratos extras opcionais; consulte o Diário para o histórico completo.'
         : 'Trilha ' + chapterInfo.from + '–' + chapterInfo.to + ' · Combates e objetivos do mesmo capítulo.'}</small>
     </div>
+    {nextLead && <div className="terran-quick-journal__intro" role="note" aria-label="Próximo capítulo de Astravél">
+      <strong>Próximo contato · {nextLead.npcName}</strong>
+      <small>{nextLead.message}</small>
+    </div>}
+    <ExpeditionReportV0516 save={save} />
     {renderGroup('ready', 'Prontas para entrega', visibleReady)}
     {otherReady.length > 0 && <details className="terran-quick-journal__history" aria-label="Mais entregas prontas">
       <summary>Mais entregas prontas <small>{otherReady.length}</small></summary>
