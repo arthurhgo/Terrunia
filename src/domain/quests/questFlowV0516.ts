@@ -160,7 +160,6 @@ export function getNextStoryNpcDestinationV0516(save: GameSave, catalog: Content
 export function getCombatQuestProgressV0516(save: GameSave, catalog: ContentCatalog) {
   const battle = save.battle
   if (!battle || battle.phase !== 'Victory' || !battle.claimed) return []
-  const encounter = catalog.encounters[battle.encounterId]
   const enemyIds = new Set(Object.values(battle.combatants)
     .filter(actor => actor.side === 'enemy' && !actor.alive).map(actor => actor.definitionId))
   const lootIds = new Set(battle.rewards.lootDefinitionIds)
