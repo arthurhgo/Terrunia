@@ -18,7 +18,7 @@ Playtest do proprietário: após avançar uma rota de Astravél, o diário acumu
 | Capítulo I · Borda Luminescente (1–5) | Início / Primeiro Contato | `vs_astravel_first_contact` | Eldamar | Liora, Espinhos da Fronteira (e outras somente quando seus requisitos originais forem atendidos) |
 | Capítulo II · Território dos Esporos (6–10) | `astravel_camp_03` (marco 5 concluído) | `main_astravel_lost_hunters` | Vorren | Arlen, Siven, relatório da carapaça, quitina da forja, pedido de Vorren |
 | Capítulo III · Raízes da Ruína (11–15) | `astravel_hunter_refuge_10` (marco 10 concluído) | `main_astravel_corruption` | Lithwynn | Nara, Ruven, relatório micelial, inscrições de Lithwynn |
-| Pós-Astravél | `astravel_boss_preview` (marco 15 concluído) | Conteúdo posterior | NPCs e contratos opcionais | Contratos comerciais e pedidos gerais não prioritários |
+| Pós-Astravél | `astravel_boss_preview` (marco 15 concluído) | Conteúdo posterior | NPCs e contratos opcionais | Pedidos gerais e contratos avançados não prioritários |
 
 A correspondência `questId -> checkpoint` fica em `src/domain/quests/questPacingV0516.ts`. Os IDs dos NPCs, missões, marcos e recompensas não mudam.
 
@@ -59,7 +59,7 @@ A interface não executa aceites ou entregas escondidas. O rastro dourado e o Di
 
 1. **Nomes pessoais provisórios dos três comerciantes**: Torvan (Armeiro), Brenna (Armadureira), Ilyra (Artesã de Acessórios). Aprovar ou substituir antes do canon final.
 2. **Nova política de relatos retrospectivos**: usar o marco vencido para satisfazer o objetivo de observação, com aceitação e entrega manuais. Testar saves antigos.
-3. **Contratos pós-capítulo**: os pedidos gerais e encomendas de material ficam para depois da trilha principal; poderão futuramente migrar para um quadro de contratos opcional.
+3. **Contratos por capítulo**: Liora no início, Arlen/Daeryn após o marco 5, Ruven/Lithwynn após o marco 10; sete contratos avançados mantidos no pós-Astravél. A aceitação continua opcional. Balanceamento e valores permanecem rascunhos.
 4. **Agrupamento de entregas**: nesta versão a entrega **continua presencial e individual**. Um botão de entrega múltipla ou relatório remoto requer decisão específica, para não duplicar recompensas ou ignorar ritos de NPC.
 5. **Valores de XP, Ouro, Materiais e exigência de kills**: mantidos como BALANCE_DRAFT até playtest.
 6. **Direção visual de sprites**: ver `TERRUNIA_V0516_VISUAL_APPROVAL.md`. O remake detalhado de personagens/ambientes continua previsto para v0.6.0.
@@ -72,3 +72,27 @@ A interface não executa aceites ou entregas escondidas. O rastro dourado e o Di
 - Antes do merge, revisar em 1366×768 e 1920×1080, jogar a sequência real de marcos 1–15 e provar que o jogador não precisa repetir encontros que já passaram para concluir observações.
 
 **Publicação:** até aprovação explícita, **sem merge na main e sem deploy em produção**.
+
+
+## Adendo para aprovação — seis refinamentos adicionais (v0.5.16)
+
+**Todos são CONTENT_DRAFT / UX_DRAFT; sem novos capítulos, recompensas, regras de combate ou migração de schema.**
+
+1. **Encadeamento de entregas.** `getNarrativeLeadV0516` orienta: entregar `vs_astravel_first_contact` com Eldamar leva à investigação de Vorren após o marco 5; entregar `main_astravel_lost_hunters` com Vorren leva a Lithwynn após o marco 10. A mensagem aparece no diálogo do NPC da entrega, no resumo de missões e na notificação de conclusão, conforme status real da quest. Novas missões só ficam disponíveis pelo sistema já existente. Sem autoaceite.
+2. **Contratos distribuídos com o loot.** No `QUEST_CHAPTER_RELEASES_V0516`, `delivery_liora_spores` é do capítulo I, `delivery_arlen_nuclei` e `delivery_daeryn_gels` do II, `delivery_ruven_fibers` e `delivery_lithwynn_shards` do III. Os demais contratos permanecem pós-trilha. Nenhum `turnInItems`, quantidade, preço, valor de Ouro ou requisito original de missão é alterado.
+3. **Vestígios investigáveis nos marcos já existentes.** Oito textos de observação em `ASTRAVEL_DISCOVERIES_V0516` (marcos 3, 5, 6, 8, 9, 10, 11 e 14), dentro da interface da instância. Só aparecem depois de uma vitória registrada no save. A ação `Investigar vestígio` revela **informações derivadas**, sem duplicar loot/quest/recompensa. Relatórios anteriores de marcos 5, 9 e 14 continuam retroativos.
+4. **Relatório de expedição.** `ExpeditionReportV0516` disponível na lateral de Terran e no painel Missões da instância. Exibe quantidade real de encontros registrados, vestígios já descobertos, materiais **atualmente na mochila** (sem confundir com drops obtidos e vendidos), missão pronta + NPC de entrega e próximo contato. O botão `Rastrear` altera apenas o alvo visual de uma missão pronta; nenhuma entrega ocorre remotamente.
+5. **Prévia de missões futuras.** `getNpcForeshadowV0516` mostra em diálogo uma indicação discreta quando uma oferta já satisfaz requisitos de história mas está aguardando o checkpoint. Não marca missão ativa, não revela detalhes de quests ainda bloqueadas pelos seus requisitos originais e não transforma boato em canon.
+6. **Métricas de ritmo (QA).** `getQuestCadenceMetricsV0516` computa quantidade de quests aceitas entre duas conclusões de batalha da trilha, incluindo pico de aceites consecutivos, entregas prontas e sidequests ativas. O save atual **não registra timestamps por ação**: por isso não é possível inferir minutos entre combates; `elapsedMinutesBetweenCombats` permanece `null`. Medir tempo exige consentimento/decisão posterior sobre telemetria.
+
+### Revisão de UX e segurança adicional
+- Revalidar save legado com 29 sidequests e sua ordenação após a inclusão do relatório.
+- Garantir que `Rastrear entrega` só altera `tracked`, não concede Ouro, XP, Essência ou itens.
+- Verificar que prévias aparecem apenas no diálogo e nunca criam marcador `!`/◇ antes do desbloqueio.
+- Testar NPCs fora da trilha: nenhum gate de Clã/Classe/Tutorial foi modificado.
+- Confirmar que observações não expõem conhecimento de um marco ainda não conquistado e não geram combates repetidos.
+- Playtest da taxa de conversão de contratos em 1–5 / 6–10 / 11–15, pois disponibilidade real depende também dos requisitos originais da quest.
+
+**Arte:** o pacote de oito SVGs segue separado da gameplay. Nomes propostos Torvan, Brenna e Ilyra continuam sob `OWNER_DECISION`.
+
+**Release:** PR #80 continua DRAFT até aprovação; merge/deploy de produção não autorizados por esta etapa.
