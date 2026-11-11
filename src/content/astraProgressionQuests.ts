@@ -62,7 +62,7 @@ export const astravelProgressionQuests: QuestDefinition[] = [
   {
     id: 'side_astravel_thornback_signs',
     title: 'Espinhos da Fronteira',
-    summary: 'Eldamar precisa distinguir a carapaça dos Fungorros Espinhais do primeiro fungo rastejante. Observe dois espécimes em combate.',
+    summary: 'Eldamar precisa distinguir a carapaça dos Fungorros Espinhais do primeiro fungo rastejante. Registre a presença do Espinhal durante a expedição.',
     contextNote: 'Encontre um Espinhal no marco 3 de Astravél ou em Ondas intermediárias. As observações não consomem seus Núcleos Fúngicos.',
     giverNpcId: 'npc_eldamar', turnInNpcId: 'npc_eldamar', category: 'secondary',
     objectives: [{ id: 'thornback_combat', type: 'kill', targetId: 'enemy_fungorro_thornback', required: 1,
