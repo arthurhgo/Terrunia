@@ -96,7 +96,8 @@ export function getExpeditionReportV0516(save: GameSave, catalog: ContentCatalog
       npcName: catalog.npcs[catalog.quests[progress.questId].turnInNpcId]?.name ?? 'NPC responsável' }))
   const materials = save.inventory.filter(entry =>
     catalog.items[entry.definitionId]?.category === 'material' ||
-    catalog.items[entry.definitionId]?.category === 'fragment')
+    catalog.items[entry.definitionId]?.category === 'fragment' ||
+    catalog.items[entry.definitionId]?.category === 'drop')
     .map(entry => ({ id: entry.instanceId, itemId: entry.definitionId, quantity: entry.quantity,
       name: catalog.items[entry.definitionId]?.name ?? entry.definitionId }))
   return { chapter, chapterName: ASTRAVEL_QUEST_CHAPTERS_V0516[chapter].label,
