@@ -45,16 +45,18 @@ export const QUEST_CHAPTER_RELEASES_V0516: Readonly<Partial<Record<string, Quest
   // Chapter aftermath, optional contract board / return to the NPC.
   side_astravel_ruin_wardens: 'aftermath',
   side_street_garrik: 'aftermath',
-  delivery_arlen_nuclei: 'aftermath',
-  delivery_liora_spores: 'aftermath',
+  // DELIVERY PACING_DRAFT: only offers whose material sources match the route.
+  // Contract requirements / payout / material consumption remain untouched.
+  delivery_arlen_nuclei: 'spores',
+  delivery_liora_spores: 'border',
   delivery_garrik_chitin: 'aftermath',
   delivery_siven_shards: 'aftermath',
   delivery_nara_echoes: 'aftermath',
-  delivery_ruven_fibers: 'aftermath',
+  delivery_ruven_fibers: 'roots',
   delivery_eldamar_echoes: 'aftermath',
-  delivery_daeryn_gels: 'aftermath',
+  delivery_daeryn_gels: 'spores',
   delivery_vorren_samples: 'aftermath',
-  delivery_lithwynn_shards: 'aftermath',
+  delivery_lithwynn_shards: 'roots',
   delivery_neris_stock: 'aftermath',
   delivery_durnan_batch: 'aftermath',
 }
