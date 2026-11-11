@@ -56,6 +56,34 @@ describe('v0.5.16 — narrative release of offers at actual trail milestones', (
     expect(save.quests.side_street_arlen.status).toBe('available')
   })
 
+  it('uses real recorded checkpoint evidence so side reports never force a replay', () => {
+    const save = fresh()
+    save.character.level = 3
+    save.quests.vs_astravel_first_contact.status = 'completed'
+    save.quests.main_vorren_bestiary.status = 'completed'
+    save.quests.side_astravel_spore_shells.status = 'available'
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
+    const offer = offerQuest(save, 'side_astravel_spore_shells', content, now)
+    expect(offer.ok).toBe(true)
+    if (!offer.ok) return
+    const accepted = acceptQuest(offer.value, 'side_astravel_spore_shells', content, now)
+    expect(accepted.ok).toBe(true)
+    if (!accepted.ok) return
+    expect(accepted.value.quests.side_astravel_spore_shells.status).toBe('ready_to_turn_in')
+    expect(accepted.value.quests.side_astravel_spore_shells.objectives.spore_shells).toBe(1)
+    expect(accepted.value.wallet).toEqual(save.wallet)
+    expect(accepted.value.inventory).toEqual(save.inventory)
+  })
+
+  it('rewards only one encounter for early fauna studies, not a repeated Portal farm', () => {
+    expect(content.quests.side_astravel_thornback_signs.objectives[0])
+      .toMatchObject({ type: 'kill', targetId: 'enemy_fungorro_thornback', required: 1 })
+    expect(content.quests.side_street_liora.objectives[0])
+      .toMatchObject({ type: 'kill', targetId: 'enemy_spore_sower', required: 1 })
+    expect(content.quests.side_astravel_forge_chitin.turnInItems)
+      .toEqual([{ itemId: 'drop_spore_chitin', quantity: 1 }])
+  })
+
   it('grandfathers existing offers and 29 accepted quests with no changes to progress or inventory', () => {
     const save = fresh()
     save.quests.vs_astravel_first_contact.status = 'completed'
