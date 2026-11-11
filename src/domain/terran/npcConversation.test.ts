@@ -43,6 +43,8 @@ describe('conversas e sinalização dos NPCs', () => {
     const save = createNewSave('speaker', 'Aron', 'character.terririan.default', content)
     save.quests.side_street_arlen.status = 'active'
     save.quests.delivery_arlen_nuclei.status = 'available'
+    expect(getNpcQuestNotice(save, 'npc_street_arlen', content)).toEqual({ marker: '◇', phase: 'active' })
+    save.world.trailNodeStates.astravel_boss_preview = 'completed'
     expect(getNpcQuestNotice(save, 'npc_street_arlen', content)).toEqual({ marker: '◇', phase: 'available' })
     save.quests.delivery_arlen_nuclei.status = 'ready_to_turn_in'
     expect(getNpcQuestNotice(save, 'npc_street_arlen', content)).toEqual({ marker: '◆', phase: 'turn-in' })
