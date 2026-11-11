@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
 import type { GameSave } from '../game/types'
-import { refreshQuestAvailability } from './questEngine'
+import { acceptQuest, offerQuest, refreshQuestAvailability } from './questEngine'
 import { getQuestMaterialCommitmentV0516 } from '../inventory/itemPurpose'
 import { getChapterContinuationV0516, getCombatQuestProgressV0516,
   getNextStoryNpcDestinationV0516 } from './questFlowV0516'
@@ -66,6 +66,25 @@ describe('v0.5.16 — continuous chapter, safe contracts, recovery and battle pr
     expect(restored.essence).toEqual(before.essence)
     expect(refreshQuestAvailability(restored, content, now)).toEqual(restored)
     expect(save).toEqual(before)
+  })
+
+  it('accepts a field quest late and recognizes the corresponding previously defeated enemy', () => {
+    const save = fresh()
+    save.character.level = 2
+    save.quests.vs_astravel_first_contact.status = 'completed'
+    save.quests.side_astravel_thornback_signs.status = 'available'
+    save.world.trailNodeStates.astravel_moth_03 = 'completed'
+    const before = structuredClone(save)
+    const offered = offerQuest(save, 'side_astravel_thornback_signs', content, now)
+    expect(offered.ok).toBe(true)
+    if (!offered.ok) return
+    const accepted = acceptQuest(offered.value, 'side_astravel_thornback_signs', content, now)
+    expect(accepted.ok).toBe(true)
+    if (!accepted.ok) return
+    expect(accepted.value.quests.side_astravel_thornback_signs.status).toBe('ready_to_turn_in')
+    expect(accepted.value.quests.side_astravel_thornback_signs.objectives.thornback_combat).toBe(1)
+    expect(accepted.value.wallet).toEqual(before.wallet)
+    expect(accepted.value.inventory).toEqual(before.inventory)
   })
 
   it('shows only confirmed post-claim objectives, never guessing dice damage or unclaimed progress', () => {
