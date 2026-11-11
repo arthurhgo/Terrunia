@@ -225,7 +225,7 @@ export const acceptQuest = (
       reconciled = applyQuestEvent(reconciled, { type: 'visit', targetId: objective.targetId, amount: objective.required }, catalog, now)
     }
   }
-  return ok(refreshTutorialQuestProgress(refreshDeliveryQuestProgress(reconciled, catalog, now), catalog, now))
+  return ok(refreshTutorialQuestProgress(refreshDeliveryQuestProgress(refreshQuestAvailability(reconciled, catalog, now), catalog, now), catalog, now))
 }
 
 /** Upgrade old saves with multiple flags without touching objectives, rewards or equipment. */
