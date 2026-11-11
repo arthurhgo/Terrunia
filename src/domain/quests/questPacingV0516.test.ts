@@ -75,6 +75,21 @@ describe('v0.5.16 — narrative release of offers at actual trail milestones', (
     expect(accepted.value.inventory).toEqual(save.inventory)
   })
 
+  it('reconciles old accepted objectives without replaying an already cleared node', () => {
+    const save = fresh()
+    save.quests.side_astravel_spore_shells.status = 'active'
+    save.quests.side_astravel_spore_shells.objectives.spore_shells = 0
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
+    const snapshot = structuredClone(save)
+    const migrated = migrateAndValidateSave(save)
+    expect(migrated.quests.side_astravel_spore_shells.status).toBe('ready_to_turn_in')
+    expect(migrated.quests.side_astravel_spore_shells.objectives.spore_shells).toBe(1)
+    expect(migrated.wallet).toEqual(snapshot.wallet)
+    expect(migrated.inventory).toEqual(snapshot.inventory)
+    expect(migrated.essence).toEqual(snapshot.essence)
+    expect(migrateAndValidateSave(migrated)).toEqual(migrated)
+  })
+
   it('rewards only one encounter for early fauna studies, not a repeated Portal farm', () => {
     expect(content.quests.side_astravel_thornback_signs.objectives[0])
       .toMatchObject({ type: 'kill', targetId: 'enemy_fungorro_thornback', required: 1 })
