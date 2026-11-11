@@ -27,7 +27,7 @@ export const QUEST_CHAPTER_RELEASES_V0516: Readonly<Partial<Record<string, Quest
   // Chapter I — early enemies; existing quest prerequisites still apply.
   side_astravel_thornback_signs: 'border',
   side_street_liora: 'border',
-  side_npc_eldamar: 'border',
+  side_npc_eldamar: 'spores',
 
   // Chapter II — crawler at node 8, slime at node 7, spore armor at node 5.
   side_street_arlen: 'spores',
