@@ -28,6 +28,7 @@ describe('v0.5.16 — relatório e entrega presencial', () => {
     save.quests.side_astravel_spore_shells.status = 'ready_to_turn_in'
     useGameStore.setState({ save, status: 'ready', ownerId: save.ownerId })
     render(<ExpeditionReportV0516 save={save} />)
+    fireEvent.click(screen.getByText(/Relatório de expedição/))
     fireEvent.click(screen.getByRole('button', { name: 'Rastrear entrega de Cascos de Esporos' }))
     const next = useGameStore.getState().save!
     expect(next.quests.side_astravel_spore_shells.status).toBe('ready_to_turn_in')
