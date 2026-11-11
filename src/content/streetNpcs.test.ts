@@ -46,6 +46,7 @@ describe('Seis moradores e contratos de rua — CONTENT_DRAFT', () => {
     const save = newSave()
     save.quests.vs_astravel_first_contact.status = 'completed'
     save.quests.side_street_arlen.status = 'available'
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
     const offered = offerQuest(save, 'side_street_arlen', content, instant)
     if (!offered.ok) throw new Error(offered.message)
     const accepted = acceptQuest(offered.value, 'side_street_arlen', content, instant)
