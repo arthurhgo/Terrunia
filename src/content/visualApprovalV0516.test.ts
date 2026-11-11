@@ -22,9 +22,9 @@ describe('v0.5.16 — art review assets are semantic, editable and not gameplay-
       const svg = readFileSync(file, 'utf8')
       const colors = BASIC_ARMOR_MATERIAL_PALETTES[itemId]
       expect(svg).toContain('shape-rendering="crispEdges"')
-      expect(svg).toContain(colors.base)
-      expect(svg).toContain(colors.shade)
-      expect(svg).toContain(colors.light)
+      expect(svg.toLowerCase()).toContain(colors.base)
+      expect(svg.toLowerCase()).toContain(colors.shade)
+      expect(svg.toLowerCase()).toContain(colors.light)
     }
   })
   it('uses existing persistent NPC IDs and keeps prototypes outside production asset IDs', () => {
