@@ -71,6 +71,9 @@ function completeFieldBattle(save: GameSave, node: TrailNodeDefinition) {
   const fight = exerciseMotor(save, encounter, 'qa-v0516-' + node.id)
   const completed = take(completeTrailNode(save, trail, node.id, now))
   let next = completed.save
+  // In the live store the player is standing on the defeated node until a
+  // deliberate return or reentry; preserve that location in the QA route.
+  next.world.currentLocationId = node.id
   // Mirror authoritative field-claim event delivery, without granting test-
   // only rewards. Source node and the actual defeated enemy roster are real.
   next = applyQuestEvent(next, { type: 'visit', targetId: node.id }, catalog, now)
