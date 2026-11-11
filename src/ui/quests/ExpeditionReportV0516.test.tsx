@@ -19,7 +19,7 @@ describe('v0.5.16 — relatório e entrega presencial', () => {
     expect(report).toHaveTextContent('1/15 marcos')
     fireEvent.click(screen.getByText(/Relatório de expedição/))
     expect(screen.getByLabelText('Entregas pendentes')).toHaveTextContent('Vorren')
-    expect(screen.getByLabelText('Entregas pendentes')).toHaveTextContent('Cascos de Esporos')
+    expect(screen.getByLabelText('Entregas pendentes')).toHaveTextContent('A Primeira Carapaça')
     expect(screen.getByLabelText('Resultados da expedição')).toHaveTextContent('Materiais na mochila')
     expect(useGameStore.getState().save).toEqual(before)
   })
@@ -29,7 +29,7 @@ describe('v0.5.16 — relatório e entrega presencial', () => {
     useGameStore.setState({ save, status: 'ready', ownerId: save.ownerId })
     render(<ExpeditionReportV0516 save={save} />)
     fireEvent.click(screen.getByText(/Relatório de expedição/))
-    fireEvent.click(screen.getByRole('button', { name: 'Rastrear entrega de Cascos de Esporos' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Rastrear entrega de A Primeira Carapaça' }))
     const next = useGameStore.getState().save!
     expect(next.quests.side_astravel_spore_shells.status).toBe('ready_to_turn_in')
     expect(next.quests.side_astravel_spore_shells.tracked).toBe(true)
