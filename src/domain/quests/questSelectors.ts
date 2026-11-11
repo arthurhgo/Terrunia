@@ -149,6 +149,7 @@ export const getNpcQuestMarker = (save: GameSave, npcId: string, catalog: Conten
   }
   for (const definition of Object.values(catalog.quests)) {
     const status = save.quests[definition.id]?.status
+    if (!isQuestOfferUnlockedV0516(save, definition)) continue
     if (isLegacyClanTrialQuestId(definition.id) && ['available','offered'].includes(status ?? '')) continue
     if (definition.giverNpcId === npcId && status && ['available', 'offered'].includes(status)) return 'available'
   }
