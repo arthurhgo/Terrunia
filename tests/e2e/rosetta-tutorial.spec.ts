@@ -142,6 +142,8 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
     const { useGameStore } = await import('/src/state/gameStore.ts')
     const save = structuredClone(useGameStore.getState().save!)
     save.quests.side_street_arlen.status = 'available'
+    // Only show this route after the first Astravél checkpoint in v0.5.16.
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
     useGameStore.setState({ save })
   })
   await rosetta.hover()
