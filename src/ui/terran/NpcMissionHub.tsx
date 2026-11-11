@@ -34,7 +34,14 @@ export function NpcMissionHub({ save, presence, initialQuestId, onClose, onServi
   useEffect(() => {
     const oldStatus = previousStatuses.current[topic]
     const newStatus = save.quests[topic]?.status
-    if ((oldStatus === 'available' || oldStatus === 'offered') && newStatus === 'active') {
+    if (oldStatus === 'ready_to_turn_in' && newStatus === 'completed') {
+      // Independent hand-ins remain explicit and validated by the quest engine.
+      const next = quests.find(quest => quest.id !== topic &&
+        save.quests[quest.id]?.status === 'ready_to_turn_in')
+        ?? quests.find(quest => quest.id !== topic &&
+          ['available', 'offered'].includes(save.quests[quest.id]?.status ?? ''))
+      setTopic(next?.id ?? 'talk')
+    } else if ((oldStatus === 'available' || oldStatus === 'offered') && newStatus === 'active') {
       const next = quests.find((quest) => ['available', 'offered'].includes(save.quests[quest.id]?.status ?? ''))
       if (next) setTopic(next.id)
     }
