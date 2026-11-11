@@ -43,6 +43,7 @@ describe('Rosetta orienta usando apenas dados do save', () => {
   it('identifica a área real de um NPC de rua após desbloquear seu contrato', () => {
     const save = fresh()
     save.quests.side_street_arlen.status = 'available'
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
     const guide = getRosettaGuidance(save, content)
     expect(guide.available.find((entry) => entry.id === 'side_street_arlen')).toMatchObject({
       npcName: 'Arlen', locationName: 'Ruas de Terran · Eldamar',
@@ -53,6 +54,7 @@ describe('Rosetta orienta usando apenas dados do save', () => {
     const save = fresh()
     save.quests.side_street_arlen.status = 'available'
     save.quests.delivery_arlen_nuclei.status = 'offered'
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
     save.quests.main_astravel_lost_hunters.status = 'completed'
     const before = structuredClone(save)
     const routes = getRosettaQuestRoutes(save, content)
@@ -71,6 +73,7 @@ describe('Rosetta orienta usando apenas dados do save', () => {
   it('orienta apenas ofertas ainda não aceitas e deixa missões ativas para rastreamento do diário', () => {
     const save = fresh()
     save.quests.side_street_arlen.status = 'available'
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
     save.quests.rosetta_tutorial_equip.status = 'active'
     save.quests.rosetta_tutorial_supply.status = 'active'
     save.quests.rosetta_tutorial_refine.status = 'active'
