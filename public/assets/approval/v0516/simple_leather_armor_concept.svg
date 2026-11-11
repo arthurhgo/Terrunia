@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 32 32" shape-rendering="crispEdges" role="img" aria-label="Armadura de Couro Simples">
+<path d="M11 4h10l8 6-5 8-3-2v13H11V16l-3 2-5-8z" fill="#4D362A" stroke="#171923" stroke-width="2"/><path d="M12 6h8l7 5-3 5-4-3v13H12V13l-4 3-3-5z" fill="#966C48"/><path d="M12 6h8l-2 6h-4z" fill="#C79C70"/><path d="M11 25h10v3H11z" fill="#4D362A"/><rect x="10" y="10" width="13" height="15" fill="#4D362A"/><path d="M11 14h11v2H11zM14 21h9v2h-9z" fill="#C79C70"/><path d="M11 11l11 13" stroke="#BB965D" stroke-width="2"/>
+</svg>
