@@ -30,6 +30,8 @@ test('Terran: câmera, exploração, marcadores, drops reais e entrega de encome
     // loot collection, inventory consumption and payment below use the real UI.
     for (const id of ['vs_astravel_first_contact','main_terran_first_home','main_vorren_bestiary','main_lithwynn_signs','side_street_arlen']) save.quests[id].status = 'completed'
     save.world.trailNodeStates.astravel_fungorro_01 = 'completed'
+    // v0.5.16: this commercial delivery is deliberately post-arc optional content.
+    save.world.trailNodeStates.astravel_boss_preview = 'completed'
     save.world.currentLocationId = 'location_terran_portal_plaza'
     save.character.attributes.strength.die = 12; save.character.attributes.vigor.die = 12
     // This E2E checks movement, real initiative, battle UI, loot and quests;
