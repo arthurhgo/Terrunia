@@ -96,3 +96,27 @@ A interface não executa aceites ou entregas escondidas. O rastro dourado e o Di
 **Arte:** o pacote de oito SVGs segue separado da gameplay. Nomes propostos Torvan, Brenna e Ilyra continuam sob `OWNER_DECISION`.
 
 **Release:** PR #80 continua DRAFT até aprovação; merge/deploy de produção não autorizados por esta etapa.
+
+
+## Adendo — segunda rodada de melhorias da v0.5.16 (proprietário solicitou executar)
+
+**Status:** implementado para revisão no PR #80; regras de equilíbrio e momento de entrega permanecem `CONTENT_DRAFT` / `OWNER_DECISION`.
+
+1. **Jornada contínua 1–5.** `getChapterContinuationV0516` sinaliza que **O Primeiro Rastro** pode estar pronto depois dos primeiros combates, porém o jogador pode continuar até o Acampamento (marco 5) antes de retornar a Eldamar. A trilha permanece acessível. **OWNER_DECISION:** alterar o momento **obrigatório** de entrega afetaria o acesso a missões da Base e saves antigos; nesta rodada não mudamos as condições de vitória, as recompensas ou o `questId` para evitar bloqueios.
+2. **Materiais necessários a entregas.** `getQuestMaterialCommitmentV0516` soma quantidades exigidas pelas missões **aceitas e ainda não entregues**, cruza apenas stacks utilizáveis da mochila, identifica `reservado/necessário/faltante`, e exibe a informação em slots, tooltip e confirmação de venda/conversão. Reutiliza o modal de confirmação existente; a decisão de comerciar continua com o jogador. O sistema de `questLocked` e a economia são preservados; nenhuma reserva é subtraída do inventário ou acrescentada ao save.
+3. **Feedback após combate.** A vitória mostra progresso real de objetivos compatíveis com espécies derrotadas, marcos visitados ou materiais de fato recebidos. O painel só aparece **após a reivindicação dos drops**. Não é uma animação de dano, não acontece durante o foco do dado e nunca promete uma recompensa da missão antes da entrega ao NPC.
+4. **Próximo NPC no mapa.** `getNextStoryNpcDestinationV0516` encontra a localização real de Vorren ou Lithwynn pelo registro de Terran e usa o `objectiveId` do canvas já existente, sem inventar rota nem sobrescrever destinos rastreados de missões prioritárias.
+5. **Entregas sequenciais no mesmo diálogo.** A entrega embutida em `NpcMissionHub` deixa a janela aberta e destaca a próxima missão pronta **do mesmo NPC**, com confirmação individual. A função de entrega do domínio continua verificando requisitos, consumindo os materiais exatos e pagando cada recompensa uma única vez. Se houver missão futura, ela é apenas oferecida e precisa de aceite explícito.
+6. **Recuperação ao carregar/resumir.** `refreshQuestAvailability` reconcilia `visit` por nós realmente concluídos; também reconhece kills de inimigos efetivamente presentes em batalhas da trilha concluídas para sidequests de campo já aceitas. Nunca infere vitórias de diálogos, devolve objetivos no máximo até o valor requerido, mantém `completed` e `ready_to_turn_in` existentes e não concede Ouro/XP/Essência/itens por reconciliação. Contratos `turnInItems` continuam dependentes da posse física dos itens (podem perder prontidão após venda). A reconciliação é idempotente.
+
+### Checklist para revisão da segunda rodada
+
+- Capítulo 1: derrotar primeiro Fungorro, deixar `O Primeiro Rastro` pronto e prosseguir sem retorno compulsório até o marco 5.
+- Combate: vitória → foco dos dados encerra → reivindicar espólios → exibir progresso real das missões; no foco não revelar ganhos.
+- Inventário: ao obter Quitina, mostrar `M` e `reservado X/Y`; permitir vender **somente depois da confirmação já presente**, sem alterar Vínculos.
+- Mapa: entregar a Eldamar após o marco 5; quando a história liberar `Caçadores Perdidos`, apontar Posto de Vorren, sem alterar a missão rastreada pelo usuário.
+- NPC: duas entregas para Vorren ou outro mesmo responsável em um diálogo; uma transação por clique, sem pagamento duplicado.
+- Recuperação: save legado com 29 tarefas; restaurar `visit`/kills a partir dos marcos concluídos, mantendo dinheiro e itens; repetir a migração sem ganho adicional.
+- Testar `npm run check` e Playwright no PR; exigir aprovação do proprietário antes de tornar o PR pronto para merge.
+
+**Nenhuma publicação ou merge autorizado nesta etapa.**
