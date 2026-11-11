@@ -9,6 +9,7 @@ import { equipComplementaryItem } from '../domain/inventory/complementaryEquipme
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
 import { create } from 'zustand'
 import { playGameplaySfx } from '../services/gameplaySfx'
+import { getNarrativeLeadV0516 } from '../domain/quests/questFlowV0516'
 import { content } from '../content/catalog'
 import { BALANCE } from '../content/balance'
 import {
@@ -489,9 +490,11 @@ export const useGameStore = create<GameState>((set, get) => {
         }
       }
       commit(next)
+      const narrative = !clan ? getNarrativeLeadV0516(next, content) : null
+      const nextStep = narrative && narrative.completedQuestId === questId ? ' ' + narrative.message : ''
       show(clan ? 'Clã conquistado' : 'Missão concluída',
         clan ? `Emblema entregue a ${content.npcs[npcId]?.name}. Filiação a ${clan.name} confirmada; o miniportal do castelo está aberto.`
-          : 'Recompensas aplicadas e registro movido para Concluídas.', 'success')
+          : 'Recompensas aplicadas e registro movido para Concluídas.' + nextStep, 'success')
     },
 
     inspectCityLandmark: (landmarkId) => {
