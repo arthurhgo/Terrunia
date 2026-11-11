@@ -3,10 +3,12 @@ import { BACKPACK_UPGRADES, routeNewItemOverflow } from '../domain/inventory/bac
 import { executeForgeRecipe, executeGoldForgeUpgrade } from '../domain/terran/forge'
 import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmor'
 import { purchaseGear, equipGearStyle, refineCatalogGear } from '../domain/inventory/equipmentV0515'
+import { purchaseAndEquipGear, purchaseAndEquipStarterArmor } from '../domain/inventory/marketQuickEquipV05153'
 import { gearSetById, gearOfferById } from '../content/equipmentV0515'
 import { equipComplementaryItem } from '../domain/inventory/complementaryEquipment'
 import { refreshTutorialQuestProgress } from '../domain/quests/tutorialProgress'
 import { create } from 'zustand'
+import { playGameplaySfx } from '../services/gameplaySfx'
 import { content } from '../content/catalog'
 import { BALANCE } from '../content/balance'
 import {
@@ -140,7 +142,10 @@ type GameState = {
   equipArmor: (instanceId: string | null) => void
   equipComplementary: (slot: ComplementarySlot, instanceId: string | null) => void
   refineArmor: (instanceId: string) => void
+  recordMarketSpecialistConversation: (npcId: string) => void
   buyFromMarket: (npcId: string, itemId: string, quantity?: number) => void
+  buyAndEquipGear: (merchantId: string, offerId: string) => void
+  buyAndEquipMarketArmor: (merchantId: string, itemId: string) => void
   buyGear: (merchantId: string, offerIds: string[]) => void
   buyGearSet: (merchantId: string, setId: string) => void
   equipGearStyle: (slot: BoundSlot, instanceId: string | null) => void
@@ -170,6 +175,7 @@ type GameState = {
   performGradeThreeRite: (boundItemId: string, gemInstanceId: string) => void
   unlockNode: (nodeId: string) => void
   resetCampaign: () => Promise<boolean>
+  setSoundEnabled: (enabled: boolean) => void
   clearNotification: () => void
   resetSession: () => void
 }
@@ -190,6 +196,12 @@ export const useGameStore = create<GameState>((set, get) => {
   ) => {
     notificationId += 1
     set({ notification: { id: notificationId, title, message, tone } })
+    if (tone === 'success' && get().save?.settings.soundEnabled) {
+      const cue = /compra|adquirid|equipad/i.test(title) ? 'purchase'
+        : /forja|aprimor|refin|rito|grau/i.test(title) ? 'upgrade'
+          : /missão|lição|recompensa/i.test(title) ? 'quest' : 'success'
+      playGameplaySfx(cue, true)
+    }
   }
 
   const persist = (save: GameSave) => {
@@ -787,6 +799,25 @@ export const useGameStore = create<GameState>((set, get) => {
       show('Forja Magistral', 'O Vínculo foi aprimorado permanentemente com Ouro.', 'success')
     },
 
+    recordMarketSpecialistConversation: (npcId) => {
+      const save=get().save
+      if(!save||save.battle||save.world.currentLocationId!=='location_terran_bond_workshop')return
+      const specialists=['npc_terran_weaponsmith','npc_terran_armorer','npc_terran_accessory_artisan']
+      if(!specialists.includes(npcId))return
+      const flag='MarketSpecialistTalk:'+npcId
+      const now=nowIso()
+      const next=applyQuestEvent(save,{type:'talk',targetId:npcId},content,now)
+      if(save.eventLog.includes(flag)){
+        // Avoid a redundant save write for every repeat conversation.
+        if(next.quests.rosetta_tutorial_market_specialists?.status===
+          save.quests.rosetta_tutorial_market_specialists?.status)return
+      }
+      next.eventLog.push(flag)
+      next.updatedAt=now
+      next.revision+=1
+      commit(next)
+    },
+
     buyFromMarket: (npcId, itemId, quantity = 1) => {
       const save = get().save
       if (!save) return
@@ -795,7 +826,29 @@ export const useGameStore = create<GameState>((set, get) => {
       commit(result.value)
       show('Compra realizada', BACKPACK_UPGRADES.find((upgrade) => upgrade.id === itemId)
         ? 'Capacidade da mochila expandida e salva no personagem.'
-        : `${quantity}× ${content.items[itemId].name} recebido no Mercado.`, 'success')
+        : `${quantity}× ${content.items[itemId].name} recebido no Mercado. Investimento: ${save.wallet.gold-result.value.wallet.gold} Ouro · Saldo: ${result.value.wallet.gold} Ouro.`, 'success')
+    },
+
+    buyAndEquipGear: (merchantId, offerId) => {
+      const save=get().save
+      if(!save)return
+      const result=purchaseAndEquipGear(save,merchantId,offerId,content,nowIso())
+      if(!result.ok)return failAction(result.message)
+      commit(result.value)
+      show('Comprado e equipado',
+        (gearOfferById[offerId]?.name ?? 'Equipamento')+' equipado com os bônus aplicados. Custo: '+(save.wallet.gold-result.value.wallet.gold)+' Ouro · Saldo: '+result.value.wallet.gold+' Ouro. O Vínculo permanente foi preservado.',
+        'success')
+    },
+
+    buyAndEquipMarketArmor: (merchantId, itemId) => {
+      const save=get().save
+      if(!save)return
+      const result=purchaseAndEquipStarterArmor(save,merchantId,itemId,content,nowIso())
+      if(!result.ok)return failAction(result.message)
+      commit(result.value)
+      show('Proteção comprada e equipada',
+        (content.items[itemId]?.name ?? 'Armadura')+' equipada. Custo: '+(save.wallet.gold-result.value.wallet.gold)+' Ouro · Saldo: '+result.value.wallet.gold+' Ouro. Seus atributos foram atualizados.',
+        'success')
     },
 
     buyGear: (merchantId, offerIds) => {
@@ -804,7 +857,7 @@ export const useGameStore = create<GameState>((set, get) => {
       const result = purchaseGear(save, offerIds, nowIso(), merchantId)
       if (!result.ok) return failAction(result.message)
       commit(result.value)
-      show('Equipamentos adquiridos', offerIds.length + ' peça(s) do catálogo adicionada(s) à mochila ou ao baú da Base.', 'success')
+      show('Equipamentos adquiridos', offerIds.length + ' peça(s) guardada(s). Custo: ' + (save.wallet.gold-result.value.wallet.gold) + ' Ouro · Saldo: ' + result.value.wallet.gold + ' Ouro. Confira o destino na Mochila ou no Baú da Base.', 'success')
     },
 
     buyGearSet: (merchantId, setId) => {
@@ -1416,6 +1469,17 @@ export const useGameStore = create<GameState>((set, get) => {
         show('Reset não concluído', message, 'error')
         return false
       }
+    },
+
+    setSoundEnabled: (enabled) => {
+      const current = get().save
+      if (!current || current.settings.soundEnabled === enabled) return
+      const next = structuredClone(current)
+      next.settings.soundEnabled = enabled
+      next.revision += 1
+      next.updatedAt = nowIso()
+      commit(next)
+      if (enabled) playGameplaySfx('success', true)
     },
 
     clearNotification: () => set({ notification: null }),

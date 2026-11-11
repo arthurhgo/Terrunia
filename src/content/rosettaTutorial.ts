@@ -35,7 +35,7 @@ const lessons: Omit<QuestDefinition, 'giverNpcId' | 'turnInNpcId' | 'category' |
     rewards: [{ type: 'characterXp', value: 5 }, { type: 'gold', value: 32 }],
     initialStatus: 'available', terranFlow: { active: 'location_terran_bond_workshop' } },
   { id: 'rosetta_tutorial_supply', title: 'Comprar para se Preparar',
-    summary: 'Equipe a proteção Tier I escolhida, depois compre um Tônico de Campo com Edran no Mercado.',
+    summary: 'Equipe a proteção Tier I escolhida, depois compre um Tônico de Campo com Neris no Mercado.',
     objectives: [
       { id: 'wear_armor', type: 'equip', targetId: 'basic_armor', required: 1, label: 'Equipe sua proteção escolhida na Mochila' },
       { id: 'buy_tonic', type: 'purchase', targetId: 'consumable_minor_tonic', required: 1, label: 'Compre um Tônico de Campo com Neris por 18 Ouro' },
@@ -44,13 +44,23 @@ const lessons: Omit<QuestDefinition, 'giverNpcId' | 'turnInNpcId' | 'category' |
     prerequisites: [{ type: 'questCompleted', questId: 'rosetta_tutorial_equip' }], initialStatus: 'locked',
     terranFlow: { active: 'location_terran_bond_workshop' } },
   { id: 'rosetta_tutorial_armor', title: 'Proteção Alternativa (Opcional)',
-    summary: 'Experimente outra proteção comum Tier I de Terran: compre um Gibão de Couro Leve com Neris e equipe-o.',
+    summary: 'Experimente outra proteção comum Tier I de Terran: compre um Gibão de Couro Leve com o Armadureiro no Mercado e equipe-o.',
     contextNote: 'Esta compra é opcional: sua proteção anterior continua útil.',
-    objectives: [{ id: 'buy_armor', type: 'purchase', targetId: 'equipment_light_leather_vest', required: 1, label: 'Compre o Gibão de Couro Leve por 25 Ouro' },
+    objectives: [{ id: 'buy_armor', type: 'purchase', targetId: 'equipment_light_leather_vest', required: 1, label: 'Compre o Gibão de Couro Leve no Armadureiro por 25 Ouro' },
       { id: 'wear_leather', type: 'equip', targetId: 'equipment_light_leather_vest', required: 1, label: 'Equipe o Gibão de Couro Leve na mochila' }],
     rewards: [{ type: 'characterXp', value: 5 }, { type: 'gold', value: 4 }],
     prerequisites: [{ type: 'questCompleted', questId: 'rosetta_tutorial_refine' }], initialStatus: 'locked',
     terranFlow: { active: 'location_terran_bond_workshop' } },
+  { id: 'rosetta_tutorial_market_specialists', title: 'Os Ofícios do Mercado (Opcional)',
+    summary: 'Converse com o Armeiro, o Armadureiro e o Artesão de Acessórios no Mercado de Terran. Cada especialista apresenta uma categoria de equipamentos comuns.',
+    contextNote: 'Não é necessário comprar nada. Conhecer os vendedores não concede Vínculos, Clã ou Classe.',
+    objectives: [
+      { id: 'talk_weaponsmith', type: 'talk', targetId: 'npc_terran_weaponsmith', required: 1, label: 'Converse com o Armeiro de Terran' },
+      { id: 'talk_armorer', type: 'talk', targetId: 'npc_terran_armorer', required: 1, label: 'Converse com o Armadureiro de Terran' },
+      { id: 'talk_accessories', type: 'talk', targetId: 'npc_terran_accessory_artisan', required: 1, label: 'Converse com o Artesão de Acessórios' },
+    ],
+    rewards: [], prerequisites: [{ type: 'questCompleted', questId: 'rosetta_tutorial_supply' }],
+    initialStatus: 'locked', terranFlow: { active: 'location_terran_bond_workshop' } },
   { id: 'rosetta_tutorial_refine', title: 'O Primeiro Aprimoramento',
     summary: 'Leve uma proteção simples a Durnan. Use a linha entregue por Rosetta e 8 Ouro para reforçar a peça em +1.',
     contextNote: 'Você pode reforçar a proteção que escolheu no início, sem comprar outra peça.',
@@ -65,5 +75,5 @@ const lessons: Omit<QuestDefinition, 'giverNpcId' | 'turnInNpcId' | 'category' |
 export const ROSETTA_CORE_LESSON_IDS = ['rosetta_tutorial_equip', 'rosetta_tutorial_supply', 'rosetta_tutorial_refine'] as const
 
 export const rosettaTutorialQuests: QuestDefinition[] = lessons.map((quest) => ({ ...quest, giverNpcId: 'npc_rosetta', turnInNpcId: 'npc_rosetta',
-  category: quest.id === 'rosetta_tutorial_armor' ? 'secondary' : 'main',
+  category: ['rosetta_tutorial_armor','rosetta_tutorial_market_specialists'].includes(quest.id) ? 'secondary' : 'main',
   terranFlow: { ...quest.terranFlow, ready_to_turn_in: 'location_terran_portal_plaza' }, status: 'CONTENT_DRAFT' }))

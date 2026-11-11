@@ -1,4 +1,5 @@
-import { GearShopV0515 } from './GearShopV0515'
+import { TerranSpecialistShopV05153 } from './TerranSpecialistShopV05153'
+import { isTerranGearMerchant } from '../../content/terranGearMerchantsV05153'
 import { useState } from 'react'
 import { getEquippedBasicArmor } from '../../domain/inventory/basicArmor'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
@@ -19,38 +20,79 @@ import { BACKPACK_UPGRADES, backpackFlag, getBackpackCapacity } from '../../doma
 
 function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
   const buy = useGameStore((state) => state.buyFromMarket)
+  const buyAndEquipArmor = useGameStore((state) => state.buyAndEquipMarketArmor)
+  const [quantities,setQuantities]=useState<Record<string,number>>({})
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
   const equippedArmor = getEquippedBasicArmor(save, content)
   const currentMitigation = equippedArmor ? equippedArmor.armor.mitigation + (equippedArmor.instance.refinementLevel ?? 0) * ARMOR_REFINEMENT.mitigationPerLevel : 0
   const currentInitiative = equippedArmor?.armor.initiative ?? 0
-  const stock = MARKET_STOCK.filter((offer) => offer.npcId === npcId)
+  const needsTonic=save.quests.rosetta_tutorial_supply?.status==='active' &&
+    !save.eventLog.some(event=>event.startsWith('MarketPurchase:') && event.split(':')[2]==='consumable_minor_tonic')
+  const needsLeather=save.quests.rosetta_tutorial_armor?.status==='active' &&
+    !save.eventLog.some(event=>event.startsWith('MarketPurchase:') && event.split(':')[2]==='equipment_light_leather_vest')
+  const questId=needsTonic?'consumable_minor_tonic':needsLeather?'equipment_light_leather_vest':null
+  const stock=MARKET_STOCK.filter(offer=>offer.npcId===npcId)
+    .sort((a,b)=>Number(b.itemId===questId)-Number(a.itemId===questId))
   return <section className="terran-shop" aria-label="Comprar itens no Mercado">
     <h3><Backpack size={18} /> Mochila do vendedor · itens à venda</h3>
     <p className="terran-shop__wallet"><Coins size={16} /> {save.wallet.gold} Ouro</p>
-    {npcId === 'presence_neris' && <GearShopV0515 save={save} merchantId="presence_neris" />}
+    {isTerranGearMerchant(npcId)&&<TerranSpecialistShopV05153 save={save} merchantId={npcId}/>}
+    {npcId==='presence_neris'&&<p className="terran-shop__instruction">Poções, Mana, antídotos e consumíveis. Os equipamentos comuns são vendidos por Armeiro, Armadureiro e Artesão de Acessórios.</p>}
     <div className="terran-shop__stock">
       {stock.map((offer) => {
         const { itemId, price } = offer
         const item = content.items[itemId]
+        const quantity = item?.category==='consumable' ? (quantities[itemId]??1):1
+        const total = price*quantity
+        const owned = save.inventory.filter(entry=>entry.definitionId===itemId)
+          .reduce((n,entry)=>n+entry.quantity,0)
+        const equipped = save.equippedBasicArmor?.definitionId===itemId
         if (!item) return null
         const gate = 'requiresQuestId' in offer && typeof offer.requiresQuestId === 'string' ? content.quests[offer.requiresQuestId] : null
         const locked = Boolean(gate && save.quests[gate.id]?.status !== 'completed')
         const armor = item.basicArmor
         const gainDefense = armor ? armor.mitigation - currentMitigation : 0
         const gainInitiative = armor ? armor.initiative - currentInitiative : 0
-        return <article key={itemId} className="terran-shop__offer" onMouseEnter={() => setHoveredItem(itemId)}
+        return <article key={itemId} className="terran-shop__offer" data-market-category={item.category}
+          data-quest-item={itemId===questId?'true':undefined}
+          onMouseEnter={() => setHoveredItem(itemId)}
           onMouseLeave={() => setHoveredItem(null)} onFocus={() => setHoveredItem(itemId)} onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget)) setHoveredItem(null)
           }}>
           <AssetImage assetId={item.iconAssetId} />
           <div><strong>{item.name}{item.basicArmor ? ` · Tier ${item.basicArmor.tier}` : ''}</strong><small>{item.description}</small>
+            {itemId===questId && <small className="terran-shop__mission-item">✦ Item da missão de Rosetta</small>}
+            {equipped && <small className="terran-shop__owned">Equipado</small>}
+            {!equipped&&owned>0&&<small className="terran-shop__owned">Na mochila ×{owned}</small>}
             {locked && gate && <small>Bloqueado: conclua “{gate.title}”.</small>}
             {armor && <small>Defesa +{armor.mitigation} · Iniciativa {armor.initiative >= 0 ? '+' : ''}{armor.initiative}</small>}
+            {item.category==='consumable' && <small className="terran-shop__stats">{item.combatEffects.map(effect=>
+              effect.type==='restoreHp'?'Vida +'+effect.value:effect.type==='restoreMp'?'Mana +'+effect.value:
+              effect.type==='cleanseHarmful'?'Remove efeitos negativos':
+              effect.type==='damage'?'Arremessável · Dano':effect.type==='applyStatus'?'Aplica efeito':'Suporte'
+            ).join(' · ')}{item.combatUseMode==='freeHealingPotion'?' · Cura instantânea sem ação':''}</small>}
             </div>
-          <button type="button" aria-label={locked ? `Bloqueado: ${item.name}` : `Comprar ${item.name} por ${price} ouro`}
-            disabled={locked || save.wallet.gold < price} onClick={() => buy(npcId, itemId)}>
-            {price} <Coins size={13} />
-          </button>
+          <div className="terran-shop__actions">
+            {item.category==='consumable'&&<label className="terran-shop__quantity">
+              Quantidade
+              <input aria-label={'Quantidade de '+item.name} type="number" min={1} max={99} step={1}
+                value={quantity} onChange={event=>{
+                  const next=Math.floor(Number(event.target.value))
+                  setQuantities(current=>({...current,[itemId]:Number.isFinite(next)?
+                    Math.max(1,Math.min(99,next)):1}))
+                }}/>
+            </label>}
+            <button type="button" aria-label={locked ? `Bloqueado: ${item.name}` :
+              `Comprar ${item.name} por ${total} ouro`}
+              disabled={locked || save.wallet.gold < total} onClick={() => buy(npcId, itemId, quantity)}>
+              {total} <Coins size={13} />
+            </button>
+            {Boolean(armor)&&!save.character.bondedEquipment.armor&&
+              <button type="button" className="terran-shop__equip-now"
+                aria-label={'Comprar e equipar '+item.name+' por '+price+' ouro'}
+                disabled={locked || save.wallet.gold < price}
+                onClick={()=>buyAndEquipArmor(npcId,itemId)}>Comprar e Equipar</button>}
+          </div>
           {hoveredItem === itemId && <aside className="terran-shop__tooltip" role="tooltip" aria-label={`Comparação: ${item.name}`}>
             <strong>{item.name}</strong>
             <small>PREÇO · {price} OURO</small>
@@ -102,10 +144,16 @@ function Upgrade({ save, grade }: { save: GameSave; grade: 2 | 3 }) {
       const componentDefinition = fragment
         ? content.items[fragment.definitionId]
         : gemCandidate ? content.items[gemCandidate.itemDefinitionId] : null
-      const ready = item.grade === grade - 1 && item.resonance >= item.resonanceThreshold && Boolean(componentId)
+      const requirements = [
+        item.grade !== grade - 1 ? 'Requer Grau ' + (grade - 1) + ' (atual G' + item.grade + ')' : '',
+        item.resonance < item.resonanceThreshold ? 'Faltam ' + (item.resonanceThreshold - item.resonance) + ' pontos de Ressonância' : '',
+        !componentId ? 'Obtenha um componente compatível com Valmira' : '',
+      ].filter(Boolean)
+      const ready = requirements.length === 0
       return <article className="market-upgrade__item" key={slot}>
         <strong>{BOUND_SLOT_LABELS[slot]} · {definition?.name ?? 'Vínculo'} · G{item.grade}</strong>
         <small>Ressonância {item.resonance}/{item.resonanceThreshold} · {componentDefinition ? `Material: ${componentDefinition.name}` : 'Material compatível ausente'}</small>
+        <small role="status">{ready ? 'Requisitos completos · rito disponível' : 'Próximo passo: ' + requirements.join(' · ')}</small>
         <button className="terran-service-action" type="button" disabled={!ready} onClick={() => {
           if (!componentId) return
           if (grade === 2) evolveTwo(item.id, componentId)

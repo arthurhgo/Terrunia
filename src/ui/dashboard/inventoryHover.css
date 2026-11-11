@@ -63,3 +63,10 @@
   background: #29372e;
 }
 .bound-card--starter .bound-card__unequip:disabled { opacity: .48; cursor: not-allowed; }
+
+/* Semantic item roles in the existing 12-slot backpack; visuals do not alter item rules. */
+.inventory-slot[data-item-kind="consumable"]{border-top:2px solid #58c3ae}
+.inventory-slot[data-item-kind="material"],.inventory-slot[data-item-kind="drop"],.inventory-slot[data-item-kind="fragment"]{border-top:2px solid #b0a27b}
+.inventory-slot[data-item-kind="rune"],.inventory-slot[data-item-kind="jewel"]{border-top:2px solid #a49bdf}
+.inventory-slot__quest-mark{position:absolute;left:2px;top:2px;display:grid;place-items:center;width:14px;height:14px;
+  background:#5c4525;color:#ffe3a1;border:1px solid #d2a865;font:700 9px/1 var(--display)}

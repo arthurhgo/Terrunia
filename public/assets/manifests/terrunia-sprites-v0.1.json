@@ -2650,6 +2650,30 @@
       "width": 32,
       "height": 32,
       "atlas": null
+    },
+    {
+      "assetId": "npc.terran-weaponsmith.portrait",
+      "path": "/assets/npcs/market_weaponsmith_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "npc.terran-armorer.portrait",
+      "path": "/assets/npcs/market_armorer_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "atlas": null
+    },
+    {
+      "assetId": "npc.terran-accessory-artisan.portrait",
+      "path": "/assets/npcs/market_accessory_artisan_portrait.png",
+      "family": "npc",
+      "width": 32,
+      "height": 32,
+      "atlas": null
     }
   ]
 }

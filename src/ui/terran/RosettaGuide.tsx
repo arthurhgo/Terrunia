@@ -29,15 +29,30 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
   const recommendations = getClanRecommendations(save,content)
   const lesson = rosettaTutorialQuests.find((quest) => (ROSETTA_CORE_LESSON_IDS as readonly string[]).includes(quest.id) && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status))
   const progress = lesson ? save.quests[lesson.id] : null
+  const nextObjective = lesson && progress?.status === 'active'
+    ? lesson.objectives.find(objective => (progress.objectives[objective.id] ?? 0) < objective.required)
+    : undefined
+  const lessonIndex = lesson ? ROSETTA_CORE_LESSON_IDS.findIndex(id => id === lesson.id) + 1 : 0
+  const marketTour=content.quests.rosetta_tutorial_market_specialists
+  const marketTourProgress=save.quests.rosetta_tutorial_market_specialists
   const offered = progress && ['available', 'offered'].includes(progress.status)
   const otherOffers = guidance.available.filter((entry) => !(ROSETTA_CORE_LESSON_IDS as readonly string[]).includes(entry.id))
   return <DialogueWindow save={save} title="Rosetta" ariaLabel="Orientações de Rosetta" portraitAssetId="npc.rosetta.portrait" eyebrow="GUARDIÃ DO PORTAL"
     lines={content.npcs.npc_rosetta.dialogue} quest={lesson} onClose={onClose}>
     <div className="rosetta-guide__content">
       {lesson && progress ? <section className="rosetta-tutorial" aria-label="Lição de Rosetta">
-        <span className="eyebrow">TUTORIAL · LIÇÃO {ROSETTA_CORE_LESSON_IDS.findIndex((id) => id === lesson.id) + 1} DE {ROSETTA_CORE_LESSON_IDS.length}</span>
+        <span className="eyebrow">TUTORIAL · LIÇÃO {lessonIndex} DE {ROSETTA_CORE_LESSON_IDS.length}</span>
         <h3>{lesson.title}</h3>
         {lesson.objectives.map((objective) => <p key={objective.id} className="rosetta-tutorial__objective"><CheckCircle2 size={14} /><span>{objective.label}</span><strong>{progress.objectives[objective.id] ?? 0}/{objective.required}</strong></p>)}
+        {nextObjective && <div className="rosetta-guide__focus" role="status" aria-label="Próximo passo da lição" aria-live="polite">
+          <strong>PRÓXIMO PASSO · {lessonIndex}/{ROSETTA_CORE_LESSON_IDS.length}</strong>
+          <p>{nextObjective.label}</p>
+          <small>Progresso: {progress.objectives[nextObjective.id]??0} de {nextObjective.required}</small>
+          <button type="button" onClick={nextObjective.type==='equip'&&onOpenInventory
+            ? onOpenInventory : onShowPaths??onOpenQuests}>
+            {nextObjective.type==='equip'&&onOpenInventory?'Abrir mochila e equipar':'Ver caminho ou objetivo no Diário'}
+          </button>
+        </div>}
         <QuestContextNote note={lesson.contextNote} />
         {offered && lesson.acceptanceItems && <div className="rosetta-tutorial__gifts"><small>Você recebe ao aceitar</small>{lesson.acceptanceItems.map((input) => <span key={input.itemId}><AssetImage assetId={content.items[input.itemId].iconAssetId} />{input.quantity}× {content.items[input.itemId].name}</span>)}</div>}
         <small>Ao entregar: {lesson.rewards.map((reward) => `${reward.value} ${reward.type === 'gold' ? 'Ouro' : 'XP'}`).join(' · ')}
@@ -67,6 +82,32 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
           </button>}
         </div>
       </section> : <p className="rosetta-tutorial__done"><CheckCircle2 size={16} /> As três lições principais foram concluídas. Sua proteção escolhida evolui com você; novas peças são opcionais.</p>}
+      {marketTour && marketTourProgress && marketTourProgress.status!=='locked' && <article
+        className="rosetta-guide__next" aria-label="Missão opcional dos mercadores de Terran">
+        <h3><Compass size={16}/> {marketTour.title} · OPCIONAL</h3>
+        <p>{marketTour.summary}</p>
+        {marketTourProgress.status==='completed'
+          ? <strong>Os três ofícios do Mercado já foram conhecidos. Missão concluída.</strong>
+          : <div className="rosetta-tutorial">
+            {marketTour.objectives.map(objective=><p key={objective.id} className="rosetta-tutorial__objective">
+              <CheckCircle2 size={14}/><span>{objective.label}</span>
+              <strong>{marketTourProgress.objectives[objective.id]??0}/{objective.required}</strong>
+            </p>)}
+            <div className="rosetta-tutorial__actions">
+              {['available','offered'].includes(marketTourProgress.status)&&
+                <button type="button" className="rosetta-tutorial__accept"
+                  onClick={()=>{
+                    if(marketTourProgress.status==='available')offer(marketTour.id)
+                    accept(marketTour.id)
+                  }}>Aceitar visita aos especialistas</button>}
+              {marketTourProgress.status==='ready_to_turn_in'&&
+                <button type="button" className="rosetta-tutorial__accept"
+                  onClick={()=>complete(marketTour.id,'npc_rosetta')}>Concluir visita aos especialistas</button>}
+              {marketTourProgress.status==='active'&&
+                <small>Converse com os três especialistas no Mercado. Não precisa comprar nenhum item.</small>}
+            </div>
+          </div>}
+      </article>}
       <article className="rosetta-guide__next" aria-label="Orientação de Clãs e arma vinculada">
         <h3><Compass size={16}/> Os Quatro Caminhos · Clã único</h3>
         <p>Rosetta apresenta Dûn'Avar (proteção), Rustal (runas), Cebios Esti (visão celestial) e Estres do Ét (fluxos instáveis). Só um Clã poderá receber seu juramento. Entre no Salão dos Clãs para encerrar a orientação; então aceite a missão da mesa diretamente com o líder de sua escolha.</p>

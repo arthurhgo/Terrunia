@@ -73,7 +73,7 @@ function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
   return (
     <div className="terran-drawer__section">
       <p>{location.description}</p>
-      {location.viewKind === 'workshop' && <p>O Mercado de Terran distribui os serviços entre os moradores: Neris vende equipamentos; Valmira negocia componentes e Edran fornece suprimentos; Feril paga Ouro; Lorian transforma drops em Essência; Lithwynn e Talia aplicam melhorias aos Vínculos. Aproxime-se e converse com cada NPC.</p>}
+      {location.viewKind === 'workshop' && <p>O Mercado de Terran distribui serviços por especialista: Neris vende consumíveis; Armeiro fornece revestimentos de armas; Armadureiro vende proteções; Artesão de Acessórios oferece colares e pulseiras; Edran vende mochilas e materiais; Valmira negocia componentes; Feril paga Ouro; Lorian converte drops em Essência; Lithwynn e Talia evoluem Vínculos. Aproxime-se e converse com cada NPC.</p>}
       {location.viewKind === 'clanHall' && <ClanHallPanel save={save} />}
       {location.viewKind === 'daeryn' && <DaerynServices save={save} />}
       {location.viewKind === 'vorren' && <VorrenBestiary save={save} />}
@@ -277,6 +277,10 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
     }
     const isStreetNpc = streetNpcPlacements.some((entry) => entry.id === presence.id)
     travel(sourceId)
+    if(sourceId==='location_terran_bond_workshop'&&
+      ['npc_terran_weaponsmith','npc_terran_armorer','npc_terran_accessory_artisan'].includes(presence.npcId??'')){
+      useGameStore.getState().recordMarketSpecialistConversation(presence.npcId!)
+    }
     setLocationId(sourceId)
     setLocalQuestId(null)
     setDialogue(null)
@@ -446,7 +450,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 }} />
                 : <LocationDrawer save={save} location={location} onTalk={talk} onVisit={openLocation} unified={unified} />)}
               {drawer === 'market' && marketNpc && interiorId === 'location_terran_bond_workshop' && <MarketNpcPanel
-                save={save} presence={marketNpc} onClose={() => { setMarketNpc(null); setDrawer('location') }}
+                save={save} presence={marketNpc} onClose={() => { setMarketNpc(null); setLocalQuestId(null); setDrawer(null) }}
                 onQuest={marketNpc.npcId && Object.values(content.quests).some((quest) => quest.giverNpcId === marketNpc.npcId && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status ?? 'locked'))
                   ? () => {
                     const quest = getNpcActionableQuests(save, marketNpc.npcId!, content)[0]

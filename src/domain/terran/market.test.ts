@@ -13,12 +13,16 @@ const base = () => {
 }
 
 describe('Mercado de Terran', () => {
-  it('mantém Neris exclusiva de equipamentos e encaminha materiais e tônico para especialistas', () => {
-    expect(MARKET_STOCK.filter((offer) => offer.npcId === 'presence_neris')
-      .every((offer) => content.items[offer.itemId].category === 'equipment')).toBe(true)
-    expect(MARKET_STOCK.find((offer) => offer.itemId === 'consumable_minor_tonic')?.npcId).toBe('presence_edran')
-    expect(MARKET_STOCK.find((offer) => offer.itemId === 'material_linen_thread')?.npcId).toBe('presence_edran')
-    expect(MARKET_STOCK.find((offer) => offer.itemId === 'drop_ruin_shard')?.npcId).toBe('presence_valmira')
+  it('separa Neris para consumíveis, Edran para materiais e três especialistas para equipamentos',()=>{
+    const neris=MARKET_STOCK.filter(o=>o.npcId==='presence_neris')
+    expect(neris.length).toBeGreaterThanOrEqual(5)
+    expect(neris.every(o=>content.items[o.itemId].category==='consumable')).toBe(true)
+    expect(MARKET_STOCK.find(o=>o.itemId==='consumable_minor_tonic')?.npcId).toBe('presence_neris')
+    expect(MARKET_STOCK.find(o=>o.itemId==='consumable_fungal_healing_potion')?.npcId).toBe('presence_neris')
+    for(const id of ['equipment_light_leather_vest','equipment_worn_linen_tunic','equipment_apprentice_tunic'])
+      expect(MARKET_STOCK.find(o=>o.itemId===id)?.npcId).toBe('presence_terran_armorer')
+    expect(MARKET_STOCK.find(o=>o.itemId==='material_linen_thread')?.npcId).toBe('presence_edran')
+    expect(MARKET_STOCK.find(o=>o.itemId==='drop_ruin_shard')?.npcId).toBe('presence_valmira')
   })
 
   it('vende melhorias permanentes de mochila e impede recompra ou salto de tier', () => {
@@ -42,7 +46,7 @@ describe('Mercado de Terran', () => {
     expect(MARKET_STOCK.find((offer) => offer.itemId === 'equipment_worn_linen_tunic')?.price).toBe(22)
     expect(MARKET_STOCK.map((offer) => offer.itemId as string).includes('equipment_simple_leather_armor')).toBe(false)
     expect(MARKET_STOCK.map((offer) => offer.itemId as string).includes('equipment_terran_guard_armor')).toBe(false)
-    expect(MARKET_STOCK.filter((offer) => offer.npcId === 'presence_neris').every((offer) => content.items[offer.itemId].basicArmor?.tier === 1)).toBe(true)
+    expect(MARKET_STOCK.filter((offer) => offer.npcId === 'presence_terran_armorer').every((offer) => content.items[offer.itemId].basicArmor?.tier === 1)).toBe(true)
   })
 
   it('mantém os seis comerciantes e especialistas mapeados sem alterar o ID do local', () => {
@@ -79,21 +83,21 @@ describe('Mercado de Terran', () => {
     save.world.currentLocationId = 'location_terran_portal_plaza'
     expect(buyMarketItem(save, 'presence_valmira', 'fragment_mycelial_essence', 1, content, now)).toMatchObject({ ok: false, code: 'MARKET_LOCATION' })
   })
-  it('nega qualquer compra antiga Tier II/III de Neris mesmo após completar quests', () => {
+  it('nega a compra de armaduras Tier II/III com o Armadureiro, sem alterar missões ou Ouro', () => {
     const save=base()
     save.quests.rosetta_tutorial_refine.status='completed'
     save.quests.main_astravel_lost_hunters.status='completed'
     const previous=structuredClone(save)
     for(const itemId of ['equipment_simple_leather_armor','equipment_terran_guard_armor']){
-      expect(buyMarketItem(save,'presence_neris',itemId,1,content,now))
-        .toMatchObject({ok:false,code:'NERIS_TIER'})
+      expect(buyMarketItem(save,'presence_terran_armorer',itemId,1,content,now))
+        .toMatchObject({ok:false,code:'ARMORER_TIER'})
     }
     expect(save).toEqual(previous)
   })
 
   it('oferece Poção Restauradora com consumo real na economia da Câmara', () => {
     const save = base()
-    const result = buyMarketItem(save, 'presence_edran', 'consumable_fungal_healing_potion', 2, content, now)
+    const result = buyMarketItem(save, 'presence_neris', 'consumable_fungal_healing_potion', 2, content, now)
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.value.inventory.at(-1)).toMatchObject({
@@ -101,8 +105,10 @@ describe('Mercado de Terran', () => {
     })
     expect(result.value.wallet.gold).toBe(save.wallet.gold - 56)
     expect(content.items.consumable_fungal_healing_potion.combatUseMode).toBe('freeHealingPotion')
-    expect(buyMarketItem(save, 'presence_neris', 'consumable_fungal_healing_potion', 1, content, now))
-      .toMatchObject({ ok: false, code: 'NERIS_STOCK' })
+    expect(buyMarketItem(save,'presence_edran','consumable_fungal_healing_potion',1,content,now))
+      .toMatchObject({ok:false,code:'MARKET_OFFER'})
+    expect(buyMarketItem(save,'presence_neris','equipment_worn_linen_tunic',1,content,now))
+      .toMatchObject({ok:false,code:'NERIS_STOCK'})
   })
 
 })

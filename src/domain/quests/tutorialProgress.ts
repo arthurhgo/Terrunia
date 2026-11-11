@@ -8,7 +8,9 @@ export function refreshTutorialQuestProgress(save: GameSave, catalog: ContentCat
   for (const definition of Object.values(catalog.quests)) {
     if (!definition.id.startsWith('rosetta_tutorial_') || save.quests[definition.id]?.status !== 'active') continue
     for (const objective of definition.objectives) {
-      const met = objective.type === 'visit' ? (save.world.unlockedLocationIds.includes(objective.targetId) ||
+      const met = objective.type === 'talk'
+        ? save.eventLog.includes('MarketSpecialistTalk:'+objective.targetId)
+        : objective.type === 'visit' ? (save.world.unlockedLocationIds.includes(objective.targetId) ||
           save.world.currentLocationId === objective.targetId ||
           (definition.id === 'rosetta_tutorial_equip' && (save.quests[definition.id].objectives.wear_armor ?? 0) >= 1))
         : objective.type === 'purchase' ? save.eventLog.some((event) => event.startsWith('MarketPurchase:') && event.split(':')[2] === objective.targetId)

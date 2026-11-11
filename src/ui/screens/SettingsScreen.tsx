@@ -1,4 +1,4 @@
-import { AlertTriangle, Cloud, Database, RotateCcw, ShieldCheck } from 'lucide-react'
+import { AlertTriangle, Cloud, Database, RotateCcw, ShieldCheck, Volume2, VolumeX } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../state/authStore'
@@ -13,6 +13,7 @@ export function SettingsScreen() {
   const syncMode = useGameStore((state) => state.syncMode)
   const syncStatus = useGameStore((state) => state.syncStatus)
   const resetCampaign = useGameStore((state) => state.resetCampaign)
+  const setSoundEnabled = useGameStore((state) => state.setSoundEnabled)
   const user = useAuthStore((state) => state.user)
   const navigate = useNavigate()
   const [resetStep, setResetStep] = useState<0 | 1 | 2>(0)
@@ -38,6 +39,15 @@ export function SettingsScreen() {
           <ArcanePanel title="Sincronização" eyebrow="FIRESTORE"><Cloud size={28} /><dl><div><dt>Modo</dt><dd>{syncMode ?? 'local'}</dd></div><div><dt>Usuário</dt><dd>{user?.isGuest ? 'Convidado local' : user?.displayName ?? 'Google'}</dd></div><div><dt>UID</dt><dd>{user?.uid}</dd></div></dl></ArcanePanel>
           <ArcanePanel title="Isolamento" eyebrow="SEGURANÇA"><ShieldCheck size={28} /><p>As regras Firestore permitem acesso somente quando <code>request.auth.uid == uid</code>.</p></ArcanePanel>
         </div>
+        <ArcanePanel title="Áudio do jogo" eyebrow="EFEITOS SONOROS ORIGINAIS">
+          <p>Dados, impactos, compras, missões e evoluções. Sem música e sem alteração de gameplay.</p>
+          <button type="button" className="terran-service-action" aria-pressed={save.settings.soundEnabled}
+            aria-label={save.settings.soundEnabled ? 'Desativar efeitos sonoros' : 'Ativar efeitos sonoros'}
+            onClick={() => setSoundEnabled(!save.settings.soundEnabled)}>
+            {save.settings.soundEnabled ? <Volume2 size={18} aria-hidden="true" /> : <VolumeX size={18} aria-hidden="true" />}
+            {save.settings.soundEnabled ? 'Som ligado' : 'Som desligado'}
+          </button>
+        </ArcanePanel>
         <ArcanePanel title="Conta e campanha" eyebrow="ZONA CRÍTICA" className="campaign-reset-panel">
           <div className="campaign-reset-copy"><RotateCcw size={30} /><span><strong>Resetar campanha</strong><p>Apaga o progresso do personagem no dispositivo e na nuvem. A Conta Google, o login e as preferências de interface permanecem.</p></span><GameButton variant="danger" onClick={() => setResetStep(1)}>Resetar campanha</GameButton></div>
         </ArcanePanel>

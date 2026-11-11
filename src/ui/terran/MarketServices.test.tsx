@@ -31,8 +31,8 @@ describe('NPCs do Mercado', () => {
     expect(useGameStore.getState().save?.inventory.some((item) => item.definitionId === 'fragment_mycelial_essence')).toBe(true)
   })
 
-  it('abre a mochila do vendedor, informa preço e compara armadura no hover', () => {
-    setup('presence_neris')
+  it('abre a mochila do Armadureiro, informa preço e compara armadura no hover', () => {
+    setup('presence_terran_armorer')
     expect(screen.getByRole('heading', { name: /Mochila do vendedor/ })).toBeInTheDocument()
     const buy = screen.getByRole('button', { name: 'Comprar Túnica de Linho Gasta por 22 ouro' })
     const card = buy.closest('article')!
@@ -43,6 +43,43 @@ describe('NPCs do Mercado', () => {
     expect(tooltip).toHaveTextContent('Atual:')
     fireEvent.mouseLeave(card)
     expect(screen.queryByRole('tooltip', { name: 'Comparação: Túnica de Linho Gasta' })).not.toBeInTheDocument()
+  })
+
+  it('Neris vende Tônico e poção em cards com sprites, sem exibir conjuntos de equipamentos',()=>{
+    const save=makeSave()
+    save.quests.rosetta_tutorial_supply.status='active'
+    setup('presence_neris',save)
+    const tonic=screen.getByRole('button',{name:'Comprar Tônico de Campo por 18 ouro'})
+    const card=tonic.closest('article')!
+    expect(card.querySelector('img')).not.toBeNull()
+    expect(card).toHaveTextContent('Item da missão de Rosetta')
+    expect(screen.queryByRole('group',{name:'Conjuntos disponíveis'})).not.toBeInTheDocument()
+    fireEvent.click(tonic)
+    const state=useGameStore.getState().save!
+    expect(state.wallet.gold).toBe(482)
+    expect(state.inventory.some(i=>i.definitionId==='consumable_minor_tonic')).toBe(true)
+    expect(state.quests.rosetta_tutorial_supply.objectives.buy_tonic).toBe(1)
+  })
+
+  it('três lojas de equipamento possuem sprites, estoque distinto e compra individual',()=>{
+    for(const [npc,count] of [
+      ['presence_terran_weaponsmith',12],['presence_terran_armorer',60],
+      ['presence_terran_accessory_artisan',48],
+    ] as const){
+      cleanup()
+      const save=makeSave()
+      setup(npc,save)
+      const offers=screen.getByLabelText('Equipamentos individuais à venda')
+      expect(offers.querySelectorAll('article')).toHaveLength(count)
+      expect(offers.querySelectorAll('img')).toHaveLength(count)
+      expect(screen.queryByRole('group',{name:'Conjuntos disponíveis'})).not.toBeInTheDocument()
+      const buy=offers.querySelector('button[aria-label^="Comprar "]:not([aria-label^="Comprar e equipar"])')!
+      expect(buy).toBeEnabled()
+      fireEvent.click(buy)
+      const next=useGameStore.getState().save!
+      expect(next.wallet.gold).toBeLessThan(save.wallet.gold)
+      expect(next.inventory.length).toBeGreaterThan(save.inventory.length)
+    }
   })
 
   it('Feril troca drops por Ouro e Lorian por Essência com regras existentes', () => {
