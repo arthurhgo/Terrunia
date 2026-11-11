@@ -44,6 +44,7 @@ describe('janela única de conversa', () => {
     const save = createNewSave('quest-direct', 'Thaur', 'character.terririan.default', content)
     save.quests.vs_astravel_first_contact.status = 'completed'
     save.quests.side_npc_eldamar.status = 'available'
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
     useGameStore.setState({ status: 'ready', save, ownerId: save.ownerId, syncMode: 'local', syncStatus: 'saved' })
     const onClose = vi.fn()
     render(<MemoryRouter><QuestNpcPanel save={save} questId="side_npc_eldamar" onClose={onClose} /></MemoryRouter>)
