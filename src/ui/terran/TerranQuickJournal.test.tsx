@@ -30,7 +30,8 @@ describe('diário compacto v0.5.1', () => {
     const { container } = render(<MemoryRouter><TerranQuickJournal save={save} /></MemoryRouter>)
     expect(screen.queryByText('01 · Falar com Rosetta')).not.toBeInTheDocument()
     expect(screen.getByText('Uma Primeira Proteção')).toBeInTheDocument()
-    expect(screen.getByText('O Primeiro Rastro')).toBeInTheDocument()
+    const readySection = container.querySelector('section[aria-label="Prontas para entrega"]') as HTMLElement
+    expect(within(readySection).getByText('O Primeiro Rastro')).toBeInTheDocument()
     expect(container.querySelectorAll('.terran-quick-journal__line--ready_to_turn_in')).toHaveLength(1)
     const history = screen.getByText(/Concluídas/, { selector: 'summary' })
     expect(history.closest('details')).not.toHaveAttribute('open')
