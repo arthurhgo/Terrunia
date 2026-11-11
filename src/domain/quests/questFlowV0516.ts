@@ -1,5 +1,6 @@
 import type { ContentCatalog } from '../../content/catalog'
 import type { GameSave } from '../game/types'
+import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import { ASTRAVEL_QUEST_CHAPTERS_V0516, currentQuestChapterV0516,
   isQuestOfferUnlockedV0516, questChapterV0516 } from './questPacingV0516'
 
@@ -130,4 +131,52 @@ export function getQuestCadenceMetricsV0516(save: GameSave, catalog: ContentCata
       catalog.quests[q.questId]?.category === 'secondary').length,
     // Time between battles is not captured by the current save and must not be invented.
     elapsedMinutesBetweenCombats: null as null }
+}
+
+
+/** UX_DRAFT: the first objective can become ready after early battles, but
+ * the player can finish the full chapter without a compulsory return to town.
+ * Hard-delivery gating would affect existing tutorials and remains OWNER_DECISION. */
+export function getChapterContinuationV0516(save: GameSave) {
+  const status = save.quests.vs_astravel_first_contact?.status
+  if (status === 'ready_to_turn_in' &&
+    save.world.trailNodeStates.astravel_camp_03 !== 'completed') {
+    return 'O Primeiro Rastro já pode ser entregue, mas você pode concluir os cinco primeiros encontros antes de retornar a Eldamar. A trilha continua disponível.'
+  }
+  return null
+}
+
+/** Use the actual city's location registry; no imaginary NPC marker or route. */
+export function getNextStoryNpcDestinationV0516(save: GameSave, catalog: ContentCatalog): TerranLocationId | null {
+  const lead = getNarrativeLeadV0516(save, catalog)
+  if (!lead?.canOffer) return null
+  return TERRAN_LOCATION_IDS.find(id =>
+    catalog.terranLocations[id]?.npcPresences.some(npc => npc.npcId === lead.npcId)) ?? null
+}
+
+/** After a reward claim, show only objectives which truly correspond to the
+ * defeated encounter, recorded visit, or acquired material. Never speculate
+ * about change from an unavailable pre-battle snapshot. */
+export function getCombatQuestProgressV0516(save: GameSave, catalog: ContentCatalog) {
+  const battle = save.battle
+  if (!battle || battle.phase !== 'Victory' || !battle.claimed) return []
+  const encounter = catalog.encounters[battle.encounterId]
+  const enemyIds = new Set(Object.values(battle.combatants)
+    .filter(actor => actor.side === 'enemy' && !actor.alive).map(actor => actor.definitionId))
+  const lootIds = new Set(battle.rewards.lootDefinitionIds)
+  return Object.values(save.quests).flatMap(progress => {
+    const quest = catalog.quests[progress.questId]
+    if (!quest || !['active', 'ready_to_turn_in'].includes(progress.status)) return []
+    const related = quest.objectives.filter(objective =>
+      (objective.type === 'kill' && enemyIds.has(objective.targetId)) ||
+      (objective.type === 'visit' && objective.targetId === battle.trailNodeId) ||
+      (objective.type === 'collect' && lootIds.has(objective.targetId)))
+    const proven = related.filter(objective => (progress.objectives[objective.id] ?? 0) > 0)
+    if (!proven.length) return []
+    return [{ questId: quest.id, title: quest.title, category: quest.category,
+      ready: progress.status === 'ready_to_turn_in',
+      objectives: proven.map(objective => ({ label: objective.label,
+        current: Math.min(progress.objectives[objective.id] ?? 0, objective.required),
+        required: objective.required })) }]
+  }).sort((a,b) => (a.category === 'main' ? 0 : 1) - (b.category === 'main' ? 0 : 1))
 }
