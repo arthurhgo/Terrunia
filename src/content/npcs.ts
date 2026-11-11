@@ -127,7 +127,7 @@ const baseNpcDefinitions = [
     status: 'CONTENT_DRAFT',
   },
   {
-    id: 'npc_terran_weaponsmith', name: 'Armeiro de Terran', title: 'Especialista em Armas Comuns',
+    id: 'npc_terran_weaponsmith', name: 'Torvan', title: 'Especialista em Armas Comuns',
     settlementId: 'terran', roles: ['vendor'], questIds: [],
     portraitAssetId: 'npc.terran-weaponsmith.portrait',
     dialogue: ['Cada arma vinculada tem sua história. Vendo revestimentos comuns para atender diferentes estilos físicos e mágicos.',
@@ -135,7 +135,7 @@ const baseNpcDefinitions = [
     status: 'CONTENT_DRAFT',
   },
   {
-    id: 'npc_terran_armorer', name: 'Armadureiro de Terran', title: 'Especialista em Proteções Comuns',
+    id: 'npc_terran_armorer', name: 'Brenna', title: 'Especialista em Proteções Comuns',
     settlementId: 'terran', roles: ['vendor'], questIds: [],
     portraitAssetId: 'npc.terran-armorer.portrait',
     dialogue: ['Tenho túnicas, gibões, proteções, capacetes, calças e botas para um Terrírian no início da jornada.',
@@ -143,7 +143,7 @@ const baseNpcDefinitions = [
     status: 'CONTENT_DRAFT',
   },
   {
-    id: 'npc_terran_accessory_artisan', name: 'Artesão de Acessórios', title: 'Especialista em Acessórios Comuns',
+    id: 'npc_terran_accessory_artisan', name: 'Ilyra', title: 'Especialista em Acessórios Comuns',
     settlementId: 'terran', roles: ['vendor'], questIds: [],
     portraitAssetId: 'npc.terran-accessory-artisan.portrait',
     dialogue: ['Cada colar, pulseira e adorno oferece atributos diferentes. Compare Vida, Mana, Defesa e Iniciativa.',
