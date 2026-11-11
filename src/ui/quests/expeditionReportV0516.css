@@ -1,0 +1,18 @@
+/* v0.5.16 report: intentionally uses existing dark-arcane UI palette. */
+.expedition-report-v0516{min-width:0;margin:8px 0;border:1px solid #675947;background:#172524;color:#e9dfc7;font:400 11px/1.45 Georgia,serif}
+.expedition-report-v0516>summary{display:flex;align-items:center;gap:7px;cursor:pointer;padding:10px;color:#f3daa9;font:700 11px/1.3 var(--display,serif);list-style-position:inside}
+.expedition-report-v0516>summary small{margin-left:auto;color:#a6c5be;font-size:10px}
+.expedition-report-v0516__body{display:grid;gap:8px;padding:8px;max-height:min(55vh,460px);overflow-y:auto}
+.expedition-report-v0516__body>p{display:flex;align-items:flex-start;gap:7px;margin:2px 0}
+.expedition-report-v0516__body strong{color:#e4c68f}
+.expedition-report-v0516__lead{padding:8px;border-left:2px solid #d1ac64;background:#202e2b}
+.expedition-report-v0516__row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:5px 0;padding:6px;border:1px solid #40584e;background:#122724}
+.expedition-report-v0516__row span{display:grid;gap:2px}
+.expedition-report-v0516__row small{display:block;color:#b3d8c2}
+.expedition-report-v0516 button{padding:5px 7px;border:1px solid #a89769;background:#304236;color:#f7e2bd;cursor:pointer}
+.expedition-report-v0516 button:disabled{opacity:.65;cursor:default}
+.expedition-report-v0516__subsection>summary{cursor:pointer;color:#b5d3c4;margin:6px 0}
+.expedition-report-v0516__subsection p{margin:5px 0}
+.expedition-report-v0516__subsection ul{margin:4px 0;padding-left:19px}
+.expedition-report-v0516 :focus-visible{outline:2px solid #efcd87;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.expedition-report-v0516 *{scroll-behavior:auto!important}}
