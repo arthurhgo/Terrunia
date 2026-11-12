@@ -131,7 +131,7 @@ export const questDefinitions = [
   },
   {
     id: 'main_astravel_corruption', title: 'A Raiz da Corrupção',
-    summary: 'Lithwynn liga os vestígios ao núcleo da Ruína. Vença a Vigília, abra o Limiar e atravesse as Câmaras Fúngicas e vença a Sentinela Corrompida no núcleo; depois retorne com o relato.',
+    summary: 'Lithwynn liga os vestígios ao núcleo da Ruína. Vença a Vigília, abra o Limiar, atravesse as Câmaras Fúngicas e derrote a Sentinela Corrompida no núcleo. Depois, retorne com o relato.',
     giverNpcId: 'npc_lithwynn', turnInNpcId: 'npc_lithwynn', category: 'main',
     objectives: [
       { id: 'read_ruin', type: 'visit', targetId: 'astravel_ruin_watch_11', required: 1, label: 'Vencer a Vigília e examinar as runas no marco 11' },
