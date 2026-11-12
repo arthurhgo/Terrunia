@@ -23,6 +23,20 @@ describe('v0.5.16 — relatório e entrega presencial', () => {
     expect(screen.getByLabelText('Resultados da expedição')).toHaveTextContent('Materiais na mochila')
     expect(useGameStore.getState().save).toEqual(before)
   })
+  it('shows checkpoint debrief after five proven victories, without changing the save', () => {
+    const save = createNewSave('report-debrief-v0516', 'Lysa', 'character.terririan.default', content)
+    save.quests.vs_astravel_first_contact.status = 'ready_to_turn_in'
+    for (const node of content.trails.trail_astravel_entry.nodes.filter(node => node.index >= 1 && node.index <= 5))
+      save.world.trailNodeStates[node.id] = 'completed'
+    const snapshot = structuredClone(save)
+    render(<ExpeditionReportV0516 save={save} />)
+    fireEvent.click(screen.getByText(/Relatório de expedição/))
+    const debrief = screen.getByLabelText('Capítulo concluído')
+    expect(debrief).toHaveTextContent('Capítulo I · Borda Luminescente · 5/5')
+    expect(debrief).toHaveTextContent('Eldamar')
+    expect(save).toEqual(snapshot)
+  })
+
   it('lets the player track a ready hand-in, not redeem it remotely', () => {
     const save = createNewSave('track-v0516', 'Lysa', 'character.terririan.default', content)
     save.quests.side_astravel_spore_shells.status = 'ready_to_turn_in'
