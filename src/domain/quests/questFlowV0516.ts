@@ -179,3 +179,25 @@ export function getCombatQuestProgressV0516(save: GameSave, catalog: ContentCata
         required: objective.required })) }]
   }).sort((a,b) => (a.category === 'main' ? 0 : 1) - (b.category === 'main' ? 0 : 1))
 }
+
+/** v0.5.16 QA/UX: surface the EXISTING clan gate while the player still has
+ * time to prepare. Read-only; never grants a Clan, Class, item or quest. */
+export function getFungalChambersClanNoticeV0516(save: GameSave): string | null {
+  if (save.character.clan.clanId) return null
+  if (save.world.trailNodeStates.astravel_hunter_refuge_10 !== 'completed' ||
+      save.world.trailNodeStates.astravel_boss_preview === 'completed') return null
+  return save.character.level < 4
+    ? 'Câmaras Fúngicas: a entrada exige filiação a um Clã. Rosetta inicia a orientação de Clãs a partir do nível 4; continue progredindo antes de chegar ao Limiar.'
+    : 'Câmaras Fúngicas: a entrada exige filiação a um Clã. Converse com Rosetta na Praça do Portal e realize a iniciação pelo Salão dos Clãs antes do marco 15.'
+}
+
+/** Never infer completed stages from quest offers: the checkpoint is the source
+ * of truth, with no save-schema or canon changes. */
+export function getAstravelChapterCountV0516(save: GameSave, catalog: ContentCatalog) {
+  const chapter = currentQuestChapterV0516(save)
+  const range = ASTRAVEL_QUEST_CHAPTERS_V0516[chapter]
+  const nodes = catalog.trails.trail_astravel_entry.nodes
+    .filter(node => node.index >= range.from && node.index <= range.to)
+  return { chapter, total: nodes.length,
+    cleared: nodes.filter(node => save.world.trailNodeStates[node.id] === 'completed').length }
+}
