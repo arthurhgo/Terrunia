@@ -22,16 +22,19 @@ const stages: Stage[] = [
     tacticalHint: 'Aprenda a alternar ataque e defesa. O Núcleo Fúngico pode financiar sua primeira evolução.' },
   { id: 'astravel_luminous_02', label: 'Clareira Luminescente', x: 44, y: 12,
     enemies: ['enemy_luminous_slime', 'enemy_luminous_slime'], supplies: ['consumable_minor_tonic'],
+    fieldRecovery: { hp: 8, mp: 2 }, // BALANCE_DRAFT v0.5.16: reward-first-field support
     description: 'Dois limuscos ocupam uma clareira. Entre as raízes há um tônico deixado pelos viajantes.',
-    tacticalHint: 'Concentre os ataques em um alvo para reduzir a quantidade de ações inimigas.' },
+    tacticalHint: 'Concentre os ataques em um alvo. Após vencer, a energia de campo recupera até 8 PV e 2 PM; o Tônico de Campo encontrado ajuda na próxima batalha.' },
   { id: 'astravel_moth_03', label: 'Travessia das Mariposas', x: 64, y: 14,
     enemies: ['enemy_void_moth', 'enemy_fungorro_thornback'], supplies: ['consumable_simple_ether'],
+    fieldRecovery: { hp: 10, mp: 3 }, // BALANCE_DRAFT v0.5.16: reduce forced town returns
     description: 'O pó das asas cobre a travessia. Fungorros avançam sob a proteção das mariposas.',
-    tacticalHint: 'A proteção obtida com Rosetta e o Tônico de Campo encontrado na Clareira ajudam a preservar sua Vida. Use habilidades da arma; o Éter recupera Mana.' },
+    tacticalHint: 'Prepare a Túnica de Rosetta e use o Tônico quando necessário. A vitória restaura até 10 PV e 3 PM; habilidades da arma e o Éter seguem importantes.' },
   { id: 'astravel_spore_bank_04', label: 'Margem dos Esporos', x: 84, y: 18,
     enemies: ['enemy_spore_sower', 'enemy_fungal_slime'], supplies: ['consumable_antidote'],
+    fieldRecovery: { hp: 8, mp: 2 }, // BALANCE_DRAFT v0.5.16: prepare for final chapter-I group
     description: 'A margem do riacho concentra esporos nocivos. Um semeador prepara a área para a colônia.',
-    tacticalHint: 'Confira sua Vida antes de avançar: este grupo é mais perigoso. Elimine o Semeador primeiro e use Antídoto para remover efeitos nocivos.' },
+    tacticalHint: 'Elimine o Semeador primeiro e use Antídoto quando necessário. A vitória restaura até 8 PV e 2 PM antes do Acampamento.' },
   { id: 'astravel_camp_03', label: 'Acampamento Abandonado', x: 83, y: 33, checkpoint: true,
     enemies: ['enemy_spore_bulwark', 'enemy_luminous_slime'], supplies: ['consumable_minor_tonic', 'consumable_resonance_flask'],
     flags: ['astravel_camp_supplies_found', 'astravel_border_secured'], fieldRecovery: { hp: 10, mp: 6 },
