@@ -17,7 +17,7 @@ import { AstravelPixelCanvas } from '../expedition/AstravelPixelCanvas'
 import { ExpeditionStatusHud } from '../expedition/ExpeditionStatusHud'
 import { getVisualEquipment } from '../characters/equipmentVisuals'
 import { ExpeditionReportV0516 } from '../quests/ExpeditionReportV0516'
-import { ASTRAVEL_DISCOVERIES_V0516, getChapterContinuationV0516, getFungalChambersClanNoticeV0516 } from '../../domain/quests/questFlowV0516'
+import { ASTRAVEL_DISCOVERIES_V0516, getChapterContinuationV0516, getFungalChambersClanNoticeV0516, getAstravelRouteBlockerV0516 } from '../../domain/quests/questFlowV0516'
 import './gameplayV057.css'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
@@ -31,6 +31,9 @@ function NodeDrawer({ node, trail, status, save, onAction, onReturn }: {
   const gate = status === 'completed' ? { ok: true as const } : checkTrailQuestGate(save, node, content)
   const encounter = node.encounterId ? content.encounters[node.encounterId] : null
   const drops = encounter ? [...new Set(encounter.rewards.lootDefinitionIds)].map((id) => content.items[id]) : []
+  const clanBlocked = trail.regionId === 'astravel' && node.type === 'boss' && !save.character.clan.clanId && status !== 'completed'
+  const blocker = trail.regionId === 'astravel' && (!gate.ok || clanBlocked)
+    ? getAstravelRouteBlockerV0516(save, node, content) : null
   const recorded = trail.regionId === 'astravel' && status === 'completed'
     ? ASTRAVEL_DISCOVERIES_V0516.find(entry => entry.nodeId === node.id) : null
   return <article className="expedition-node-detail">
@@ -48,8 +51,8 @@ function NodeDrawer({ node, trail, status, save, onAction, onReturn }: {
         {drops.map((item) => <span key={item.id}><AssetImage assetId={item.iconAssetId} />{item.name}</span>)}
       </div>
     </>}
-    {!gate.ok && <div className="expedition-quest-gate"><p>{gate.message}</p><button type="button" onClick={onReturn}>Retornar a Terran</button></div>}
-    {actionable && gate.ok && node.type !== 'entry' && <button type="button" onClick={onAction} className="expedition-node-detail__action">
+    {(!gate.ok || clanBlocked) && <div className="expedition-quest-gate" role="note" aria-label="Requisito para prosseguir"><p>{blocker ?? (!gate.ok ? gate.message : 'Conquiste sua filiação a um Clã antes de entrar nas Câmaras Fúngicas.')}</p><button type="button" onClick={onReturn}>Retornar a Terran</button></div>}
+    {actionable && gate.ok && !clanBlocked && node.type !== 'entry' && <button type="button" onClick={onAction} className="expedition-node-detail__action">
       {node.type === 'battle' ? <Swords size={17} /> : <Compass size={17} />}
       {node.type === 'boss' ? 'Adentrar Câmaras Fúngicas' : node.actionLabel ?? 'Explorar'}
     </button>}
