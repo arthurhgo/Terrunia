@@ -31,7 +31,7 @@ function NodeDrawer({ node, trail, status, save, onAction, onReturn }: {
   const gate = status === 'completed' ? { ok: true as const } : checkTrailQuestGate(save, node, content)
   const encounter = node.encounterId ? content.encounters[node.encounterId] : null
   const drops = encounter ? [...new Set(encounter.rewards.lootDefinitionIds)].map((id) => content.items[id]) : []
-  const clanBlocked = trail.regionId === 'astravel' && node.type === 'boss' && !save.character.clan.clanId && status !== 'completed'
+  const clanBlocked = trail.regionId === 'astravel' && node.type === 'boss' && !save.character.clan.clanId
   const blocker = trail.regionId === 'astravel' && (!gate.ok || clanBlocked)
     ? getAstravelRouteBlockerV0516(save, node, content) : null
   const recorded = trail.regionId === 'astravel' && status === 'completed'
