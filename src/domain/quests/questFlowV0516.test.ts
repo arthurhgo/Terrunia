@@ -10,10 +10,10 @@ import { isQuestOfferUnlockedV0516, QUEST_CHAPTER_RELEASES_V0516 } from './quest
 const fresh = () => createNewSave('approval-v0516', 'Explorador', 'character.terririan.default', content)
 
 describe('v0.5.16 — narrative delivery and chapter-aware materials', () => {
-  it('warns about the EXISTING clan requirement in Chapter III without silently affiliating the player', () => {
+  it('warns from chapter II about the existing late Clan requirement, without auto-affiliating', () => {
     const save = fresh()
     expect(getFungalChambersClanNoticeV0516(save)).toBeNull()
-    save.world.trailNodeStates.astravel_hunter_refuge_10 = 'completed'
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
     const before = structuredClone(save)
     expect(getFungalChambersClanNoticeV0516(save)).toContain('nível 4')
     save.character.level = 4
