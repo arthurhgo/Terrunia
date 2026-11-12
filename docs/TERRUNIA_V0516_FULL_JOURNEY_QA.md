@@ -165,3 +165,17 @@ A especificação técnica v0.4 ainda descreve o **Colosso Micélio** como chefe
 - `src/domain/quests/questFlowV0516.test.ts`: aviso de Clã após o capítulo I, contador de marcos e texto do boss implementado.
 - `src/domain/quests/astravelJourneyFullV0516.test.ts`: fluxo dos 15 marcos, gate de Clã e entregas explícitas.
 - **Falta somente playtest humano e aprovação de publicação; não fazer merge automaticamente.**
+
+
+## Fechamento de orientação — 12/11/2026 · v0.5.16
+
+**Mudança pequena de UX, sem novas regras de gameplay.**
+
+1. **Resumo de capítulo concluído:** `getAstravelChapterDebriefV0516` exige que os **cinco** nós do capítulo sejam `completed` no save. Só então exibe, no Relatório de Expedição, o capítulo, a confirmação `5/5` e a próxima ação (entrega presencial a Eldamar/Vorren/Lithwynn ou conclusão do arco). Um save antigo que marque somente o checkpoint, sem os demais nós, **não** receberá um falso resumo de capítulo completo.
+2. **Diagnóstico de bloqueio da rota:** `getAstravelRouteBlockerV0516` distingue: missão anterior pronta para entregar, missão anterior ainda não concluída, checkpoint anterior pendente, missão já oferecida aguardando aceite, nova missão disponível no NPC e falta de Clã para o último marco. Os avisos aparecem no painel do encontro. A autoridade para permitir batalhas continua em `checkTrailQuestGate` / `enterDungeon`; nenhuma oferta, aceitação, requisito, item ou pagamento é criado pelo seletor.
+3. **Acesso às Câmaras Fúngicas:** o botão de entrada não aparece quando o personagem não possui Clã, acompanhado de orientação para a iniciação de Rosetta/Salão dos Clãs. O bloqueio do domínio foi preservado.
+4. **Texto final:** ajustada apenas a redação da missão de Lithwynn para citar corretamente a Sentinela Corrompida atualmente implementada. A divergência com o Colosso Micélio da especificação v0.4 permanece registrada e **não** foi resolvida como cânon novo.
+
+**Critério adicional de regressão:** simuladores e testes de UI verificam derivação somente de checkpoints reais; testes da rota verificam entrega individual, aceite explícito, requisito de Clã e ausência de mutação do save.
+
+**Release gate mantido:** PR #80 DRAFT, sem merge de produção; aprovação do dono após playtest visual/humano.
