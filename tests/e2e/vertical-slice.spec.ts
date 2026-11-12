@@ -46,7 +46,15 @@ test('Astravél: câmera, dois combates, coleta manual de drops e retomada do sa
   await firstEncounterPanel.locator('.expedition-node-detail__action').click()
   await expect(page.getByRole('heading', { name: 'Borda Luminescente: Primeira Presença Fungorra', exact: true })).toBeVisible({ timeout: 20_000 })
   await fightAndCollect(page, 1)
-  await page.getByRole('button', { name: 'CONTINUAR EXPEDIÇÃO', exact: true }).click()
+  // v0.5.16.1: exit controls are in the right-side tab and must be visible without scrolling.
+  const victoryExit = page.getByRole('button', { name: 'CONTINUAR EXPEDIÇÃO', exact: true })
+  await expect(victoryExit).toBeInViewport()
+  await expect(page.getByRole('tabpanel', { name: 'PRÓXIMOS PASSOS' })).toContainText('USAR POÇÃO ANTES DE SEGUIR?')
+  await page.getByRole('tab', { name: 'MOCHILA · POÇÕES' }).click()
+  await expect(page.getByLabel('Mochila após a vitória')).toBeVisible()
+  await page.getByRole('button', { name: 'VOLTAR AOS PRÓXIMOS PASSOS' }).click()
+  await expect(victoryExit).toBeInViewport()
+  await victoryExit.click()
   await expect(page.getByRole('heading', { name: 'Astravél', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Seguir objetivo' }).click()
   // The encounter detail drawer opens on approach and is the foreground action.
