@@ -120,7 +120,13 @@ export function getAstravelChapterDebriefV0516(save: GameSave, catalog: ContentC
     { chapter: 'border', checkpoint: 'astravel_camp_03', questId: 'vs_astravel_first_contact',
       contactId: 'npc_eldamar', label: 'Capítulo I · Borda Luminescente' },
   ] as const
-  const latest = chapters.find(entry => save.world.trailNodeStates[entry.checkpoint] === 'completed')
+  const latest = chapters.find(entry => {
+    const range = ASTRAVEL_QUEST_CHAPTERS_V0516[entry.chapter]
+    const chapterNodes = catalog.trails.trail_astravel_entry.nodes
+      .filter(node => node.index >= range.from && node.index <= range.to)
+    return chapterNodes.length === 5 &&
+      chapterNodes.every(node => save.world.trailNodeStates[node.id] === 'completed')
+  })
   if (!latest) return null
   const quest = catalog.quests[latest.questId]
   const npc = catalog.npcs[latest.contactId]
