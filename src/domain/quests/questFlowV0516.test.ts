@@ -4,6 +4,7 @@ import { createNewSave } from '../game/createSave'
 import { ASTRAVEL_DISCOVERIES_V0516, getExpeditionReportV0516,
   getNarrativeLeadV0516, getNpcForeshadowV0516, getQuestCadenceMetricsV0516,
   getFungalChambersClanNoticeV0516, getAstravelChapterCountV0516,
+  getAstravelChapterDebriefV0516, getAstravelRouteBlockerV0516,
   getRecordedDiscoveriesV0516 } from './questFlowV0516'
 import { isQuestOfferUnlockedV0516, QUEST_CHAPTER_RELEASES_V0516 } from './questPacingV0516'
 
@@ -44,6 +45,68 @@ describe('v0.5.16 — narrative delivery and chapter-aware materials', () => {
     expect(content.quests.main_astravel_corruption.objectives.at(-1)?.label).toContain('Sentinela Corrompida')
   })
 
+
+  it('only celebrates a chapter when all five real nodes are complete and never grants rewards', () => {
+    const save = fresh()
+    save.quests.vs_astravel_first_contact.status = 'ready_to_turn_in'
+    const chapterOne = content.trails.trail_astravel_entry.nodes.filter(node => node.index >= 1 && node.index <= 5)
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
+    expect(getAstravelChapterDebriefV0516(save, content)).toBeNull()
+    for (const node of chapterOne) save.world.trailNodeStates[node.id] = 'completed'
+    const untouched = structuredClone(save)
+    expect(getAstravelChapterDebriefV0516(save, content)).toMatchObject({
+      label: 'Capítulo I · Borda Luminescente', completed: 5, total: 5,
+    })
+    expect(getAstravelChapterDebriefV0516(save, content)?.nextStep).toContain('Eldamar')
+    expect(save).toEqual(untouched)
+    save.quests.vs_astravel_first_contact.status = 'completed'
+    save.quests.main_astravel_lost_hunters.status = 'active'
+    expect(getAstravelChapterDebriefV0516(save, content)?.nextStep).toContain('Relatório entregue')
+    for (const node of content.trails.trail_astravel_entry.nodes.filter(node => node.index >= 6 && node.index <= 10))
+      save.world.trailNodeStates[node.id] = 'completed'
+    save.quests.main_astravel_lost_hunters.status = 'ready_to_turn_in'
+    expect(getAstravelChapterDebriefV0516(save, content)).toMatchObject({
+      label: 'Capítulo II · Território dos Esporos', completed: 5, total: 5,
+    })
+    expect(getAstravelChapterDebriefV0516(save, content)?.nextStep).toContain('Vorren')
+    for (const node of content.trails.trail_astravel_entry.nodes.filter(node => node.index >= 11 && node.index <= 15))
+      save.world.trailNodeStates[node.id] = 'completed'
+    save.quests.main_astravel_corruption.status = 'ready_to_turn_in'
+    expect(getAstravelChapterDebriefV0516(save, content)?.nextStep).toContain('Lithwynn')
+    save.quests.main_astravel_corruption.status = 'completed'
+    expect(getAstravelChapterDebriefV0516(save, content)?.nextStep).toContain('história principal')
+  })
+
+  it('distinguishes hand-in, offered quest, next-NPC acceptance and Clan gate', () => {
+    const save = fresh()
+    const nodes = content.trails.trail_astravel_entry.nodes
+    const nodeSix = nodes.find(node => node.index === 6)!
+    const nodeEleven = nodes.find(node => node.index === 11)!
+    const boss = nodes.find(node => node.index === 15)!
+    save.quests.vs_astravel_first_contact.status = 'ready_to_turn_in'
+    save.quests.main_astravel_lost_hunters.status = 'locked'
+    const snap = structuredClone(save)
+    expect(getAstravelRouteBlockerV0516(save, nodeSix, content)).toContain('Eldamar')
+    expect(getAstravelRouteBlockerV0516(save, nodeSix, content)).toContain('está pronta')
+    save.quests.vs_astravel_first_contact.status = 'completed'
+    expect(getAstravelRouteBlockerV0516(save, nodeSix, content)).toContain('marco 5')
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
+    save.quests.main_astravel_lost_hunters.status = 'offered'
+    expect(getAstravelRouteBlockerV0516(save, nodeSix, content)).toContain('escolha aceitar')
+    save.quests.main_astravel_lost_hunters.status = 'active'
+    expect(getAstravelRouteBlockerV0516(save, nodeSix, content)).toBeNull()
+    save.quests.main_astravel_lost_hunters.status = 'ready_to_turn_in'
+    save.quests.main_astravel_corruption.status = 'locked'
+    expect(getAstravelRouteBlockerV0516(save, nodeEleven, content)).toContain('Vorren')
+    save.quests.main_astravel_corruption.status = 'active'
+    expect(getAstravelRouteBlockerV0516(save, nodeEleven, content)).toBeNull()
+    save.world.trailNodeStates.astravel_hunter_refuge_10 = 'completed'
+    expect(getAstravelRouteBlockerV0516(save, boss, content)).toContain('Clã')
+    save.character.clan.clanId = Object.keys(content.clans)[0]
+    expect(getAstravelRouteBlockerV0516(save, boss, content)).toBeNull()
+    expect(snap.wallet).toEqual(save.wallet)
+    expect(snap.inventory).toEqual(save.inventory)
+  })
 
   it('distributes real collection contracts along their material sources without auto-accepting', () => {
     expect(QUEST_CHAPTER_RELEASES_V0516.delivery_liora_spores).toBe('border')
