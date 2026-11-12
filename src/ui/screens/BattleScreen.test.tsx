@@ -255,13 +255,16 @@ describe('combate visual v0.17', () => {
     })
     useGameStore.setState({ save })
     render(<MemoryRouter><BattleScene unified /></MemoryRouter>)
+    const nav = screen.getByRole('tabpanel',{name:'PRÓXIMOS PASSOS'})
+    expect(nav).toHaveTextContent('Recolha os espólios')
+    expect(nav.querySelector('nav')).toHaveAttribute('aria-label','Ações de saída após a vitória')
+    fireEvent.click(screen.getByRole('tab',{name:'MOCHILA · POÇÕES'}))
     const loot = screen.getByLabelText('Mochila após a vitória')
     expect(loot).toHaveTextContent('Núcleo Fúngico ×2')
-    expect(screen.getByRole('heading',{name:'MOCHILA · PREPARAÇÃO'})).toBeVisible()
+    expect(screen.getByRole('heading',{name:'PÓS-VITÓRIA · PREPARAÇÃO'})).toBeVisible()
     expect(loot).toHaveTextContent('NOVOS DROPS')
     expect(loot).toHaveTextContent('NOVO')
-
-    expect(loot.querySelectorAll('button')).toHaveLength(0) // only center-panel claim control
+    fireEvent.click(screen.getByRole('button',{name:'VOLTAR AOS PRÓXIMOS PASSOS'}))
     fireEvent.click(screen.getByRole('button', { name: 'RECOLHER TODOS OS ESPÓLIOS' }))
     const updated = useGameStore.getState().save!
     expect(updated.battle?.claimed).toBe(true)
@@ -336,6 +339,62 @@ describe('combate visual v0.17', () => {
     expect(screen.getByRole('button', { name: 'Voltar sem executar a ação' })).toBeEnabled()
     fireEvent.click(screen.getByRole('button', { name: 'Voltar sem executar a ação' }))
     expect(container.querySelector('.pixel-battle__submenu--skill-picker')).not.toBeInTheDocument()
+  })
+
+  it('v0.5.16.1 oferece saída visível e recuperação opcional, sem consumo automático',()=>{
+    const save=createBattleSave()
+    save.battle!.phase='Victory'
+    save.battle!.claimed=true
+    for(const enemy of Object.values(save.battle!.combatants).filter(actor=>actor.side==='enemy')){
+      enemy.hp=0;enemy.alive=false
+    }
+    save.vitals.hp=10
+    save.battle!.combatants.combatant_player.hp=10
+    save.inventory.push({
+      instanceId:'victory-tonic',definitionId:'consumable_minor_tonic',quantity:1,
+      rarity:content.items.consumable_minor_tonic.rarity,locked:false,favorite:false,acquiredAt:save.updatedAt,
+    })
+    useGameStore.setState({save})
+    render(<MemoryRouter><BattleScene unified/></MemoryRouter>)
+    const previous=structuredClone(useGameStore.getState().save!)
+    const next=screen.getByRole('tabpanel',{name:'PRÓXIMOS PASSOS'})
+    expect(next).toHaveTextContent('USAR POÇÃO ANTES DE SEGUIR?')
+    expect(next).toHaveTextContent('ou avance sem usar')
+    expect(next.querySelector('nav')).toHaveAttribute('aria-label','Ações de saída após a vitória')
+    expect(screen.getByRole('button',{name:'CONTINUAR EXPEDIÇÃO'})).toBeEnabled()
+    expect(screen.getByRole('button',{name:'RETORNAR A TERRAN'})).toBeEnabled()
+    expect(screen.queryByLabelText('Mochila após a vitória')).not.toBeInTheDocument()
+    expect(useGameStore.getState().save!.inventory).toEqual(previous.inventory)
+    fireEvent.click(screen.getByRole('button',{name:'ABRIR MOCHILA · POÇÕES'}))
+    expect(screen.getByLabelText('Mochila após a vitória')).toHaveTextContent('Tônico de Campo ×1')
+    expect(useGameStore.getState().save!.inventory).toEqual(previous.inventory)
+    fireEvent.click(screen.getByRole('button',{name:/Tônico de Campo ×1/}))
+    const recovered=useGameStore.getState().save!
+    expect(recovered.vitals.hp).toBeGreaterThan(previous.vitals.hp)
+    expect(recovered.inventory.some(entry=>entry.instanceId==='victory-tonic')).toBe(false)
+    fireEvent.click(screen.getByRole('button',{name:'VOLTAR AOS PRÓXIMOS PASSOS'}))
+    expect(screen.getByRole('button',{name:'CONTINUAR EXPEDIÇÃO'})).toBeEnabled()
+  })
+
+  it('v0.5.16.1 preserva Próxima Onda e retorno ao Portal',()=>{
+    const save=createBattleSave()
+    save.battle!.phase='Victory'
+    save.battle!.claimed=true
+    for(const enemy of Object.values(save.battle!.combatants).filter(actor=>actor.side==='enemy')){
+      enemy.hp=0;enemy.alive=false
+    }
+    save.battle!.waveIndex=2
+    useGameStore.setState({save})
+    const view=render(<MemoryRouter><BattleScene unified/></MemoryRouter>)
+    expect(screen.getByRole('button',{name:'PRÓXIMA ONDA · 3'})).toBeEnabled()
+    expect(screen.getByRole('button',{name:'RETORNAR A TERRAN'})).toBeEnabled()
+    const hunt=structuredClone(save)
+    hunt.battle!.portalHuntId='portal_hunt_fixture'
+    hunt.battle!.waveIndex=undefined
+    useGameStore.setState({save:hunt})
+    view.rerender(<MemoryRouter><BattleScene unified/></MemoryRouter>)
+    expect(screen.getByRole('button',{name:'VOLTAR AO PORTAL'})).toBeEnabled()
+    expect(screen.queryByRole('button',{name:'CONTINUAR EXPEDIÇÃO'})).not.toBeInTheDocument()
   })
 
 })
