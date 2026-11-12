@@ -87,12 +87,15 @@ export function TerranQuickJournal({ save }: { save: GameSave }) {
         ? 'Contratos extras opcionais; consulte o Diário para o histórico completo.'
         : 'Trilha ' + chapterInfo.from + '–' + chapterInfo.to + ' · ' + chapterProgress.cleared + '/' + chapterProgress.total + ' marcos concluídos.'}</small>
     </div>
+    {(clanGateNotice || continuation || nextLead) && <details className="terran-quick-journal__guidance" aria-label="Orientações adicionais">
+      <summary>Orientações adicionais · {Number(Boolean(clanGateNotice))+Number(Boolean(continuation))+Number(Boolean(nextLead))}</summary>
     {clanGateNotice && <div className="terran-quick-journal__intro" role="note" aria-label="Preparação para as Câmaras Fúngicas"><strong>Preparação para o marco 15</strong><small>{clanGateNotice}</small></div>}
     {continuation && <div className="terran-quick-journal__intro" role="note" aria-label="Jornada contínua"><strong>Continue a expedição</strong><small>{continuation}</small></div>}
     {nextLead && <div className="terran-quick-journal__intro" role="note" aria-label="Próximo capítulo de Astravél">
       <strong>Próximo contato · {nextLead.npcName}</strong>
       <small>{nextLead.message}</small>
     </div>}
+    </details>}
     <ExpeditionReportV0516 save={save} />
     {renderGroup('ready', 'Prontas para entrega', visibleReady)}
     {otherReady.length > 0 && <details className="terran-quick-journal__history" aria-label="Mais entregas prontas">

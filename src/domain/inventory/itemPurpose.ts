@@ -38,3 +38,11 @@ export function getQuestMaterialCommitmentV0516(itemId: string, save: GameSave, 
   return { itemId, needed, held, reserved: Math.min(needed, held), missing: Math.max(0, needed - held),
     requests }
 }
+
+/** Estimate a single usable stack's departure; do not reserve or mutate resources. */
+export function getMaterialTradeImpactV0516(itemId:string,quantity:number,save:GameSave,catalog:ContentCatalog){
+ const c=getQuestMaterialCommitmentV0516(itemId,save,catalog)
+ const heldAfter=Math.max(0,c.held-Math.min(c.held,Math.max(0,quantity)))
+ return {...c,heldAfter,missingAfter:Math.max(0,c.needed-heldAfter),
+  deliveries:c.requests.map(q=>({...q,npcName:catalog.npcs[catalog.quests[q.questId]?.turnInNpcId]?.name??'NPC responsável'}))}
+}

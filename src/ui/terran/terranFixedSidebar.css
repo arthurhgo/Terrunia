@@ -330,3 +330,5 @@
 .terran-quick-journal__focus > button:is(:hover,:focus-visible) {
   border-color: #eed096; outline-offset: 2px;
 }
+
+.terran-quick-journal__guidance{margin-bottom:9px;border:1px solid #64706c;background:#12252b}.terran-quick-journal__guidance>summary{padding:9px;color:#e9ce9b;font:700 .65rem var(--display);cursor:pointer}.terran-quick-journal__guidance>.terran-quick-journal__intro{margin:7px}

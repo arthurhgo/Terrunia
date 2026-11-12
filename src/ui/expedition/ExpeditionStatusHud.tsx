@@ -1,11 +1,11 @@
-import { Backpack, BookOpen, UserRound } from 'lucide-react'
+import { Backpack, BookOpen, Route, UserRound } from 'lucide-react'
 import type { GameSave } from '../../domain/game/types'
 import { content } from '../../content/catalog'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import { CharacterPortrait } from '../characters/CharacterSprite'
 import './expeditionStatusHud.css'
 
-type Tab = 'inventory' | 'character' | 'quests'
+type Tab = 'inventory' | 'character' | 'quests' | 'trail'
 
 /** A read-only combat-safe HUD, visible over external exploration and dungeons. */
 export function ExpeditionStatusHud({ save, selected, onOpen }: {
@@ -21,6 +21,7 @@ export function ExpeditionStatusHud({ save, selected, onOpen }: {
       {([
         { id: 'inventory' as const, label: 'Mochila', icon: Backpack },
         { id: 'character' as const, label: 'Personagem', icon: UserRound },
+        { id: 'trail' as const, label: 'Rota', icon: Route },
         { id: 'quests' as const, label: 'Missões', icon: BookOpen },
       ]).map(({ id, label, icon: Icon }) => <button type="button" key={id}
         aria-label={`Abrir ${label}`} aria-pressed={selected === id}

@@ -2,6 +2,7 @@ import { CheckCircle2, ClipboardList, Compass, Route, Shield } from 'lucide-reac
 import { useState } from 'react'
 import { content } from '../../content/catalog'
 import type { GameSave } from '../../domain/game/types'
+import { getRosettaContextTipV0516 } from '../../domain/terran/rosettaContextV0516'
 import { getRosettaGuidance } from '../../domain/terran/rosettaGuide'
 import { getClanRecommendations, ROSETTA_CLAN_QUEST } from '../../domain/progression/clanOrientation'
 import { DialogueWindow } from './DialogueWindow'
@@ -27,6 +28,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
   const guidance = getRosettaGuidance(save, content)
   const orientation = save.quests[ROSETTA_CLAN_QUEST]
   const recommendations = getClanRecommendations(save,content)
+  const contextualTip = getRosettaContextTipV0516(save,content)
   const lesson = rosettaTutorialQuests.find((quest) => (ROSETTA_CORE_LESSON_IDS as readonly string[]).includes(quest.id) && ['available', 'offered', 'active', 'ready_to_turn_in'].includes(save.quests[quest.id]?.status))
   const progress = lesson ? save.quests[lesson.id] : null
   const nextObjective = lesson && progress?.status === 'active'
@@ -40,6 +42,10 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
   return <DialogueWindow save={save} title="Rosetta" ariaLabel="Orientações de Rosetta" portraitAssetId="npc.rosetta.portrait" eyebrow="GUARDIÃ DO PORTAL"
     lines={content.npcs.npc_rosetta.dialogue} quest={lesson} onClose={onClose}>
     <div className="rosetta-guide__content">
+      {contextualTip && <aside className="rosetta-guide__next" role="note" aria-label="Dica contextual de Rosetta">
+        <strong>{contextualTip.title}</strong><p>{contextualTip.message}</p>
+        <button type="button" onClick={contextualTip.destination==='inventory'&&onOpenInventory?onOpenInventory:onShowPaths??onOpenQuests}>{contextualTip.destination==='inventory'&&onOpenInventory?'Abrir mochila':'Ver orientação ou caminho'}</button>
+      </aside>}
       {lesson && progress ? <section className="rosetta-tutorial" aria-label="Lição de Rosetta">
         <span className="eyebrow">TUTORIAL · LIÇÃO {lessonIndex} DE {ROSETTA_CORE_LESSON_IDS.length}</span>
         <h3>{lesson.title}</h3>

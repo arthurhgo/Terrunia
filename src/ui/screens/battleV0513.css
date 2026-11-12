@@ -194,3 +194,5 @@
 .pixel-battle__quest-progress>strong{color:#cfb780;letter-spacing:.045em}
 .pixel-battle__quest-progress>div{display:grid;gap:3px;padding:5px;border-left:2px solid #79b59c;background:#1b3331}
 .pixel-battle__quest-progress small{font:400 10px/1.35 Georgia,serif;color:#b7dac8;overflow-wrap:anywhere}
+
+.battle-victory-summary-v0516{display:grid;gap:7px;padding:8px;background:#19322e;border:1px solid #aa915b}.battle-victory-summary-v0516 dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0;gap:6px}.battle-victory-summary-v0516 dl>div{display:grid;padding:5px;background:#243a34}.battle-victory-summary-v0516 dd{margin:0;color:#efcf91;font-weight:700}.battle-victory-summary-v0516 small{color:#b8c9bc}

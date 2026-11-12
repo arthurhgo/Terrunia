@@ -3,7 +3,7 @@
  padding:8px 9px;background:linear-gradient(140deg,#071a24ef,#112b33ee);
  border:2px solid #a08047;box-shadow:inset 0 0 0 2px #2d4239,0 5px 13px #000b;
  color:#f2dcaa;pointer-events:auto}
-.expedition-status-hud__actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-bottom:8px}
+.expedition-status-hud__actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-bottom:8px}
 .expedition-status-hud__actions button{min-width:0;padding:5px 3px;display:flex;gap:4px;
   align-items:center;justify-content:center;border:1px solid #826b41;background:#1c333b;
   font:700 9px var(--display);color:#dcc79d;cursor:pointer}
@@ -32,3 +32,5 @@
  border:1px solid #8e744b;background:#152c33e9;color:#e9d2a4;
  font:700 9px var(--display);cursor:pointer}
 @media(max-width:720px){.expedition-game__route-open{top:112px;left:4px;font-size:8px}}
+
+.astravel-route-progress-v0516{display:grid;gap:8px;padding:9px;border:1px solid #8e7854;background:#15292b;margin:7px 0;color:#ecd5a8}.astravel-route-progress-v0516>strong{font:700 .7rem var(--display)}.astravel-route-progress-v0516__dots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.astravel-route-progress-v0516__dots span{padding:6px 1px;text-align:center;border:1px solid #667071;background:#273239;font:700 .65rem var(--display)}.astravel-route-progress-v0516__dots span[data-state="completed"]{background:#234c39;color:#b5ecc8;border-color:#69a283}.astravel-route-progress-v0516__dots span[data-state="current"]{background:#654c24;color:#ffe8ac;border-color:#eed19b}.astravel-route-progress-v0516__dots span[data-state="locked"]{opacity:.52}

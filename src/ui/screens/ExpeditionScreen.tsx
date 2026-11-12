@@ -14,6 +14,7 @@ import { GameShell } from '../components/GameShell'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { AstravelPixelCanvas } from '../expedition/AstravelPixelCanvas'
+import { AstravelRouteProgressV0516 } from '../expedition/AstravelRouteProgressV0516'
 import { ExpeditionStatusHud } from '../expedition/ExpeditionStatusHud'
 import { getVisualEquipment } from '../characters/equipmentVisuals'
 import { ExpeditionReportV0516 } from '../quests/ExpeditionReportV0516'
@@ -163,6 +164,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
             {drawer === 'node' && selectedNode && <NodeDrawer node={selectedNode} trail={trail} status={save.world.trailNodeStates[selectedNode.id] ?? 'locked'} save={save} onAction={act} onReturn={leave} />}
             {drawer === 'trail' && <div className="expedition-route-list">
               <p>Caminhe pelo terreno para alcançar o marco disponível. Locais bloqueados não ativam encontros nem recompensas.</p>
+              {isAstravel && <AstravelRouteProgressV0516 save={save} />}
               {clanGateNotice && <p role="note" aria-label="Requisito de Clã para a última instância"><strong>Preparação para o marco 15:</strong> {clanGateNotice}</p>}
               {sections.map((section) => <section key={section.id} className="expedition-route-sector">
                 <h3>{section.name} <small>{section.from}–{section.to}</small></h3>
