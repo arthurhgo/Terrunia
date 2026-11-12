@@ -73,3 +73,45 @@ Arquivo: `src/domain/quests/astravelJourneyFullV0516.test.ts`. Este teste execut
 - A versão até então possui suíte geral CI + testes de navegador Playwright no PR #80.
 - Consultar os checks vinculados ao **commit mais recente** do PR para o estado final; não reutilizar um resultado de commit anterior.
 - Até a aprovação do proprietário: **PR DRAFT, `main` preservada, Vercel de produção preservada**.
+
+
+## Adendo QA — combatentes normais, primeiras cinco batalhas (12/11/2026)
+
+Teste automatizado: `src/domain/quests/astravelNaturalBalanceV0516.test.ts` (determinístico, sem reforçar artificialmente Vida/Ataque/Defesa, com o motor de combate e o dado aleatório real).
+
+### Cenário conservador
+
+- Nível 1, arma vinculada inicial, apenas ataques básicos. Sem descanso, poções, bônus temporários, habilidades ativas, distribuição de atributos ou armadura.
+- Primeiro Fungorro: **24 vitórias em 24 seeds**; média de 1,88 ações do jogador.
+- Capítulo I inteiro sem pausa (16 seeds): **16/16** completaram marco 1, **15/16** marco 2, **2/16** marco 3, **0/16** marco 4 e **0/16** marco 5.
+- Esse cenário com seis pontos iniciais não distribuídos é deliberadamente conservador e **não representa o fluxo obrigatório da criação pela UI**.
+
+### Builds legais com os 6 pontos iniciais distribuídos
+
+| Build | Vida inicial | Ataque | Defesa | Marco 3 vencido | Marco 4 vencido | Marco 5 vencido |
+|---|---:|---:|---:|---:|---:|---:|
+| 4 Vigor, 2 Força | 28 | 7 | 2 | 6/16 | 0/16 | 0/16 |
+| 4 Força, 2 Vigor | 24 | 8 | 1 | 3/16 | 0/16 | 0/16 |
+| 3 Vigor, 3 Força | 26 | 7 | 1 | 2/16 | 0/16 | 0/16 |
+
+Sem poções, descanso ou equipamentos adicionais; um padrão de ataques básicos sem Defesa/Habilidade.
+
+### Preparação existente do tutorial e loot da trilha
+
+Fixture de 4 Vigor/2 Força, arma vinculada inicial e a **Túnica de Linho Gasta equipável** obtida pela lição de Rosetta. A fixture usa `equipBasicArmor`; não altera o cálculo de defesa nem cria um novo item no catálogo. Sem descanso, habilidades ofensivas ou upgrades de forja.
+
+| Preparação | Marco 1 | Marco 2 | Marco 3 | Marco 4 | Marco 5 |
+|---|---:|---:|---:|---:|---:|
+| Túnica, sem consumível | 16/16 | 16/16 | 14/16 | 0/16 | 0/16 |
+| Túnica + Tônico de Campo **obtido após o marco 2** e usado em combate | 16/16 | 16/16 | 16/16 | 2/16 | 0/16 |
+
+O uso do Tônico foi validado através do motor de itens em combate (cura real de 8 PV, com consumo da unidade). Os resultados **não** medem um jogador usando suas melhores habilidades, runas, upgrades de forja, Defesa manual, equipamentos superiores ou retorno à Base. Por isso não são taxa real de vitória nem justificam diminuir silenciosamente o dano de criaturas.
+
+### Achado e encaminhamento
+
+- **Achado QA:** a continuidade do Capítulo I tem alto risco de exigir preparação/cura adicional, especialmente entre os marcos 3 e 5. Isso contradiz a sensação pretendida de avanço fluido **se o jogador não receber orientação clara**.
+- **Correção segura aplicada:** atualizar dicas táticas dos marcos 3 e 4 para indicar a túnica, o tônico obtido na Clareira, a preservação de Vida e o foco no Semeador. Nenhum inimigo, atributo, drop ou requisito foi alterado.
+- **OWNER_DECISION / BALANCE_DRAFT:** testar manualmente uma run completa com tutorial, habilidade ativa, consumíveis, runas, forja e descanso legal. Caso ainda haja interrupções excessivas, avaliar explicitamente pontos de recuperação, suprimentos extras ou ajustes no dano; não presumir valores.
+- Testes de responsividade de Terran já cobrem **1366×768, 1920×1080 e 390×844** em `terran-exploration-contracts.spec.ts`, e a exploração de Astravél cobre **1366×768 e 390×844** em `vertical-slice.spec.ts`. A revisão humana visual continua pendente.
+
+**Release gate:** documento de QA não constitui aprovação do Clã obrigatório no marco 15, nem autoriza merge/deploy de produção.
