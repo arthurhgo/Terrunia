@@ -44,7 +44,7 @@ function battleWithoutStatOverrides(save: GameSave, encounterId: string, seed: s
       .filter(actor => actor.side === 'enemy' && actor.alive && !isProtectedBoss(battle, actor))
       .sort((a, b) => {
         const ai = priority.indexOf(a.definitionId), bi = priority.indexOf(b.definitionId)
-        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999) || a.hp - b.hp
+        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) || a.hp - b.hp
       })
     const target = enemies[0]
     if (!target) throw new Error('No enemy target is available')
