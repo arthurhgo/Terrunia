@@ -1,4 +1,5 @@
 import type { ContentCatalog } from '../../content/catalog'
+import type { TrailNodeDefinition } from '../../content/types'
 import type { GameSave } from '../game/types'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import { ASTRAVEL_QUEST_CHAPTERS_V0516, currentQuestChapterV0516,
@@ -104,7 +105,68 @@ export function getExpeditionReportV0516(save: GameSave, catalog: ContentCatalog
   return { chapter, chapterName: ASTRAVEL_QUEST_CHAPTERS_V0516[chapter].label,
     completedEncounters: cleared.length, totalEncounters: nodes.length,
     discoveries: getRecordedDiscoveriesV0516(save), deliveries, materials,
-    lead: getNarrativeLeadV0516(save, catalog) }
+    lead: getNarrativeLeadV0516(save, catalog),
+    chapterDebrief: getAstravelChapterDebriefV0516(save, catalog) }
+}
+
+/** v0.5.16: one read-only debrief at the most recently cleared chapter
+ * checkpoint. A summary is never an extra quest, automatic reward or popup. */
+export function getAstravelChapterDebriefV0516(save: GameSave, catalog: ContentCatalog) {
+  const chapters = [
+    { chapter: 'roots', checkpoint: 'astravel_boss_preview', questId: 'main_astravel_corruption',
+      contactId: 'npc_lithwynn', label: 'Capítulo III · Raízes da Ruína' },
+    { chapter: 'spores', checkpoint: 'astravel_hunter_refuge_10', questId: 'main_astravel_lost_hunters',
+      contactId: 'npc_vorren', label: 'Capítulo II · Território dos Esporos' },
+    { chapter: 'border', checkpoint: 'astravel_camp_03', questId: 'vs_astravel_first_contact',
+      contactId: 'npc_eldamar', label: 'Capítulo I · Borda Luminescente' },
+  ] as const
+  const latest = chapters.find(entry => save.world.trailNodeStates[entry.checkpoint] === 'completed')
+  if (!latest) return null
+  const quest = catalog.quests[latest.questId]
+  const npc = catalog.npcs[latest.contactId]
+  const status = save.quests[latest.questId]?.status
+  const delivery = status === 'ready_to_turn_in'
+    ? `Entregue “${quest?.title ?? latest.questId}” a ${npc?.name ?? 'o responsável'} para receber a recompensa.`
+    : status === 'completed'
+      ? latest.chapter === 'roots'
+        ? 'A história principal de Astravél foi concluída. Explore contratos opcionais em Terran.'
+        : `Relatório entregue a ${npc?.name ?? 'o responsável'}. Consulte a próxima investigação disponível.`
+      : `Os cinco marcos foram vencidos. Consulte “${quest?.title ?? latest.questId}” no Diário e conclua a entrega com ${npc?.name ?? 'o responsável'}.`
+  return { ...latest, completed: 5, total: 5, nextStep: delivery }
+}
+
+/** Explain the REAL reason for each chapter gate. The official quest engine
+ * still decides whether a battle can start; this selector only explains it. */
+export function getAstravelRouteBlockerV0516(
+  save: GameSave, node: TrailNodeDefinition, catalog: ContentCatalog,
+): string | null {
+  if (node.id === 'astravel_boss_preview' && !save.character.clan.clanId)
+    return getFungalChambersClanNoticeV0516(save) ??
+      'Para entrar nas Câmaras Fúngicas, conquiste sua filiação a um Clã com orientação de Rosetta.'
+  if (!node.requiresQuestId) return null
+  const status = save.quests[node.requiresQuestId]?.status
+  if (status === 'active' || status === 'ready_to_turn_in' || status === 'completed') return null
+  const quest = catalog.quests[node.requiresQuestId]
+  if (!quest) return null
+  const giver = catalog.npcs[quest.giverNpcId]?.name ?? 'o NPC responsável'
+  const chain = ASTRAVEL_NARRATIVE_CHAIN_V0516.find(step => step.nextQuestId === quest.id)
+  if (chain) {
+    const previousStatus = save.quests[chain.completedQuestId]?.status
+    const previousQuest = catalog.quests[chain.completedQuestId]
+    const previousNpc = previousQuest
+      ? catalog.npcs[previousQuest.turnInNpcId]?.name ?? 'o NPC responsável' : 'o NPC responsável'
+    if (previousStatus === 'ready_to_turn_in')
+      return `A missão “${previousQuest?.title ?? chain.completedQuestId}” está pronta. Entregue-a a ${previousNpc} antes de aceitar “${quest.title}” com ${giver}.`
+    if (previousStatus !== 'completed')
+      return `Conclua “${previousQuest?.title ?? chain.completedQuestId}” e entregue-a a ${previousNpc} antes de procurar ${giver}.`
+    if (save.world.trailNodeStates[chain.checkpoint] !== 'completed')
+      return `Conclua ${chain.checkpointLabel} e procure ${giver} para receber “${quest.title}”.`
+  }
+  if (status === 'offered')
+    return `${giver} já apresentou “${quest.title}”. Volte ao diálogo e escolha aceitar a missão.`
+  if (status === 'available' && !isQuestOfferUnlockedV0516(save, quest))
+    return 'A oferta pertence a um capítulo posterior. Conclua o marco anterior e retorne a ' + giver + '.'
+  return `Retorne a Terran e aceite “${quest.title}” com ${giver} antes de avançar.`
 }
 
 /** No timestamps are available per quest action. This diagnostic deliberately
