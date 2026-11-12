@@ -1,0 +1,20 @@
+/* v0.5.16.1: keep exit controls in the fixed right-hand victory tab. */
+.pixel-battle__target--victory{display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:8px 10px}
+.pixel-battle__target--victory>h2{flex:none;margin:0 0 6px;padding-bottom:5px;font-size:clamp(12px,1.15vw,17px);letter-spacing:.05em}
+.pixel-battle__victory-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;flex:none;margin-bottom:6px}
+.pixel-battle__victory-tabs button{min-width:0;min-height:28px;padding:4px;border:1px solid #8e7345;background:#152635;color:#c2b79e;font:700 clamp(9px,.82vw,12px)/1.15 var(--display);cursor:pointer}
+.pixel-battle__victory-tabs button[aria-selected="true"]{border-color:#f2c878;background:#514126;color:#ffe2aa;box-shadow:inset 0 -2px 0 #e7b45e}
+.pixel-battle__victory-tabs button:focus-visible,.pixel-battle__victory-navigation button:focus-visible,.pixel-battle__victory-open-bag:focus-visible{outline:2px solid #ffe4a3;outline-offset:1px}
+.pixel-battle__victory-tabpanel{display:flex;flex-direction:column;flex:1 1 0;min-height:0;gap:5px}
+.pixel-battle__victory-tabpanel--next{overflow:hidden}
+.pixel-battle__victory-reminder{flex:1 1 auto;min-height:0;overflow-y:auto;background:#142831;border:1px solid #536354;padding:5px 7px;color:#cdd9c9;font:12px/1.2 Georgia,serif}
+.pixel-battle__victory-reminder strong{color:#f8dba8;font:700 10px var(--display)}
+.pixel-battle__victory-reminder p{margin:4px 0}
+.pixel-battle__victory-open-bag,.pixel-battle__victory-bag-back{width:100%;min-height:28px;padding:5px;border:1px solid #b7955b;background:#2b3b30;color:#f3deb3;font:700 10px var(--display);cursor:pointer}
+.pixel-battle__victory-navigation{flex:0 0 auto;display:grid;gap:5px;padding-top:5px;border-top:1px solid #716342}
+.pixel-battle__victory-navigation button{min-height:34px;padding:5px 7px;border:2px solid #9c762f;background:linear-gradient(#273e42,#122638);color:#f7e4b8;font:700 clamp(10px,.85vw,13px)/1.15 var(--display);cursor:pointer}
+.pixel-battle__victory-navigation button:first-child{border-color:#d7a85a;background:linear-gradient(#5b4829,#2c2d24)}
+.pixel-battle__victory-tabpanel--bag{overflow-y:auto;overscroll-behavior:contain}
+.pixel-battle__target--victory .pixel-battle__victory-bag{flex:0 0 auto;max-height:none;overflow:visible;padding:0 3px;gap:5px}
+.pixel-battle__victory-collect-note{max-width:95%;color:#d2c4a5;font-size:12px}
+@media(max-width:600px){.pixel-battle__target--victory{overflow:visible}.pixel-battle__victory-tabpanel--next{min-height:180px}.pixel-battle__victory-reminder{overflow:visible}.pixel-battle__victory-tabpanel--bag{max-height:330px}}
