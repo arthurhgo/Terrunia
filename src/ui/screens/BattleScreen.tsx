@@ -23,6 +23,8 @@ import { previewCombatSkill } from '../../domain/combat/skillPreview'
 import type { CombatSkillDefinition } from '../../content/types'
 import { BATTLE_PRESENTATION } from '../battle/presentationTiming'
 import { groupBattleLoot } from '../../domain/inventory/battleLoot'
+import { BattleVictorySummaryV0516 } from '../battle/BattleVictorySummaryV0516'
+import { getCombatQuestProgressV0516 } from '../../domain/quests/questFlowV0516'
 import { canUseVictoryRecovery } from '../../domain/combat/victoryRecoveryV05152'
 import { DOUBLE_ATTACK_V05152 } from '../../content/combatActionRulesV05152'
 import { getEnemyReadouts, getImpactReadout } from '../../domain/combat/combatReadoutsV05153'
@@ -325,6 +327,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const battleBiome = biome === 'cerrado' || biome === 'elduran' ? biome : 'astravel'
   const drops = battle.rewards.lootDefinitionIds
   const lootGroups = groupBattleLoot(drops)
+  const combatQuestUpdates = getCombatQuestProgressV0516(save, content)
   const victoryRecoveryItems = save.inventory.filter(item => canUseVictoryRecovery(save,item.instanceId,content))
 
   const playVisualRoll = (event: BattleDiceEvent) => {
@@ -704,7 +707,17 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
 
           </div>}
         </> : battle.phase === 'Victory' ? <div className="pixel-battle__result">
-          <p>+{battle.rewards.characterXp} XP · +{battle.rewards.gold} Ouro · {drops.length} drops</p>
+          {!battle.claimed && <p>Ao coletar: +{battle.rewards.characterXp} XP · +{battle.rewards.gold} Ouro · {drops.length} drops</p>}
+          {battle.claimed && <BattleVictorySummaryV0516 save={save} />}
+          {battle.claimed && combatQuestUpdates.length > 0 && <div className="pixel-battle__quest-progress" aria-label="Missões atualizadas pela vitória" aria-live="polite">
+            <strong>PROGRESSO DE MISSÕES · {combatQuestUpdates.length}</strong>
+            {combatQuestUpdates.slice(0, 3).map(entry => <div key={entry.questId}>
+              <strong>{entry.ready ? '✓ ' : ''}{entry.title}</strong>
+              <small>{entry.objectives.map(obj => obj.label + ' · ' + obj.current + '/' + obj.required).join(' · ')}</small>
+              {entry.ready && <small>Pronta para entregar ao NPC responsável.</small>}
+            </div>)}
+            {combatQuestUpdates.length > 3 && <small>+{combatQuestUpdates.length - 3} missão(ões) relacionada(s) no Diário.</small>}
+          </div>}
           {!battle.claimed ? <button type="button" onClick={claim}>RECOLHER TODOS OS ESPÓLIOS</button> : <>
             {battle.waveIndex ? <button onClick={nextWave}>PRÓXIMA ONDA · {battle.waveIndex + 1}</button> :
               battle.portalHuntId ? null : <button onClick={() => end(false)}>{battle.clanTrialQuestId || battle.clanBossQuestId ? 'VOLTAR AO SALÃO DOS CLÃS' : 'CONTINUAR EXPEDIÇÃO'}</button>}

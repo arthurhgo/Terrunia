@@ -9,6 +9,7 @@ import { refreshTutorialQuestProgress } from './tutorialProgress'
 import { chooseClanCandidate } from '../progression/clanOrientation'
 import { clanTableQuestId } from '../../content/clanProgressionV05142'
 import { isLegacyClanTrialQuestId } from '../../content/clanTrials'
+import { isQuestOfferUnlockedV0516 } from './questPacingV0516'
 
 export const SLOT_OCCUPYING_QUEST_STATUSES = ['active', 'ready_to_turn_in'] as const
 
@@ -52,6 +53,48 @@ const prerequisitesMet = (save: GameSave, definition: QuestDefinition) =>
 export const refreshQuestAvailability = (save: GameSave, catalog: ContentCatalog, now: string): GameSave => {
   const next = structuredClone(save)
   let changed = false
+  // v0.5.16: reconcile permanent, REAL completed-trail evidence on resume
+  // and old saves. No invented kills, automatic acceptance or reward payouts.
+  const trail = catalog.trails.trail_astravel_entry
+  const cleared = trail?.nodes.filter(node => next.world.trailNodeStates[node.id] === 'completed') ?? []
+  const confirmedKills = new Map<string, number>()
+  for (const node of cleared) {
+    if (node.type !== 'battle' && node.type !== 'boss') continue
+    const encounter = node.encounterId ? catalog.encounters[node.encounterId] : undefined
+    for (const enemyId of encounter?.enemyDefinitionIds ?? []) {
+      confirmedKills.set(enemyId, (confirmedKills.get(enemyId) ?? 0) + 1)
+    }
+  }
+  for (const progress of Object.values(next.quests)) {
+    if (progress.status !== 'active') continue
+    const definition = catalog.quests[progress.questId]
+    if (!definition || !['main', 'secondary'].includes(definition.category)) continue
+    for (const objective of definition.objectives) {
+      const observed = objective.type === 'visit' &&
+        cleared.some(node => node.id === objective.targetId) ? objective.required
+        : objective.type === 'kill' &&
+          (definition.id.startsWith('side_astravel_') ||
+            definition.id.startsWith('side_street_') ||
+            definition.id === 'vs_astravel_first_contact')
+          ? confirmedKills.get(objective.targetId) ?? 0 : 0
+      const prior = progress.objectives[objective.id] ?? 0
+      const reconciled = Math.min(objective.required, Math.max(prior, observed))
+      if (reconciled > prior) {
+        progress.objectives[objective.id] = reconciled
+        next.eventLog.push('QuestEvidenceReconciledV0516:' + definition.id + ':' + objective.targetId)
+        changed = true
+      }
+    }
+    // Delivery contracts use live, unlocked backpack quantities; the inventory
+    // subsystem remains authoritative and can revoke readiness after selling.
+    if (definition.turnInItems?.length) continue
+    if (definition.objectives.every(objective =>
+      (progress.objectives[objective.id] ?? 0) >= objective.required)) {
+      progress.status = 'ready_to_turn_in'
+      next.eventLog.push('QuestReadyReconciledV0516:' + definition.id)
+      changed = true
+    }
+  }
   for (const definition of Object.values(catalog.quests)) {
     const progress = next.quests[definition.id]
     if (!progress || progress.status !== 'locked' || !prerequisitesMet(next, definition)) continue
@@ -85,6 +128,9 @@ export const offerQuest = (
   }
   if (!prerequisitesMet(save, catalog.quests[questId])) {
     return fail('QUEST_PREREQUISITES_NOT_MET', 'Os requisitos desta missão não estão mais válidos.')
+  }
+  if (!isQuestOfferUnlockedV0516(save, catalog.quests[questId])) {
+    return fail('QUEST_CHAPTER_NOT_REACHED', 'A oferta pertence a outro trecho de Astravél. Avance na trilha e retorne ao NPC.')
   }
   if (catalog.quests[questId].category === 'clan') {
     const clan = Object.values(catalog.clans).find((entry) => entry.recruiterNpcId === catalog.quests[questId].giverNpcId)
@@ -179,7 +225,7 @@ export const acceptQuest = (
       reconciled = applyQuestEvent(reconciled, { type: 'visit', targetId: objective.targetId, amount: objective.required }, catalog, now)
     }
   }
-  return ok(refreshTutorialQuestProgress(refreshDeliveryQuestProgress(reconciled, catalog, now), catalog, now))
+  return ok(refreshTutorialQuestProgress(refreshDeliveryQuestProgress(refreshQuestAvailability(reconciled, catalog, now), catalog, now), catalog, now))
 }
 
 /** Upgrade old saves with multiple flags without touching objectives, rewards or equipment. */

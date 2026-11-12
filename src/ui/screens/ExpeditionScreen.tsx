@@ -14,8 +14,11 @@ import { GameShell } from '../components/GameShell'
 import { InventoryPanel } from '../dashboard/InventoryPanel'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { AstravelPixelCanvas } from '../expedition/AstravelPixelCanvas'
+import { AstravelRouteProgressV0516 } from '../expedition/AstravelRouteProgressV0516'
 import { ExpeditionStatusHud } from '../expedition/ExpeditionStatusHud'
 import { getVisualEquipment } from '../characters/equipmentVisuals'
+import { ExpeditionReportV0516 } from '../quests/ExpeditionReportV0516'
+import { ASTRAVEL_DISCOVERIES_V0516, getChapterContinuationV0516, getFungalChambersClanNoticeV0516, getAstravelRouteBlockerV0516 } from '../../domain/quests/questFlowV0516'
 import './gameplayV057.css'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
@@ -29,6 +32,11 @@ function NodeDrawer({ node, trail, status, save, onAction, onReturn }: {
   const gate = status === 'completed' ? { ok: true as const } : checkTrailQuestGate(save, node, content)
   const encounter = node.encounterId ? content.encounters[node.encounterId] : null
   const drops = encounter ? [...new Set(encounter.rewards.lootDefinitionIds)].map((id) => content.items[id]) : []
+  const clanBlocked = trail.regionId === 'astravel' && node.type === 'boss' && !save.character.clan.clanId
+  const blocker = trail.regionId === 'astravel' && (!gate.ok || clanBlocked)
+    ? getAstravelRouteBlockerV0516(save, node, content) : null
+  const recorded = trail.regionId === 'astravel' && status === 'completed'
+    ? ASTRAVEL_DISCOVERIES_V0516.find(entry => entry.nodeId === node.id) : null
   return <article className="expedition-node-detail">
     <span className="eyebrow">ENCONTRO {node.index}/{trail.nodes.length - 1} · {(trail.regionId === 'astravel' ? getAstravelSector(node.index).name : trail.name).toUpperCase()}</span>
     <h3>{node.label}</h3><p>{node.description}</p>
@@ -44,12 +52,17 @@ function NodeDrawer({ node, trail, status, save, onAction, onReturn }: {
         {drops.map((item) => <span key={item.id}><AssetImage assetId={item.iconAssetId} />{item.name}</span>)}
       </div>
     </>}
-    {!gate.ok && <div className="expedition-quest-gate"><p>{gate.message}</p><button type="button" onClick={onReturn}>Retornar a Terran</button></div>}
-    {actionable && gate.ok && node.type !== 'entry' && <button type="button" onClick={onAction} className="expedition-node-detail__action">
+    {(!gate.ok || clanBlocked) && <div className="expedition-quest-gate" role="note" aria-label="Requisito para prosseguir"><p>{blocker ?? (!gate.ok ? gate.message : 'Conquiste sua filiação a um Clã antes de entrar nas Câmaras Fúngicas.')}</p><button type="button" onClick={onReturn}>Retornar a Terran</button></div>}
+    {actionable && gate.ok && !clanBlocked && node.type !== 'entry' && <button type="button" onClick={onAction} className="expedition-node-detail__action">
       {node.type === 'battle' ? <Swords size={17} /> : <Compass size={17} />}
       {node.type === 'boss' ? 'Adentrar Câmaras Fúngicas' : node.actionLabel ?? 'Explorar'}
     </button>}
     {status === 'completed' && <span className="expedition-node-detail__done">✓ Registro preservado na campanha</span>}
+    {recorded && <details className="expedition-report-v0516 expedition-record-v0516" aria-label={'Investigar vestígio de ' + node.label}>
+      <summary>Investigar vestígio · {recorded.title}</summary>
+      <p>{recorded.description}</p>
+      <small>Este registro pertence ao marco já vencido. Não cria uma nova missão, combate ou recompensa.</small>
+    </details>}
   </article>
 }
 
@@ -83,6 +96,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const quests = getQuestJournalEntries(save, content).filter(({ progress }) => progress.status !== 'completed')
   const sector = isAstravel ? getAstravelSector(activeNode?.index ?? 15) : null
   const activeGate = activeNode ? checkTrailQuestGate(save, activeNode, content) : null
+  const clanGateNotice = isAstravel ? getFungalChambersClanNoticeV0516(save) : null
   const stats = deriveCharacterStats(save, content)
   const fieldSupplies = save.inventory.filter((entry) => isFieldConsumable(save, entry.instanceId, content))
 
@@ -136,7 +150,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
           </button>
           <div className="terran-game__quest"><Trees size={17} />
             <span>{activeNode ? `Siga até: ${activeNode.label}` : 'Expedição concluída · retorne a Terran'}
-              <small>{activeGate && !activeGate.ok ? activeGate.message : 'WASD / setas / toque para caminhar · E para investigar · combate por turnos'}</small></span>
+              <small>{activeGate && !activeGate.ok ? activeGate.message : getChapterContinuationV0516(save) ?? 'WASD / setas / toque para caminhar · E para investigar · combate por turnos'}</small></span>
           </div>
         </section>
         {drawer && <>
@@ -150,6 +164,8 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
             {drawer === 'node' && selectedNode && <NodeDrawer node={selectedNode} trail={trail} status={save.world.trailNodeStates[selectedNode.id] ?? 'locked'} save={save} onAction={act} onReturn={leave} />}
             {drawer === 'trail' && <div className="expedition-route-list">
               <p>Caminhe pelo terreno para alcançar o marco disponível. Locais bloqueados não ativam encontros nem recompensas.</p>
+              {isAstravel && <AstravelRouteProgressV0516 save={save} />}
+              {clanGateNotice && <p role="note" aria-label="Requisito de Clã para a última instância"><strong>Preparação para o marco 15:</strong> {clanGateNotice}</p>}
               {sections.map((section) => <section key={section.id} className="expedition-route-sector">
                 <h3>{section.name} <small>{section.from}–{section.to}</small></h3>
                 {trail.nodes.filter((node) => node.sectorId === section.id).map((node) => <button type="button" key={node.id}
@@ -197,6 +213,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
               </section>
             </>}
             {drawer === 'quests' && <div className="expedition-route-list">
+              {isAstravel && <ExpeditionReportV0516 save={save} />}
               {quests.length === 0 && <p>Converse com os responsáveis em Terran para aceitar a próxima missão.</p>}
               {quests.map(({ definition, progress }) => <section key={definition.id} className="expedition-route-sector">
                 <h3>{definition.title}</h3><p>{definition.summary}</p>

@@ -16,6 +16,11 @@ const ready = () => {
   // This fixture represents a veteran who has already used Daeryn's key.
   save.world.worldFlags.push('player_home_door_opened', 'player_home_key_used')
   save.eventLog.push('DaerynKeyUsedOnHomeDoor')
+  // Veteran fixture has completed the real chapter 5, 10 and 15 gates.
+  // Contract eligibility remains conditional on individual prerequisites.
+  save.world.trailNodeStates.astravel_camp_03 = 'completed'
+  save.world.trailNodeStates.astravel_hunter_refuge_10 = 'completed'
+  save.world.trailNodeStates.astravel_boss_preview = 'completed'
   return refreshQuestAvailability(save, content, instant)
 }
 const add = (save: GameSave, id: string, quantity: number, favorite = false) => save.inventory.push({

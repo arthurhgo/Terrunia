@@ -307,3 +307,28 @@
   outline:1px solid var(--equipped-rarity,#97784b);
   box-shadow:inset 0 0 10px color-mix(in srgb,var(--equipped-rarity,#97784b) 12%,transparent);
 }
+
+/* v0.5.16: one clear next action without extra modals or fake rewards. */
+.terran-quick-journal__focus {
+  display: grid; gap: 5px; min-width: 0; margin-bottom: 9px; padding: 9px 10px;
+  border: 1px solid #927c53; border-left: 3px solid #e0bb70;
+  background: linear-gradient(135deg, #26332d, #12272f);
+}
+.terran-quick-journal__focus-label {
+  color: #d8b879; font: 700 .56rem/1.2 var(--display); letter-spacing: .07em;
+}
+.terran-quick-journal__focus > strong {
+  color: #ffe0a3; font: 700 .71rem/1.25 var(--display); overflow-wrap: anywhere;
+}
+.terran-quick-journal__focus > p {
+  margin: 0; color: #c9d9d2; font: .68rem/1.4 Georgia,serif; overflow-wrap: anywhere;
+}
+.terran-quick-journal__focus > button {
+  justify-self: start; padding: 4px 7px; border: 1px solid #a58d5b;
+  background: #243f3c; color: #f4dbac; cursor: pointer; font: 700 .6rem/1.25 var(--display);
+}
+.terran-quick-journal__focus > button:is(:hover,:focus-visible) {
+  border-color: #eed096; outline-offset: 2px;
+}
+
+.terran-quick-journal__guidance{margin-bottom:9px;border:1px solid #64706c;background:#12252b}.terran-quick-journal__guidance>summary{padding:9px;color:#e9ce9b;font:700 .65rem var(--display);cursor:pointer}.terran-quick-journal__guidance>.terran-quick-journal__intro{margin:7px}

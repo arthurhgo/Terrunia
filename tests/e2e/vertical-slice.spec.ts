@@ -184,7 +184,9 @@ test('o próximo setor exige missão aceita e permite retornar sem iniciar comba
   })
   await page.getByRole('button', { name: /Aproximar-se de Rastros dos Caçadores/ }).click()
   await expect(page.getByRole('complementary', { name: 'Painel lateral: Rastros dos Caçadores' })).toBeVisible({ timeout: 20_000 })
-  await expect(page.getByText(/aceite “Caçadores Perdidos” com Vorren/).first()).toBeVisible()
+  // The gate explains the unmet predecessor rather than directing the player
+  // to Vorren prematurely while O Primeiro Rastro is still active.
+  await expect(page.getByText(/Conclua “O Primeiro Rastro” e entregue-a a Eldamar/).first()).toBeVisible()
   await expect(page.getByRole('region', { name: 'Viewport unificada de combate' })).toHaveCount(0)
   await page.getByRole('button', { name: 'Fechar painel', exact: true }).click()
   await page.getByRole('button', { name: 'Retornar a Terran pelo Portal', exact: true }).click()

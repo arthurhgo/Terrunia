@@ -17,6 +17,8 @@ describe('presença condicional de NPCs de Terran', () => {
     expect(getNpcQuestMarker(save, arlen)).toBeNull()
     expect(getNpcQuestMarker(save, eldamar)).toBe('!')
     save.quests.side_street_arlen.status = 'available'
+    expect(getNpcQuestMarker(save, arlen)).toBeNull() // new offer awaits chapter II
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
     expect(getNpcQuestMarker(save, arlen)).toBe('◇')
     save.quests.side_street_arlen.status = 'active'
     expect(getNpcQuestMarker(save, arlen)).toBe('◇')

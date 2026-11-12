@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="96" viewBox="0 0 32 48" shape-rendering="crispEdges" role="img" aria-label="Torvan, Armeiro de Terran">
+
+<ellipse cx="16" cy="46" rx="11" ry="2" fill="#0A0D16" opacity=".65"/>
+<path d="M10 33h12v9H10z" fill="#273543" stroke="#111724" stroke-width="1"/>
+<path d="M10 41h5v4h-6v-2zm8 0h5v4h-6v-2z" fill="#302B2D" stroke="#111724"/>
+<path d="M8 19h16l2 12-3 8H9L6 31z" fill="#435465" stroke="#111724"/>
+<path d="M8 21h-3v11h4zm17 0h3v11h-4z" fill="#273543" stroke="#111724"/>
+<path d="M13 6h8l4 5-2 10H10L8 13z" fill="#5C4032" stroke="#111724"/>
+<path d="M12 13h11v8H12z" fill="#DCA984" stroke="#111724"/>
+<path d="M12 19h11v2H12z" fill="#5C4032" opacity=".33"/>
+<rect x="14" y="16" width="2" height="1" fill="#101520"/><rect x="20" y="16" width="2" height="1" fill="#101520"/>
+<path d="M8 22h16v3H8zM11 29h12v2H11z" fill="#CDA55B" opacity=".9"/>
+<path d="M9 25h3v12H9zm13 0h2v12h-2z" fill="#273543"/>
+<path d="M13 32h7v5h-7z" fill="#CDA55B" stroke="#111724"/>
+<path d="M26 5h2v24h-2z" fill="#CDD3D9"/><path d="M24 23h6v2h-6z" fill="#D4A95D"/><rect x="26" y="25" width="2" height="11" fill="#735037"/><path d="M12 8h8v4h-8z" fill="#72503C"/>
+
+</svg>

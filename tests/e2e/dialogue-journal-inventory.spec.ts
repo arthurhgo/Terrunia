@@ -27,6 +27,8 @@ test('conversas interativas, aceite cinza, diário em linhas e mochila antes dos
     // navigation, filtering and inventory ordering are exercised through the UI.
     for (const id of ['vs_astravel_first_contact','main_terran_first_home','main_vorren_bestiary']) save.quests[id].status = 'completed'
     for (const id of ['main_astravel_lost_hunters','side_street_liora','delivery_neris_stock']) save.quests[id].status = 'active'
+    // Arlen becomes an actionable NPC only after node 5 in v0.5.16.
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
     save.settings.reducedMotion = true
     save.world.currentLocationId = 'location_terran_portal_plaza'
     save.inventory.push({ instanceId: 'ui-sample', definitionId: 'drop_ruin_shard', quantity: 1, rarity: 'rare', locked: false, favorite: false, acquiredAt: save.updatedAt })
@@ -64,7 +66,7 @@ test('conversas interativas, aceite cinza, diário em linhas e mochila antes dos
 
   await arlen.getByRole('button', { name: 'Aceitar missão', exact: true }).click()
   const marker = page.locator('[aria-label="Conversar com Arlen"] .npc-quest-marker')
-  // When another Arlen offer remains available, the marker correctly highlights the next offer.
+  // Arlen's material contract now becomes available in chapter II and takes marker precedence.
   expect(await page.evaluate(async () => {
     const { useGameStore } = await import('/src/state/gameStore.ts')
     return useGameStore.getState().save!.quests.side_street_arlen.status

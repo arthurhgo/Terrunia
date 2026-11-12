@@ -8,6 +8,7 @@ import { getNextCutscene } from '../../domain/terran/cutscenes'
 import { getTerranDialogue } from '../../domain/terran/cityDialogue'
 import { getVisibleNpcsInLocation } from '../../domain/terran/cityNpcs'
 import { getTerranQuestDestination } from '../../domain/terran/cityEngine'
+import { getNextStoryNpcDestinationV0516 } from '../../domain/quests/questFlowV0516'
 import type { GameSave } from '../../domain/game/types'
 import { useGameStore } from '../../state/gameStore'
 import { ClanHallPanel } from '../dashboard/ClanHallPanel'
@@ -162,6 +163,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
   const scene = getNextCutscene(save)
   const cityCast = getCityCast(save)
   const guidance = getTerranQuestDestination(save, content)
+  const chapterStoryDestination = getNextStoryNpcDestinationV0516(save, content)
   const trackedRoute = getTrackedQuestRoute(save, content) ?? getReadyDeliveryQuestRoute(save, content)
   const location = content.terranLocations[locationId]
   const gameEnabled = !scene && !eldamarOpen && !rosettaOpen && !dialogue && !inspected && !cityLandmark && !baseDoorPrompt && !homeMenuOpen && !restPromptOpen && !activeQuestObjectId && !missionNpc && !localQuestId && !['records', 'market', 'forge'].includes(drawer ?? '')
@@ -363,7 +365,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
               : <PixelCityCanvas portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save, true)} guideHasOffers={getNpcActionableQuests(save, 'npc_rosetta', content).some((quest) => ['available', 'offered'].includes(save.quests[quest.id]?.status ?? 'locked'))} reducedMotion={save.settings.reducedMotion}
                   currentLocationId={save.world.currentLocationId} spawnPoint={streetSpawn}
                   homeUnlocked={isPlayerHomeDoorOpen(save)} onEnterHome={enterHome}
-                  enabled={gameEnabled} objectiveId={guidance?.locationId ?? null}
+                  enabled={gameEnabled} objectiveId={guidance?.locationId ?? chapterStoryDestination ?? null}
                   actors={cityCast} onEnter={openLocation} onTalk={(id, presence) => talk(presence, id)}
                   questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
                   showTrackedQuestRoute={Boolean(trackedRoute)} trackedQuestRoute={trackedRoute}

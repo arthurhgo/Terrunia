@@ -23,7 +23,7 @@ test('Mercado v0.5.15.3: Neris só vende consumíveis, 3 NPCs vendem peças ilus
   useGameStore.setState({save})
  })
  await page.getByRole('button',{name:'Ir para Mercado',exact:true}).click()
- const marketNpcNames=['Neris','Armeiro de Terran','Armadureiro de Terran','Artesão de Acessórios'] as const
+ const marketNpcNames=['Neris','Torvan','Brenna','Ilyra'] as const
  for(const [index,name] of marketNpcNames.entries()){
   const npc=page.getByRole('button',{name:'Falar com '+name+' dentro do local',exact:true})
   await expect(npc).toBeVisible()

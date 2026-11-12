@@ -18,7 +18,7 @@ import { AssetImage } from '../components/AssetImage'
 import { GameButton } from '../components/GameButton'
 import { Modal } from '../components/Modal'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
-import { getItemDestinations, getPendingItemDeliveries } from '../../domain/inventory/itemPurpose'
+import { getItemDestinations, getPendingItemDeliveries, getQuestMaterialCommitmentV0516, getMaterialTradeImpactV0516 } from '../../domain/inventory/itemPurpose'
 
 type Action = 'convert' | 'sell' | null
 
@@ -68,6 +68,10 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
     return definition?.sellable && !definition.questLocked && !instance.locked && !instance.favorite && instance.instanceId !== save.character.basicArmorInstanceId
   })
   const selectedDeliveryNeeds = selectedItems.flatMap((instance) => getPendingItemDeliveries(instance.definitionId, save, content))
+  const selectedMaterialCommitment = selectedItems.length === 1
+    ? getQuestMaterialCommitmentV0516(selectedItems[0].definitionId, save, content) : null
+  const tradeImpact = selectedItems.length===1
+    ? getMaterialTradeImpactV0516(selectedItems[0].definitionId,selectedItems[0].quantity,save,content):null
   const selectedForBoundProgression = selectedItems.some(
     (instance) => {
       const definition = content.items[instance.definitionId]
@@ -137,6 +141,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
             const definition = content.items[instance.definitionId]
             if (!definition) return null
             const isSelected = selected === instance.instanceId
+            const missionMaterial = getQuestMaterialCommitmentV0516(instance.definitionId, save, content)
             return (
               <button
                 type="button"
@@ -155,6 +160,7 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
                 <span>{definition.name}</span>
                 {instance.quantity > 1 && <strong>{instance.quantity}</strong>}
                 {definition.questLocked && <span className="inventory-slot__quest-mark" aria-label="Protegido: missão">Q</span>}
+                {missionMaterial.reserved > 0 && <span className="inventory-slot__quest-mark" aria-label={missionMaterial.reserved + ' unidades reservadas para entregas aceitas'} title={'Reservadas para missões aceitas: ' + missionMaterial.reserved}>M</span>}
                 {instance.favorite && <Star size={12} className="favorite-mark" fill="currentColor" />}
                 {Boolean(instance.refinementLevel) && <b className="refinement-mark">{gearOfferById[instance.definitionId] ? `G${getGearGrade(instance.refinementLevel)}` : `+${instance.refinementLevel}`}</b>}
               </button>
@@ -271,7 +277,12 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
         </div>
         {selectedDeliveryNeeds.length > 0 && <p className="modal-warning" role="alert">
           Atenção: este material é necessário para entrega em {selectedDeliveryNeeds.map((need) => `${need.title} (×${need.quantity})`).join(' · ')}.
+          {selectedMaterialCommitment && <strong> Reservado para missões: {selectedMaterialCommitment.reserved}/{selectedMaterialCommitment.needed} · Disponível: {selectedMaterialCommitment.held}.</strong>}
           A venda ou conversão pode impedir a conclusão até você obtê-lo novamente. Favorite para protegê-lo.
+        </p>}
+        {tradeImpact && tradeImpact.needed>0 && <p className="modal-warning" role="note">
+          Após venda/conversão: {tradeImpact.heldAfter} utilizáveis; {tradeImpact.missingAfter} faltantes.
+          {tradeImpact.deliveries.map(need=><span key={need.questId}> Entregar a {need.npcName}: {need.title} ×{need.quantity}.</span>)}
         </p>}
         <p className="modal-warning">Esta ação remove o drop do inventário. Itens de missão e favoritos são protegidos pelo domínio.</p>
       </Modal>
@@ -305,8 +316,9 @@ export function InventoryPanel({ save, tradeMode = 'browse', compact = false }: 
             <span>Refinamento <b>+{item.refinementLevel ?? 0}/{armor.maxRefinement}</b></span>
           </div>}
           <p>{definition.description}</p>
+          {getQuestMaterialCommitmentV0516(definition.id, save, content).needed > 0 && <small>Comprometido com entregas: {getQuestMaterialCommitmentV0516(definition.id, save, content).reserved}/{getQuestMaterialCommitmentV0516(definition.id, save, content).needed} · Faltam {getQuestMaterialCommitmentV0516(definition.id, save, content).missing}. Venda ou conversão fica sob sua decisão.</small>}
           {getPendingItemDeliveries(definition.id, save, content).map((need) =>
-            <small key={need.questId}>Missão ativa: {need.title} · Entrega de {need.quantity} unidade(s)</small>)}
+            <small key={need.questId}>Missão ativa: {need.title} · Entregar {need.quantity} a {content.npcs[content.quests[need.questId]?.turnInNpcId]?.name ?? 'NPC responsável'}</small>)}
           {getItemDestinations(definition.id, content).map((use) => <small key={use}>• {use}</small>)}
           <small>{item.instanceId === save.character.basicArmorInstanceId ? 'EQUIPADO' :
             definition.basicArmor && save.character.bondedEquipment.armor ? 'BLOQUEADO: ARMADURA VINCULADA' :

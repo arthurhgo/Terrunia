@@ -715,34 +715,40 @@
   },
   {
     "npcId": "npc_terran_weaponsmith",
-    "name": "Armeiro de Terran",
+    "name": "Torvan",
     "assetId": "npc.terran-weaponsmith.portrait",
     "path": "/assets/npcs/market_weaponsmith_portrait.png",
     "design": [
       "market",
-      "functional_draft",
+      "steel",
+      "gold",
+      "sword",
       "weaponsmith"
     ]
   },
   {
     "npcId": "npc_terran_armorer",
-    "name": "Armadureiro de Terran",
+    "name": "Brenna",
     "assetId": "npc.terran-armorer.portrait",
     "path": "/assets/npcs/market_armorer_portrait.png",
     "design": [
       "market",
-      "functional_draft",
+      "leather",
+      "bronze",
+      "shield",
       "armorer"
     ]
   },
   {
     "npcId": "npc_terran_accessory_artisan",
-    "name": "Artesão de Acessórios",
+    "name": "Ilyra",
     "assetId": "npc.terran-accessory-artisan.portrait",
     "path": "/assets/npcs/market_accessory_artisan_portrait.png",
     "design": [
       "market",
-      "functional_draft",
+      "violet",
+      "teal",
+      "gem",
       "accessory_artisan"
     ]
   }

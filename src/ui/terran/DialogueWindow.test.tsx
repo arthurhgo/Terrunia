@@ -44,6 +44,7 @@ describe('janela única de conversa', () => {
     const save = createNewSave('quest-direct', 'Thaur', 'character.terririan.default', content)
     save.quests.vs_astravel_first_contact.status = 'completed'
     save.quests.side_npc_eldamar.status = 'available'
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
     useGameStore.setState({ status: 'ready', save, ownerId: save.ownerId, syncMode: 'local', syncStatus: 'saved' })
     const onClose = vi.fn()
     render(<MemoryRouter><QuestNpcPanel save={save} questId="side_npc_eldamar" onClose={onClose} /></MemoryRouter>)
@@ -62,7 +63,11 @@ describe('janela única de conversa', () => {
     expect(next.quests.side_npc_eldamar).toMatchObject({ status: 'active', tracked: true })
     expect(next.eventLog).toContain('QuestOffered:side_npc_eldamar')
     expect(next.eventLog).toContain('QuestAccepted:side_npc_eldamar')
-    expect(next.revision).toBe(save.revision + 2)
+    // Offering and accepting each increment revision; reconciled historical evidence
+    // may increment again without changing the quest acceptance or paying rewards.
+    expect(next.revision).toBeGreaterThanOrEqual(save.revision + 2)
+    expect(next.wallet).toEqual(save.wallet)
+    expect(next.essence).toEqual(save.essence)
     expect(onClose).not.toHaveBeenCalled()
   })
 

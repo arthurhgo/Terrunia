@@ -6,6 +6,7 @@ import type { TerranLocationDefinition } from '../../content/types'
 import { getPresencePortrait } from '../../content/npcVisuals'
 import { getTerranDialogue } from '../../domain/terran/cityDialogue'
 import { getNpcActionableQuests, getQuestStatusLabel } from '../../domain/quests/questSelectors'
+import { ASTRAVEL_NARRATIVE_CHAIN_V0516, getNarrativeLeadV0516, getNpcForeshadowV0516 } from '../../domain/quests/questFlowV0516'
 import type { GameSave } from '../../domain/game/types'
 import { npcQuestActiveBriefs, npcQuestBriefs } from '../../content/npcConversations'
 import { AssetImage } from '../components/AssetImage'
@@ -33,7 +34,14 @@ export function NpcMissionHub({ save, presence, initialQuestId, onClose, onServi
   useEffect(() => {
     const oldStatus = previousStatuses.current[topic]
     const newStatus = save.quests[topic]?.status
-    if ((oldStatus === 'available' || oldStatus === 'offered') && newStatus === 'active') {
+    if (oldStatus === 'ready_to_turn_in' && newStatus === 'completed') {
+      // Independent hand-ins remain explicit and validated by the quest engine.
+      const next = quests.find(quest => quest.id !== topic &&
+        save.quests[quest.id]?.status === 'ready_to_turn_in')
+        ?? quests.find(quest => quest.id !== topic &&
+          ['available', 'offered'].includes(save.quests[quest.id]?.status ?? ''))
+      setTopic(next?.id ?? 'talk')
+    } else if ((oldStatus === 'available' || oldStatus === 'offered') && newStatus === 'active') {
       const next = quests.find((quest) => ['available', 'offered'].includes(save.quests[quest.id]?.status ?? ''))
       if (next) setTopic(next.id)
     }
@@ -46,6 +54,11 @@ export function NpcMissionHub({ save, presence, initialQuestId, onClose, onServi
     save.character.clan.candidateClanId === leaderClan.id)
   const portrait = getPresencePortrait(presence)
   const script = getTerranDialogue(save, presence)
+  const upcoming = presence.npcId ? getNpcForeshadowV0516(save, presence.npcId, content) : null
+  const narrative = getNarrativeLeadV0516(save, content)
+  const handInNarrator = ASTRAVEL_NARRATIVE_CHAIN_V0516.some(link =>
+    link.completedQuestId === (narrative?.completedQuestId ?? '') &&
+    content.quests[link.completedQuestId]?.turnInNpcId === presence.npcId)
   const progress = selected ? save.quests[selected.id] : null
   const message = selected ? progress?.status === 'active'
     ? npcQuestActiveBriefs[selected.id] ?? selected.summary
@@ -83,6 +96,12 @@ export function NpcMissionHub({ save, presence, initialQuestId, onClose, onServi
           ? 'Continue no Portal de Astravél. A décima quarta onda é o requisito, não o nível do personagem.'
           : 'A onda 14 foi superada. Aceite O Coração de Granito comigo para receber o transporte à arena.'}</small>
       </section>}
+      {upcoming && <p className="npc-mission-hub__talk-note" role="note" aria-label="Investigação futura">
+        {upcoming.message}
+      </p>}
+      {handInNarrator && narrative && <p className="npc-mission-hub__talk-note" role="note" aria-label="Próximo passo da história">
+        {narrative.message}
+      </p>}
       {talking && <p className="npc-mission-hub__talk-note">Escolha respostas na conversa acima. Suas missões e recompensas continuam preservadas.</p>}
     </section>
   </DialogueWindow>

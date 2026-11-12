@@ -188,3 +188,11 @@
 .pixel-battle__damage-number[data-feedback="SEM DANO"]{color:#c3dfed;text-shadow:0 0 8px #78c1e1,2px 2px #000}
 @media(max-width:560px){.pixel-battle__threat-badge{font-size:7px;white-space:normal}}
 @media(prefers-reduced-motion:reduce){.pixel-battle__damage-number{animation:none!important}}
+
+/* v0.5.16 — actual, claimed quest progress; no early animation during dice focus. */
+.pixel-battle__quest-progress{display:grid;gap:5px;margin:8px 0;padding:8px;border:1px solid #7b9476;background:#182b2a;color:#e9e2c8;text-align:left;font:600 11px/1.3 var(--display,serif)}
+.pixel-battle__quest-progress>strong{color:#cfb780;letter-spacing:.045em}
+.pixel-battle__quest-progress>div{display:grid;gap:3px;padding:5px;border-left:2px solid #79b59c;background:#1b3331}
+.pixel-battle__quest-progress small{font:400 10px/1.35 Georgia,serif;color:#b7dac8;overflow-wrap:anywhere}
+
+.battle-victory-summary-v0516{display:grid;gap:7px;padding:8px;background:#19322e;border:1px solid #aa915b}.battle-victory-summary-v0516 dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0;gap:6px}.battle-victory-summary-v0516 dl>div{display:grid;padding:5px;background:#243a34}.battle-victory-summary-v0516 dd{margin:0;color:#efcf91;font-weight:700}.battle-victory-summary-v0516 small{color:#b8c9bc}

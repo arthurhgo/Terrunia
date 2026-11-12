@@ -2,6 +2,7 @@ import type { ContentCatalog } from '../../content/catalog'
 import { isLegacyClanTrialQuestId } from '../../content/clanTrials'
 import type { QuestCategory, QuestDefinition } from '../../content/types'
 import type { GameSave, QuestProgress, QuestStatus } from '../game/types'
+import { isQuestOfferUnlockedV0516 } from './questPacingV0516'
 
 export type QuestJournalEntry = { definition: QuestDefinition; progress: QuestProgress }
 
@@ -51,7 +52,8 @@ export const getPrioritizedQuestEntries = (save: GameSave, catalog: ContentCatal
   }
   return Object.values(catalog.quests).flatMap((definition) => {
     const progress = save.quests[definition.id]
-    return progress && statusWeight[progress.status] !== undefined
+    return progress && statusWeight[progress.status] !== undefined &&
+      isQuestOfferUnlockedV0516(save, definition)
       ? [{ definition: resolveQuestDefinition(save, definition), progress }]
       : []
   }).sort((a, b) =>
@@ -80,6 +82,7 @@ export type NpcQuestMarker = 'available' | 'turnIn' | null
 export const getNpcActionableQuests = (save: GameSave, npcId: string, catalog: ContentCatalog) =>
   Object.values(catalog.quests).filter((quest) => {
     const status = save.quests[quest.id]?.status ?? 'locked'
+    if (!isQuestOfferUnlockedV0516(save, quest)) return false
     if (isLegacyClanTrialQuestId(quest.id) && ['available','offered'].includes(status)) return false
     if (quest.category === 'clan' && save.character.clan.candidateClanId) {
       const candidate = catalog.clans[save.character.clan.candidateClanId]
@@ -100,6 +103,7 @@ export const getNpcQuestCounts = (save: GameSave, npcId: string, catalog: Conten
   const totals = { available: 0, active: 0, ready: 0 }
   for (const definition of Object.values(catalog.quests)) {
     const status = save.quests[definition.id]?.status
+    if (!isQuestOfferUnlockedV0516(save, definition)) continue
     if (isLegacyClanTrialQuestId(definition.id) && ['available','offered'].includes(status ?? '')) continue
     if (definition.giverNpcId === npcId && (status === 'available' || status === 'offered')) totals.available += 1
     if (definition.giverNpcId === npcId && status === 'active') totals.active += 1
@@ -113,6 +117,7 @@ export const getNpcQuestBadgeCounts = (save: GameSave, npcId: string, catalog: C
   const counts = { main: 0, secondary: 0, active: 0, ready: 0 }
   for (const quest of Object.values(catalog.quests)) {
     const status = save.quests[quest.id]?.status
+    if (!isQuestOfferUnlockedV0516(save, quest)) continue
     if (isLegacyClanTrialQuestId(quest.id) && ['available','offered'].includes(status ?? '')) continue
     if (quest.giverNpcId === npcId && (status === 'available' || status === 'offered')) {
       if (quest.category === 'secondary' || quest.category === 'bounty') counts.secondary += 1
@@ -144,6 +149,7 @@ export const getNpcQuestMarker = (save: GameSave, npcId: string, catalog: Conten
   }
   for (const definition of Object.values(catalog.quests)) {
     const status = save.quests[definition.id]?.status
+    if (!isQuestOfferUnlockedV0516(save, definition)) continue
     if (isLegacyClanTrialQuestId(definition.id) && ['available','offered'].includes(status ?? '')) continue
     if (definition.giverNpcId === npcId && status && ['available', 'offered'].includes(status)) return 'available'
   }

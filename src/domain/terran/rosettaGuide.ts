@@ -3,6 +3,7 @@ import type { QuestDefinition } from '../../content/types'
 import type { GameSave } from '../game/types'
 import { getActiveQuestCount } from '../quests/questEngine'
 import { getPrioritizedQuestEntries } from '../quests/questSelectors'
+import { isQuestOfferUnlockedV0516 } from '../quests/questPacingV0516'
 import { streetNpcPlacements } from '../../content/streetNpcs'
 
 export type RosettaQuestHint = {
@@ -45,6 +46,7 @@ export function getRosettaQuestRoutes(save: GameSave, catalog: ContentCatalog): 
     const status = save.quests[quest.id]?.status
     // Opportunities only: accepted missions use the journal's own tracked path.
     if (status !== 'available' && status !== 'offered') continue
+    if (!isQuestOfferUnlockedV0516(save, quest)) continue
     const npcId = quest.giverNpcId
     if (npcId === 'npc_rosetta') continue // Rosetta is the guide and the path origin.
     const locationId = getRosettaNpcLocation(npcId, catalog)

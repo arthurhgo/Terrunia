@@ -131,12 +131,12 @@ export const questDefinitions = [
   },
   {
     id: 'main_astravel_corruption', title: 'A Raiz da Corrupção',
-    summary: 'Lithwynn liga os vestígios ao núcleo da Ruína. Vença a Vigília, abra o Limiar e derrote o Colosso Micélio nas Câmaras Fúngicas; depois retorne com o relato.',
+    summary: 'Lithwynn liga os vestígios ao núcleo da Ruína. Vença a Vigília, abra o Limiar, atravesse as Câmaras Fúngicas e derrote a Sentinela Corrompida no núcleo. Depois, retorne com o relato.',
     giverNpcId: 'npc_lithwynn', turnInNpcId: 'npc_lithwynn', category: 'main',
     objectives: [
       { id: 'read_ruin', type: 'visit', targetId: 'astravel_ruin_watch_11', required: 1, label: 'Vencer a Vigília e examinar as runas no marco 11' },
       { id: 'open_threshold', type: 'visit', targetId: 'astravel_ruin_threshold_05', required: 1, label: 'Romper a defesa do Limiar no marco 14' },
-      { id: 'purify_core', type: 'visit', targetId: 'astravel_boss_preview', required: 1, label: 'Derrotar o Colosso Micélio no marco 15' },
+      { id: 'purify_core', type: 'visit', targetId: 'astravel_boss_preview', required: 1, label: 'Vencer a Sentinela Corrompida no núcleo das Câmaras Fúngicas (marco 15)' },
     ],
     rewards: [{ type: 'characterXp', value: 260 }, { type: 'gold', value: 100 }, { type: 'rawEssence', value: 120 }],
     prerequisites: [{ type: 'questCompleted', questId: 'main_astravel_lost_hunters' }],

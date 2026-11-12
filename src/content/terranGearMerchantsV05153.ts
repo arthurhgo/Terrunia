@@ -1,28 +1,28 @@
 import type { GearOffer, GearSlot } from './equipmentV0515'
 
 /**
- * v0.5.15.3 · Market specialists use JOB TITLES, not new lore identities.
- * Personal names, backstories and final sprite art remain OWNER_DECISION.
+ * v0.5.16 · Market specialists retain their roles and IDs; personal names are
+ * CONTENT_DRAFT proposals awaiting OWNER_DECISION. Final sprite art is not approved.
  * Commercial gear is cosmetic/attribute equipment, not a replacement Bond.
  */
 export const TERRAN_GEAR_MERCHANTS = {
   presence_terran_weaponsmith: {
     npcId: 'npc_terran_weaponsmith',
-    label: 'Armeiro de Terran',
+    label: 'Torvan · Armeiro de Terran',
     description: 'Revestimentos comuns para armas vinculadas.',
     slots: ['weapon'] as readonly GearSlot[],
     tone: 'weapon',
   },
   presence_terran_armorer: {
     npcId: 'npc_terran_armorer',
-    label: 'Armadureiro de Terran',
+    label: 'Brenna · Armadureira de Terran',
     description: 'Proteções, túnicas, capacetes, escudos, calças e botas comuns.',
     slots: ['armor', 'shield', 'helmet', 'pants', 'boots'] as readonly GearSlot[],
     tone: 'armor',
   },
   presence_terran_accessory_artisan: {
     npcId: 'npc_terran_accessory_artisan',
-    label: 'Artesão de Acessórios',
+    label: 'Ilyra · Artesã de Acessórios',
     description: 'Colares, pulseiras e adornos comuns.',
     slots: ['necklace', 'bracelet', 'accessoryA', 'accessoryB'] as readonly GearSlot[],
     tone: 'accessory',
