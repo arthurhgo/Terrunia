@@ -16,6 +16,10 @@ export function ExpeditionReportV0516({ save }: { save: GameSave }) {
       <small>{report.completedEncounters}/{report.totalEncounters} marcos</small></summary>
     <section aria-label="Resultados da expedição" className="expedition-report-v0516__body">
       <p><Compass size={14} aria-hidden="true" /> {report.chapterName} · {report.completedEncounters} encontros registrados</p>
+      {report.chapterDebrief && <section className="expedition-report-v0516__debrief" aria-label="Capítulo concluído">
+        <strong>{report.chapterDebrief.label} · {report.chapterDebrief.completed}/{report.chapterDebrief.total}</strong>
+        <p>{report.chapterDebrief.nextStep}</p>
+      </section>}
       {report.lead && <p className="expedition-report-v0516__lead">
         <Route size={14} aria-hidden="true" /> {report.lead.message}
       </p>}
