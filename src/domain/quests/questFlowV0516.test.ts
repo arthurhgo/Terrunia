@@ -3,12 +3,48 @@ import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
 import { ASTRAVEL_DISCOVERIES_V0516, getExpeditionReportV0516,
   getNarrativeLeadV0516, getNpcForeshadowV0516, getQuestCadenceMetricsV0516,
+  getFungalChambersClanNoticeV0516, getAstravelChapterCountV0516,
   getRecordedDiscoveriesV0516 } from './questFlowV0516'
 import { isQuestOfferUnlockedV0516, QUEST_CHAPTER_RELEASES_V0516 } from './questPacingV0516'
 
 const fresh = () => createNewSave('approval-v0516', 'Explorador', 'character.terririan.default', content)
 
 describe('v0.5.16 — narrative delivery and chapter-aware materials', () => {
+  it('warns about the EXISTING clan requirement in Chapter III without silently affiliating the player', () => {
+    const save = fresh()
+    expect(getFungalChambersClanNoticeV0516(save)).toBeNull()
+    save.world.trailNodeStates.astravel_hunter_refuge_10 = 'completed'
+    const before = structuredClone(save)
+    expect(getFungalChambersClanNoticeV0516(save)).toContain('nível 4')
+    save.character.level = 4
+    expect(getFungalChambersClanNoticeV0516(save)).toContain('Rosetta')
+    expect(getFungalChambersClanNoticeV0516(save)).toContain('Salão dos Clãs')
+    expect(save.character.clan.clanId).toBeNull()
+    save.character.clan.clanId = Object.keys(content.clans)[0]
+    expect(getFungalChambersClanNoticeV0516(save)).toBeNull()
+    expect(before.character.clan.clanId).toBeNull()
+  })
+
+  it('counts only cleared checkpoint nodes and names the final actual boss correctly', () => {
+    const save = fresh()
+    expect(getAstravelChapterCountV0516(save, content)).toMatchObject({
+      chapter: 'border', cleared: 0, total: 5,
+    })
+    save.world.trailNodeStates.astravel_fungorro_01 = 'completed'
+    save.world.trailNodeStates.astravel_luminous_02 = 'completed'
+    expect(getAstravelChapterCountV0516(save, content)).toMatchObject({
+      chapter: 'border', cleared: 2, total: 5,
+    })
+    save.world.trailNodeStates.astravel_camp_03 = 'completed'
+    expect(getAstravelChapterCountV0516(save, content)).toMatchObject({
+      chapter: 'spores', cleared: 0, total: 5,
+    })
+    expect(content.quests.main_astravel_corruption.summary).toContain('Sentinela Corrompida')
+    expect(content.quests.main_astravel_corruption.summary).not.toContain('Colosso Micélio')
+    expect(content.quests.main_astravel_corruption.objectives.at(-1)?.label).toContain('Sentinela Corrompida')
+  })
+
+
   it('distributes real collection contracts along their material sources without auto-accepting', () => {
     expect(QUEST_CHAPTER_RELEASES_V0516.delivery_liora_spores).toBe('border')
     expect(QUEST_CHAPTER_RELEASES_V0516.delivery_arlen_nuclei).toBe('spores')
