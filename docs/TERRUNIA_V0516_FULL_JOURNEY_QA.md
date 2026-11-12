@@ -41,15 +41,15 @@ Arquivo: `src/domain/quests/astravelJourneyFullV0516.test.ts`. Este teste execut
 - `migrateAndValidateSave` recarrega saves após os marcos 5 e 10, sem perder o checkpoint ou a missão pronta para entrega.
 - A suíte anterior segue cobrindo o legado de 29 sidequests, contratos divididos por capítulo, inventário comprometido, entregas sequenciais e proteção de recompensas contra duplicação.
 
-## Bloqueio de campanha existente — OWNER_DECISION
+## Bloqueio de campanha existente — OWNER_DECISION resolvida (12/11/2026)
 
 `enterDungeon` exige `save.character.clan.clanId` não nulo. Um personagem sem Clã chega ao Limiar da Ruína, mas **não entra nas Câmaras Fúngicas**. Essa regra foi preservada. A simulação comprova que há bloqueio, então usa uma fixture de personagem **já filiado** para verificar as 13 batalhas restantes — **não** concede um Clã automaticamente ao jogador real.
 
-**Decisão do proprietário:** confirmar que a filiação antes do marco 15 é um requisito intencional da campanha e que Rosetta/Salão dos Clãs devem apresentar essa necessidade na jornada. Caso não seja intencional, redefinir explicitamente o gate antes de alterar a regra.
+**Decisão de UX delegada pelo proprietário:** manter a filiação como um gate significativo para o marco 15; avisar sobre a exigência desde a conclusão do marco 5 e indicar o fluxo existente de Rosetta (nível 4), representantes e Salão dos Clãs. Não conceder Clã automaticamente nem desbloquear Classe na criação.
 
 ## Outras decisões ainda abertas
 
-- `OWNER_DECISION`: O Primeiro Rastro fica pronto após o primeiro combate, mas pode ser entregue apenas no retorno do capítulo I. Tornar a entrega obrigatória no marco 5 exigiria alteração expressa do cânon.
+- `OWNER_DECISION RESOLVIDA`: **O Primeiro Rastro** permanece pronto após o primeiro combate, com entrega opcional imediata ou após concluir o capítulo 1. Uma volta antecipada libera recompensas, a Base e tutoriais úteis para preparação, sem ser exigida para concluir marcos 2–5.
 - `BALANCE_DRAFT`: nível recomendado, consumo de PV/PM, compra de itens e mortes do personagem precisam de uma **partida real** com atributos e itens obtidos naturalmente.
 - `UX_DRAFT`: precisão do tempo entre combates, tempo de caminhada e retornos repetidos ainda não são observáveis pelo save; o registro atual não mantém timestamps por missão/ação.
 - `CONTENT_DRAFT`: nomes Torvan, Brenna e Ilyra, textos narrativos e distribuição final de contratos ainda aguardam revisão autoral.
@@ -60,7 +60,7 @@ Arquivo: `src/domain/quests/astravelJourneyFullV0516.test.ts`. Este teste execut
 2. Jogar marcos 1–5 com inventário e combate **sem atributos inflados**; anotar mortes e paradas involuntárias.
 3. Retornar a Eldamar, aceitar com Vorren e concluir 6–10; observar a quantidade real de tarefas e deslocamentos.
 4. Entregar a Vorren, aceitar com Lithwynn, lutar 11–14 e conferir orientação para o Salão dos Clãs e requisito da Ruína.
-5. Obter filiação legitimamente por NPCs/missões/rito **se a exigência for aprovada**, concluir as quatro salas e o chefe, entregar a Lithwynn.
+5. Obter filiação legitimamente por NPCs/missões/rito (**requisito mantido por decisão delegada de UX**), concluir as quatro salas e o chefe, entregar a Lithwynn.
 6. Conferir itens úteis, materiais reservados, pagamentos, relatório e progressão de missões na tela de vitória.
 7. Reabrir saves nos marcos 5, 10 e após o boss; confirmar continuidade e ausência de drops/recompensas duplicados.
 8. Verificar navegação e UI em 1366×768, 1920×1080 e mobile. Substituição de sprites detalhados fica fora do escopo.
@@ -114,4 +114,54 @@ O uso do Tônico foi validado através do motor de itens em combate (cura real d
 - **OWNER_DECISION / BALANCE_DRAFT:** testar manualmente uma run completa com tutorial, habilidade ativa, consumíveis, runas, forja e descanso legal. Caso ainda haja interrupções excessivas, avaliar explicitamente pontos de recuperação, suprimentos extras ou ajustes no dano; não presumir valores.
 - Testes de responsividade de Terran já cobrem **1366×768, 1920×1080 e 390×844** em `terran-exploration-contracts.spec.ts`, e a exploração de Astravél cobre **1366×768 e 390×844** em `vertical-slice.spec.ts`. A revisão humana visual continua pendente.
 
-**Release gate:** documento de QA não constitui aprovação do Clã obrigatório no marco 15, nem autoriza merge/deploy de produção.
+**Release gate:** o requisito de Clã foi mantido com aviso antecipado por decisão de UX delegada. O playtest humano ainda é pendente; o documento não autoriza merge/deploy de produção.
+
+
+## Decisões UX delegadas — rodada final de v0.5.16 (12/11/2026)
+
+O criador delegou ao desenvolvimento decisões de **experiência do jogador**, com registro explícito e sem mudar silenciosamente Clãs, Classes, Vinculação ou economia.
+
+### 1. Filiação ao Clã: gate mantido, aviso antecipado
+
+- Permanecer em `enterDungeon` a exigência de `clan.clanId` para as Câmaras Fúngicas.
+- `getFungalChambersClanNoticeV0516` avisa após a **primeira transição de capítulo (marco 5)**, em vez de só após o marco 10.
+- Rosetta, nível mínimo 4, representantes e Salão dos Clãs continuam sendo o fluxo regular; nenhum Clã/Classe é atribuído automaticamente.
+
+### 2. O Primeiro Rastro: entrega opcional após o primeiro encontro
+
+- O objetivo segue pronto após a primeira vitória e a visita à trilha, como na versão original.
+- O jogador pode retornar imediatamente a Eldamar e prosseguir com Base/Tutoriais, ou continuar até o marco 5 antes de voltar.
+- Não existe retorno obrigatório à cidade no meio dos marcos 1–5; o caminho principal seguinte exige sua missão correspondente aceita.
+
+### 3. Recuperação entre encontros, sem modificar os monstros
+
+Somente o catálogo de encontros de Astravél foi ajustado usando a propriedade existente `fieldRecovery`, aplicada **após vitória e coleta de recompensas**, com PV/PM limitados ao máximo real do personagem. Uma derrota não recebe benefício. Nenhuma cura é concedida ao aceitar missão ou realizar level up.
+
+| Marco concluído | Cura PV | Cura PM | Status |
+|---|---:|---:|---|
+| 2 — Clareira Luminescente | +8 | +2 | `BALANCE_DRAFT` |
+| 3 — Travessia das Mariposas | +10 | +3 | `BALANCE_DRAFT` |
+| 4 — Margem dos Esporos | +8 | +2 | `BALANCE_DRAFT` |
+| 5 — Acampamento | +10 | +6 | existente, preservada |
+
+### Comparação com 16 seeds, personagem preparado por Rosetta
+
+Mesmo build legal 4 Vigor/2 Força, arma vinculada de início, Túnica de Linho Gasta real via `equipBasicArmor`, ataques básicos sem habilidades/manobra de Defesa, sem descanso entre combates:
+
+| Recursos | Antes (5/5) | Depois (5/5) |
+|---|---:|---:|
+| Túnica sem Tônico | 0/16 | 9/16 |
+| Túnica + Tônico obtido no marco 2 | 0/16 | **15/16** |
+
+A melhoria vem do sistema de recuperação pós-vitória, não de dano reduzido, drops extras ou status inventados. Os testes não incluem uso estratégico de habilidades, outras distribuições de itens ou custo real de caminhada; não substituem o playtest humano. O balanceamento continua configurável e poderá ser refinado com dados reais, sem retroativamente alterar saves concluídos.
+
+### Divergência narrativa identificada, sem alteração silenciosa de cânon
+
+A especificação técnica v0.4 ainda descreve o **Colosso Micélio** como chefe das Câmaras Fúngicas (seção 23), enquanto o boss implementado no jogo v0.5.16 é a **Sentinela Corrompida**. A interface e a missão atuais acompanham o combate implementado para evitar informação incorreta durante a sessão. **CONTENT_DRAFT / OWNER_DECISION:** esta divergência deve ser reconciliada explicitamente no roadmap narrativo, sem substituir o chefe nem alterar o texto da especificação silenciosamente neste release.
+
+### Evidências de testes
+
+- `src/domain/quests/astravelNaturalBalanceV0516.test.ts`: compara dados reais sem stats inflados, builds com atributos legais e tutorial+Tônico.
+- `src/domain/quests/questFlowV0516.test.ts`: aviso de Clã após o capítulo I, contador de marcos e texto do boss implementado.
+- `src/domain/quests/astravelJourneyFullV0516.test.ts`: fluxo dos 15 marcos, gate de Clã e entregas explícitas.
+- **Falta somente playtest humano e aprovação de publicação; não fazer merge automaticamente.**
