@@ -75,8 +75,8 @@ export function DungeonScene({ unified = false }: { unified?: boolean }) {
             portraitAssetId={save.character.portraitAssetId} appearance={save.character.appearance} equipment={getVisualEquipment(save)} reducedMotion={save.settings.reducedMotion}
             enabled={!scene} onDiscover={discoverFungalRoom} onInspect={inspect}
             onTravelStart={() => { if (drawer === 'room') { setDrawer(null); setSelectedId(null) } }} />
-          <ExpeditionStatusHud save={save} selected={drawer}
-            onOpen={(tab) => { setDrawer(drawer === tab ? null : tab); setSelectedId(null) }} />
+          <ExpeditionStatusHud save={save} selected={drawer} showTrail={false}
+            onOpen={(tab) => { setDrawer(tab === 'trail' ? 'rooms' : drawer === tab ? null : tab); setSelectedId(null) }} />
           <button type="button" className="expedition-game__route-open"
             onClick={() => { setDrawer(drawer === 'rooms' ? null : 'rooms'); setSelectedId(null) }}>
             <Compass size={14} /> Mapa das Salas
