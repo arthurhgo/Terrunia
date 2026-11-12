@@ -76,7 +76,7 @@ export function TerranQuickJournal({ save }: { save: GameSave }) {
       <strong title={playerStep.title}>{playerStep.title}</strong>
       <p>{playerStep.message}</p>
       <button type="button"
-        aria-label={(playerStep.tracked ? 'Remover rastreamento de ' : 'Rastrear ') + playerStep.title}
+        aria-label={(playerStep.tracked ? 'Parar de rastrear missão em destaque: ' : 'Rastrear missão em destaque: ') + playerStep.title}
         onClick={() => setTracked(playerStep.questId, !playerStep.tracked)}>
         {playerStep.tracked ? 'Parar de rastrear' : 'Rastrear missão'}
       </button>
