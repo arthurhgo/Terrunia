@@ -3,6 +3,7 @@ import { content } from '../../content/catalog'
 import { bindPrologueWeapon, createNewSave } from '../game/createSave'
 import { gainCharacterXp, adjustCharacterAttribute } from '../character/attributeProgression'
 import { deriveCharacterStats } from '../character/derivedStats'
+import { equipBasicArmor } from '../inventory/basicArmor'
 import { createBattle, isProtectedBoss, submitBattleCommand } from '../combat/engine'
 import type { GameSave } from '../game/types'
 
@@ -177,6 +178,93 @@ describe('v0.5.16 — auditoria de dificuldade sem atributos artificiais', () =>
       }))
       expect(cleared[0]).toBeGreaterThan(0)
     }
+  })
+
+  it('measures the lawful tutorial tunic and the tonic actually dropped after stage 2', () => {
+    let ready = createNewSave('supplies-v0516', 'Terrírian', 'character.terririan.default', content)
+    for (const id of ['vigor','vigor','vigor','vigor','strength','strength'] as const) {
+      const applied = adjustCharacterAttribute(ready, id, 1, ready.createdAt)
+      expect(applied.ok).toBe(true)
+      if (!applied.ok) return
+      ready = applied.value
+    }
+    const bound = bindPrologueWeapon(ready, content, ready.createdAt, 'qa-supplies-weapon')
+    expect(bound.ok).toBe(true)
+    if (!bound.ok) return
+    ready = bound.value
+    const armor = content.items.equipment_worn_linen_tunic
+    // A pre-Astravél Rosetta tutorial grants this actual item. The test uses
+    // the real equip action, not a forged defense value or bound armor.
+    ready.inventory.push({ instanceId: 'qa-tutorial-linen', definitionId: armor.id,
+      quantity: 1, rarity: armor.rarity, locked: false, favorite: false, acquiredAt: ready.createdAt })
+    const dressed = equipBasicArmor(ready, 'qa-tutorial-linen', content, ready.createdAt)
+    expect(dressed.ok).toBe(true)
+    if (!dressed.ok) return
+    ready = dressed.value
+    const results = [] as { config: string; clearedByStage: number[]; tonicsConsumed: number; fullClear: number }[]
+    for (const allowTonic of [false, true]) {
+      const clears = [0,0,0,0,0]
+      let tonicUses = 0
+      for (let seed = 0; seed < 16; seed++) {
+        const save = structuredClone(ready)
+        const carried: string[] = []
+        for (let i = 0; i < stages.length; i++) {
+          const node = stages[i]
+          let battle = createBattle(save, content.encounters[node.encounterId!], content,
+            'natural-tunic-' + allowTonic + '-' + seed + '-' + node.id, { manualInitiative: true })
+          const initiative = submitBattleCommand(battle, { type: 'rollInitiative' }, content)
+          expect(initiative.ok).toBe(true)
+          if (!initiative.ok) return
+          battle = initiative.value
+          let actions = 0
+          while (battle.phase !== 'Victory' && battle.phase !== 'Defeat' && actions < 100) {
+            if (battle.phase !== 'AwaitingAction') throw new Error('combat did not return action phase: ' + battle.phase)
+            const player = battle.combatants.combatant_player
+            if (allowTonic && carried.length > 0 && player.maxHp - player.hp >= 8) {
+              const itemInstanceId = carried[0]
+              const use = submitBattleCommand(battle, { type: 'item', itemInstanceId,
+                targetId:'combatant_player' }, content, [
+                  { instanceId:itemInstanceId, definitionId:'consumable_minor_tonic',
+                    quantity:1, rarity:content.items.consumable_minor_tonic.rarity,
+                    locked:false, favorite:false, acquiredAt:save.createdAt },
+                ])
+              if (use.ok) {
+                battle = use.value
+                carried.shift()
+                tonicUses++
+              }
+            }
+            const target = Object.values(battle.combatants)
+              .filter(actor => actor.side === 'enemy' && actor.alive && !isProtectedBoss(battle, actor))
+              .sort((a,b) => Number(b.definitionId === 'enemy_spore_sower') -
+                Number(a.definitionId === 'enemy_spore_sower') || a.hp - b.hp)[0]
+            if (!target) throw new Error('No valid target at ' + node.id)
+            const result = submitBattleCommand(battle, { type: 'attack', targetId:target.id }, content)
+            expect(result.ok).toBe(true)
+            if (!result.ok) return
+            battle = result.value
+            actions++
+          }
+          expect(['Victory','Defeat']).toContain(battle.phase)
+          save.vitals.hp = battle.combatants.combatant_player.hp
+          if (battle.phase === 'Defeat') break
+          clears[i]++
+          const loot = content.encounters[node.encounterId!].rewards
+          for (const itemId of loot.lootDefinitionIds) if (itemId === 'consumable_minor_tonic')
+            carried.push('qa-tonic-' + seed + '-' + i)
+          save.character = gainCharacterXp(save.character, loot.characterXp).character
+          const derived = deriveCharacterStats(save, content)
+          save.vitals.hp = Math.min(derived.life.value, save.vitals.hp + (loot.fieldRecovery?.hp ?? 0))
+        }
+      }
+      results.push({ config: allowTonic ? 'tunic_plus_found_tonic' : 'tunic_only',
+        clearedByStage:clears, tonicsConsumed:tonicUses, fullClear:clears[4] })
+    }
+    console.info('QA_NATURAL_TUTORIAL_PREP_V0516 ' + JSON.stringify({
+      results, seedsPerConfig:16, stats:deriveCharacterStats(ready,content).defense.value,
+      description:'4 vigor + 2 strength, starter bound weapon, actual Rosetta linen tunic and optionally only tonic found after stage 2; no resting, manual defense/skills or forge upgrade',
+    }))
+    expect(results).toHaveLength(2)
   })
 
 })
