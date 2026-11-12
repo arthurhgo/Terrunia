@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { bindPrologueWeapon, createNewSave } from '../game/createSave'
-import { gainCharacterXp } from '../character/attributeProgression'
+import { gainCharacterXp, adjustCharacterAttribute } from '../character/attributeProgression'
 import { deriveCharacterStats } from '../character/derivedStats'
 import { createBattle, isProtectedBoss, submitBattleCommand } from '../combat/engine'
 import type { GameSave } from '../game/types'
@@ -130,4 +130,53 @@ describe('v0.5.16 — auditoria de dificuldade sem atributos artificiais', () =>
     // This check is deliberately measurement only; difficulty values remain OWNER_DECISION.
     expect(counts[0].reachedAndCleared).toBeGreaterThan(0)
   })
+  it('compares three legal allocations of the six creation points, without changing catalog balance', () => {
+    const patterns = [
+      { name: 'defesa_4v_2f', points: ['vigor', 'vigor', 'vigor', 'vigor', 'strength', 'strength'] },
+      { name: 'ofensiva_4f_2v', points: ['strength', 'strength', 'strength', 'strength', 'vigor', 'vigor'] },
+      { name: 'mista_3v_3f', points: ['vigor', 'vigor', 'vigor', 'strength', 'strength', 'strength'] },
+    ] as const
+    for (const pattern of patterns) {
+      let candidate = createNewSave('natural-' + pattern.name, 'Terrírian', 'character.terririan.default', content)
+      for (const attributeId of pattern.points) {
+        const value = adjustCharacterAttribute(candidate, attributeId, 1, candidate.createdAt)
+        expect(value.ok).toBe(true)
+        if (!value.ok) throw new Error(value.message)
+        candidate = value.value
+      }
+      expect(candidate.character.unspentAttributePoints).toBe(0)
+      const linked = bindPrologueWeapon(candidate, content, candidate.createdAt, 'qa-' + pattern.name)
+      expect(linked.ok).toBe(true)
+      if (!linked.ok) continue
+      const metrics = deriveCharacterStats(linked.value, content)
+      const cleared = [0, 0, 0, 0, 0]
+      const failedAt: Record<string, number> = {}
+      for (let seed = 0; seed < 16; seed++) {
+        const save = structuredClone(linked.value)
+        for (let i = 0; i < stages.length; i++) {
+          const node = stages[i]
+          const outcome = battleWithoutStatOverrides(save, node.encounterId!,
+            'natural-v0516-' + pattern.name + '-' + seed + '-' + node.id)
+          save.vitals.hp = outcome.hp
+          if (outcome.phase !== 'Victory') {
+            failedAt[node.id] = (failedAt[node.id] ?? 0) + 1
+            break
+          }
+          cleared[i]++
+          const recovery = content.encounters[node.encounterId!].rewards
+          save.character = gainCharacterXp(save.character, recovery.characterXp).character
+          const derived = deriveCharacterStats(save, content)
+          save.vitals.hp = Math.min(derived.life.value, save.vitals.hp + (recovery.fieldRecovery?.hp ?? 0))
+        }
+      }
+      console.info('QA_NATURAL_ALLOCATION_V0516 ' + JSON.stringify({
+        build: pattern.name,
+        hp: metrics.life.value, attack: metrics.primaryAttack.value, defense: metrics.defense.value,
+        stagesClearedBy16Runs: cleared, fullClear: cleared.at(-1), failedAt,
+        rules: '6 legitimate creation points, starter bound weapon, normal dice, normal enemies, no heal items or rest',
+      }))
+      expect(cleared[0]).toBeGreaterThan(0)
+    }
+  })
+
 })
