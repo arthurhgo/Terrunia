@@ -16,3 +16,8 @@
 .expedition-report-v0516__subsection ul{margin:4px 0;padding-left:19px}
 .expedition-report-v0516 :focus-visible{outline:2px solid #efcd87;outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.expedition-report-v0516 *{scroll-behavior:auto!important}}
+
+
+.expedition-report-v0516__debrief{display:grid;gap:5px;padding:8px;border:1px solid #876d43;background:#272c25}
+.expedition-report-v0516__debrief strong{color:#f3dba4}
+.expedition-report-v0516__debrief p{margin:0;color:#d6e4cf}
