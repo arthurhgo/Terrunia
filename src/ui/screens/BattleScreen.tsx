@@ -722,7 +722,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             {combatQuestUpdates.length > 3 && <small>+{combatQuestUpdates.length - 3} missão(ões) relacionada(s) no Diário.</small>}
           </div>}
           {!battle.claimed && <small className="pixel-battle__victory-collect-note">Recolha os espólios no painel à direita.</small>}
- </>}
         </div> : <div className="pixel-battle__result"><p>O Nexo retorna à Base. Sem perda de XP, Ouro ou equipamentos nesta versão.</p>
           <button onClick={() => end(true)}>DESPERTAR NA BASE</button></div>}
       </section>
