@@ -17,7 +17,7 @@ import { AstravelPixelCanvas } from '../expedition/AstravelPixelCanvas'
 import { ExpeditionStatusHud } from '../expedition/ExpeditionStatusHud'
 import { getVisualEquipment } from '../characters/equipmentVisuals'
 import { ExpeditionReportV0516 } from '../quests/ExpeditionReportV0516'
-import { ASTRAVEL_DISCOVERIES_V0516, getChapterContinuationV0516 } from '../../domain/quests/questFlowV0516'
+import { ASTRAVEL_DISCOVERIES_V0516, getChapterContinuationV0516, getFungalChambersClanNoticeV0516 } from '../../domain/quests/questFlowV0516'
 import './gameplayV057.css'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
@@ -92,6 +92,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
   const quests = getQuestJournalEntries(save, content).filter(({ progress }) => progress.status !== 'completed')
   const sector = isAstravel ? getAstravelSector(activeNode?.index ?? 15) : null
   const activeGate = activeNode ? checkTrailQuestGate(save, activeNode, content) : null
+  const clanGateNotice = isAstravel ? getFungalChambersClanNoticeV0516(save) : null
   const stats = deriveCharacterStats(save, content)
   const fieldSupplies = save.inventory.filter((entry) => isFieldConsumable(save, entry.instanceId, content))
 
@@ -159,6 +160,7 @@ export function ExpeditionScene({ unified = false }: { unified?: boolean }) {
             {drawer === 'node' && selectedNode && <NodeDrawer node={selectedNode} trail={trail} status={save.world.trailNodeStates[selectedNode.id] ?? 'locked'} save={save} onAction={act} onReturn={leave} />}
             {drawer === 'trail' && <div className="expedition-route-list">
               <p>Caminhe pelo terreno para alcançar o marco disponível. Locais bloqueados não ativam encontros nem recompensas.</p>
+              {clanGateNotice && <p role="note" aria-label="Requisito de Clã para a última instância"><strong>Preparação para o marco 15:</strong> {clanGateNotice}</p>}
               {sections.map((section) => <section key={section.id} className="expedition-route-sector">
                 <h3>{section.name} <small>{section.from}–{section.to}</small></h3>
                 {trail.nodes.filter((node) => node.sectorId === section.id).map((node) => <button type="button" key={node.id}
