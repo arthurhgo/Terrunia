@@ -44,7 +44,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
     <div className="rosetta-guide__content">
       {contextualTip && <aside className="rosetta-guide__next" role="note" aria-label="Dica contextual de Rosetta">
         <strong>{contextualTip.title}</strong><p>{contextualTip.message}</p>
-        <button type="button" onClick={contextualTip.destination==='inventory'&&onOpenInventory?onOpenInventory:onShowPaths??onOpenQuests}>{contextualTip.destination==='inventory'&&onOpenInventory?'Abrir mochila':'Ver orientação ou caminho'}</button>
+        <button type="button" onClick={contextualTip.destination==='inventory'&&onOpenInventory?onOpenInventory:onShowPaths??onOpenQuests}>{contextualTip.destination==='inventory'&&onOpenInventory?'Ver materiais na mochila':'Ver orientação ou caminho'}</button>
       </aside>}
       {lesson && progress ? <section className="rosetta-tutorial" aria-label="Lição de Rosetta">
         <span className="eyebrow">TUTORIAL · LIÇÃO {lessonIndex} DE {ROSETTA_CORE_LESSON_IDS.length}</span>
