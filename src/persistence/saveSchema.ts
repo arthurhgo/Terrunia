@@ -8,8 +8,9 @@ import type { GameSave } from '../domain/game/types'
 import { deriveCharacterStats } from '../domain/character/derivedStats'
 import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 import { reconcileLegacyHomeKey } from '../domain/terran/base'
+import {modularPartById,getAssemblyFamily,MODULAR_SLOTS} from '../content/modularWeaponsV05171'
 
-export const CURRENT_SAVE_SCHEMA = 17
+export const CURRENT_SAVE_SCHEMA = 18
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -114,7 +115,14 @@ const treeProgressSchema = z.object({
   spentEssencePoints: nonnegativeInteger,
 })
 
+const assemblySchema=z.object({
+ assemblyVersion:z.literal(1),boundItemId:idSchema,
+ family:z.enum(['blade','dagger','axe','bow','arcaneFocus','staff','grimoire','shield']),
+ parts:z.object({body:idSchema.optional(),handle:idSchema.optional(),coreHousing:idSchema.optional(),focusMount:idSchema.optional()}),
+ history:z.array(idSchema),revision:nonnegativeInteger,assembledAt:idSchema
+})
 const boundItemSchema = z.object({
+  assembly:assemblySchema.optional(),
   id: idSchema,
   baseItemId: idSchema,
   ownerCharacterId: idSchema,
@@ -479,6 +487,18 @@ export const gameSaveSchema = z.object({
         path: ['boundItems', itemId, 'baseItemId'],
         message: 'A fundação do Vínculo deve existir e corresponder ao slot persistido.',
       })
+    }
+    if(item.assembly){
+      const family=baseDefinition&&getAssemblyFamily(baseDefinition.archetype,item.slot)
+      if(item.assembly.boundItemId!==itemId||item.assembly.family!==family||!['weapon','shield'].includes(item.slot))
+       context.addIssue({code:'custom',path:['boundItems',itemId,'assembly'],message:'Montagem pertence a outro Vínculo ou família.'})
+      for(const slot of MODULAR_SLOTS){
+       const partId=item.assembly.parts[slot]
+       if(!partId)continue
+       const part=modularPartById[partId]
+       if(!part||part.family!==family||part.partSlot!==slot)
+        context.addIssue({code:'custom',path:['boundItems',itemId,'assembly','parts',slot],message:'Módulo incompatível com o Vínculo.'})
+      }
     }
     const capacity = getBoundSlotCapacity(item.grade)
     if (
@@ -972,6 +992,17 @@ const migrateV16ToV17 = (legacy: Record<string, unknown>): unknown => {
   return next
 }
 
+/** Additive upgrade from schema 17; never replaces the original weapon or loses legacy shells. */
+const migrateV17ToV18=(legacy:Record<string,unknown>):unknown=>{
+ const next=structuredClone(legacy) as unknown as GameSave
+ next.schemaVersion=18
+ next.gameVersion='0.5.17.1'
+ next.revision+=1
+ next.eventLog.push('SaveMigrated:17->18')
+ // Existing complete/saved fights and legacy gear remain untouched.
+ return next
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -1032,6 +1063,7 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 14) { candidate = migrateV14ToV15(candidate as Record<string, unknown>); version = 15 }
   if (version === 15) { candidate = migrateV15ToV16(candidate as Record<string, unknown>); version = 16 }
   if (version === 16) { candidate = migrateV16ToV17(candidate as Record<string, unknown>); version = 17 }
+  if (version === 17) { candidate = migrateV17ToV18(candidate as Record<string, unknown>); version = 18 }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)
   }
