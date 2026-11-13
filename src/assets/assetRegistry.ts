@@ -282,6 +282,7 @@ const entries: AssetEntry[] = [
     fallback: '/assets/placeholders/item.svg',
     alt: `Conceito pixel art: ${item.name}`,
     pixelArt: true,
+    ...(item.id==='shield_quiver_v0517'?{draftPlaceholder:true as const}:{}),
   })),
 ]
 
