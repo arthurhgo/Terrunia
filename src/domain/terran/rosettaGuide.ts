@@ -83,6 +83,10 @@ export function getTrackedQuestRoute(save: GameSave, catalog: ContentCatalog): T
   let locationId = npcId ? getRosettaNpcLocation(npcId, catalog) : quest.terranFlow?.active
   if (progress.status === 'active') {
     const objective = quest.objectives.find((item) => (progress.objectives[item.id] ?? 0) < item.required)
+    if(objective?.type==='assemble'||objective?.targetId==='forge_assembly_bench_v05171'||
+      objective?.targetId==='inspect_assembly_stats_v05171'){
+       npcId='npc_durnan';locationId='location_terran_forge'
+    }
     if (objective?.type === 'equip') return null
     if (objective?.type === 'talk' && catalog.npcs[objective.targetId]) {
       npcId = objective.targetId
