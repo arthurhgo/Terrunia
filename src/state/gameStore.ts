@@ -1196,9 +1196,19 @@ export const useGameStore = create<GameState>((set, get) => {
         else next.inventory.splice(index, 1)
         next.eventLog.push(`CombatItemConsumed:${instanceId}`)
       }
-      next.updatedAt = nowIso()
-      next.revision += 1
-      commit(next)
+      const now=nowIso()
+      // Quest progress comes only from an authoritative, accepted battle command.
+      let progressed=next
+      if(command.type==='skill'&&content.combatSkills[command.skillId]?.defenseStance)
+        progressed=applyQuestEvent(progressed,{type:'interact',targetId:'modular_defense'},content,now)
+      const currentWeaponId=progressed.character.bondedEquipment.weapon
+      if((command.type==='attack'||command.type==='areaAttack'||
+         (command.type==='skill'&&content.combatSkills[command.skillId]?.target==='enemy')) &&
+         currentWeaponId&&progressed.boundItems[currentWeaponId]?.assembly?.revision)
+        progressed=applyQuestEvent(progressed,{type:'interact',targetId:'modular_attack'},content,now)
+      progressed.updatedAt=now
+      progressed.revision+=1
+      commit(progressed)
     },
 
     claimBattleRewards: () => {

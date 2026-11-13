@@ -71,9 +71,45 @@ const lessons: Omit<QuestDefinition, 'giverNpcId' | 'turnInNpcId' | 'category' |
     terranFlow: { active: 'location_terran_forge' } },
 ]
 
+
+/** Optional chain after basic armor tutorial: no Clã/Class or chance-based loot requirement. */
+const modularLessons:Omit<QuestDefinition,'giverNpcId'|'turnInNpcId'|'category'|'status'>[]=[
+ {id:'rosetta_modular_01_v05171',title:'Uma Arma, Quatro Partes',
+  summary:'Rosetta explica que seu Vínculo não pode ser trocado. Visite a Casa do Ferreiro e examine os quatro recipientes da montagem.',
+  contextNote:'As peças são estruturas, não quatro novos Vínculos. Rosetta reserva Ouro para a primeira peça T1.',
+  objectives:[{id:'visit_durnan',type:'visit',targetId:'location_terran_forge',required:1,label:'Visite a mesa modular de Durnan'}],
+  rewards:[{type:'characterXp',value:5},{type:'gold',value:32}],
+  prerequisites:[{type:'questCompleted',questId:'rosetta_tutorial_refine'}],initialStatus:'locked',
+  terranFlow:{active:'location_terran_forge'}},
+ {id:'rosetta_modular_02_v05171',title:'A Peça do Seu Vínculo',
+  summary:'Compre uma parte compatível com sua arma no catálogo de Torvan. A arma inicial não será substituída.',
+  objectives:[{id:'buy_component',type:'purchase',targetId:'modular_part',required:1,label:'Compre qualquer componente de arma na loja de Torvan'}],
+  rewards:[{type:'characterXp',value:5},{type:'gold',value:15}],
+  prerequisites:[{type:'questCompleted',questId:'rosetta_modular_01_v05171'}],initialStatus:'locked',
+  terranFlow:{active:'location_terran_bond_workshop'}},
+ {id:'rosetta_modular_03_v05171',title:'A Montagem do Vínculo',
+  summary:'Leve a peça a Durnan, encaixe-a e confirme a montagem. Observe a alteração real dos atributos.',
+  objectives:[{id:'forge_component',type:'refine',targetId:'modular_weapon',required:1,label:'Confirme a instalação de uma peça no mesmo Vínculo'}],
+  rewards:[{type:'characterXp',value:10},{type:'gold',value:12}],
+  prerequisites:[{type:'questCompleted',questId:'rosetta_modular_02_v05171'}],initialStatus:'locked',
+  terranFlow:{active:'location_terran_forge'}},
+ {id:'rosetta_modular_04_v05171',title:'A Defesa Certa',
+  summary:'Use uma postura defensiva real em combate. Bloqueio, Aparar, Esquiva e Contragolpe exigem um dado e têm alvos elegíveis.',
+  objectives:[{id:'prepare_defense',type:'interact',targetId:'modular_defense',required:1,label:'Arme uma postura defensiva durante um combate real'}],
+  rewards:[{type:'characterXp',value:10}],
+  prerequisites:[{type:'questCompleted',questId:'rosetta_modular_03_v05171'}],initialStatus:'locked',
+  terranFlow:{active:'location_terran_portal_plaza'}},
+ {id:'rosetta_modular_05_v05171',title:'Sua Arma, Seu Dano',
+  summary:'Realize um ataque com sua arma modular em combate; os novos atributos são calculados pelo Nexo.',
+  objectives:[{id:'attack_modular',type:'interact',targetId:'modular_attack',required:1,label:'Ataque um monstro com o Vínculo que recebeu o módulo'}],
+  rewards:[{type:'characterXp',value:15}],
+  prerequisites:[{type:'questCompleted',questId:'rosetta_modular_04_v05171'}],initialStatus:'locked',
+  terranFlow:{active:'location_terran_portal_plaza'}},
+]
+
 /** Keep legacy quest IDs and progress; leather is an optional detour, never a gate for refinement. */
 export const ROSETTA_CORE_LESSON_IDS = ['rosetta_tutorial_equip', 'rosetta_tutorial_supply', 'rosetta_tutorial_refine'] as const
 
-export const rosettaTutorialQuests: QuestDefinition[] = lessons.map((quest) => ({ ...quest, giverNpcId: 'npc_rosetta', turnInNpcId: 'npc_rosetta',
-  category: ['rosetta_tutorial_armor','rosetta_tutorial_market_specialists'].includes(quest.id) ? 'secondary' : 'main',
+export const rosettaTutorialQuests: QuestDefinition[] = [...lessons,...modularLessons].map((quest) => ({ ...quest, giverNpcId: 'npc_rosetta', turnInNpcId: 'npc_rosetta',
+  category: (['rosetta_tutorial_armor','rosetta_tutorial_market_specialists'].includes(quest.id)||quest.id.startsWith('rosetta_modular_')) ? 'secondary' : 'main',
   terranFlow: { ...quest.terranFlow, ready_to_turn_in: 'location_terran_portal_plaza' }, status: 'CONTENT_DRAFT' }))
