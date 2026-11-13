@@ -26,7 +26,7 @@ export function getVisualEquipment(save: GameSave, sheathed = false): VisualItem
   for (const slot of VISUAL_EQUIPMENT_ORDER) {
     const wornShell = save.equippedGearStyles?.[slot]
     const gearShell = wornShell ? gearOfferById[wornShell.definitionId] : undefined
-    if (gearShell && (save.character.bondedEquipment[slot] || slot === 'shield' || slot === 'necklace' || slot === 'bracelet')) {
+    if (slot!=='weapon'&&gearShell && (save.character.bondedEquipment[slot] || slot === 'shield' || slot === 'necklace' || slot === 'bracelet')) {
       items.push({slot,assetId:gearSpriteId(gearShell,getGearGrade(wornShell?.refinementLevel)),itemId:gearShell.id,itemName:gearShell.name,
         forged:getGearGrade(wornShell?.refinementLevel)>1,forgeGrade:getGearGrade(wornShell?.refinementLevel),
         visualTier:gearShell.tier,palette:gearShell.palette,sheathed:slot==='weapon'&&sheathed})

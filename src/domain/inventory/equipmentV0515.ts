@@ -45,8 +45,8 @@ export function purchaseGear(save:GameSave,offerIds:readonly string[],now:string
  if(offers.some(offer=>offer.slot==='weapon'))return fail('BOUND_WEAPON_ONLY','Kits não podem incluir armas comerciais; o Vínculo original é permanente.')
  if(offers.length>1){
   const set=gearSetById[offers[0].setId]
-  if(!set||set.itemIds.length!==offerIds.length||set.itemIds.some(id=>!offerIds.includes(id)))
-   return fail('GEAR_SET','A compra conjunta deve conter todas as dez peças de um kit.')
+  if(!set||set.itemIds.filter(id=>gearOfferById[id]?.slot!=='weapon').length!==offerIds.length||set.itemIds.filter(id=>gearOfferById[id]?.slot!=='weapon').some(id=>!offerIds.includes(id)))
+   return fail('GEAR_SET','O kit contém somente as nove peças comerciais; a arma permanece vinculada.')
  }
  for(const offer of offers){const access=checkGearAccess(save,offer,merchantId);if(!access.ok)return access}
  const cost=offers.reduce((sum,offer)=>sum+offer.price,0)
@@ -165,4 +165,4 @@ export function getGearBonuses(save:GameSave){
 }
 
 export const getSetPrice=(setId:string)=>
- gearSetById[setId]?.itemIds.reduce((sum,id)=>sum+gearOfferById[id].price,0)??0
+ gearSetById[setId]?.itemIds.filter(id=>gearOfferById[id]?.slot!=='weapon').reduce((sum,id)=>sum+gearOfferById[id].price,0)??0

@@ -899,7 +899,7 @@ export const useGameStore = create<GameState>((set, get) => {
     buyGearSet: (merchantId, setId) => {
       const setDefinition = gearSetById[setId]
       if (!setDefinition) return failAction('Kit não encontrado.')
-      get().buyGear(merchantId, setDefinition.itemIds)
+      get().buyGear(merchantId, setDefinition.itemIds.filter(id=>gearOfferById[id]?.slot!=='weapon'))
     },
 
     equipGearStyle: (slot, instanceId) => {

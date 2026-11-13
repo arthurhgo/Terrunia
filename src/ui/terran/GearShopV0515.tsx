@@ -73,21 +73,21 @@ export function GearShopV0515({ save, merchantId }: { save: GameSave; merchantId
         className={selected?.id === set.id ? 'is-selected' : ''} onClick={() => setSelectedId(set.id)}>
         <span className="gear-shop-v0515__swatch"
           style={{ background: set.palette.base, borderColor: set.palette.trim }} />
-        <span><strong>{set.roleLabel ? set.roleLabel + ' · ' : ''}{set.name}</strong><small>{set.channel === 'CLAN_EXCLUSIVE' ? 'Exclusivo do Clã' : set.channel === 'CLASS_EXCLUSIVE' ? 'Exclusivo de Classe' : 'Comum'} · Tier {set.tier} · Grau 1 · 10 peças</small></span>
+        <span><strong>{set.roleLabel ? set.roleLabel + ' · ' : ''}{set.name}</strong><small>{set.channel === 'CLAN_EXCLUSIVE' ? 'Exclusivo do Clã' : set.channel === 'CLASS_EXCLUSIVE' ? 'Exclusivo de Classe' : 'Comum'} · Tier {set.tier} · Grau 1 · 9 peças sem arma</small></span>
       </button>)}
     </div>
     {selected ? <div className="gear-shop-v0515__selected">
       <div className="gear-shop-v0515__heading">
         <div><h4>{selected.roleLabel ? selected.roleLabel + ' · ' : ''}{selected.name}</h4>
           {selected.roleDescription && <small className="gear-shop-v0515__role">{selected.roleDescription}</small>}
-          <small>Tier {selected.tier} · Nível {selected.level} · Dez peças combináveis</small>
+          <small>Tier {selected.tier} · Nível {selected.level} · Nove peças combináveis · arma permanente</small>
           {permission && !permission.ok && <p role="status">{permission.message}</p>}
         </div>
         <button type="button" disabled={!permission?.ok || save.wallet.gold < cost}
           onClick={() => buySet(merchantId, selected.id)}>Comprar conjunto · {cost} Ouro</button>
       </div>
       <div className="gear-shop-v0515__items">
-        {selected.itemIds.map((id) => {
+        {selected.itemIds.filter(id=>gearOfferById[id]?.slot!=='weapon').map((id) => {
           const offer = gearOfferById[id]
           const access = checkGearAccess(save, offer, merchantId)
           return <article key={id} style={{ borderLeftColor: offer.palette.trim }}>
