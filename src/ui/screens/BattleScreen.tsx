@@ -28,7 +28,8 @@ import { getCombatQuestProgressV0516 } from '../../domain/quests/questFlowV0516'
 import { canUseVictoryRecovery } from '../../domain/combat/victoryRecoveryV05152'
 import { getWeaponAttackCardsV0517 } from '../../content/combatStylesV0517'
 import { getInitiativeModifiersV0517 } from '../../domain/combat/layeredDefenseV0517'
-import { getEnemyReadouts, getImpactReadout } from '../../domain/combat/combatReadoutsV05153'
+import {getEnemyIntentV0517,getEffectiveShieldV0517} from '../../domain/combat/combatTacticsV0517'
+import { getEnemyReadouts, getLayerImpactV0517 } from '../../domain/combat/combatReadoutsV05153'
 import { playGameplaySfx } from '../../services/gameplaySfx'
 import './battlePixel.css'
 import './battleRemake.css'
@@ -174,6 +175,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         actorId: entry.roll.actorId, targetId: entry.roll.targetId ?? (actor?.side === 'enemy' ? 'combatant_player' : targetId),
         damage: Number(damage[1]), action: entry.roll.action,
         critical: entry.roll.critical,
+        ...(entry.roll.damageBreakdown?{absorbed:{shield:entry.roll.damageBreakdown.shieldAbsorbed??0,armor:entry.roll.damageBreakdown.armorAbsorbed??0,arcane:entry.roll.damageBreakdown.arcaneAbsorbed??0,affinity:entry.roll.damageBreakdown.affinityDelta??0}}:{}),
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy',
       }]
     })
@@ -427,6 +429,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         actorId: roll.actorId, targetId: roll.targetId ?? (actor?.side === 'enemy' ? player.id : target.id),
         action: roll.action, kind: 'damage' as const,
         critical: roll.critical,
+        ...(roll.damageBreakdown?{absorbed:{shield:roll.damageBreakdown.shieldAbsorbed??0,armor:roll.damageBreakdown.armorAbsorbed??0,arcane:roll.damageBreakdown.arcaneAbsorbed??0,affinity:roll.damageBreakdown.affinityDelta??0}}:{}),
         ...(roll.weaponBonusRoll ? { weaponBonusRoll: roll.weaponBonusRoll } : {}),
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy' as const,
       }]
@@ -483,11 +486,20 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const damageRevealed = diceStage === 'impact' && activeDice?.id === impactEventId
 
   const modifiers=getInitiativeModifiersV0517(player,content)
-  const latestDamage=battle.log.slice().reverse().find(entry=>entry.roll?.damageBreakdown)
+  const latestDamage=battle.log.slice().reverse().find(entry=>entry.roll?.targetId===player.id && entry.roll?.damageBreakdown)
+  const intentViews=battle.phase==='AwaitingAction'
+    ? enemies.filter(enemy=>enemy.alive).map(enemy=>{
+       const enemyIndex=battle.initiativeOrder.indexOf(enemy.id)
+       const intentRound=enemyIndex<=battle.actorCursor?battle.round+1:battle.round
+       return getEnemyIntentV0517(battle,enemy,content,intentRound)
+      }).filter((intent):intent is NonNullable<typeof intent>=>intent!==null)
+    : []
+  const impactLabel=getLayerImpactV0517(activeDice?.damage??0,Boolean(activeDice?.critical),activeDice?.absorbed)
+
   const statusesFor=(actor:NonNullable<typeof player>)=><div className="pixel-battle__status-strip" aria-label="Efeitos ativos">
     {actor.statusEffects.map((effect,index)=>{
       const definition=content.statusEffects[effect.definitionId]
-      return <span key={effect.definitionId+'-'+index} title={`${definition?.name??effect.definitionId} · ${effect.remainingTurns} turno(s): ${definition?.description??''} · Iniciativa ${(definition?.initiativeModifier??0)>=0?'+':''}${definition?.initiativeModifier??0} · Dado ${(definition?.initiativeDieSteps??0)>=0?'+':''}${definition?.initiativeDieSteps??0} passo(s)`}>
+      return <span key={effect.definitionId+'-'+index} title={`${definition?.name??effect.definitionId} · ${effect.remainingTurns} turno(s): ${definition?.description??''} · Iniciativa ${(definition?.initiativeModifier??0)>=0?'+':''}${definition?.initiativeModifier??0} · Dado ${(definition?.initiativeDieSteps??0)>=0?'+':''}${definition?.initiativeDieSteps??0} passo(s) · ESC ${(definition?.shieldGuardModifier??0)>=0?'+':''}${definition?.shieldGuardModifier??0}`}>
         <AssetImage assetId={`status.${effect.definitionId}`} alt={definition?.name??effect.definitionId}/>
         <b>{effect.remainingTurns}T</b>
       </span>
@@ -503,7 +515,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
       <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} biome={battleBiome} />
       <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''} ${strikeFx?.actorId === player.id ? 'is-striking' : ''} ${strikeFx?.targetId === player.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === player.id ? 'is-acting' : ''} ${receivingId === player.id ? 'is-receiving' : ''}`}>
-        {damageRevealed && receivingId === player.id && <b className="pixel-battle__damage-number" data-feedback={getImpactReadout(activeDice?.damage ?? 0, Boolean(activeDice?.critical))} role="status">{activeDice?.damage ? '−'+activeDice.damage : '0'} · {getImpactReadout(activeDice?.damage ?? 0, Boolean(activeDice?.critical))}</b>}
+        {damageRevealed && receivingId === player.id && <b className="pixel-battle__damage-number" data-feedback={impactLabel} role="status">{activeDice?.damage ? '−'+activeDice.damage : '0'} · {impactLabel}</b>}
         <EquippedCharacter save={save} facing="right" alt={player.alive ? 'Terrírian voltado para os inimigos' : 'Terrírian derrotado'} />
       </div>
       <div className={`pixel-battle__enemies pixel-battle__enemies--${enemies.length}`}>
@@ -513,7 +525,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             '--enemy-width': `${getEnemyFormationSlot(i, enemies.length).widthPercent}%`,
             zIndex: getEnemyFormationSlot(i, enemies.length).layer } as React.CSSProperties}
           data-granite-golem={enemy.definitionId === 'enemy_granite_golem' ? 'true' : undefined}
-          className={`pixel-battle__enemy ${activeDice?.action==='Ataque Duplo' && diceStage==='impact' && activeDice.targetId===enemy.id?'is-double-hit':''} ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
+          className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
           onClick={() => enemy.alive && !isProtectedBoss(battle, enemy) && setTargetId(enemy.id)}
            disabled={!enemy.alive || isProtectedBoss(battle, enemy)}
           onMouseEnter={() => setHoveredEnemyId(enemy.id)} onMouseLeave={() => setHoveredEnemyId(null)}
@@ -538,7 +550,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             motion={visualHp(enemy.id) <= 0 ? 'defeat'
               : strikeFx?.actorId === enemy.id ? 'attack'
                 : strikeFx?.targetId === enemy.id || receivingId === enemy.id ? 'hit' : 'idle'} />
-          {damageRevealed && receivingId === enemy.id && <b className="pixel-battle__damage-number" data-feedback={getImpactReadout(activeDice?.damage ?? 0, Boolean(activeDice?.critical))} role="status">{activeDice?.damage ? '−'+activeDice.damage : '0'} · {getImpactReadout(activeDice?.damage ?? 0, Boolean(activeDice?.critical))}</b>}
+          {damageRevealed && receivingId === enemy.id && <b className="pixel-battle__damage-number" data-feedback={impactLabel} role="status">{activeDice?.damage ? '−'+activeDice.damage : '0'} · {impactLabel}</b>}
            <small>{enemy.name}</small>
           {enemy.alive && getEnemyReadouts(enemy, player, isProtectedBoss(battle, enemy)).length > 0 &&
             <span className="pixel-battle__threat-badge" aria-hidden="true">{getEnemyReadouts(enemy, player, isProtectedBoss(battle, enemy))[0]}</span>}
@@ -598,7 +610,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             <div className="pixel-battle__meter hp" role="progressbar" aria-label="Vida" aria-valuenow={visualHp(player.id)} aria-valuemin={0} aria-valuemax={player.maxHp}><i style={{ width: clampPercent(visualHp(player.id), player.maxHp) + '%' }} /><span>VIDA {visualHp(player.id)} / {player.maxHp}</span></div>
             <div className="pixel-battle__meter mp" role="progressbar" aria-label="Mana" aria-valuenow={player.mp} aria-valuemin={0} aria-valuemax={player.maxMp}><i style={{ width: clampPercent(player.mp, player.maxMp) + '%' }} /><span>MANA {player.mp} / {player.maxMp}</span></div>
             <div className="pixel-battle__defense-readout" role="group" aria-label="Camadas defensivas do Terrírian">
-              <span title="ESC: número do Escudo que precisa ser superado em um ataque físico">ESC <b>{player.physicalGuard??0}</b></span>
+              <span title="ESC: número do Escudo que precisa ser superado em um ataque físico">ESC <b>{getEffectiveShieldV0517(player,content)}</b></span>
               <span title="ARM: mitigação por armadura e proteção física">ARM <b>{player.mitigation}</b></span>
               <span title="ARC: reserva arcana que absorve o próximo dano mágico">ARC <b>{player.arcaneGuard??0}/{player.maxArcaneGuard??0}</b></span>
             </div>
@@ -611,6 +623,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
           {' · '}ARM {latestDamage.roll.damageBreakdown.armorAbsorbed??0}
           {' · '}ARC {latestDamage.roll.damageBreakdown.arcaneAbsorbed??0}
           {' · '}HP -{latestDamage.roll.damageBreakdown.finalDamage}
+          {latestDamage.roll.damageBreakdown.affinityDelta ? ' · Afinidade '+(latestDamage.roll.damageBreakdown.affinityDelta>0?'+':'')+latestDamage.roll.damageBreakdown.affinityDelta : ''}
         </small>}
         <BattleEquipmentHud save={save} />
       </section>
@@ -770,6 +783,14 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             {getEnemyReadouts(target, player, isProtectedBoss(battle, target)).length > 0 &&
               <small className="pixel-battle__target-alert">{getEnemyReadouts(target, player, isProtectedBoss(battle, target)).join(' · ')}</small>}
             <div className="pixel-battle__meter hp" role="progressbar" aria-label="Vida do alvo" aria-valuenow={visualHp(target.id)} aria-valuemin={0} aria-valuemax={target.maxHp}><i style={{ width: clampPercent(visualHp(target.id), target.maxHp) + '%' }} /><span>VIDA {visualHp(target.id)} / {target.maxHp}</span></div></div>
+        </div>}
+        {intentViews.length>0 && <div className="pixel-battle__intent-list" role="note" aria-label="Intenções declaradas dos inimigos">
+          <strong>INTENÇÕES DOS INIMIGOS</strong>
+          {intentViews.map(intent=><div key={intent.actorId} className="pixel-battle__intent" data-aspect={intent.aspect} title={intent.warning}>
+            <b>{battle.combatants[intent.actorId]?.name}</b>
+            <span>R{intent.round} · {intent.action} · {intent.aspect==='physical'?'FÍSICO':'MÁGICO / ELEMENTAL'}</span>
+            <small>{intent.warning}</small>
+          </div>)}
         </div>}
         <p className="pixel-battle__hint"><Crosshair size={14} /> {battle.phase === 'Victory' ? 'Recolha tudo de uma vez e continue.' : battle.phase === 'Defeat' ? 'A expedição foi interrompida.' : 'Selecione um inimigo e escolha sua ação.'}</p>
         </>}
