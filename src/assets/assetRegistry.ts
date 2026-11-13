@@ -1,6 +1,7 @@
 import { castleGearMerchantsV05151 } from '../content/castleMerchantsV05151'
 import { equipmentOffersV0515, gearSpriteId, type GearGrade } from '../content/equipmentV0515'
 import { combatSkillDefinitions } from '../content/combat'
+import { extraCombatStatusesV0517 } from '../content/combatAdvancementsV0517'
 import type { CombatSkillDefinition } from '../content/types'
 import { biomeMaterialDefinitions, biomeEnemyDefinitions } from '../content/biomeExpeditions'
 import { complementaryItemDefinitions } from '../content/complementaryItems'
@@ -48,6 +49,15 @@ const entries: AssetEntry[] = [
 
   {id:'action.attack-single',path:'/assets/actions/attack_single.png',fallback:'/assets/placeholders/skill.svg',alt:'Ataque Único',pixelArt:true},
   {id:'action.attack-area',path:'/assets/actions/attack_cleave.png',fallback:'/assets/placeholders/skill.svg',alt:'Ataque em Área',pixelArt:true},
+  ...['blade','axe','bow','dagger','arcaneFocus','grimoire','staff'].flatMap(family=>
+    ['single','area'].map(kind=>({id:'action.weapon.'+family+'.'+kind,
+      path:'/assets/actions/v0517/'+family+'_'+kind+'.png',fallback:'/assets/placeholders/skill.svg',
+      alt:family+' · '+kind,pixelArt:true,draftPlaceholder:true as const}))),
+  {id:'equipment.offhand.quiver_v0517',path:'/assets/equipment/offhand/quiver_v0517.png',
+    fallback:'/assets/placeholders/item.svg',alt:'Aljava Vinculada',pixelArt:true,draftPlaceholder:true},
+  ...extraCombatStatusesV0517.map(effect=>({id:'status.'+effect.id,
+    path:'/assets/status/'+effect.id+'.png',fallback:'/assets/placeholders/skill.svg',
+    alt:effect.name,pixelArt:true,draftPlaceholder:true as const})),
   ...['status_resonant_fracture','status_clan_aegis','status_clan_rune_ward','status_clan_disjunction','status_clan_omen','status_clan_containment']
     .map(id=>({id:`status.${id}`,path:`/assets/status/${id}.png`,fallback:'/assets/placeholders/skill.svg',alt:id,pixelArt:true})),
 

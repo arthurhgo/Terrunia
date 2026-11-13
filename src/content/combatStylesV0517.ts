@@ -36,8 +36,9 @@ export function getWeaponAttackNamesV0517(archetype?:string){
 }
 export function getWeaponAttackCardsV0517(archetype?:string):CombatSkillDefinition[]{
  const names=getWeaponAttackNamesV0517(archetype)
+ const family=archetype&&labels[archetype]?archetype:'blade'
  return [
-  {id:'attack_single_v05141',name:names.single,description:names.description+' Ataque direto com o dado da arma.',target:'enemy',presentationGroup:'attack',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-single',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
-  {id:'skill_basic_area_attack',name:names.area,description:names.description+' 60% do dano no alvo principal; cada adjacente elegível recebe 30% desse impacto.',target:'enemy',presentationGroup:'attack',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-area',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
+  {id:'attack_single_v05141',name:names.single,description:names.description+' Ataque direto com o dado da arma.',target:'enemy',presentationGroup:'attack',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.weapon.'+family+'.single',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
+  {id:'skill_basic_area_attack',name:names.area,description:names.description+' 60% do dano no alvo principal; cada adjacente elegível recebe 30% desse impacto.',target:'enemy',presentationGroup:'attack',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.weapon.'+family+'.area',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
  ]
 }
