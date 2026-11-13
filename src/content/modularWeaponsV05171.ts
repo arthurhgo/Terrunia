@@ -6,6 +6,8 @@ export type ModularFamily=typeof MODULAR_FAMILIES[number]
 export const MODULAR_SLOTS=['body','handle','coreHousing','focusMount'] as const
 export type ModularSlot=typeof MODULAR_SLOTS[number]
 export type ModularTier=1|2|3|4|5
+/** Content IDs must obey stable-id schema; family/slot enums stay camelCased. */
+export const modularStableKeyV05171=(value:string)=>value.replace(/([A-Z])/g,'_$1').toLowerCase()
 export type ModularPart={id:string;name:string;family:ModularFamily;partSlot:ModularSlot;tier:ModularTier;
  itemId:string;assetId:string;price:number;level:number;style:'MAGIA'|'ARCO'|'DEFESA'|'GUERRA'|'MOBILIDADE';
  bonuses:{attack:number;mitigation:number;maxHp:number;maxMp:number;initiative:number}}
@@ -37,10 +39,10 @@ const grants=(family:ModularFamily,slot:ModularSlot,tier:number):ModularPart['bo
 export const modularPartsV05171:ModularPart[]=MODULAR_FAMILIES.flatMap(family=>
  MODULAR_SLOTS.flatMap(slot=>
  ([1,2,3,4,5] as const).map(tier=>{
-  const id='part_'+family+'_'+slot+'_t'+tier
+  const id='part_'+modularStableKeyV05171(family)+'_'+modularStableKeyV05171(slot)+'_t'+tier
   return {id,itemId:id,family,partSlot:slot,tier,
    name:SLOT_LABEL[slot]+' '+TIER_LABEL[tier]+' · '+FAMILY_LABEL[family],
-   assetId:'modular.'+family+'.'+slot+'.t'+tier,price:PRICES[tier],level:LEVELS[tier],
+   assetId:'modular.'+modularStableKeyV05171(family)+'.'+modularStableKeyV05171(slot)+'.t'+tier,price:PRICES[tier],level:LEVELS[tier],
    style:styleFor(family),bonuses:grants(family,slot,tier)}
  })))
 export const modularPartById=Object.fromEntries(modularPartsV05171.map(part=>[part.id,part])) as Record<string,ModularPart>

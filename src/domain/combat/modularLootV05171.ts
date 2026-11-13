@@ -1,7 +1,7 @@
 import type {GameSave} from '../game/types'
 import type {ContentCatalog} from '../../content/catalog'
 import {astravelCombatNodes} from '../../content/astravel'
-import {modularPartById,MODULAR_SLOTS,getAssemblyFamily,type ModularFamily,type ModularTier} from '../../content/modularWeaponsV05171'
+import {modularPartById,MODULAR_SLOTS,getAssemblyFamily,modularStableKeyV05171,type ModularFamily,type ModularTier} from '../../content/modularWeaponsV05171'
 
 export type ModularLootRollV05171={
  version:1;seed:number;source:'trail'|'wave';sourceIndex:number;itemIds:string[]
@@ -24,10 +24,10 @@ export function rollModularLootV05171(save:GameSave,battleId:string,seed:number,
  const family=getAssemblyFamily(archetype??'blade','weapon')??'blade'
  const value=fromBattle(battleId,seed),tier=tierFor(source,index)
  const slot=MODULAR_SLOTS[(index-1)%MODULAR_SLOTS.length]
- const items=['part_'+family+'_'+slot+'_t'+tier]
+ const items=['part_'+modularStableKeyV05171(family)+'_'+modularStableKeyV05171(slot)+'_t'+tier]
  if(index>=8&&mix(value,37)%4===0){
   const alt:ModularFamily=family==='blade'?'shield':'blade'
-  const extra='part_'+alt+'_'+MODULAR_SLOTS[mix(value,97)%4]+'_t'+Math.max(1,tier-1)
+  const extra='part_'+modularStableKeyV05171(alt)+'_'+modularStableKeyV05171(MODULAR_SLOTS[mix(value,97)%4])+'_t'+Math.max(1,tier-1)
   if(modularPartById[extra])items.push(extra)
  }
  // Earned gems stay inventory-only until Grade III's existing gem rite.
