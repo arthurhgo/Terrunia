@@ -15,7 +15,7 @@ export const OFFHAND_RITE_V0517 = {
   {baseId:'bound_shield_quiver_v0517',cost:40,label:'Aljava de arqueiro'},
  ] as const,
 } as const
-export function checkOffhandRiteV0517(save:GameSave,baseId:string,catalog:ContentCatalog,npcId=OFFHAND_RITE_V0517.npcId){
+export function checkOffhandRiteV0517(save:GameSave,baseId:string,catalog:ContentCatalog,npcId:string=OFFHAND_RITE_V0517.npcId){
  const offer=OFFHAND_RITE_V0517.offers.find(o=>o.baseId===baseId)
  if(!offer)return fail('OFFHAND_UNKNOWN','Esta manifestação não pertence à Escudaria.')
  if(save.battle||save.world.currentLocationId!==OFFHAND_RITE_V0517.locationId||npcId!==OFFHAND_RITE_V0517.npcId)
@@ -30,7 +30,7 @@ export function checkOffhandRiteV0517(save:GameSave,baseId:string,catalog:Conten
  if(save.wallet.gold<offer.cost)return fail('OFFHAND_GOLD','Ouro insuficiente para o rito.')
  return ok(offer)
 }
-export function performOffhandRiteV0517(save:GameSave,baseId:string,catalog:ContentCatalog,now:string,npcId=OFFHAND_RITE_V0517.npcId):Result<GameSave>{
+export function performOffhandRiteV0517(save:GameSave,baseId:string,catalog:ContentCatalog,now:string,npcId:string=OFFHAND_RITE_V0517.npcId):Result<GameSave>{
  const check=checkOffhandRiteV0517(save,baseId,catalog,npcId)
  if(!check.ok)return check
  const next=structuredClone(save)
