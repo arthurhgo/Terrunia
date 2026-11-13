@@ -236,7 +236,7 @@ export type CharacterClassDefinition = {
 
 export type QuestObjectiveDefinition = {
   id: string
-  type: 'talk' | 'kill' | 'collect' | 'visit' | 'interact' | 'completeRite' | 'purchase' | 'equip' | 'refine'
+  type: 'talk' | 'kill' | 'collect' | 'visit' | 'interact' | 'completeRite' | 'purchase' | 'equip' | 'refine' | 'assemble' | 'battleWithAssembly' | 'defendAction'
   targetId: string
   required: number
   label: string
