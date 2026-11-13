@@ -22,6 +22,7 @@ export function purchaseAndEquipGear(
   now: string,
 ): Result<GameSave> {
   const offer = gearOfferById[gearId]
+  if(offer?.slot==='weapon')return fail('BOUND_WEAPON_NOT_FOR_SALE','Armas completas não podem ser compradas ou substituídas.')
   if (!offer) return fail('MARKET_EQUIP_UNKNOWN', 'Esta peça não pertence ao catálogo de equipamentos.')
   const purchased = purchaseGear(save, [gearId], now, merchantId)
   if (!purchased.ok) return purchased

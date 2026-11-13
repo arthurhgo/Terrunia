@@ -7,6 +7,7 @@ import { CLAN_EMBLEM_ITEM_ID } from './clanProgressionV05142'
 import { defensiveSkillDefinitionsV0517, scepterExtraSkillDefinitionsV0517 } from './combatStylesV0517'
 import { extraCombatSkillsV0517, extraCombatStatusesV0517 } from './combatAdvancementsV0517'
 import {classDisciplineSkillDefinitionsV0517} from './classDisciplinesV0517'
+import {elementalGemSkillDefinitionsV05171} from './modularGemSkillsV05171'
 import type {
   CombatSkillDefinition,
   EncounterDefinition,
@@ -15,9 +16,15 @@ import type {
 
 export const combatSkillDefinitions = [
   ...defensiveSkillDefinitionsV0517,
+  {id:'skill_offhand_shield_bash_v05171',name:'Golpe de Escudo',
+   description:'Impacto físico explícito com o Vínculo de escudo. Não cria ataque automático nem substitui a arma principal.',
+   target:'enemy',presentationGroup:'skills',mpCost:1,cooldownTurns:2,
+   damageDieSteps:0,damageAspect:'physical',effects:[{type:'damage',powerBonus:0}],
+   status:'BALANCE_DRAFT'},
   ...scepterExtraSkillDefinitionsV0517,
   ...extraCombatSkillsV0517,
   ...classDisciplineSkillDefinitionsV0517,
+  ...elementalGemSkillDefinitionsV05171,
   {
     id: 'skill_sentinel_arcane_pulse', name: 'Pulso Arcano Corrompido',
     description: 'A Sentinela dispara energia mágica de seu núcleo inorgânico.',

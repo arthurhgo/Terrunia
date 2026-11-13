@@ -131,7 +131,7 @@ describe('grade pixel art v0.1', () => {
 
   it('reserva IDs editáveis para os novos biomas sem exigir PNG não produzido', () => {
     const pending = Object.values(assetRegistry).filter((asset) => asset.draftPlaceholder)
-    expect(pending.filter((asset) => !asset.id.startsWith('equipment.v0515.'))).toHaveLength(78) // +12 Class disciplines, all with dedicated replaceable pixel icon SVGs
+    expect(pending.filter((asset) => !asset.id.startsWith('equipment.v0515.'))).toHaveLength(246) // 78 existing drafts +160 modular parts +4 elemental gems +4 spells
     expect(pending.filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(0)
     expect(Object.values(assetRegistry).filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(4200)
     expect(Object.values(assetRegistry).filter((asset) => asset.id.startsWith('npc.castle-merchant.'))).toHaveLength(4)

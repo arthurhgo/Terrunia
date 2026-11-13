@@ -8,6 +8,7 @@ import { getFlatStatBonus } from '../skillTree/skillTree'
 import { getAttributeScore } from './attributeProgression'
 import { getEquippedBasicArmor } from '../inventory/basicArmor'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
+import {getBoundAssemblyBonusesV05171} from '../bond/weaponAssemblyV05171'
 
 export type StatContribution = { label: string; value: number }
 export type DerivedStat = { value: number; contributions: StatContribution[] }
@@ -35,6 +36,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       : basicArmor.armor.mitigation + (basicArmor.instance.refinementLevel ?? 0)*ARMOR_REFINEMENT.mitigationPerLevel
     : 0
   const gear = getGearBonuses(save)
+  const weaponParts=getBoundAssemblyBonusesV05171(save,'weapon')
   const weapon = bondedEquipment.weapon ? save.boundItems[bondedEquipment.weapon] : null
   const weaponBase = weapon ? catalog.boundItemBases[weapon.baseItemId] : null
   const boundDefinitions = Object.values(bondedEquipment)
@@ -69,6 +71,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
     { label: weaponBase?.name ?? 'Sem Arma vinculada', value: weaponBase?.basePower ?? 1 },
     { label: 'Vínculos e Skills', value: attackBonus },
     { label: 'Forja de Durnan', value: forgeAttack },
+    { label: 'Montagem de arma · 4 partes',value:weaponParts.attack },
     { label: 'Equipamento Tier · geral e afinidade da arma', value: equippedAttack },
     { label: 'Clã', value: weaponClanContribution },
   ])
@@ -102,6 +105,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: weaponBase?.powerType === 'physical' ? weaponBase.name : 'Ataque desarmado', value: weaponBase?.powerType === 'physical' ? weaponBase.basePower : 1 },
       { label: 'Vínculos e Skills', value: attackBonus },
       { label: 'Forja de Durnan', value: weaponBase?.powerType === 'physical' ? forgeAttack : 0 },
+      { label: 'Partes da arma vinculada',value: weaponBase?.powerType === 'physical'?weaponParts.attack:0 },
       { label: 'Equipamento Tier · físico e geral', value: gear.physicalAttack + gear.attackPower },
       { label: 'Clã', value: clanBonuses.physicalAttack ?? 0 },
     ]),
@@ -110,6 +114,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: weaponBase ? `Escala de ${attributeLabels[weaponBase.scalingAttribute]}` : 'Astúcia', value: weaponBase?.powerType === 'magical' ? weaponAttributeContribution : Math.floor(getAttributeScore(attributes.cunning) / 2) },
       { label: weaponBase?.powerType === 'magical' ? weaponBase.name : 'Sem foco mágico', value: weaponBase?.powerType === 'magical' ? weaponBase.basePower : 0 },
       { label: 'Forja de Durnan', value: weaponBase?.powerType === 'magical' ? forgeAttack : 0 },
+      { label: 'Partes da arma vinculada',value:weaponBase?.powerType==='magical'?weaponParts.attack:0 },
       { label: 'Equipamento Tier · mágico e geral', value: gear.magicalAttack + gear.attackPower },
       { label: 'Clã', value: clanBonuses.magicalAttack ?? 0 },
     ]),
@@ -119,6 +124,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: 'Equipamentos', value: equipmentBonus('initiative') + gear.initiative },
       { label: basicArmor?.definition.name ?? 'Proteção simples', value: basicArmor?.armor.initiative ?? 0 },
       { label: 'Vínculos e Skills', value: getFlatStatBonus(save, catalog, 'initiative') },
+      { label: 'Empunhadura e núcleo modular',value:weaponParts.initiative },
     ]),
   }
 }

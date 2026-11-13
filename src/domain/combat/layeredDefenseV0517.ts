@@ -1,6 +1,7 @@
 import type { ContentCatalog } from '../../content/catalog'
 import type { GameSave } from '../game/types'
 import type { Combatant, CombatDie } from './types'
+import {getBoundAssemblyBonusesV05171} from '../bond/weaponAssemblyV05171'
 
 /** BALANCE_DRAFT / OWNER_DECISION.
  * Escudaria is one manifestation of the EXISTING 'shield' bound slot.
@@ -21,24 +22,27 @@ export function deriveOffhandCombatV0517(save: GameSave, catalog: ContentCatalog
   : offhand?.archetype==='arcaneWard' ? 'arcane'
   : offhand?.archetype==='shield' ? 'shield' : 'empty'
  const grade=bound?.grade??1
+ const shieldParts=getBoundAssemblyBonusesV05171(save,'shield')
+ const weaponParts=getBoundAssemblyBonusesV05171(save,'weapon')
  const clanDunavar=char.clan.clanId==='dunavar'
  const style:CombatProfileV0517 = kind==='quiver'&&weapon?.archetype==='bow'?'archer'
   : kind==='shield'?'shieldbearer'
   : MAGE_WEAPONS.has(weapon?.archetype??'')?'arcaneCaster'
   : DUEL_WEAPONS.has(weapon?.archetype??'')?'duelist':'untrained'
  // A visible physical shield is a repeatable per-hit THRESHOLD, not invulnerability.
- const physicalGuard=kind==='shield' ? Math.min(6,(offhand?.basePower??0)+Math.floor((grade-1)/2)) : 0
+ const physicalGuard=kind==='shield' ? Math.min(10,(offhand?.basePower??0)+Math.floor((grade-1)/2)+shieldParts.guard) : 0
  // ARC is a depletable pool and can be replenished by an earned clan spell.
- const arcaneGuard=kind==='arcane'?Math.min(9,(offhand?.basePower??0)+2+Math.floor((grade-1)/2))
+ const arcaneBase=kind==='arcane'?Math.min(9,(offhand?.basePower??0)+2+Math.floor((grade-1)/2))
   : clanDunavar&&kind==='shield'?1
   : style==='arcaneCaster'?1:0
+ const arcaneGuard=Math.min(14,arcaneBase+shieldParts.arcane+weaponParts.arcane)
  return { kind,style,physicalGuard,arcaneGuard,clanDunavar,weaponArchetype:weapon?.archetype??'blade',
   offhandAssetId:offhand?.assetIdByGrade[grade]??null,
   label:kind==='shield'?'Escudo Vinculado':kind==='arcane'?'Protetor Arcano':
    kind==='quiver'?'Aljava Vinculada':'Mão secundária livre' }
 }
 
-export type DamageTypeV0517 = 'physical' | 'arcane' | 'fire' | 'poison' | 'ruin'
+export type DamageTypeV0517 = 'physical' | 'arcane' | 'fire' | 'water' | 'earth' | 'air' | 'poison' | 'ruin'
 export function getDamageTypeV0517(actor:Combatant, skill?:{damageAspect?:DamageTypeV0517;presentationGroup?:string}):DamageTypeV0517 {
  if(skill?.damageAspect)return skill.damageAspect
  if(skill?.presentationGroup==='magic'||MAGE_WEAPONS.has(actor.weaponArchetype??''))return 'arcane'

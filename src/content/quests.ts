@@ -2,6 +2,7 @@ import type { QuestDefinition, QuestProgressionOutcome } from './types'
 import { clanDefinitions, classDefinitions } from './progression'
 import { sideQuestDefinitions } from './sidequests'
 import { rosettaTutorialQuests } from './rosettaTutorial'
+import {rosettaModularQuestsV05171} from './rosettaModularTutorialV05171'
 import { clanTableQuestId, clanGolemQuestId, CLAN_INITIATION_TABLE_ID, GRANITE_GOLEM_ENEMY_ID, MAIN_CLAN_AFFILIATION_QUEST, CLAN_AFFILIATION_RITE_ID, CLAN_RECRUITMENT_WAVE, CLAN_EMBLEM_ITEM_ID } from './clanProgressionV05142'
 
 const mainLoreClassVariants = Object.fromEntries(classDefinitions.map((classDefinition) => [
@@ -267,5 +268,6 @@ export const questDefinitions = [
   classTrial('class_canalizador_trial', 'Canalizador do Caos', 'Redirecione fluxos instáveis sem sobrecarga.', 'npc_master_canalizador', 'estres_do_et', 'canalizador_do_caos'),
   classTrial('class_ruptura_trial', 'Guardador da Ruptura', 'Mantenha várias fissuras sob controle.', 'npc_master_ruptura', 'estres_do_et', 'guardador_da_ruptura'),
   classTrial('class_ruina_trial', 'Mago da Ruína', 'Destrua partes instáveis sem provocar colapso.', 'npc_master_ruina', 'estres_do_et', 'mago_da_ruina'),
+  ...rosettaModularQuestsV05171,
   ...sideQuestDefinitions,
 ] satisfies QuestDefinition[]

@@ -9,8 +9,8 @@ export const TERRAN_GEAR_MERCHANTS = {
   presence_terran_weaponsmith: {
     npcId: 'npc_terran_weaponsmith',
     label: 'Torvan · Armeiro de Terran',
-    description: 'Revestimentos comuns para armas vinculadas.',
-    slots: ['weapon'] as readonly GearSlot[],
+    description: 'Peças para montagem de armas vinculadas na Casa do Ferreiro. Não vende armas completas.',
+    slots: [] as readonly GearSlot[],
     tone: 'weapon',
   },
   presence_terran_armorer: {

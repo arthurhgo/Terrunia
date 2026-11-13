@@ -26,7 +26,7 @@ export type QuestEvent =
   | { type: 'visit'; targetId: string; amount?: number }
   | { type: 'interact'; targetId: string; amount?: number }
   | { type: 'completeRite'; targetId: string; amount?: number }
-  | { type: 'purchase' | 'equip' | 'refine'; targetId: string; amount?: number }
+  | { type: 'purchase' | 'equip' | 'refine' | 'assemble' | 'battleWithAssembly' | 'defendAction'; targetId: string; amount?: number }
 
 export const createQuestProgress = (definition: QuestDefinition): QuestProgress => ({
   questId: definition.id,

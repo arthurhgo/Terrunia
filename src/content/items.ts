@@ -1,4 +1,5 @@
 import type { BoundItemBaseDefinition, ItemDefinition } from './types'
+import {modularPartItemsV05171,modularElementalJewelItemsV05171} from './weaponPartsV05171'
 import { gearItemDefinitionsV0515 } from './equipmentV0515'
 import { basicArmorItems } from './rosettaTutorial'
 import { complementaryItemDefinitions } from './complementaryItems'
@@ -36,6 +37,8 @@ export const itemDefinitions = [
   },
   ...complementaryItemDefinitions,
   ...gearItemDefinitionsV0515,
+  ...modularPartItemsV05171,
+  ...modularElementalJewelItemsV05171,
   ...biomeMaterialDefinitions,
   { id: 'material_linen_thread', name: 'Linha de Linho', description: 'Linha resistente usada por Durnan para o primeiro reforço das proteções simples.',
     category: 'material', rarity: 'common', convertToEssence: false, essenceValue: 0, sellable: false, sellValue: 0,

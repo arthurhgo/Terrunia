@@ -9,7 +9,7 @@ import { deriveCharacterStats } from '../domain/character/derivedStats'
 import { refreshDeliveryQuestProgress } from '../domain/quests/questInventory'
 import { reconcileLegacyHomeKey } from '../domain/terran/base'
 
-export const CURRENT_SAVE_SCHEMA = 17
+export const CURRENT_SAVE_SCHEMA = 18
 
 const idSchema = z.string().min(1)
 const nonnegativeNumber = z.number().finite().nonnegative()
@@ -141,6 +141,16 @@ const boundItemSchema = z.object({
     createdAt: z.string(),
   })),
   forging: z.object({ upgradeIds: z.array(idSchema) }).optional(),
+  assembly: z.object({
+    version:z.literal(1),
+    partIds:z.object({
+      body:idSchema.nullable(),handle:idSchema.nullable(),
+      coreHousing:idSchema.nullable(),focusMount:idSchema.nullable(),
+    }),
+    retiredPartIds:z.array(idSchema),
+    revision:positiveInteger,
+    updatedAt:z.string().min(1),
+  }).optional(),
   scars: z.array(z.object({
     id: idSchema,
     sourceId: idSchema,
@@ -245,6 +255,8 @@ const combatantSchema = z.object({
   activeDefense: z.enum(['block','parry','dodge','counter']).optional(),
   defenseDice: z.object({block:attributeDieSchema,parry:attributeDieSchema,dodge:attributeDieSchema,counter:attributeDieSchema}).optional(),
   hasBoundShield: z.boolean().optional(),
+  reactionBonuses:z.object({block:nonnegativeNumber.optional(),parry:nonnegativeNumber.optional(),dodge:nonnegativeNumber.optional(),counter:nonnegativeNumber.optional()}).optional(),
+  shieldStrikeBonus:nonnegativeNumber.optional(),
   weaponArchetype: z.string().optional(),
   offhandKind: z.enum(['shield','arcane','quiver','empty']).optional(),
   combatProfile: z.enum(['shieldbearer','arcaneCaster','duelist','archer','untrained']).optional(),
@@ -274,6 +286,7 @@ const battleSchema = z.object({
   encounterId: idSchema,
   trailNodeId: idSchema,
   waveIndex: positiveInteger.optional(),
+  modularLootRollVersion:z.literal(1).optional(),
   portalHuntId: idSchema.optional(),
   dungeonEncounterId: idSchema.optional(),
   dungeonRunId: idSchema.optional(),
@@ -972,6 +985,23 @@ const migrateV16ToV17 = (legacy: Record<string, unknown>): unknown => {
   return next
 }
 
+/** v0.5.17.1 non-destructive migration: restore the visually hidden Bond weapon.
+ * A former commercial weapon shell is returned to the backpack with its exact ID.
+ * Other Bonds, Gems, Essences and VFX memories are left untouched. */
+const migrateV17ToV18 = (legacy:Record<string,unknown>):unknown=>{
+ const next=structuredClone(legacy) as unknown as GameSave
+ const legacyShell=next.equippedGearStyles?.weapon
+ if(legacyShell){
+   if(!next.inventory.some(entry=>entry.instanceId===legacyShell.instanceId))
+     next.inventory.push(legacyShell)
+   delete next.equippedGearStyles?.weapon
+   next.eventLog.push('LegacyWeaponShellPreserved:'+legacyShell.instanceId)
+ }
+ next.schemaVersion=18;next.gameVersion='0.5.17.1';next.revision+=1
+ next.eventLog.push('SaveMigrated:17->18')
+ return next
+}
+
 export const migrateAndValidateSave = (input: unknown): GameSave => {
   let candidate = input
   let version =
@@ -1032,6 +1062,7 @@ export const migrateAndValidateSave = (input: unknown): GameSave => {
   if (version === 14) { candidate = migrateV14ToV15(candidate as Record<string, unknown>); version = 15 }
   if (version === 15) { candidate = migrateV15ToV16(candidate as Record<string, unknown>); version = 16 }
   if (version === 16) { candidate = migrateV16ToV17(candidate as Record<string, unknown>); version = 17 }
+  if (version === 17) { candidate = migrateV17ToV18(candidate as Record<string, unknown>); version = 18 }
   if (version > CURRENT_SAVE_SCHEMA) {
     throw new Error(`Save usa schema ${version}, superior ao suportado (${CURRENT_SAVE_SCHEMA}).`)
   }
