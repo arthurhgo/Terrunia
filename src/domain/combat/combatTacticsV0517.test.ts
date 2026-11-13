@@ -122,4 +122,20 @@ describe('v0.5.17 — regras táticas e leituras reais',()=>{
   ]
   ids.forEach(id=>expect(resolveAsset(id).path,id).toMatch(/\.svg$/))
  })
+  it('monstros táticos não repetem status de controle já aplicado',()=>{
+    const {battle,player,enemy}=scenario()
+    turnReady(battle)
+    battle.round=3
+    player.physicalGuard=2
+    expect(getEnemyIntentV0517(battle,enemy,content)?.skillId).toBe('skill_enemy_thorn_pressure_v0517')
+    player.statusEffects.push({definitionId:'status_guard_pressure_v0517',sourceId:enemy.id,remainingTurns:2})
+    expect(getEnemyIntentV0517(battle,enemy,content)?.kind).toBe('basic')
+    const slow=scenario('enemy_spore_sower')
+    turnReady(slow.battle)
+    slow.battle.round=2
+    expect(getEnemyIntentV0517(slow.battle,slow.enemy,content)?.skillId).toBe('skill_enemy_spore_miasma_v0517')
+    slow.player.statusEffects.push({definitionId:'status_slow_v0517',sourceId:slow.enemy.id,remainingTurns:2})
+    expect(getEnemyIntentV0517(slow.battle,slow.enemy,content)?.kind).toBe('basic')
+  })
+
 })

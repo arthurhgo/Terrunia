@@ -389,4 +389,18 @@ describe('combate visual v0.17', () => {
     expect(screen.queryByRole('button',{name:'CONTINUAR EXPEDIÇÃO'})).not.toBeInTheDocument()
   })
 
+  it('mostra intenções declaradas e ESC/ARM/ARC sem gastar turno',()=>{
+    const save=createBattleSave()
+    const snapshot=structuredClone(save.battle)
+    render(<MemoryRouter><BattleScene unified/></MemoryRouter>)
+    const intents=screen.getByLabelText('Intenções declaradas dos inimigos')
+    expect(intents).toHaveTextContent('INTENÇÕES DOS INIMIGOS')
+    expect(intents).toHaveTextContent('Ataque Direto')
+    const layers=screen.getByRole('group',{name:'Camadas defensivas do Terrírian'})
+    expect(layers).toHaveTextContent('ESC')
+    expect(layers).toHaveTextContent('ARM')
+    expect(layers).toHaveTextContent('ARC')
+    expect(useGameStore.getState().save!.battle).toEqual(snapshot)
+  })
+
 })
