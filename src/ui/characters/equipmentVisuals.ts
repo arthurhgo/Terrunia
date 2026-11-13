@@ -29,7 +29,7 @@ export function getVisualEquipment(save: GameSave, sheathed = false): VisualItem
     if (slot!=='weapon'&&gearShell && (save.character.bondedEquipment[slot] || slot === 'shield' || slot === 'necklace' || slot === 'bracelet')) {
       items.push({slot,assetId:gearSpriteId(gearShell,getGearGrade(wornShell?.refinementLevel)),itemId:gearShell.id,itemName:gearShell.name,
         forged:getGearGrade(wornShell?.refinementLevel)>1,forgeGrade:getGearGrade(wornShell?.refinementLevel),
-        visualTier:gearShell.tier,palette:gearShell.palette,sheathed:slot==='weapon'&&sheathed})
+        visualTier:gearShell.tier,palette:gearShell.palette,sheathed:false})
       continue
     }
     const instanceId = save.character.bondedEquipment[slot]
