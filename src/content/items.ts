@@ -381,6 +381,17 @@ export const boundItemBaseDefinitions: BoundItemBaseDefinition[] = [
     scalingAttribute: 'spirit', requirements: { level: 2, attributes: { spirit: 6 } }, statBonuses: { mitigation: 1, maxMp: 2 },
     treeId: 'tree_shield_arcane', assetId: 'equipment.catalog.shield_arcane',
   }),
+  // Escudaria: a Aljava is a manifestation of the existing permanent shield slot.
+  // Acquisition remains gated by NPC/Clã/Shop; not granted to raw Terrírians.
+  equipment({
+    id: 'bound_shield_quiver_v0517', name: 'Aljava Vinculada',
+    description: 'Aljava de flechas rúnicas; substitui a manifestação de escudo no mesmo Vínculo sem criar sexto slot.',
+    slot: 'shield', archetype: 'quiver', basePower: 0, powerType: 'utility',
+    damageType: 'piercing', weightClass: 'light', scalingAttribute: 'agility',
+    requirements: { level: 2, attributes: { agility: 6 } },
+    statBonuses: { initiative: 1 }, treeId: 'tree_shield_foundation',
+    assetId: 'equipment.offhand.quiver_v0517',
+  }),
   equipment({
     id: 'bound_armor_mystic_tunic', name: 'Túnica Mística', description: 'Vestimenta leve para canalização.', slot: 'armor',
     archetype: 'mysticArmor', basePower: 1, powerType: 'utility', damageType: 'resonance', weightClass: 'light',

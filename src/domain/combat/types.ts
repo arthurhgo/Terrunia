@@ -38,6 +38,13 @@ export type Combatant = {
   defenseDice?: Record<import('../../content/combatStylesV0517').DefenseModeV0517, CombatDie>
   hasBoundShield?: boolean
   weaponArchetype?: string
+  offhandKind?: import('./layeredDefenseV0517').OffhandKindV0517
+  combatProfile?: import('./layeredDefenseV0517').CombatProfileV0517
+  physicalGuard?: number
+  arcaneGuard?: number
+  maxArcaneGuard?: number
+  /** Save preserves the original rolled total without temporary status bonuses. */
+  initiativeRolledBase?: number
   skillIds: string[]
   /** Optional for compatibility with battles serialized before v0.5.7. */
   skillCooldowns?: Record<string, number>
@@ -71,6 +78,10 @@ export type CombatRoll = {
     guardMitigation: number
     guardPrevented: number
     finalDamage: number
+    damageAspect?: import('./layeredDefenseV0517').DamageTypeV0517
+    shieldAbsorbed?: number
+    arcaneAbsorbed?: number
+    armorAbsorbed?: number
     critical?: boolean
   }
 }

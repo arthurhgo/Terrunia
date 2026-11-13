@@ -6,6 +6,7 @@ export type CombatEffectDefinition =
   | { type: 'damage'; powerBonus: number }
   | { type: 'restoreHp'; value: number }
   | { type: 'restoreMp'; value: number }
+  | { type: 'restoreArcaneGuard'; value: number }
   | { type: 'cleanseHarmful' }
   | { type: 'adjacentSplash'; fraction: number; maxTargets: 1 | 2; basis: 'primaryFinalDamage' }
   | { type: 'applyStatus'; statusId: string; durationTurns: number; chance: number }
@@ -125,6 +126,7 @@ export type CombatSkillDefinition = {
   presentationGroup?: 'skills' | 'magic' | 'attack'
   /** BALANCE_DRAFT: reaction is rolled at incoming attack. */
   defenseStance?: import('./combatStylesV0517').DefenseModeV0517
+  damageAspect?: import('../domain/combat/layeredDefenseV0517').DamageTypeV0517
   mpCost: number
   /** BALANCE_DRAFT: future personal turns when this skill cannot be used. */
   cooldownTurns?: number
@@ -144,6 +146,9 @@ export type StatusEffectDefinition = {
   startTurnDamage: number
   attackModifier: number
   mitigationModifier: number
+  /** BALANCE_DRAFT: modifies the existing seed-based die and turn order. */
+  initiativeModifier?: number
+  initiativeDieSteps?: number
   status: DraftStatus
 }
 
