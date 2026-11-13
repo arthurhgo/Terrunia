@@ -21,6 +21,7 @@ export function WeaponAssemblyWorkbenchV05171({save}:{save:GameSave}){
  const [selected,setSelected]=useState<string|null>(null)
  const [filter,setFilter]=useState<ModularSlotV05171|'all'>('all')
  const commit=useGameStore(s=>s.assembleBoundModule)
+ const inspect=useGameStore(s=>s.inspectModularBench)
  const boundId=save.character.bondedEquipment[bondSlot]
  const bound=boundId?save.boundItems[boundId]:null
  const base=bound?content.boundItemBases[bound.baseItemId]:undefined
@@ -73,6 +74,7 @@ export function WeaponAssemblyWorkbenchV05171({save}:{save:GameSave}){
    </aside>
    <div className="assembly-v05171__table" aria-label="Vínculo composto em quatro partes">
     <h4>{base.name} · Grau {bound.grade}</h4>
+    <button type="button" onClick={()=>inspect('slots')}>INSPECIONAR ENCAIXES</button>
     <div className="assembly-v05171__layers" role="img" aria-label={'Montagem de '+base.name}>
      {active.map(({slot,definition})=>definition?
       <AssetImage key={slot} assetId={definition.assetId} alt="" />:null)}
@@ -89,6 +91,7 @@ export function WeaponAssemblyWorkbenchV05171({save}:{save:GameSave}){
    </div>
    <aside className="assembly-v05171__preview" aria-label="Comparação de atributos da montagem">
     <h4>Resultado projetado</h4>
+    <button type="button" disabled={!bound.assembly?.revision} onClick={()=>inspect('stats')}>VER ALTERAÇÕES NO STATUS</button>
     <p>{base.name} · ID original preservado</p>
     <div className="assembly-v05171__stats">
      {rows.length?rows.map(key=><span key={key}>{statNames[key]}: {current[key]} → {projected[key]}
