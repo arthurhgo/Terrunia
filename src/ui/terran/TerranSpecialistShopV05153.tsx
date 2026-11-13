@@ -11,6 +11,7 @@ import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
 import './terranSpecialistShopV05153.css'
 import {ModularPartShopV05171} from './ModularPartShopV05171'
+import {assessGearRecommendationV05171,recommendedBuildRoleV05171} from '../../content/gearRecommendationsV05171'
 
 type Stat = keyof typeof GEAR_STAT_LABELS
 const statOptions = Object.entries(GEAR_STAT_LABELS) as [Stat,string][]
@@ -26,6 +27,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
   const [query,setQuery]=useState('')
   const [slot,setSlot]=useState('all')
   const [stat,setStat]=useState<Stat|'all'>('all')
+  const [build,setBuild]=useState('all')
   const [sort,setSort]=useState('catalog')
   const [hovered,setHovered]=useState<string|null>(null)
   const [inspected,setInspected]=useState<string|null>(null)
@@ -37,6 +39,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
   const visible=stock.filter(offer=>
     (slot==='all'||offer.slot===slot) &&
     (stat==='all'||offer.stat===stat||offer.secondaryStat===stat) &&
+    (build==='all'||recommendedBuildRoleV05171(offer)===build) &&
     (query.trim()==='' ||
       (offer.name+' '+(gearSetById[offer.setId]?.roleLabel??'')+' '+
         formatGearStats(offer,1)).toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR').trim()))
@@ -65,6 +68,14 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
       <label><Search size={13} /> Buscar
         <input type="search" aria-label="Buscar equipamentos pelo nome ou atributos"
           placeholder="Buscar item ou função" value={query} onChange={e=>setQuery(e.target.value)}/>
+      </label>
+      <label>Build indicada
+        <select aria-label="Filtrar equipamentos por build" value={build}
+         onChange={e=>setBuild(e.target.value)}>
+          <option value="all">Todos os estilos</option>
+          {['MAGIA','GUERREIRO','ARCO','DEFESA','HÍBRIDO'].map(name=>
+           <option key={name} value={name}>{name}</option>)}
+        </select>
       </label>
       <label>Peça
         <select aria-label="Filtrar slot de equipamento" value={slot}
@@ -102,6 +113,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
         const owned=save.inventory.some(item=>item.definitionId===offer.id)
         const stored=save.baseStorage.some(item=>item.definitionId===offer.id)
         const profile=gearSetById[offer.setId]?.roleLabel
+        const recommendation=assessGearRecommendationV05171(save,offer)
         const canWear=offer.slot!=='weapon'||Boolean(save.character.bondedEquipment.weapon)
         const canBuy=access.ok&&save.wallet.gold>=offer.price
         return <article key={offer.id} className="terran-specialist__offer" data-ownership={equipped?'equipped':owned?'backpack':stored?'storage':'new'}
@@ -119,6 +131,9 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
             onMouseEnter={()=>setHovered(offer.id)} onMouseLeave={()=>setHovered(null)}>
             <strong>{offer.name}</strong>
             <small>Tier {offer.tier} · Grau 1 · {profile??'Equipamento comum'}</small>
+          <small className="terran-specialist__build" data-match={recommendation.match}>
+            {recommendation.recommended} · {recommendation.reason}
+          </small>
             <span>{formatGearStats(offer,1)}</span>
             <small className="terran-specialist__state">{equipped?'Equipado':owned?'Na mochila':stored?'No baú da Base':!access.ok?access.message:'Comum · Sem Clã ou Classe'}</small>
             {(equipped||owned||stored)&&<small className="terran-specialist__duplicate">Você já possui esta peça; confirme a necessidade de outra antes da compra.</small>}
@@ -147,6 +162,8 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
       aria-label={comparison ? 'Atributos: '+comparison.offer.name : 'Ajuda de comparação de equipamentos'}>
       {comparison ? <>
       <strong><ShieldCheck size={13}/> Comparar · {comparison.offer.name}</strong>
+      <small>Indicado: {assessGearRecommendationV05171(save,comparison.offer).recommended} ·
+       Sua build: {assessGearRecommendationV05171(save,comparison.offer).current}</small>
       <small>{comparison.stats.map(entry=>entry.label+' +'+entry.value).join(' · ')}</small>
       <small>Preço: {comparison.offer.price} Ouro · Saldo após compra: {save.wallet.gold-comparison.offer.price} Ouro</small>
       {!comparison.wearable&&<strong className="terran-specialist__blocked">{comparison.blockReason??'Não é possível equipar esta peça agora.'}</strong>}

@@ -115,3 +115,9 @@
     contain-intrinsic-size: auto 225px;
   }
 }
+
+/* v0.5.17.1: accessible class fantasy recommendations, no hard requirement. */
+.terran-specialist__build{display:inline-block;border-left:3px solid #91b6d1;padding:3px 5px;background:#1b343a;color:#d4e7e6!important;font-weight:700;letter-spacing:.03em}
+.terran-specialist__build[data-match="true"]{border-left-color:#9cc89b;background:#1c392e;color:#d5f5cc!important}
+.terran-specialist__build[data-match="false"]{border-left-color:#c6a16b;background:#363127;color:#f1d1a4!important}
+@media(max-width:600px){.terran-specialist__filters label:nth-child(2){grid-column:1/-1}}
