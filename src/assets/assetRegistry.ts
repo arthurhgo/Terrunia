@@ -33,7 +33,6 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
- {id:'skill.shield-bash-v05171',path:'/assets/skills/skill_shield_bash_v05171.svg',fallback:'/assets/placeholders/skill.svg',alt:'Golpe de Escudo',pixelArt:true,draftPlaceholder:true},
  ...modularPartsV05171.map(part=>({id:part.assetId,path:'/assets/modular/'+part.family+'/'+part.partSlot+'_t'+part.tier+'.svg',fallback:'/assets/placeholders/item.svg',alt:part.name,pixelArt:true,draftPlaceholder:true as const})),
   ...equipmentOffersV0515.flatMap((gear) => ([1,2,3] as GearGrade[]).map((grade) => ({
     id: gearSpriteId(gear,grade),
@@ -74,10 +73,10 @@ const entries: AssetEntry[] = [
     fallback: '/assets/placeholders/enemy.svg', alt: 'Sentinela Corrompida · Núcleo da Ruína', pixelArt: true },
   ...(combatSkillDefinitions as CombatSkillDefinition[]).map((skill) => ({
     id: skill.iconAssetId ?? `skill.${skill.id}`,
-    path: `/assets/skills/${skill.id}.${skill.id.endsWith('_v0517') ? 'svg' : 'png'}`,
+    path: `/assets/skills/${skill.id}.${(skill.id.endsWith('_v0517')||skill.id.endsWith('_v05171')) ? 'svg' : 'png'}`,
     fallback: '/assets/placeholders/skill.svg',
     alt: skill.name, pixelArt: true,
-    ...((skill.id === 'skill_granite_slam' || skill.id.endsWith('_v0517')) ? { draftPlaceholder: true as const } : {}),
+    ...((skill.id === 'skill_granite_slam' || (skill.id.endsWith('_v0517')||skill.id.endsWith('_v05171'))) ? { draftPlaceholder: true as const } : {}),
   })),
   ...complementaryItemDefinitions.map((item) => ({
     id: item.iconAssetId, path: '/assets/items/complementary/' + item.id + '.svg',
