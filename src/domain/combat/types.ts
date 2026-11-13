@@ -120,6 +120,7 @@ export type BattleState = {
   trailNodeId: string
   /** Present only on repeatable Portal waves; absent for campaign encounters. */
   waveIndex?: number
+  modularLootRollVersion?: 1
   /** Repeatable Portal hunt; not a story trail node. */
   portalHuntId?: string
   /** v0.5.14 stage identity; keeps trail boss progression separate from stage victories. */

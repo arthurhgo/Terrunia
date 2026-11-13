@@ -286,6 +286,7 @@ const battleSchema = z.object({
   encounterId: idSchema,
   trailNodeId: idSchema,
   waveIndex: positiveInteger.optional(),
+  modularLootRollVersion:z.literal(1).optional(),
   portalHuntId: idSchema.optional(),
   dungeonEncounterId: idSchema.optional(),
   dungeonRunId: idSchema.optional(),

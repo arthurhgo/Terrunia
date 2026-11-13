@@ -4,6 +4,7 @@ import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/funga
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
 import { DEFENSE_RULES_V0517, COMMON_DEFENSE_SKILL_IDS_V0517, getWeaponAttackNamesV0517 } from '../../content/combatStylesV0517'
 import {CLASS_DISCIPLINE_SKILLS_V0517} from '../../content/classDisciplinesV0517'
+import {rollModularLootV05171} from '../loot/modularLootV05171'
 import {getBoundAssemblyBonusesV05171} from '../bond/weaponAssemblyV05171'
 import { deriveOffhandCombatV0517, getDamageTypeV0517, applyLayeredProtectionV0517, getInitiativeModifiersV0517, getEffectiveInitiativeV0517 } from './layeredDefenseV0517'
 import {applyAffinityV0517,getScheduledEnemySkillV0517} from './combatTacticsV0517'
@@ -776,7 +777,19 @@ export const createBattle = (
     initiativeOrder,
     combatants: Object.fromEntries(combatants.map((combatant) => [combatant.id, combatant])),
     log: [],
-    rewards: structuredClone(encounter.rewards),
+    rewards: {
+      ...structuredClone(encounter.rewards),
+      lootDefinitionIds:[
+        ...encounter.rewards.lootDefinitionIds,
+        ...(() => {
+          const stageIndex=catalog.trails.trail_astravel_entry?.nodes.findIndex(
+            node=>node.id===encounter.trailNodeId)??-1
+          if(stageIndex<0||encounter.id==='encounter_astravel_wave')return []
+          return rollModularLootV05171({battleId:id,stageIndex:stageIndex+1,save,catalog})
+        })()
+      ]
+    },
+    modularLootRollVersion:1,
     claimed: false,
     canFlee: encounter.canFlee,
     consumedItemInstanceIds: [],
