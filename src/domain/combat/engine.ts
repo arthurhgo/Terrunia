@@ -296,7 +296,7 @@ const applyCombatEffects = (
           ' contra '+stance.dc+' — '+(success?'SUCESSO':'FALHA')+'.'
         : target.name+' não pode usar '+stance.name+' contra '+incoming+'.',
         'defense')
-      guardedBoulder = Boolean(target.defending && applicable && success && skill?.id === 'skill_granite_slam')
+      guardedBoulder = Boolean(target.defending && (!stance||(applicable&&success)) && skill?.id === 'skill_granite_slam')
       const guardMitigation = stance
         ? success ? stance.reduction + (mode === 'block' && target.hasBoundShield ? 1 : 0) +
           (mode==='block'?(target.defenseModuleBonuses?.block??0):0) : 0
