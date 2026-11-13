@@ -19,6 +19,7 @@ export const combatSkillDefinitions = [
   {
     id: 'skill_sentinel_arcane_pulse', name: 'Pulso Arcano Corrompido',
     description: 'A Sentinela dispara energia mágica de seu núcleo inorgânico.',
+    damageAspect: 'arcane',
     target: 'enemy', mpCost: 0, cooldownTurns: 0, damageDieSteps: 0,
     effects: [{ type: 'damage', powerBonus: 1 }],
     status: 'BALANCE_DRAFT',
