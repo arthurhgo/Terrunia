@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Backpack, Bomb, BookOpen, Crosshair, Gem, ScrollText, Shield, Sparkles, Swords, Zap } from 'lucide-react'
+import { Backpack, Bomb, BookOpen, Crosshair, Gem, ScrollText, Sparkles, Swords, Zap } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { isProtectedBoss, submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
@@ -26,7 +26,7 @@ import { groupBattleLoot } from '../../domain/inventory/battleLoot'
 import { BattleVictorySummaryV0516 } from '../battle/BattleVictorySummaryV0516'
 import { getCombatQuestProgressV0516 } from '../../domain/quests/questFlowV0516'
 import { canUseVictoryRecovery } from '../../domain/combat/victoryRecoveryV05152'
-import { DOUBLE_ATTACK_V05152 } from '../../content/combatActionRulesV05152'
+import { getWeaponAttackCardsV0517 } from '../../content/combatStylesV0517'
 import { getEnemyReadouts, getImpactReadout } from '../../domain/combat/combatReadoutsV05153'
 import { playGameplaySfx } from '../../services/gameplaySfx'
 import './battlePixel.css'
@@ -36,6 +36,7 @@ import './battleCinematic.css'
 import './gameplayV057.css'
 import './battleV0513.css'
 import './battleVictoryV05161.css'
+import './battleWeaponV0517.css'
 
 type Menu = 'attack' | 'skills' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const POTION_CARD_ID = 'skill.use-healing-potion'
@@ -44,9 +45,9 @@ const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.
 const getBattleStrikeFx = (event: BattleDiceEvent) => {
   const action = event.action.toLowerCase()
   const style = /pulso ressonante|golpe ressonante/i.test(action) ? 'resonance' as const
-    : /ataque em área/i.test(action) ? 'area' as const
+    : /ataque em área|varredura|dispersão|nova arcana|onda de energia/i.test(action) ? 'area' as const
     : /arco|bow|flecha|arremess|projectile/i.test(action) ? 'projectile' as const
-    : /arcano|magic|magia|arcane|runa|scepter|staff|grimoire|spell/i.test(action) ? 'arcane' as const
+    : /arcano|mágico|mágica|etéreo|magic|magia|arcane|runa|scepter|staff|grimoire|spell/i.test(action) ? 'arcane' as const
       : 'slash' as const
   return {
     actorId: event.actorId ?? (event.actorSide === 'enemy' ? '' : 'combatant_player'),
@@ -75,7 +76,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const [menu, setMenu] = useState<Menu>(null)
   const [victoryTab, setVictoryTab] = useState<'next' | 'bag'>('next')
   const [rollReturnMenu, setRollReturnMenu] = useState<Menu>(null)
-  const [confirmDefense, setConfirmDefense] = useState(false)
   const [selectedConsumableId, setSelectedConsumableId] = useState('')
   const [hit, setHit] = useState<'player' | 'enemy' | null>(null)
   const [turnCue, setTurnCue] = useState(false)
@@ -117,7 +117,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   useEffect(() => {
     setMenu(null)
     setVictoryTab('next')
-    setConfirmDefense(false)
     setRollReturnMenu(null)
     setActiveDice(null)
     setDiceStage('focus')
@@ -286,15 +285,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const visibleSkills = menu === 'magic' || menu === 'skills'
     ? skills.filter((skill) => menu === 'magic' ? isMagicSkill(skill.id) : !isMagicSkill(skill.id))
     : []
-  const attackCards: CombatSkillDefinition[] = [
-    {id:'attack_single_v05141',name:'Ataque Único',description:'Ataque concentrado no inimigo selecionado, com força integral.',target:'enemy',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-single',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
-    {id:'attack_double_v05152',name:'Ataque Duplo',description:`Uma rolagem, dois impactos no mesmo alvo. ${DOUBLE_ATTACK_V05152.fractionPerHit*100}% do dano original em cada impacto (BALANCE_DRAFT).`,target:'enemy',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-single',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
-    {id:'skill_basic_area_attack',name:'Ataque em Área',description:'60% do ataque no alvo central + 30% desse dano no inimigo de cada lado.',target:'enemy',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-area',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
-  ]
+  const attackCards = getWeaponAttackCardsV0517(player.weaponArchetype)
   const attackCommand=(id:string):Parameters<typeof submit>[0] =>
-    id==='attack_single_v05141'?{type:'attack',targetId:target.id}:
-    id==='attack_double_v05152'?{type:'doubleAttack',targetId:target.id}:
-      {type:'areaAttack',targetId:target.id}
+    id==='attack_single_v05141'?{type:'attack',targetId:target.id}:{type:'areaAttack',targetId:target.id}
   const skillColumns = Math.max(1, Math.min(4, visibleSkills.length))
   const skillRows = Math.max(1, Math.ceil(visibleSkills.length / skillColumns))
   const hasUsefulSupplies = (kind: 'throwable' | 'rune' | 'essence') =>
@@ -411,7 +404,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     if (initiative ? battle.phase !== 'AwaitingInitiative' || !initiativeReady || Boolean(roundCurtain) : !isPlayerTurn) return
     setRollReturnMenu(menu)
     setMenu(null)
-    setConfirmDefense(false)
     const preview = previewBattleCommand(battle, command, content, save.inventory)
     if (!preview.ok) { submit(command); return }
 
@@ -462,7 +454,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const openMenu = (next: Menu) => {
     setHoveredSkillId(null)
     setPinnedSkillId(null)
-    setConfirmDefense(false)
     setMenu(menu === next ? null : next)
   }
   const end = (toCity: boolean) => {
@@ -629,22 +620,16 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             {button('ATAQUE', <Swords />, () => openMenu('attack'), !isPlayerTurn || !target.alive, menu==='attack')}
             {button('HABILIDADES', <BookOpen />, () => openMenu('skills'), !isPlayerTurn || skills.filter((skill) => !isMagicSkill(skill.id)).length === 0, menu === 'skills')}
             {button('MAGIAS', <Sparkles />, () => openMenu('magic'), !isPlayerTurn || skills.filter((skill) => isMagicSkill(skill.id)).length === 0, menu === 'magic')}
-            {button('DEFENDER', <Shield />, () => { setConfirmDefense(true); setMenu(null) }, !isPlayerTurn, confirmDefense)}
             {button('POÇÕES', <Backpack />, () => openMenu('items'), !isPlayerTurn || !hasUsableConsumable, menu === 'items')}
             {button('ARREMESSÁVEIS', <Bomb />, () => openMenu('throwables'), !isPlayerTurn || !hasUsefulSupplies('throwable'), menu === 'throwables')}
             {button('RUNAS', <Gem />, () => openMenu('runes'), !isPlayerTurn || !hasUsefulSupplies('rune'), menu === 'runes')}
             {button('ESSÊNCIAS', <Zap />, () => openMenu('essences'), !isPlayerTurn || !hasUsefulSupplies('essence'), menu === 'essences')}
           </div>
-          {confirmDefense && <div className="pixel-battle__submenu pixel-battle__submenu--confirm" role="group" aria-label="Confirmar defesa">
-            <strong>DEFESA · próximo turno</strong>
-            <button type="button" onClick={() => setConfirmDefense(false)} aria-label="Voltar sem defender">VOLTAR</button>
-            <button type="button" onClick={() => send({ type: 'defend' })}>CONFIRMAR DEFESA</button>
-          </div>}
           {menu && <div className={`pixel-battle__submenu ${skillPickerOpen ? 'pixel-battle__submenu--skill-picker' : ''}`}
             aria-label={skillPickerOpen ? 'Seleção de habilidades sem rolagem' : undefined}>
             <button type="button" aria-label="Voltar sem executar a ação" onClick={() => setMenu(null)}>VOLTAR</button>
             {menu === 'attack' && <div className="pixel-battle__skill-grid pixel-battle__attack-grid"
-                style={{'--skill-columns':3,'--skill-rows':1,'--skill-max-width':'324px'} as React.CSSProperties}
+                style={{'--skill-columns':2,'--skill-rows':1,'--skill-max-width':'252px'} as React.CSSProperties}
                 aria-label="Escolher modo de ataque">
               {attackCards.map((attack) => <SkillCard key={attack.id} skill={attack}
                 preview={previewCombatSkill(player,target,attack,content)} remaining={0}
