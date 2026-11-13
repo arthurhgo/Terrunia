@@ -35,10 +35,10 @@ const FALLBACK = '/assets/placeholders/generic.svg'
 const entries: AssetEntry[] = [
  ...weaponPartDefinitionsV05171.map(p=>({id:p.assetId,
    path:'/assets/weapon-parts/v05171/'+p.family+'/'+p.slot+'_t'+p.tier+'.svg',
-   fallback:'/assets/placeholders/item.svg',alt:p.name,pixelArt:true})),
+   fallback:'/assets/placeholders/item.svg',alt:p.name,pixelArt:true,draftPlaceholder:true})),
  ...modularElementalJewelItemsV05171.map(item=>({id:item.iconAssetId,
    path:'/assets/weapon-parts/v05171/gems/'+item.affinityTags[2]+'.svg',
-   fallback:'/assets/placeholders/item.svg',alt:item.name,pixelArt:true})),
+   fallback:'/assets/placeholders/item.svg',alt:item.name,pixelArt:true,draftPlaceholder:true})),
   ...equipmentOffersV0515.flatMap((gear) => ([1,2,3] as GearGrade[]).map((grade) => ({
     id: gearSpriteId(gear,grade),
     path: '/assets/equipment/v05151/' + gear.id + '_g' + grade + '.png',

@@ -27,7 +27,7 @@ describe('v0.5.17.1 — drops de montagem persistentes',()=>{
   expect(nodes.length).toBeGreaterThanOrEqual(15)
   for(let i=1;i<=4;i++){
    const drops=rollModularLootV05171({battleId:'milestone-'+i,stageIndex:i,save,catalog:content})
-   expect(drops).toContain('part_v05171_blade_'+slots[i-1]+'_t'+(i<=3?1:2))
+   expect(drops).toContain('part_v05171_blade_'+slots[i-1].toLowerCase()+'_t'+(i<=3?1:2))
    expect(drops.some(id=>id.startsWith('item_modular_gem_'))).toBe(false)
   }
  })

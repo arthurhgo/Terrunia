@@ -1,6 +1,6 @@
 import type {ContentCatalog} from '../../content/catalog'
 import type {GameSave} from '../game/types'
-import {weaponPartByIdV05171,MODULAR_SLOTS_V05171,type ModularFamilyV05171,
+import {weaponPartByIdV05171,MODULAR_SLOTS_V05171,getModularPartIdV05171,type ModularFamilyV05171,
  type ModularTierV05171} from '../../content/weaponPartsV05171'
 
 type ModularLootV05171={
@@ -33,12 +33,12 @@ export function rollModularLootV05171(input:ModularLootV05171):string[]{
  // First four trail milestones guarantee all four structural slots, removing tutorial RNG locks.
  const slot=source==='trail'&&index<=4 ? chosenSlots[index-1]
   : chosenSlots[hash(input.battleId+':slot:'+index)%4]
- const id='part_v05171_'+family+'_'+slot+'_t'+tier
+ const id=getModularPartIdV05171(family,slot,tier)
  const result=weaponPartByIdV05171[id]?[id]:[]
  // Additional shield part may drop only for characters with a shield Bond.
  if(input.save.character.bondedEquipment.shield && hash(input.battleId+':shield')%4===0){
   const shieldSlot=chosenSlots[hash(input.battleId+':offhand')%4]
-  const sid='part_v05171_shield_'+shieldSlot+'_t'+tier
+  const sid=getModularPartIdV05171('shield',shieldSlot,tier)
   if(weaponPartByIdV05171[sid])result.push(sid)
  }
  // Late rewards may carry elemental gems, but their actual use still requires Grade III.

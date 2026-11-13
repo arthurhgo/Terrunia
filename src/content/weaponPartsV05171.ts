@@ -13,6 +13,8 @@ export type WeaponPartDefinitionV05171={
  /** Material bonuses are not Essence/Jewel/Runes or extra permanent Bonds. */
  bonus:'attack'|'initiative'|'guard'|'arcane'|'parry'|'dodge'|'block'|'shieldStrike'
 }
+export const getModularPartIdV05171=(family:ModularFamilyV05171,slot:ModularSlotV05171,tier:ModularTierV05171)=>
+ 'part_v05171_'+family.toLowerCase()+'_'+slot.toLowerCase()+'_t'+tier
 const labels:Record<ModularFamilyV05171,[string,string,string,string,string]>={
  blade:['Espada','Lâmina','Punho e Guarda','Câmara de Ressonância','Encaixe de Joia'],
  axe:['Machado','Cabeça','Cabo','Núcleo de Impacto','Soquete Rúnico'],
@@ -27,7 +29,7 @@ const tiers=['','Bruto','Tratado','Refinado','Nobre','Magistral']
 export const weaponPartDefinitionsV05171:WeaponPartDefinitionV05171[]=
  MODULAR_FAMILIES_V05171.flatMap(family=>MODULAR_SLOTS_V05171.flatMap((slot,i)=>
   ([1,2,3,4,5] as ModularTierV05171[]).map(tier=>{
-   const id='part_v05171_'+family+'_'+slot+'_t'+tier
+   const id=getModularPartIdV05171(family,slot,tier)
    const style=family==='shield'?'defesa':family==='bow'?'arqueiro':
     ['arcaneFocus','grimoire','staff'].includes(family)?'mago':'guerreiro'
    const bonuses:Record<ModularFamilyV05171,readonly WeaponPartDefinitionV05171['bonus'][]>={
