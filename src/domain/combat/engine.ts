@@ -337,10 +337,12 @@ const applyCombatEffects = (
       target.defending = false
       delete target.activeDefense
       if (success && applicable && mode === 'counter' && target.alive && actor.alive && !isProtectedBoss(state,actor)) {
-        const retaliation = Math.min(actor.hp,Math.max(1,Math.floor(getEffectiveAttackPower(target,catalog)*0.4)))
+        const replySides=target.attackDie??4,replyFace=rollCombatDie(state,replySides)
+        const retaliation = Math.min(actor.hp,Math.max(1,Math.floor(getEffectiveAttackPower(target,catalog)*0.25)+
+          Math.floor(replyFace/2)))
         actor.hp = Math.max(0,actor.hp-retaliation)
         actor.alive = actor.hp>0
-        addLog(state,target.name+' responde com Contragolpe e causa '+retaliation+' de dano em '+actor.name+'.','damage')
+        addLog(state,target.name+' responde com Contragolpe: d'+replySides+'='+replyFace+' · '+retaliation+' de dano em '+actor.name+'.','damage')
       }
       const guardNote = guardMitigation
         ? ` · Reação evitou ${breakdown.guardPrevented}.` : ''

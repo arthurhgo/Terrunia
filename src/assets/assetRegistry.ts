@@ -33,6 +33,7 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
+ {id:'skill.shield-bash-v05171',path:'/assets/skills/skill_shield_bash_v05171.svg',fallback:'/assets/placeholders/skill.svg',alt:'Golpe de Escudo',pixelArt:true,draftPlaceholder:true},
  ...modularPartsV05171.map(part=>({id:part.assetId,path:'/assets/modular/'+part.family+'/'+part.partSlot+'_t'+part.tier+'.svg',fallback:'/assets/placeholders/item.svg',alt:part.name,pixelArt:true,draftPlaceholder:true as const})),
   ...equipmentOffersV0515.flatMap((gear) => ([1,2,3] as GearGrade[]).map((grade) => ({
     id: gearSpriteId(gear,grade),
