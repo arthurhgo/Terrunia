@@ -633,14 +633,20 @@ const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
     if (state.actorCursor <= previousCursor) {
       state.round += 1
       applyBossRound(state, catalog)
-      // Status applied in combat affect NEXT round ordering, without extra RNG.
-      state.initiativeOrder = Object.values(state.combatants)
-        .sort((a,b)=>getEffectiveInitiativeV0517(b,catalog)-getEffectiveInitiativeV0517(a,catalog)||a.id.localeCompare(b.id))
-        .map(a=>a.id)
-      state.actorCursor = 0
-      for(const next of Object.values(state.combatants))
-        next.initiative=getEffectiveInitiativeV0517(next,catalog)
-      addLog(state,'Iniciativa atualizada por atributos e estados ativos.', 'system')
+      // Reorder only when a status changes initiative. Legacy battles and the
+      // Golem's telegraph must NEVER acquire an extra enemy turn here.
+      const actors=Object.values(state.combatants)
+      const modified=actors.some(a=>getInitiativeModifiersV0517(a,catalog).flat!==0)
+      if(modified||state.initiativeStatusOrderModified){
+        for(const actor of actors)actor.initiativeRolledBase??=actor.initiative
+        state.initiativeOrder=actors
+          .sort((a,b)=>getEffectiveInitiativeV0517(b,catalog)-getEffectiveInitiativeV0517(a,catalog)||a.id.localeCompare(b.id))
+          .map(a=>a.id)
+        for(const next of actors)next.initiative=getEffectiveInitiativeV0517(next,catalog)
+        state.initiativeStatusOrderModified=modified
+        addLog(state,'Iniciativa reordenada pelos efeitos de status ativos.', 'system')
+      }
+      state.actorCursor=0
     }
     state.actorId = state.initiativeOrder[state.actorCursor]
     const actor = state.combatants[state.actorId]

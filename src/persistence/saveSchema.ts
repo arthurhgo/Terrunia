@@ -295,6 +295,7 @@ const battleSchema = z.object({
   actorId: idSchema,
   actorCursor: nonnegativeInteger,
   initiativeOrder: z.array(idSchema).min(1),
+  initiativeStatusOrderModified: z.boolean().optional(),
   combatants: z.record(z.string(), combatantSchema),
   log: z.array(z.object({
     id: idSchema,

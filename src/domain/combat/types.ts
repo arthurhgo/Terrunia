@@ -139,6 +139,8 @@ export type BattleState = {
   actorId: string
   actorCursor: number
   initiativeOrder: string[]
+  /** Only reorder next rounds after a status affects initiative. */
+  initiativeStatusOrderModified?: boolean
   combatants: Record<string, Combatant>
   log: BattleLogEntry[]
   rewards: BattleRewards
