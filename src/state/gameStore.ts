@@ -41,6 +41,7 @@ import { chooseClanCandidate as chooseClanCandidateDomain, chooseInitialClanSpel
 import { startClanTrialWave as prepareClanWave, claimClanTrialWave } from '../domain/progression/clanTrials'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { prepareStarterWeapon } from '../domain/bond/starterWeaponPlan'
+import {performOffhandRiteV0517} from '../domain/bond/offhandRiteV0517'
 import { requestCampaignReset } from '../domain/game/campaignReset'
 import { ATTRIBUTE_IDS, type AttributeId, type GameSave } from '../domain/game/types'
 import type { BoundSlot, ComplementarySlot } from '../domain/shared/types'
@@ -145,6 +146,7 @@ type GameState = {
   refineArmor: (instanceId: string) => void
   recordMarketSpecialistConversation: (npcId: string) => void
   buyFromMarket: (npcId: string, itemId: string, quantity?: number) => void
+  bindOffhandAtWorkshop: (baseId: string) => void
   buyAndEquipGear: (merchantId: string, offerId: string) => void
   buyAndEquipMarketArmor: (merchantId: string, itemId: string) => void
   buyGear: (merchantId: string, offerIds: string[]) => void
@@ -819,6 +821,17 @@ export const useGameStore = create<GameState>((set, get) => {
       next.updatedAt=now
       next.revision+=1
       commit(next)
+    },
+
+    bindOffhandAtWorkshop:(baseId)=>{
+      const save=get().save
+      if(!save)return
+      const result=performOffhandRiteV0517(save,baseId,content,nowIso())
+      if(!result.ok)return failAction(result.message)
+      commit(result.value)
+      show('Vínculo da Escudaria',content.boundItemBases[baseId].name+
+        ' vinculado permanentemente. O slot de mão secundária não pode ser trocado por outro item.',
+        'success')
     },
 
     buyFromMarket: (npcId, itemId, quantity = 1) => {
