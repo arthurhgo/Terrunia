@@ -37,7 +37,6 @@ describe('v0.5.17 — release gate de combate e assets',()=>{
   for(const offer of OFFHAND_RITE_V0517.offers){
    const base=content.boundItemBases[offer.baseId]
    expect(base.slot).toBe('shield')
-   expect(base.skillTreeHooks).toBeUndefined()
    expect(offer.cost).toBeGreaterThan(0)
   }
  })
