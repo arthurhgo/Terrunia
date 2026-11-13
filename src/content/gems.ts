@@ -6,10 +6,10 @@ export const gemComponentDefinitions = [
   {
     id: 'safira_mares',
     name: 'Safira das Marés',
-    description: 'Canaliza água, cura e resistência ao calor.',
+    description: 'Canaliza água, cura e resistência ao calor. Afinidade elemental modulável no Vínculo.'
     rarity: 'rare',
     tier: 1,
-    modifiers: [],
+    modifiers: [{type:'statModifier',stat:'maxMp',operation:'flat',value:2}],
     activeEffectIds: [],
     skillTreeHooks: [],
     affinityTags: ['water', 'healing', 'heat-resistance'],
@@ -18,15 +18,15 @@ export const gemComponentDefinitions = [
     unique: false,
     iconAssetId: 'gem.sapphire-tides',
     status: 'CANON',
-    mechanicsStatus: 'OWNER_DECISION',
+    mechanicsStatus: 'BALANCE_DRAFT',
   },
   {
     id: 'rubi_ira',
     name: 'Rubi da Ira',
-    description: 'Canaliza força física, fogo e combustão.',
+    description: 'Canaliza força física, fogo e combustão. Afinidade elemental modulável no Vínculo.'
     rarity: 'rare',
     tier: 1,
-    modifiers: [],
+    modifiers: [{type:'statModifier',stat:'attackPower',operation:'flat',value:1}],
     activeEffectIds: [],
     skillTreeHooks: [],
     affinityTags: ['fire', 'physical', 'burning'],
@@ -35,7 +35,7 @@ export const gemComponentDefinitions = [
     unique: false,
     iconAssetId: 'gem.ruby-wrath',
     status: 'CANON',
-    mechanicsStatus: 'OWNER_DECISION',
+    mechanicsStatus: 'BALANCE_DRAFT',
   },
   {
     id: 'esmeralda_crescimento',
@@ -181,5 +181,19 @@ export const gemComponentDefinitions = [
     iconAssetId: 'gem.kethzar-heart',
     status: 'CANON',
     mechanicsStatus: 'OWNER_DECISION',
+  },
+  {
+    id: 'terra_v05171', name: 'Joia da Terra', description: 'Afinidade telúrica para proteger o Vínculo; números BALANCE_DRAFT.',
+    rarity: 'rare',tier:1,modifiers:[{type:'statModifier',stat:'mitigation',operation:'flat',value:1}],
+    activeEffectIds:[],skillTreeHooks:[],affinityTags:['earth','defense','stone'],
+    compatibility:{anyEssenceTags:[],blockedEssenceTags:[]},visualTags:['earth-gem','stone'],unique:false,
+    iconAssetId:'gem.earth-v05171',status:'CONTENT_DRAFT',mechanicsStatus:'BALANCE_DRAFT',
+  },
+  {
+    id: 'ar_v05171', name: 'Joia do Ar', description: 'Afinidade aérea com melhora de iniciativa; números BALANCE_DRAFT.',
+    rarity: 'rare',tier:1,modifiers:[{type:'statModifier',stat:'initiative',operation:'flat',value:1}],
+    activeEffectIds:[],skillTreeHooks:[],affinityTags:['air','wind','mobility'],
+    compatibility:{anyEssenceTags:[],blockedEssenceTags:[]},visualTags:['air-gem','gust'],unique:false,
+    iconAssetId:'gem.air-v05171',status:'CONTENT_DRAFT',mechanicsStatus:'BALANCE_DRAFT',
   },
 ] satisfies GemComponentDefinition[]

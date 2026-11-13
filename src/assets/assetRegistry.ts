@@ -1,5 +1,6 @@
 import { castleGearMerchantsV05151 } from '../content/castleMerchantsV05151'
 import { equipmentOffersV0515, gearSpriteId, type GearGrade } from '../content/equipmentV0515'
+import {modularPartsV05171} from '../content/modularWeaponsV05171'
 import { combatSkillDefinitions } from '../content/combat'
 import { extraCombatStatusesV0517 } from '../content/combatAdvancementsV0517'
 import type { CombatSkillDefinition } from '../content/types'
@@ -32,6 +33,7 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
+ ...modularPartsV05171.map(part=>({id:part.assetId,path:'/assets/modular/'+part.family+'/'+part.partSlot+'_t'+part.tier+'.svg',fallback:'/assets/placeholders/item.svg',alt:part.name,pixelArt:true,draftPlaceholder:true as const})),
   ...equipmentOffersV0515.flatMap((gear) => ([1,2,3] as GearGrade[]).map((grade) => ({
     id: gearSpriteId(gear,grade),
     path: '/assets/equipment/v05151/' + gear.id + '_g' + grade + '.png',
@@ -250,7 +252,7 @@ const entries: AssetEntry[] = [
   },
   ...gemComponentDefinitions.map((gem) => ({
     id: gem.iconAssetId,
-    path: `/assets/gems/gem_${gem.iconAssetId.slice(4).replaceAll('-', '_')}.png`,
+    path: gem.id==='terra_v05171'||gem.id==='ar_v05171'?`/assets/gems/gem_${gem.id}.svg`:`/assets/gems/gem_${gem.iconAssetId.slice(4).replaceAll('-', '_')}.png`,
     fallback: '/assets/placeholders/item.svg',
     alt: gem.name,
     pixelArt: true,
