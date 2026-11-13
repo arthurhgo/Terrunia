@@ -1,0 +1,56 @@
+/* Terrúnia v0.5.17 — weapon-specific slots and fixed victory actions. UX_DRAFT. */
+.pixel-battle__attack-grid {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-rows:minmax(0,1fr);
+  max-width:min(100%,252px);
+}
+.pixel-battle__actions--victory {
+  display:flex;flex-direction:column;min-height:0;overflow:hidden;
+}
+.pixel-battle__actions--victory .pixel-battle__result {
+  display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;
+  flex:1 1 0;min-height:0;max-height:none;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;overscroll-behavior-y:contain;
+  padding:4px 5px;gap:5px;text-align:center;
+}
+.pixel-battle__actions--victory .battle-victory-summary-v0516{flex:0 0 auto;padding:4px;gap:3px}
+.pixel-battle__actions--victory .battle-victory-summary-v0516 dl{gap:3px}
+.pixel-battle__actions--victory .battle-victory-summary-v0516 dl>div{padding:3px}
+.pixel-battle__actions--victory .battle-victory-summary-v0516 small{font-size:10px}
+.pixel-battle__victory-footer{
+  display:grid;gap:4px;flex:0 0 auto;min-height:0;padding:5px 3px 2px;
+  border-top:1px solid #957348;background:#071322;
+}
+.pixel-battle__victory-footer>strong{
+  color:#f8d995;font:700 clamp(10px,.95vw,13px)/1.1 var(--display);
+  letter-spacing:.08em;
+}
+.pixel-battle__victory-footer button{
+  width:100%;min-height:32px;padding:4px 6px;
+  border:2px solid #bb8b49;background:linear-gradient(#31433f,#132b32);
+  color:#ffe2a7;font:700 clamp(10px,.9vw,13px)/1.15 var(--display);
+  cursor:pointer;
+}
+.pixel-battle__victory-footer button:first-of-type{
+  border-color:#f0bf68;background:linear-gradient(#594424,#293225);
+}
+.pixel-battle__victory-footer button:hover,.pixel-battle__victory-footer button:focus-visible{
+  outline:1px solid #ffe2a1;outline-offset:1px;filter:brightness(1.14);
+}
+.pixel-battle__target--victory{
+  display:flex;flex-direction:column;min-height:0;overflow:hidden;
+}
+.pixel-battle__target--victory .pixel-battle__victory-bag{
+  flex:1 1 0;min-height:0;max-height:none;overflow-y:auto;
+}
+@media(max-height:650px) and (min-width:601px) {
+ .pixel-battle__foot{height:clamp(220px,43dvh,286px)}
+ .pixel-battle__actions--victory .battle-victory-summary-v0516{font-size:11px}
+ .pixel-battle__victory-footer button{min-height:28px}
+}
+@media(max-width:600px) {
+ .pixel-battle__actions--victory{overflow:visible}
+ .pixel-battle__actions--victory .pixel-battle__result{max-height:230px;flex:none}
+ .pixel-battle__victory-footer{min-height:0}
+ .pixel-battle__target--victory .pixel-battle__victory-bag{max-height:330px}
+}
