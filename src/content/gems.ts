@@ -9,7 +9,7 @@ export const gemComponentDefinitions = [
     description: 'Canaliza água, cura e resistência ao calor. Afinidade elemental modulável no Vínculo.',
     rarity: 'rare',
     tier: 1,
-    modifiers: [{type:'statModifier',stat:'maxMp',operation:'flat',value:2}],
+    modifiers: [{type:'statModifier',stat:'maxHp',operation:'flat',value:2}],
     activeEffectIds: [],
     skillTreeHooks: [],
     affinityTags: ['water', 'healing', 'heat-resistance'],
