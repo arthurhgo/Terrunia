@@ -7,7 +7,8 @@ export async function fightAndCollect(page: Page, expectedDropCount: number) {
   const initiative = page.getByRole('button', { name: /^Arrastar dado de iniciativa d\d+ para cima para rolar$/ })
   const playerDie = page.getByRole('button', { name: /^Arrastar dado d\d+ para cima para rolar$/ })
   const attack = page.getByRole('button', { name: 'ATAQUE', exact: true })
-  const single = page.getByRole('button', { name: /^Usar Ataque Único;/ })
+  // v0.5.17: attack names depend on the bound weapon; first card is the primary strike.
+  const single = page.locator('.pixel-battle__attack-grid .pixel-battle__skill-card').first()
 
   while (Date.now() - started < 65_000) {
     phase = await page.evaluate(async () => {

@@ -42,7 +42,7 @@ describe('v0.5.15.2 — consumable and one-die combat FSM',()=>{
   enemy.hp=enemy.maxHp=1000
   const attack=submitBattleCommand(after.value,{type:'attack',targetId:enemy.id},content)
   expect(attack.ok).toBe(true)
-  expect(attack.ok && attack.value.log.some(entry=>entry.roll?.action==='Ataque básico')).toBe(true)
+  expect(attack.ok && attack.value.log.some(entry=>entry.roll?.action==='Corte de Espada')).toBe(true)
  })
  it('restores Mana instantly, refuses wasted uses, and preserves offensive item turns',()=>{
   const {battle,player}=start()
