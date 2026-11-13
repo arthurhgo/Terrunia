@@ -4,6 +4,7 @@ import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/funga
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
 import { DEFENSE_RULES_V0517, COMMON_DEFENSE_SKILL_IDS_V0517, getWeaponAttackNamesV0517 } from '../../content/combatStylesV0517'
 import {CLASS_DISCIPLINE_SKILLS_V0517} from '../../content/classDisciplinesV0517'
+import {getBoundAssemblyBonusesV05171} from '../bond/weaponAssemblyV05171'
 import { deriveOffhandCombatV0517, getDamageTypeV0517, applyLayeredProtectionV0517, getInitiativeModifiersV0517, getEffectiveInitiativeV0517 } from './layeredDefenseV0517'
 import {applyAffinityV0517,getScheduledEnemySkillV0517} from './combatTacticsV0517'
 import { nextCombatRandomSeed, rollSeededCombatDie } from './rng'
@@ -139,6 +140,8 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
   const stats = deriveCharacterStats(save, catalog)
   const weaponBase = catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']
   const offhand = deriveOffhandCombatV0517(save, catalog)
+  const weaponParts=getBoundAssemblyBonusesV05171(save,'weapon')
+  const shieldParts=getBoundAssemblyBonusesV05171(save,'shield')
   const shieldInstance=character.bondedEquipment.shield ? save.boundItems[character.bondedEquipment.shield] : null
   const shieldDefinition=shieldInstance?catalog.boundItemBases[shieldInstance.baseItemId]:undefined
   // Do not count a bound shield's mitigation AGAIN as body armor: ESC/ARC are separate.
@@ -171,9 +174,13 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     arcaneGuard: offhand.arcaneGuard,
     maxArcaneGuard: offhand.arcaneGuard + (offhand.clanDunavar ? 4 : offhand.style==='arcaneCaster' ? 3 : 0),
     hasBoundShield: offhand.kind === 'shield',
+    reactionBonuses:{block:shieldParts.block,parry:weaponParts.parry,
+      dodge:weaponParts.dodge,counter:0},
+    shieldStrikeBonus:shieldParts.shieldStrike,
     defenseDice: {block:character.attributes.vigor.die,parry:character.attributes.agility.die,dodge:character.attributes.agility.die,counter:character.attributes.strength.die},
     skillIds: [...new Set([
       ...COMMON_DEFENSE_SKILL_IDS_V0517,
+      ...(offhand.kind==='shield'?['skill_offhand_shield_bash_v05171']:[]),
       ...equipmentSkillIds, ...unlockedSkillIds,
       ...(offhand.style==='arcaneCaster'?['skill_caster_arcane_guard_v0517','skill_scepter_accelerate_v0517']:[]),
       ...(offhand.kind==='quiver'&&offhand.style==='archer'?['skill_quiver_focus_v0517']:[]),
@@ -298,7 +305,8 @@ const applyCombatEffects = (
       // ARM only protects from physical blows. Magic first faces a depletable ARC ward.
       const armor=aspect==='physical' ? getEffectiveMitigation(target,catalog):0
       const basePower=getEffectiveAttackPower(actor,catalog)+bonusFace
-      const breakdown=calculateRolledDamage(basePower,armor,face,sides,effect.powerBonus,appliedGuardMitigation)
+      const bonus=skill?.id==='skill_offhand_shield_bash_v05171'?Math.min(3,1+(actor.shieldStrikeBonus??0)):0
+      const breakdown=calculateRolledDamage(basePower,armor,face,sides,effect.powerBonus+bonus,appliedGuardMitigation)
       const unarmored=aspect==='physical'
         ? calculateRolledDamage(basePower,0,face,sides,effect.powerBonus,appliedGuardMitigation).finalDamage
         : breakdown.finalDamage

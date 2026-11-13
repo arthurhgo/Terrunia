@@ -37,6 +37,8 @@ export type Combatant = {
   activeDefense?: import('../../content/combatStylesV0517').DefenseModeV0517
   defenseDice?: Record<import('../../content/combatStylesV0517').DefenseModeV0517, CombatDie>
   hasBoundShield?: boolean
+  reactionBonuses?:Partial<Record<import('../../content/combatStylesV0517').DefenseModeV0517,number>>
+  shieldStrikeBonus?:number
   weaponArchetype?: string
   offhandKind?: import('./layeredDefenseV0517').OffhandKindV0517
   combatProfile?: import('./layeredDefenseV0517').CombatProfileV0517

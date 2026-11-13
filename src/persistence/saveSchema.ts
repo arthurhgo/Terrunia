@@ -255,6 +255,8 @@ const combatantSchema = z.object({
   activeDefense: z.enum(['block','parry','dodge','counter']).optional(),
   defenseDice: z.object({block:attributeDieSchema,parry:attributeDieSchema,dodge:attributeDieSchema,counter:attributeDieSchema}).optional(),
   hasBoundShield: z.boolean().optional(),
+  reactionBonuses:z.object({block:nonnegativeNumber.optional(),parry:nonnegativeNumber.optional(),dodge:nonnegativeNumber.optional(),counter:nonnegativeNumber.optional()}).optional(),
+  shieldStrikeBonus:nonnegativeNumber.optional(),
   weaponArchetype: z.string().optional(),
   offhandKind: z.enum(['shield','arcane','quiver','empty']).optional(),
   combatProfile: z.enum(['shieldbearer','arcaneCaster','duelist','archer','untrained']).optional(),
