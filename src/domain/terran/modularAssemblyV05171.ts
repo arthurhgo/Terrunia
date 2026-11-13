@@ -1,6 +1,6 @@
-import type {GameSave,BoundEquipmentInstance} from '../game/types'
+import type {GameSave} from '../game/types'
 import type {ContentCatalog} from '../../content/catalog'
-import {getAssemblyFamily,modularPartById,MODULAR_SLOTS,type ModularSlot} from '../../content/modularWeaponsV05171'
+import {getAssemblyFamily,modularPartById} from '../../content/modularWeaponsV05171'
 import {deriveCharacterStats} from '../character/derivedStats'
 import {fail,ok,type Result} from '../shared/types'
 import {applyQuestEvent} from '../quests/questEngine'

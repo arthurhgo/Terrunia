@@ -53,7 +53,6 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
     aria-label={'Loja do '+merchant.label}>
     <header>
       <h3>{merchant.label}</h3>
-      {merchantId==='presence_terran_weaponsmith'&&<p>Armas completas foram retiradas: procure partes e materiais para montar sua arma vinculada em Durnan.</p>}
       <p>{merchant.description} Sem exigência de Clã ou Classe. Tier I · Grau 1.</p>
       <small>Escolha uma peça avulsa; não é necessário comprar um conjunto.</small>
     </header>
