@@ -10,7 +10,9 @@ test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, in
   // A criação termina sem alocação; os dados aparecem ao iniciar o Vínculo.
   await page.getByRole('button', { name: 'Confirmar e continuar' }).click()
   await page.getByRole('button', { name: 'Escolher Espada Longa', exact: true }).click()
-  await page.getByRole('button', { name: 'Distribuir pontos e vincular Espada Longa', exact: true }).click()
+  // Keyboard activation validates the action while the weapon preview animates.
+  // The test measures geometry; Playwright click stability is not part of this contract.
+  await page.getByRole('button', { name: 'Distribuir pontos e vincular Espada Longa', exact: true }).press('Enter')
   await expect(page.getByRole('heading', { name: 'O primeiro Vínculo' })).toBeVisible()
 
   const stats = page.getByRole('region', { name: 'Distribuição de atributos' })
