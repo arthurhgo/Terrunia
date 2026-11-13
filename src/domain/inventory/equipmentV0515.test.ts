@@ -5,7 +5,7 @@ import { equipmentOffersV0515, equipmentSetsV0515, gearOfferById, getGearGrade }
 import { equipComplementaryItem } from './complementaryEquipment'
 import { createNewSave } from '../game/createSave'
 import { createBoundItem } from '../bond/boundItems'
-import { purchaseGear, checkGearAccess, equipGearStyle, refineCatalogGear, getGearBonuses, getSetPrice } from './equipmentV0515'
+import { purchaseGear, checkGearAccess, refineCatalogGear, getGearBonuses, getSetPrice } from './equipmentV0515'
 import { gameSaveSchema } from '../../persistence/saveSchema'
 
 const NOW='2026-11-09T18:00:00.000Z'
