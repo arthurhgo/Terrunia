@@ -44,10 +44,12 @@ export function getDamageTypeV0517(actor:Combatant, skill?:{damageAspect?:Damage
  if(skill?.presentationGroup==='magic'||MAGE_WEAPONS.has(actor.weaponArchetype??''))return 'arcane'
  return 'physical'
 }
-export function applyLayeredProtectionV0517(target:Combatant, incoming:number, type:DamageTypeV0517) {
+export function applyLayeredProtectionV0517(target:Combatant, incoming:number, type:DamageTypeV0517, catalog?:ContentCatalog) {
  const safe=Math.max(0,Math.floor(incoming))
  const physical=type==='physical'
- const shieldAbsorbed=physical?Math.min(target.physicalGuard??0,safe):0
+ const pressure=catalog ? target.statusEffects.reduce((n,e)=>n+(catalog.statusEffects[e.definitionId]?.shieldGuardModifier??0),0):0
+ const activeShield=Math.max(0,(target.physicalGuard??0)+pressure)
+ const shieldAbsorbed=physical?Math.min(activeShield,safe):0
  const afterShield=safe-shieldAbsorbed
  const arcaneAbsorbed=physical?0:Math.min(target.arcaneGuard??0,afterShield)
  if(arcaneAbsorbed)target.arcaneGuard=Math.max(0,(target.arcaneGuard??0)-arcaneAbsorbed)

@@ -83,6 +83,8 @@ export type CombatRoll = {
     shieldAbsorbed?: number
     arcaneAbsorbed?: number
     armorAbsorbed?: number
+    affinityDelta?: number
+    resistancePercent?: number
     critical?: boolean
   }
 }

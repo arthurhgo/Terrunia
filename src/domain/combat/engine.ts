@@ -4,6 +4,7 @@ import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/funga
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
 import { DEFENSE_RULES_V0517, COMMON_DEFENSE_SKILL_IDS_V0517, getWeaponAttackNamesV0517 } from '../../content/combatStylesV0517'
 import { deriveOffhandCombatV0517, getDamageTypeV0517, applyLayeredProtectionV0517, getInitiativeModifiersV0517, getEffectiveInitiativeV0517 } from './layeredDefenseV0517'
+import {applyAffinityV0517} from './combatTacticsV0517'
 import { nextCombatRandomSeed, rollSeededCombatDie } from './rng'
 import type {
   CombatEffectDefinition,
@@ -272,10 +273,11 @@ const applyCombatEffects = (
       const defenseSides = mode ? target.defenseDice?.[mode] ?? 4 : 4
       const defenseFace = stance ? rollCombatDie(state, defenseSides) : 0
       const shieldBonus = stance?.usesShield && target.hasBoundShield ? 1 : 0
-      const duelistBonus = mode === 'parry' && target.combatProfile === 'duelist' ? 1 : 0
-      const success = Boolean(stance && defenseFace + shieldBonus + duelistBonus >= stance.dc)
+      const duelistBonus = (mode === 'parry' || mode === 'counter') && target.combatProfile === 'duelist' ? 1 : 0
+      const archerBonus = mode==='dodge' && target.combatProfile==='archer' ? 1 : 0
+      const success = Boolean(stance && defenseFace + shieldBonus + duelistBonus + archerBonus >= stance.dc)
       if (stance) addLog(state, target.name+' tenta '+stance.name+': d'+defenseSides+'='+defenseFace+
-        (shieldBonus ? ' +1 Escudo' : '')+(duelistBonus ? ' +1 Duelista' : '')+' contra '+stance.dc+' — '+(success?'SUCESSO':'FALHA')+'.', 'defense')
+        (shieldBonus ? ' +1 Escudo' : '')+(duelistBonus ? ' +1 Duelista' : '')+(archerBonus ? ' +1 Arqueiro' : '')+' contra '+stance.dc+' — '+(success?'SUCESSO':'FALHA')+'.', 'defense')
       guardedBoulder = Boolean(target.defending && (!stance || success) && skill?.id === 'skill_granite_slam')
       const guardMitigation = stance
         ? success ? stance.reduction + (mode === 'block' && target.hasBoundShield ? 1 : 0) : 0
@@ -300,10 +302,12 @@ const applyCombatEffects = (
         breakdown.guardPrevented+=breakdown.finalDamage
         breakdown.finalDamage=0
       }
-      const layer=applyLayeredProtectionV0517(target,breakdown.finalDamage,aspect)
+      const affinity=applyAffinityV0517(target,breakdown.finalDamage,aspect,catalog)
+      const layer=applyLayeredProtectionV0517(target,affinity.damage,aspect,catalog)
       breakdown.finalDamage=layer.hpDamage
       const detailed={...breakdown,damageAspect:aspect,
-        shieldAbsorbed:layer.shieldAbsorbed,arcaneAbsorbed:layer.arcaneAbsorbed,armorAbsorbed}
+        shieldAbsorbed:layer.shieldAbsorbed,arcaneAbsorbed:layer.arcaneAbsorbed,armorAbsorbed,
+        affinityDelta:affinity.delta,resistancePercent:Math.round(affinity.resistance*100)}
       // No second critical roll: face === sides is the ONLY critical trigger.
       const damage=detailed.finalDamage
       usedCritical = breakdown.critical
@@ -320,7 +324,8 @@ const applyCombatEffects = (
       }
       const guardNote = guardMitigation
         ? ` · Reação evitou ${breakdown.guardPrevented}.` : ''
-      const layerNote = ` · ESC ${layer.shieldAbsorbed} · ARM ${armorAbsorbed} · ARC ${layer.arcaneAbsorbed} · HP -${damage}.`
+      const affinityNote=affinity.resistance ? ` · Afinidade ${Math.round(affinity.resistance*100)}%.` : ''
+      const layerNote = ` · ESC ${layer.shieldAbsorbed} · ARM ${armorAbsorbed} · ARC ${layer.arcaneAbsorbed} · HP -${damage}.${affinityNote}`
       const critNote = breakdown.critical ? ' ACERTO CRÍTICO!' : ''
       addLog(state,
         `${actor.name} causa ${damage} de dano em ${target.name}.${critNote} d${sides}=${face}${actor.weaponBonusDie ? ` + d${actor.weaponBonusDie} da arma=${bonusFace}` : ''}, ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${appliedGuardMitigation}.${guardNote}${layerNote}`,
@@ -332,6 +337,16 @@ const applyCombatEffects = (
       const restored = Math.min(effect.value, target.maxHp - target.hp)
       target.hp += restored
       addLog(state, `${target.name} recupera ${restored} de Vida.`, 'reward')
+    }
+    if (effect.type === 'drainArcaneGuard') {
+      const drained=Math.min(target.arcaneGuard??0,Math.max(0,effect.value))
+      target.arcaneGuard=Math.max(0,(target.arcaneGuard??0)-drained)
+      addLog(state,`${actor.name} rompe ${drained} de ARC de ${target.name}.`,'defense')
+    }
+    if (effect.type === 'cleanseBeneficial') {
+      const before=target.statusEffects.length
+      target.statusEffects=target.statusEffects.filter(status=>catalog.statusEffects[status.definitionId]?.tone!=='beneficial')
+      addLog(state,`${actor.name} dissipa ${before-target.statusEffects.length} efeito(s) benéfico(s) de ${target.name}.`,'defense')
     }
     if (effect.type === 'restoreArcaneGuard') {
       const capacity=Math.max(target.maxArcaneGuard??0,effect.value)
@@ -406,7 +421,7 @@ const resolveSkill = (
     ? state.bossMechanics.bossId : undefined
   const primary = applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name, skill)
   for(const effect of skill.effects) if(effect.type==='adjacentSplash'&&primary.damage>0)
-    applySplash(state,actor,target,Math.floor(primary.damage*effect.fraction),skill.name,primary.sides,primary.face,effect.maxTargets,protectedBossId,primary.critical,getDamageTypeV0517(actor,skill))
+    applySplash(state,actor,target,Math.floor(primary.damage*effect.fraction),skill.name,primary.sides,primary.face,effect.maxTargets,protectedBossId,primary.critical,getDamageTypeV0517(actor,skill),catalog)
   if (skill.id === 'skill_resonant_strike' && primary.damage > 0) {
     // BALANCE_DRAFT OD-06: 5% final primary damage to each other unprotected enemy.
     // Snapshot the shield from action start; AoE never hits the boss accidentally.
@@ -418,7 +433,8 @@ const resolveSkill = (
       if (other.id === target.id ||
           (bossProtected && other.id === state.bossMechanics?.bossId) ||
           !validTarget(actor, other, 'enemy', state)) continue
-      const protection=applyLayeredProtectionV0517(other,splash,'arcane')
+      const affinity=applyAffinityV0517(other,splash,'arcane',catalog)
+      const protection=applyLayeredProtectionV0517(other,affinity.damage,'arcane',catalog)
       const damage = Math.min(other.hp, protection.hpDamage)
       other.hp = Math.max(0, other.hp - damage)
       other.alive = other.hp > 0
@@ -440,13 +456,16 @@ const adjacentEnemies = (state:BattleState,target:Combatant):Combatant[] => {
 }
 const applySplash=(state:BattleState,actor:Combatant,target:Combatant,damage:number,
   action:string,sides:CombatDie,face:number,maxTargets:number,protectedBossId?:string,critical=false,
-  aspect:import('./layeredDefenseV0517').DamageTypeV0517='physical') => {
+  aspect:import('./layeredDefenseV0517').DamageTypeV0517='physical',catalog:ContentCatalog) => {
   for(const other of adjacentEnemies(state,target).filter(c=>c.id!==protectedBossId && validTarget(actor,c,'enemy',state)).slice(0,maxTargets)){
-    const protection=applyLayeredProtectionV0517(other,Math.max(0,damage),aspect)
+    const armor=aspect==='physical'?getEffectiveMitigation(other,catalog):0
+    const afterArmor=Math.max(0,damage-armor)
+    const affinity=applyAffinityV0517(other,afterArmor,aspect,catalog)
+    const protection=applyLayeredProtectionV0517(other,affinity.damage,aspect,catalog)
     const dealt=Math.min(other.hp,protection.hpDamage)
     if(!dealt&&!protection.shieldAbsorbed&&!protection.arcaneAbsorbed)continue
     other.hp=Math.max(0,other.hp-dealt);other.alive=other.hp>0
-    addLog(state,`${actor.name} causa ${dealt} de dano em ${other.name} por ${action}. ESC ${protection.shieldAbsorbed} · ARC ${protection.arcaneAbsorbed}.`,'damage',
+    addLog(state,`${actor.name} causa ${dealt} de dano em ${other.name} por ${action}. ESC ${protection.shieldAbsorbed} · ARM ${armor} · ARC ${protection.arcaneAbsorbed} · afinidade ${Math.round(affinity.resistance*100)}%.`,'damage',
       {actorId:actor.id,targetId:other.id,sides,face,action,critical})
   }
 }
@@ -463,15 +482,16 @@ const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,cata
   const protectedBossId=state.bossMechanics && isProtectedBoss(state,state.combatants[state.bossMechanics.bossId])
     ? state.bossMechanics.bossId : undefined
   const areaPower=Math.max(1,Math.floor(rolled.finalDamage*0.6))
-  const protection=applyLayeredProtectionV0517(target,areaPower,aspect)
+  const affinity=applyAffinityV0517(target,areaPower,aspect,catalog)
+  const protection=applyLayeredProtectionV0517(target,affinity.damage,aspect,catalog)
   const centerDamage=Math.min(target.hp,protection.hpDamage)
   target.hp=Math.max(0,target.hp-centerDamage);target.alive=target.hp>0;target.defending=false
   delete target.activeDefense
   addLog(state,`${actor.name} causa ${centerDamage} de dano em ${target.name} com ${getWeaponAttackNamesV0517(actor.weaponArchetype).area}. ESC ${protection.shieldAbsorbed} · ARC ${protection.arcaneAbsorbed}.${rolled.critical ? ' ACERTO CRÍTICO!' : ''}`,'damage',
     {actorId:actor.id,targetId:target.id,sides,face,action:getWeaponAttackNamesV0517(actor.weaponArchetype).area,critical:rolled.critical,
-      damageBreakdown:{...rolled,finalDamage:centerDamage,damageAspect:aspect,shieldAbsorbed:protection.shieldAbsorbed,arcaneAbsorbed:protection.arcaneAbsorbed,armorAbsorbed:armor},
+      damageBreakdown:{...rolled,finalDamage:centerDamage,damageAspect:aspect,shieldAbsorbed:protection.shieldAbsorbed,arcaneAbsorbed:protection.arcaneAbsorbed,armorAbsorbed:Math.min(armor,Math.max(0,rolled.baseAttack+rolled.dieAdjustment)),affinityDelta:affinity.delta,resistancePercent:Math.round(affinity.resistance*100)},
       ...(actor.weaponBonusDie?{weaponBonusRoll:{sides:actor.weaponBonusDie,face:bonusFace}}:{})})
-  applySplash(state,actor,target,Math.floor(centerDamage*0.3),'Splash de Área',sides,face,2,protectedBossId,rolled.critical,aspect)
+  applySplash(state,actor,target,Math.floor(centerDamage*0.3),'Splash de Área',sides,face,2,protectedBossId,rolled.critical,aspect,catalog)
   addPhase(state,'ResolvingReactions');addPhase(state,'ApplyingStatuses');addPhase(state,'CheckEndConditions')
 }
 

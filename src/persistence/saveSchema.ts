@@ -323,6 +323,8 @@ const battleSchema = z.object({
         shieldAbsorbed: nonnegativeNumber.optional(),
         arcaneAbsorbed: nonnegativeNumber.optional(),
         armorAbsorbed: nonnegativeNumber.optional(),
+        affinityDelta: z.number().finite().optional(),
+        resistancePercent: z.number().finite().optional(),
         critical: z.boolean().optional(),
       }).optional(),
     }).optional(),
