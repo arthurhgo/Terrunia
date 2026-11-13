@@ -95,7 +95,7 @@ describe('v0.5.17 Escudaria — proteção e iniciativa',()=>{
   expect(result.value.combatants.combatant_player.initiativeRolledBase).toBeDefined()
   p.initiativeRolledBase=20
   p.statusEffects=[{definitionId:'status_slow_v0517',sourceId:p.id,remainingTurns:2}]
-  expect(getEffectiveInitiativeV0517(p,content)).toBe(16) // -2 flat, -2 expected delta from one die step
+  expect(getEffectiveInitiativeV0517(p,content)).toBe(14) // from d8 haste to d4 slow: -4 die delta and -2 flat
  })
  it('Aparar de duelista tem chance de dado superior, sem inventar Classe',()=>{
   const sword=createBattle(make(),content.encounters.encounter_fungorro_01,content,'duelist-stance')

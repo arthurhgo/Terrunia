@@ -23,7 +23,7 @@ No começo do encontro, a rolagem considera dado de Agilidade e modificadores de
 - Postura Rompida: -1 iniciativa, -1 passo, -1 defesa.
 - Foco do Arqueiro: +1 passo.
 
-A reordenação ocorre na próxima rodada apenas quando há modificador real; o jogo não concede turnos extras nem altera o RNG por UI.
+A reordenação ocorre na próxima rodada apenas quando há modificador real; o jogo não concede turnos extras nem altera o RNG por UI. Como o dado de iniciativa é lançado uma vez por encontro, alterações de passo adquiridas durante a batalha equivalem provisoriamente a +/-2 pontos por passo no próximo cálculo da ordem (BALANCE_DRAFT), sem nova rolagem.
 
 ## Combate e itens
 Arcos, cetros, machados, espadas, adagas, grimórios e cajados têm ataques próprios; Ataque Duplo foi removido. Novas habilidades incluem Flecha Imobilizadora, Quebra-Guarda, Aceleração Etérea, Foco da Aljava, Véu Arcano e Conjurar Barreira de Dûn’Avar.
