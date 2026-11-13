@@ -63,7 +63,7 @@ const entries: AssetEntry[] = [
 
   { id: 'skill.use-healing-potion', path: '/assets/skills/skill_use_healing_potion.png',
     fallback: '/assets/placeholders/skill.svg', alt: 'Poção Restauradora', pixelArt: true },
-  { id: 'item.clan-granite-emblem', path: '/assets/items/quest_clan_granite_emblem.png',
+  { id: 'item.clan-granite-emblem', path: '/assets/items/quest_clan_granite_emblem.svg',
     fallback: '/assets/placeholders/item.svg', alt: 'Emblema de Clã', pixelArt: true, draftPlaceholder: true },
   { id: 'enemy.granite-golem', path: '/assets/enemies/bosses/enemy_granite_golem_idle.svg',
     fallback: '/assets/placeholders/enemy.svg', alt: 'Golem de Granito · Korduun', pixelArt: true, draftPlaceholder: true },
@@ -77,11 +77,11 @@ const entries: AssetEntry[] = [
     ...((skill.id === 'skill_granite_slam' || skill.id.endsWith('_v0517')) ? { draftPlaceholder: true as const } : {}),
   })),
   ...complementaryItemDefinitions.map((item) => ({
-    id: item.iconAssetId, path: '/assets/items/complementary/' + item.id + '.png',
+    id: item.iconAssetId, path: '/assets/items/complementary/' + item.id + '.svg',
     fallback: '/assets/placeholders/item.svg', alt: item.name, pixelArt: true, draftPlaceholder: true as const,
   })),
   ...biomeMaterialDefinitions.map((item) => ({
-    id: item.iconAssetId, path: '/assets/items/biomes/' + item.id + '.png',
+    id: item.iconAssetId, path: '/assets/items/biomes/' + item.id + '.svg',
     fallback: '/assets/placeholders/item.svg', alt: item.name, pixelArt: true, draftPlaceholder: true,
   })),
   ...biomeEnemyDefinitions.map((enemy) => ({
