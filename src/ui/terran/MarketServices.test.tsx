@@ -63,7 +63,7 @@ describe('NPCs do Mercado', () => {
 
   it('três lojas de equipamento possuem sprites, estoque distinto e compra individual',()=>{
     for(const [npc,count] of [
-      ['presence_terran_weaponsmith',12],['presence_terran_armorer',60],
+      ['presence_terran_armorer',60],
       ['presence_terran_accessory_artisan',48],
     ] as const){
       cleanup()
@@ -80,6 +80,20 @@ describe('NPCs do Mercado', () => {
       expect(next.wallet.gold).toBeLessThan(save.wallet.gold)
       expect(next.inventory.length).toBeGreaterThan(save.inventory.length)
     }
+  })
+
+  it('Torvan vende componentes modulares sem substituir armas completas',()=>{
+    const save=makeSave()
+    setup('presence_terran_weaponsmith',save)
+    const modular=screen.getByLabelText('Peças estruturais de arma · Torvan')
+    expect(modular.querySelectorAll('article')).toHaveLength(32)
+    expect(modular).toHaveTextContent('Não vendemos armas completas')
+    const buy=modular.querySelector('button[aria-label^="Comprar"]')!
+    fireEvent.click(buy)
+    const next=useGameStore.getState().save!
+    expect(next.wallet.gold).toBeLessThan(save.wallet.gold)
+    expect(next.inventory.some(item=>item.definitionId.startsWith('part_'))).toBe(true)
+    expect(next.character.bondedEquipment.weapon).toBe(save.character.bondedEquipment.weapon)
   })
 
   it('Feril troca drops por Ouro e Lorian por Essência com regras existentes', () => {
