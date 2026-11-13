@@ -23,7 +23,7 @@ export const gemComponentDefinitions = [
   {
     id: 'rubi_ira',
     name: 'Rubi da Ira',
-    description: 'Canaliza força física, fogo e combustão. Afinidade elemental modulável no Vínculo.'
+    description: 'Canaliza força física, fogo e combustão. Afinidade elemental modulável no Vínculo.',
     rarity: 'rare',
     tier: 1,
     modifiers: [{type:'statModifier',stat:'attackPower',operation:'flat',value:1}],
