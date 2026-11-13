@@ -6,6 +6,7 @@ import {gameSaveSchema} from '../../persistence/saveSchema'
 const NOW='2026-11-13T18:00:00Z'
 function ready(){
  const raw=createNewSave('rite-qa','Terrírian','character.terririan.default',content,NOW)
+ raw.character.attributes.agility.die=6
  const weapon=bindPrologueWeapon(raw,content,NOW,'weapon_rite_test','bound_weapon_long_bow')
  if(!weapon.ok)throw Error(weapon.message)
  const save=weapon.value
