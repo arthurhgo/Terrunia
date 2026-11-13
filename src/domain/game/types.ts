@@ -78,6 +78,13 @@ export type BoundItemScar = {
   effectIds: string[]
 }
 
+export type WeaponAssemblyV05171 = {
+ version:1
+ partIds:Record<'body'|'handle'|'coreHousing'|'focusMount',string|null>
+ retiredPartIds:string[]
+ revision:number
+ updatedAt:string
+}
 export type BoundEquipmentInstance = {
   id: string
   baseItemId: string
@@ -95,6 +102,8 @@ export type BoundEquipmentInstance = {
   }
   memories: BoundItemMemory[]
   forging?: { upgradeIds: string[] }
+  /** Four structural modules, never four new Essence/Gem sockets. */
+  assembly?: WeaponAssemblyV05171
   scars: BoundItemScar[]
   visualStage: number
   customName?: string
