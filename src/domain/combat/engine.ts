@@ -3,6 +3,7 @@ import { BALANCE } from '../../content/balance'
 import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/fungalChambers'
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
 import { DEFENSE_RULES_V0517, COMMON_DEFENSE_SKILL_IDS_V0517, getWeaponAttackNamesV0517 } from '../../content/combatStylesV0517'
+import { deriveOffhandCombatV0517, getDamageTypeV0517, applyLayeredProtectionV0517, getInitiativeModifiersV0517, getEffectiveInitiativeV0517 } from './layeredDefenseV0517'
 import { nextCombatRandomSeed, rollSeededCombatDie } from './rng'
 import type {
   CombatEffectDefinition,
@@ -135,6 +136,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
        save.character.clan.selectedClanSkillId ?? clanSkills[save.character.clan.clanId]) : undefined
   const stats = deriveCharacterStats(save, catalog)
   const weaponBase = catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']
+  const offhand = deriveOffhandCombatV0517(save, catalog)
   const maxHp = stats.life.value
   const maxMp = stats.mana.value
 
@@ -154,9 +156,21 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     alive: true,
     defending: false,
     weaponArchetype: weaponBase?.archetype ?? 'blade',
-    hasBoundShield: Boolean(character.bondedEquipment.shield),
+    offhandKind: offhand.kind,
+    combatProfile: offhand.style,
+    physicalGuard: offhand.physicalGuard,
+    arcaneGuard: offhand.arcaneGuard,
+    maxArcaneGuard: offhand.arcaneGuard + (offhand.clanDunavar ? 4 : offhand.style==='arcaneCaster' ? 3 : 0),
+    hasBoundShield: offhand.kind === 'shield',
     defenseDice: {block:character.attributes.vigor.die,parry:character.attributes.agility.die,dodge:character.attributes.agility.die,counter:character.attributes.strength.die},
-    skillIds: [...new Set([...COMMON_DEFENSE_SKILL_IDS_V0517, ...equipmentSkillIds, ...unlockedSkillIds, ...(clanSkillId ? [clanSkillId] : [])])],
+    skillIds: [...new Set([
+      ...COMMON_DEFENSE_SKILL_IDS_V0517,
+      ...equipmentSkillIds, ...unlockedSkillIds,
+      ...(offhand.style==='arcaneCaster'?['skill_caster_arcane_guard_v0517','skill_scepter_accelerate_v0517']:[]),
+      ...(offhand.kind==='quiver'&&offhand.style==='archer'?['skill_quiver_focus_v0517']:[]),
+      ...(offhand.clanDunavar?['skill_clan_dunavar_arcane_shield_v0517']:[]),
+      ...(clanSkillId ? [clanSkillId] : []),
+    ])],
     attackDie: character.attributes[catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.scalingAttribute ?? 'strength'].die,
     ...(catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.bonusAttackDie
       ? { weaponBonusDie: catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? ''].bonusAttackDie }
@@ -254,9 +268,10 @@ const applyCombatEffects = (
       const defenseSides = mode ? target.defenseDice?.[mode] ?? 4 : 4
       const defenseFace = stance ? rollCombatDie(state, defenseSides) : 0
       const shieldBonus = stance?.usesShield && target.hasBoundShield ? 1 : 0
-      const success = Boolean(stance && defenseFace + shieldBonus >= stance.dc)
+      const duelistBonus = mode === 'parry' && target.combatProfile === 'duelist' ? 1 : 0
+      const success = Boolean(stance && defenseFace + shieldBonus + duelistBonus >= stance.dc)
       if (stance) addLog(state, target.name+' tenta '+stance.name+': d'+defenseSides+'='+defenseFace+
-        (shieldBonus ? ' +1 Escudo' : '')+' contra '+stance.dc+' — '+(success?'SUCESSO':'FALHA')+'.', 'defense')
+        (shieldBonus ? ' +1 Escudo' : '')+(duelistBonus ? ' +1 Duelista' : '')+' contra '+stance.dc+' — '+(success?'SUCESSO':'FALHA')+'.', 'defense')
       guardedBoulder = Boolean(target.defending && (!stance || success) && skill?.id === 'skill_granite_slam')
       const guardMitigation = stance
         ? success ? stance.reduction + (mode === 'block' && target.hasBoundShield ? 1 : 0) : 0
@@ -304,6 +319,13 @@ const applyCombatEffects = (
       const restored = Math.min(effect.value, target.maxHp - target.hp)
       target.hp += restored
       addLog(state, `${target.name} recupera ${restored} de Vida.`, 'reward')
+    }
+    if (effect.type === 'restoreArcaneGuard') {
+      const capacity=Math.max(target.maxArcaneGuard??0,effect.value)
+      target.maxArcaneGuard=capacity
+      const added=Math.min(effect.value,capacity-(target.arcaneGuard??0))
+      target.arcaneGuard=(target.arcaneGuard??0)+Math.max(0,added)
+      addLog(state,`${target.name} conjura Proteção Arcana +${Math.max(0,added)} (ARC ${target.arcaneGuard}/${capacity}).`,'defense')
     }
     if (effect.type === 'restoreMp') {
       const restored = Math.min(effect.value, target.maxMp - target.mp)
@@ -564,7 +586,7 @@ const resolveEnemyAction = (
   // receives one full opportunity to defend before the boulder is thrown.
   if (actor.definitionId === GRANITE_GOLEM_ENEMY_ID &&
       state.round % GRANITE_GOLEM_BALANCE.throwIntervalRounds === GRANITE_GOLEM_BALANCE.windupRoundRemainder) {
-    addLog(state, 'O Golem ergue uma rocha! Na próxima rodada ele vai arremessá-la. Use DEFENDER e uma poção se necessário.', 'system')
+    addLog(state, 'O Golem ergue uma rocha! Na próxima rodada ele vai arremessá-la. Use a habilidade BLOQUEIO ou APARAR e uma poção se necessário.', 'system')
     return
   }
   const skillId =
@@ -590,6 +612,14 @@ const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
     if (state.actorCursor <= previousCursor) {
       state.round += 1
       applyBossRound(state, catalog)
+      // Status applied in combat affect NEXT round ordering, without extra RNG.
+      state.initiativeOrder = Object.values(state.combatants)
+        .sort((a,b)=>getEffectiveInitiativeV0517(b,catalog)-getEffectiveInitiativeV0517(a,catalog)||a.id.localeCompare(b.id))
+        .map(a=>a.id)
+      state.actorCursor = 0
+      for(const next of Object.values(state.combatants))
+        next.initiative=getEffectiveInitiativeV0517(next,catalog)
+      addLog(state,'Iniciativa atualizada por atributos e estados ativos.', 'system')
     }
     state.actorId = state.initiativeOrder[state.actorCursor]
     const actor = state.combatants[state.actorId]
@@ -624,10 +654,12 @@ const resolveInitiative = (state: BattleState, catalog: ContentCatalog): void =>
   // Presentation rolls the player's die first; initiative totals still determine turn order.
   const actors = Object.values(state.combatants).sort((a, b) => Number(b.side === 'player') - Number(a.side === 'player'))
   for (const actor of actors) {
-    const sides = actor.initiativeDie ?? 4
+    const modifiers = getInitiativeModifiersV0517(actor, catalog)
+    const sides = modifiers.die
     const face = rollCombatDie(state, sides)
-    actor.initiative += face
-    addLog(state, `${actor.name} rola iniciativa: d${sides} = ${face} (total ${actor.initiative}).`, 'system',
+    actor.initiativeRolledBase = actor.initiative + face
+    actor.initiative = actor.initiativeRolledBase + modifiers.flat
+    addLog(state, `${actor.name} rola iniciativa: d${sides} = ${face} + base ${actor.initiativeRolledBase-face} + status ${modifiers.flat} (total ${actor.initiative}).`, 'system',
       { actorId: actor.id, sides, face, action: 'Iniciativa' })
   }
   state.initiativeOrder = actors.sort((a, b) => b.initiative - a.initiative || a.id.localeCompare(b.id)).map((actor) => actor.id)
