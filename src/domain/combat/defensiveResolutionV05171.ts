@@ -33,7 +33,7 @@ export function resolveDefenseV05171(target:Combatant,mode:DefenseModeV0517,
  const duelist=(mode==='parry'||mode==='counter')&&target.combatProfile==='duelist'?1:0
  const archer=mode==='dodge'&&target.combatProfile==='archer'?1:0
  const module=target.reactionBonuses?.[mode]??0
- const bonus=Math.min(rule.dc-2,gear+duelist+archer+module)
+ const bonus=Math.min(rule.dc-2,Math.max(0,sides-2),gear+duelist+archer+module)
  const success=valid&&face+bonus>=rule.dc
  const damageFactor=success&&(mode==='parry'||mode==='dodge')
   ? (mode==='dodge'&&delivery==='area'?.5:0):1
