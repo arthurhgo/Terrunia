@@ -111,7 +111,7 @@ describe('v0.5.15 gear rules',()=>{
   const cost=getSetPrice(set.id)
   expect(cost).toBeGreaterThan(0)
   expect(purchaseGear(save,set.itemIds,NOW,'presence_terran_armorer'))
-   .toMatchObject({ok:false,code:'GEAR_MERCHANT'})
+   .toMatchObject({ok:false,code:'BOUND_WEAPON_ONLY'})
   for(const slot of ['armor','necklace'] as const){
     const offer=gearOfferById[set.itemIds.find(id=>gearOfferById[id].slot===slot)!]
     const merchant=slot==='armor'?

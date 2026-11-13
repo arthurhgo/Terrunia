@@ -43,7 +43,7 @@ describe('combate visual v0.17', () => {
     expect(screen.getByLabelText('Barra de ações').querySelectorAll('.pixel-battle__command')).toHaveLength(8)
     const turnOrder=screen.getByLabelText('Ordem de turnos')
     expect(turnOrder.querySelectorAll('.combat-timeline__portrait')).toHaveLength(useGameStore.getState().save!.battle!.initiativeOrder.length)
-    fireEvent.click(screen.getByRole('button',{name:'HABILIDADES'}))
+    fireEvent.click(screen.getByRole('button',{name:'DEFESAS'}))
     expect(screen.getByRole('button',{name:/Usar Bloqueio/})).toBeInTheDocument()
     expect(screen.getByRole('button',{name:/Usar Aparar/})).toBeInTheDocument()
     expect(screen.getByRole('button',{name:/Usar Esquiva/})).toBeInTheDocument()
