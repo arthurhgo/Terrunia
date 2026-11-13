@@ -32,7 +32,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
   const buy=useGameStore(state=>state.buyGear)
   const buyAndEquip=useGameStore(state=>state.buyAndEquipGear)
   const merchant=TERRAN_GEAR_MERCHANTS[merchantId]
-  const stock=equipmentOffersV0515.filter(offer=>isTerranMerchantOffer(merchantId,offer))
+  const stock=equipmentOffersV0515.filter(offer=>offer.slot!=='weapon'&&isTerranMerchantOffer(merchantId,offer))
   const visible=stock.filter(offer=>
     (slot==='all'||offer.slot===slot) &&
     (stat==='all'||offer.stat===stat||offer.secondaryStat===stat) &&
@@ -51,6 +51,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
     aria-label={'Loja do '+merchant.label}>
     <header>
       <h3>{merchant.label}</h3>
+      {merchantId==='presence_terran_weaponsmith'&&<p>Armas completas foram retiradas: procure partes e materiais para montar sua arma vinculada em Durnan.</p>}
       <p>{merchant.description} Sem exigência de Clã ou Classe. Tier I · Grau 1.</p>
       <small>Escolha uma peça avulsa; não é necessário comprar um conjunto.</small>
     </header>
