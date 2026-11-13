@@ -2,7 +2,7 @@ import type { ContentCatalog } from '../../content/catalog'
 import { BALANCE } from '../../content/balance'
 import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/fungalChambers'
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
-import { DOUBLE_ATTACK_V05152 } from '../../content/combatActionRulesV05152'
+import { DEFENSE_RULES_V0517, COMMON_DEFENSE_SKILL_IDS_V0517, getWeaponAttackNamesV0517 } from '../../content/combatStylesV0517'
 import { nextCombatRandomSeed, rollSeededCombatDie } from './rng'
 import type {
   CombatEffectDefinition,
@@ -134,6 +134,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     ? (save.character.clan.selectedClanSkillId === null ? undefined :
        save.character.clan.selectedClanSkillId ?? clanSkills[save.character.clan.clanId]) : undefined
   const stats = deriveCharacterStats(save, catalog)
+  const weaponBase = catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']
   const maxHp = stats.life.value
   const maxMp = stats.mana.value
 
@@ -152,7 +153,10 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     initiativeDie: character.attributes.agility.die,
     alive: true,
     defending: false,
-    skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds, ...(clanSkillId ? [clanSkillId] : [])])],
+    weaponArchetype: weaponBase?.archetype ?? 'blade',
+    hasBoundShield: Boolean(character.bondedEquipment.shield),
+    defenseDice: {block:character.attributes.vigor.die,parry:character.attributes.agility.die,dodge:character.attributes.agility.die,counter:character.attributes.strength.die},
+    skillIds: [...new Set([...COMMON_DEFENSE_SKILL_IDS_V0517, ...equipmentSkillIds, ...unlockedSkillIds, ...(clanSkillId ? [clanSkillId] : [])])],
     attackDie: character.attributes[catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.scalingAttribute ?? 'strength'].die,
     ...(catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.bonusAttackDie
       ? { weaponBonusDie: catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? ''].bonusAttackDie }
@@ -306,7 +310,7 @@ const resolveAttack = (
 ) => {
   addPhase(state, 'SelectingTarget')
   addPhase(state, 'ResolvingAction')
-  applyCombatEffects(state, actor, target, [{ type: 'damage', powerBonus: 0 }], catalog)
+  applyCombatEffects(state, actor, target, [{ type: 'damage', powerBonus: 0 }], catalog, getWeaponAttackNamesV0517(actor.weaponArchetype).single)
   addPhase(state, 'ResolvingReactions')
   addPhase(state, 'ApplyingStatuses')
   addPhase(state, 'CheckEndConditions')
@@ -328,6 +332,15 @@ const resolveSkill = (
     actor.skillCooldowns[skill.id] = Math.floor(skill.cooldownTurns) + 1
   }
   addLog(state, `${actor.name} usa ${skill.name}.`, 'system')
+  if (skill.defenseStance) {
+    target.defending = true
+    target.activeDefense = skill.defenseStance
+    addLog(state, `${target.name} prepara ${skill.name}; o próximo golpe exigirá uma rolagem de reação.`, 'defense')
+    addPhase(state, 'ResolvingReactions')
+    addPhase(state, 'ApplyingStatuses')
+    addPhase(state, 'CheckEndConditions')
+    return
+  }
   if (skill.id === 'skill_basic_area_attack') {
     resolveAreaAttack(state,actor,target,catalog)
     return
@@ -377,35 +390,6 @@ const applySplash=(state:BattleState,actor:Combatant,target:Combatant,damage:num
       {actorId:actor.id,targetId:other.id,sides,face,action,critical})
   }
 }
-/** Two animated impacts calculated from ONE authoritative die roll.
- * One log entry owns the roll, so the UI never demands a second die.
- * Each hit is 30% of the post-mitigation original attack (BALANCE_DRAFT).
- */
-const resolveDoubleAttack=(state:BattleState,actor:Combatant,target:Combatant,catalog:ContentCatalog) => {
- addPhase(state,'SelectingTarget');addPhase(state,'ResolvingAction')
- if(isProtectedBoss(state,target))return
- const sides=selectDamageDie(actor),face=rollCombatDie(state,sides)
- const bonusFace=actor.weaponBonusDie?rollCombatDie(state,actor.weaponBonusDie):0
- const guard=target.defending?BALANCE.defendMitigation:0
- const base=calculateRolledDamage(getEffectiveAttackPower(actor,catalog)+bonusFace,
-  getEffectiveMitigation(target,catalog),face,sides,0,guard)
- const each=Math.max(1,Math.floor(base.finalDamage*DOUBLE_ATTACK_V05152.fractionPerHit))
- const hits:number[]=[]
- for(let impact=0;impact<DOUBLE_ATTACK_V05152.impacts&&target.alive;impact++){
-   const damage=Math.min(target.hp,each)
-   target.hp=Math.max(0,target.hp-damage)
-   target.alive=target.hp>0
-   hits.push(damage)
- }
- target.defending=false
- const total=hits.reduce((sum,n)=>sum+n,0)
- addLog(state,`${actor.name} causa ${total} de dano em ${target.name} com Ataque Duplo (${hits.join(' + ')}; um único d${sides}=${face}).`,
-  'damage',{actorId:actor.id,targetId:target.id,sides,face,action:'Ataque Duplo',
-    critical:base.critical,damageBreakdown:{...base,finalDamage:total},
-    ...(actor.weaponBonusDie?{weaponBonusRoll:{sides:actor.weaponBonusDie,face:bonusFace}}:{})})
- addPhase(state,'ResolvingReactions');addPhase(state,'ApplyingStatuses');addPhase(state,'CheckEndConditions')
-}
-
 const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,catalog:ContentCatalog) => {
   addPhase(state,'SelectingTarget');addPhase(state,'ResolvingAction')
   const sides=selectDamageDie(actor),face=rollCombatDie(state,sides)
@@ -418,8 +402,8 @@ const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,cata
     ? state.bossMechanics.bossId : undefined
   const centerDamage=Math.min(target.hp,Math.max(1,Math.floor(rolled.finalDamage*0.6)))
   target.hp=Math.max(0,target.hp-centerDamage);target.alive=target.hp>0;target.defending=false
-  addLog(state,`${actor.name} causa ${centerDamage} de dano em ${target.name} com Ataque em Área.${rolled.critical ? ' ACERTO CRÍTICO!' : ''}`,'damage',
-    {actorId:actor.id,targetId:target.id,sides,face,action:'Ataque em Área',critical:rolled.critical,
+  addLog(state,`${actor.name} causa ${centerDamage} de dano em ${target.name} com ${getWeaponAttackNamesV0517(actor.weaponArchetype).area}.${rolled.critical ? ' ACERTO CRÍTICO!' : ''}`,'damage',
+    {actorId:actor.id,targetId:target.id,sides,face,action:getWeaponAttackNamesV0517(actor.weaponArchetype).area,critical:rolled.critical,
       damageBreakdown:{...rolled,finalDamage:centerDamage},
       ...(actor.weaponBonusDie?{weaponBonusRoll:{sides:actor.weaponBonusDie,face:bonusFace}}:{})})
   applySplash(state,actor,target,Math.floor(centerDamage*0.3),'Splash de Área',sides,face,2,protectedBossId,rolled.critical)
@@ -743,6 +727,7 @@ export const submitBattleCommand = (
     resolveInitiative(next, catalog)
     return ok(next)
   }
+  if ((command as {type:string}).type === 'doubleAttack') return fail('REMOVED_ACTION_V0517', 'Ataque Duplo foi removido na v0.5.17.')
   if (battle.phase !== 'AwaitingAction') {
     return fail('INVALID_BATTLE_PHASE', 'A batalha não está aguardando uma ação do jogador.')
   }
@@ -765,7 +750,7 @@ export const submitBattleCommand = (
   let skill: CombatSkillDefinition | undefined
   let item: ItemDefinition | undefined
 
-  if (command.type === 'attack' || command.type === 'areaAttack' || command.type === 'doubleAttack') {
+  if (command.type === 'attack' || command.type === 'areaAttack') {
     target = battle.combatants[command.targetId ?? Object.values(battle.combatants).find(c=>c.side==='enemy'&&c.alive&&!isProtectedBoss(battle,c))?.id ?? '']
     if (!target || !validTarget(currentPlayer, target, 'enemy', battle)) {
       return fail('INVALID_TARGET', 'Escolha um alvo inimigo válido.')
@@ -849,9 +834,6 @@ export const submitBattleCommand = (
     addPhase(state, 'ResolvingReactions')
     addPhase(state, 'ApplyingStatuses')
     addPhase(state, 'CheckEndConditions')
-  }
-  if (command.type === 'doubleAttack' && resolvedTarget) {
-    resolveDoubleAttack(state,player,resolvedTarget,catalog)
   }
   if (command.type === 'areaAttack' && resolvedTarget) {
     resolveAreaAttack(state,player,resolvedTarget,catalog)
