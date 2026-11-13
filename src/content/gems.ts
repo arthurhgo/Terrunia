@@ -6,7 +6,7 @@ export const gemComponentDefinitions = [
   {
     id: 'safira_mares',
     name: 'Safira das Marés',
-    description: 'Canaliza água, cura e resistência ao calor. Afinidade elemental modulável no Vínculo.'
+    description: 'Canaliza água, cura e resistência ao calor. Afinidade elemental modulável no Vínculo.',
     rarity: 'rare',
     tier: 1,
     modifiers: [{type:'statModifier',stat:'maxMp',operation:'flat',value:2}],
