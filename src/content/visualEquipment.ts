@@ -37,6 +37,13 @@ export const visualEquipmentCatalog: readonly VisualEquipmentEntry[] = [
   visual('weapon_conjuration_staff', 'Cajado de Conjuração', 'weapon', 'Bastão mágico pesado. Referência do manual.', 'manual'),
   visual('shield_round', 'Escudo Redondo', 'shield', 'Estudo visual de proteção física.'),
   visual('shield_arcane', 'Protetor Arcano', 'shield', 'Estudo visual de proteção mágica para builds sem escudo físico.'),
+  {
+    id:'shield_quiver_v0517',name:'Aljava Vinculada',slot:'shield',
+    assetId:'equipment.offhand.quiver_v0517',
+    assetPath:'/assets/equipment/offhand/quiver_v0517.svg',
+    description:'Escudaria: manifestação do mesmo slot de mão secundária. Flechas especiais; sem escudo físico.',
+    source:'concept',
+  },
   visual('armor_leather', 'Armadura de Couro', 'armor', 'Estudo visual de peitoral leve.'),
   visual('armor_plate', 'Armadura de Placas', 'armor', 'Estudo visual de peitoral pesado.'),
   visual('armor_mystic_tunic', 'Túnica Mística', 'armor', 'Túnica com foco arcano e inscrições luminosas.'),

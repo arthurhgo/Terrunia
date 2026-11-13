@@ -137,6 +137,10 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
   const stats = deriveCharacterStats(save, catalog)
   const weaponBase = catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']
   const offhand = deriveOffhandCombatV0517(save, catalog)
+  const shieldInstance=character.bondedEquipment.shield ? save.boundItems[character.bondedEquipment.shield] : null
+  const shieldDefinition=shieldInstance?catalog.boundItemBases[shieldInstance.baseItemId]:undefined
+  // Do not count a bound shield's mitigation AGAIN as body armor: ESC/ARC are separate.
+  const bodyMitigation=Math.max(0,stats.defense.value-(shieldDefinition?.statBonuses.mitigation??0))
   const maxHp = stats.life.value
   const maxMp = stats.mana.value
 
@@ -150,7 +154,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     mp: Math.min(maxMp, Math.max(0, save.vitals.mp)),
     maxMp,
     attackPower: stats.primaryAttack.value,
-    mitigation: stats.defense.value,
+    mitigation: bodyMitigation,
     initiative: stats.initiative.value,
     initiativeDie: character.attributes.agility.die,
     alive: true,

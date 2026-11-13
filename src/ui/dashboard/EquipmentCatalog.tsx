@@ -7,7 +7,7 @@ import { AssetImage } from '../components/AssetImage'
 
 const filters: { id: BoundSlot; label: string }[] = [
   { id: 'weapon', label: 'Armas' },
-  { id: 'shield', label: 'Escudos' },
+  { id: 'shield', label: 'Escudaria' },
   { id: 'armor', label: 'Armaduras' },
   { id: 'necklace', label: 'Colares' },
   { id: 'bracelet', label: 'Pulseiras' },

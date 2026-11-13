@@ -72,6 +72,6 @@ export function EquipmentGrid({ save }: { save: GameSave }) {
       <span>{braceletGear?.name ?? braceletDef?.name ?? 'Vazia'}{braceletGear ? ` · T${braceletGear.tier} G${getGearGrade(braceletShell?.refinementLevel)}` : bracelet ? ` · Vínculo G${bracelet.grade}` : ''}</span>
       {braceletShell && <button type="button" disabled={Boolean(save.battle)} onClick={() => equipGearStyle('bracelet',null)}>Retirar revestimento</button>}
     </div>
-    <p>Peças comuns são equipadas pela Mochila; Vínculos continuam permanentes.</p>
+    <p>Peças comuns são equipadas pela Mochila; Vínculos continuam permanentes. O slot Escudo permite futuras manifestações de Escudaria: Escudo, Protetor Arcano ou Aljava, sem sexto Vínculo.</p>
   </section>
 }

@@ -31,10 +31,10 @@ describe('grade pixel art v0.1', () => {
   })
 
   it('cobre as sete armas do manual e doze conceitos dos outros Vínculos', () => {
-    expect(visualEquipmentCatalog).toHaveLength(19)
+    expect(visualEquipmentCatalog).toHaveLength(20)
     expect(visualEquipmentCatalog.filter((item) => item.slot === 'weapon')).toHaveLength(7)
-    expect(visualEquipmentCatalog.filter((item) => item.source === 'concept')).toHaveLength(12)
-    expect(new Set(visualEquipmentCatalog.map((item) => item.id)).size).toBe(19)
+    expect(visualEquipmentCatalog.filter((item) => item.source === 'concept')).toHaveLength(13)
+    expect(new Set(visualEquipmentCatalog.map((item) => item.id)).size).toBe(20)
     for (const item of visualEquipmentCatalog) {
       expect(resolveAsset(item.assetId).path).toBe(item.assetPath)
       expect(resolveAsset(item.assetId).pixelArt).toBe(true)
