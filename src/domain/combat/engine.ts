@@ -455,7 +455,7 @@ const adjacentEnemies = (state:BattleState,target:Combatant):Combatant[] => {
     (other):other is Combatant=>Boolean(other?.alive))
 }
 const applySplash=(state:BattleState,actor:Combatant,target:Combatant,damage:number,
-  action:string,sides:CombatDie,face:number,maxTargets:number,protectedBossId?:string,critical=false,
+  action:string,sides:CombatDie,face:number,maxTargets:number,protectedBossId:string|undefined,critical:boolean,
   aspect:import('./layeredDefenseV0517').DamageTypeV0517,catalog:ContentCatalog) => {
   for(const other of adjacentEnemies(state,target).filter(c=>c.id!==protectedBossId && validTarget(actor,c,'enemy',state)).slice(0,maxTargets)){
     const armor=aspect==='physical'?getEffectiveMitigation(other,catalog):0
