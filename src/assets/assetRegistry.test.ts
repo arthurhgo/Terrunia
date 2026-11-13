@@ -131,7 +131,7 @@ describe('grade pixel art v0.1', () => {
 
   it('reserva IDs editáveis para os novos biomas sem exigir PNG não produzido', () => {
     const pending = Object.values(assetRegistry).filter((asset) => asset.draftPlaceholder)
-    expect(pending.filter((asset) => !asset.id.startsWith('equipment.v0515.'))).toHaveLength(56) // 6 extra skills, 5 status and 14 attacks; quiver shares one registry ID
+    expect(pending.filter((asset) => !asset.id.startsWith('equipment.v0515.'))).toHaveLength(57) // six extra skill drafts, five status, one quiver, fourteen attacks
     expect(pending.filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(0)
     expect(Object.values(assetRegistry).filter((asset) => asset.id.startsWith('equipment.v0515.'))).toHaveLength(4200)
     expect(Object.values(assetRegistry).filter((asset) => asset.id.startsWith('npc.castle-merchant.'))).toHaveLength(4)
