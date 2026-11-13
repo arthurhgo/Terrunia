@@ -88,7 +88,7 @@ describe('NPCs do Mercado', () => {
     const modular=screen.getByLabelText('Peças estruturais de arma · Torvan')
     expect(modular.querySelectorAll('article')).toHaveLength(32)
     expect(modular).toHaveTextContent('Não vendemos armas completas')
-    const buy=modular.querySelector('button[aria-label^="Comprar"]')!
+    const buy=modular.querySelector('.modular-shop__item button')!
     fireEvent.click(buy)
     const next=useGameStore.getState().save!
     expect(next.wallet.gold).toBeLessThan(save.wallet.gold)
