@@ -1,7 +1,6 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
-import { equipmentOffersV0515, formatGearStats } from '../../content/equipmentV0515'
 import { TerranSpecialistShopV05153 } from './TerranSpecialistShopV05153'
 import { createNewSave } from '../../domain/game/createSave'
 import { GearShopV0515 } from './GearShopV0515'
