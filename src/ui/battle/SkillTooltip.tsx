@@ -27,7 +27,7 @@ export function SkillTooltip({ skill, preview, remaining, unavailable, onClose, 
     </header>
     <p>{skill.description}</p>
     <dl>
-      <div><dt>Dado</dt><dd>{preview.die ? `d${preview.die}${preview.weaponBonusDie ? ` + d${preview.weaponBonusDie} da arma` : ''}` : 'Não utiliza dado de dano'}</dd></div>
+      <div><dt>Dado</dt><dd>{preview.reaction ? `Reação d${preview.reaction.sides}${preview.reaction.shieldBonus ? ' +1 escudo' : ''} · alvo ${preview.reaction.threshold} · ${preview.reaction.chance}%` : preview.die ? `d${preview.die}${preview.weaponBonusDie ? ` + d${preview.weaponBonusDie} da arma` : ''}` : 'Não utiliza dado de dano'}</dd></div>
       <div><dt>Dano estimado {preview.ranges.length ? `· ${preview.targetName}` : ''}</dt>
         <dd>{preview.ranges.length
           ? preview.ranges.map(({ minimum, maximum }) => `${minimum}–${maximum}`).join(' + ')
