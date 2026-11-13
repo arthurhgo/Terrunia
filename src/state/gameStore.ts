@@ -142,6 +142,7 @@ type GameState = {
   buyFromSylwen: (itemId: string, quantity?: number) => void
   forge: (recipeId: string) => void
   assembleBoundModule:(boundItemId:string,partId:string)=>void
+  inspectModularBench:(kind:'slots'|'stats')=>void
   buyModularPart:(partId:string,quantity:number)=>void
   goldForge: (slot: BoundSlot) => void
   equipArmor: (instanceId: string | null) => void
@@ -789,12 +790,26 @@ export const useGameStore = create<GameState>((set, get) => {
       show('Proteção aprimorada', 'A peça alcançou +1 e ganhou 1 de Defesa.', 'success')
     },
 
+    inspectModularBench:(kind)=>{
+      const save=get().save
+      if(!save||save.battle||save.world.currentLocationId!=='location_terran_forge')return
+      if(kind==='stats'&&!Object.values(save.boundItems).some(item=>item.assembly?.revision))return
+      const flag=kind==='slots'?'AssemblyBenchInspected:v05171':'AssemblyStatsInspected:v05171'
+      const next=structuredClone(save)
+      if(!next.eventLog.includes(flag))next.eventLog.push(flag)
+      const now=nowIso()
+      const target=kind==='slots'?'forge_assembly_bench_v05171':'inspect_assembly_stats_v05171'
+      const progressed=applyQuestEvent(next,{type:'interact',targetId:target},content,now)
+      progressed.updatedAt=now;progressed.revision+=1
+      commit(progressed)
+    },
     assembleBoundModule:(boundItemId,partId)=>{
       const save=get().save
       if(!save)return
       const result=commitAssemblyV05171(save,boundItemId,partId,content,nowIso())
       if(!result.ok)return failAction(result.message)
-      commit(result.value)
+      const progressed=applyQuestEvent(result.value,{type:'assemble',targetId:'bound_modular_v05171'},content,nowIso())
+      commit(progressed)
       show('Montagem concluída','Durnan atualizou a arma vinculada. Ataque, ESC, ARC e reações serão recalculados automaticamente.','success')
     },
     buyModularPart:(partId,quantity)=>{
@@ -1188,6 +1203,12 @@ export const useGameStore = create<GameState>((set, get) => {
       next.battle = result.value
       const player = result.value.combatants.combatant_player
       next.vitals = { hp: player.hp, mp: player.mp }
+      if(command.type==='skill'&&content.combatSkills[command.skillId]?.defenseStance){
+        const mode=content.combatSkills[command.skillId].defenseStance!
+        next.eventLog.push('DefensiveStanceUsed:'+mode)
+        const updated=applyQuestEvent(next,{type:'defendAction',targetId:'any_defense_v05171'},content,nowIso())
+        Object.assign(next,updated)
+      }
       const consumedNow = result.value.consumedItemInstanceIds.slice(consumedCount)
       for (const instanceId of consumedNow) {
         const index = next.inventory.findIndex((item) => item.instanceId === instanceId)
@@ -1298,6 +1319,15 @@ export const useGameStore = create<GameState>((set, get) => {
       }
       for (const item of loot) {
         next = applyQuestEvent(next, { type: 'collect', targetId: item.definitionId, amount: item.quantity }, content, acquiredAt)
+        if(item.definitionId.startsWith('part_v05171_')){
+          next.eventLog.push('ModularLootReceived:'+item.definitionId)
+          next=applyQuestEvent(next,{type:'collect',targetId:'any_modular_part_v05171',amount:item.quantity},content,acquiredAt)
+        }
+      }
+      const activeWeaponId=next.character.bondedEquipment.weapon
+      if(activeWeaponId&&next.boundItems[activeWeaponId]?.assembly?.revision){
+        next.eventLog.push('ModularBattleWon:'+battle.id)
+        next=applyQuestEvent(next,{type:'battleWithAssembly',targetId:'bound_modular_v05171'},content,acquiredAt)
       }
       for (const enemy of Object.values(battle.combatants).filter(
         (combatant) => combatant.side === 'enemy' && !combatant.alive,
