@@ -108,3 +108,32 @@ export function commitAssemblyV05171(save:GameSave,boundItemId:string,partId:str
  next.eventLog.push('WeaponAssemblySkillChanged:'+boundItemId)
  return ok(next)
 }
+
+
+/** Torvan sells loose modules only, never a new weapon or Bond. */
+export function buyModularPartV05171(save:GameSave,partId:string,quantity:number,
+ catalog:ContentCatalog,now:string):Result<GameSave>{
+ const part=weaponPartByIdV05171[partId]
+ if(!part)return fail('MODULAR_SHOP_UNKNOWN','Peça modular indisponível.')
+ if(save.battle||save.world.currentLocationId!=='location_terran_bond_workshop')
+  return fail('MODULAR_SHOP_LOCATION','Converse com Torvan no Mercado de Terran.')
+ if(!Number.isInteger(quantity)||quantity<1||quantity>10)
+  return fail('MODULAR_SHOP_QUANTITY','Compre de uma a dez peças por operação.')
+ if(save.character.level<1+(part.tier-1)*3)
+  return fail('MODULAR_SHOP_LEVEL','Tier bloqueado: avance seu personagem para comprar esta peça.')
+ const price=part.price*quantity
+ if(!Number.isSafeInteger(price)||save.wallet.gold<price)
+  return fail('MODULAR_SHOP_GOLD','Ouro insuficiente para adquirir componentes.')
+ const definition=catalog.items[partId]
+ if(!definition||definition.category!=='material')
+  return fail('MODULAR_SHOP_ITEM','O componente não está cadastrado no inventário.')
+ const next=structuredClone(save)
+ const existing=next.inventory.find(entry=>entry.definitionId===partId&&!entry.favorite&&!entry.locked)
+ if(existing)existing.quantity+=quantity
+ else next.inventory.push({instanceId:'modular_'+next.saveId+'_'+(next.revision+1),
+  definitionId:partId,quantity,rarity:definition.rarity,locked:false,favorite:false,acquiredAt:now})
+ next.wallet.gold-=price
+ next.updatedAt=now;next.revision+=1
+ next.eventLog.push('MarketPurchase:presence_terran_weaponsmith:'+partId+':'+quantity+':'+price)
+ return ok(next)
+}
