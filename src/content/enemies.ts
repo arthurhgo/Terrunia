@@ -48,7 +48,7 @@ export const enemyDefinitions = ([
     goldReward: 7,
     boundResonanceReward: 10,
     lootDefinitionIds: ['drop_spore_cluster'],
-    skillIds: ['skill_enemy_spore_miasma_v0517'],
+    skillIds: ['skill_spore_burst'],
     aiSkillEveryRounds: 2, aiArchetype:'controller', damageResistances:{fire:-0.2,poison:0.2},
     weaknessTags: ['light', 'fire'],
     assetId: 'enemy.spore-sower',

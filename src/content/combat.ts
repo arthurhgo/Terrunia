@@ -257,6 +257,7 @@ export const combatSkillDefinitions = [
     effects: [
       { type: 'damage', powerBonus: 0 },
       { type: 'applyStatus', statusId: 'status_spore_poison', durationTurns: 2, chance: 1 },
+      { type: 'applyStatus', statusId: 'status_slow_v0517', durationTurns: 2, chance: 1 },
     ],
     presentationGroup: 'magic',
     status: 'CONTENT_DRAFT',

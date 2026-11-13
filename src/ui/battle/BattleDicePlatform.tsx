@@ -72,7 +72,7 @@ export function BattleDicePlatform({ roll, reducedMotion, awaitingClick = false,
         <strong>{initiative ? `Iniciativa ${roll.initiativeTotal ?? roll.face}` : `d${roll.sides}: ${roll.face}`}</strong>
         {!initiative && roll.weaponBonusRoll && <small>Arma d{roll.weaponBonusRoll.sides}: {roll.weaponBonusRoll.face}</small>}
         {!initiative && roll.critical && <span className="battle-dice-platform__critical">ACERTO CRÍTICO!</span>}
-        {!initiative && <small>{roll.damage>0 ? `${roll.damage} dano na Vida` : roll.absorbed && (roll.absorbed.shield+roll.absorbed.armor+roll.absorbed.arcane)>0 ? 'BLOQUEADO / ABSORVIDO' : '0 de dano'}</small>}
+        {!initiative && <small>{roll.damage>0 ? `${roll.damage} de dano` : roll.absorbed && (roll.absorbed.shield+roll.absorbed.armor+roll.absorbed.arcane)>0 ? 'BLOQUEADO / ABSORVIDO' : '0 de dano'}</small>}
         {!initiative && roll.absorbed && <small>ESC {roll.absorbed.shield} · ARM {roll.absorbed.armor} · ARC {roll.absorbed.arcane}{roll.absorbed.affinity ? ` · Afinidade ${roll.absorbed.affinity>0?'+':''}${roll.absorbed.affinity}` : ''}</small>}
       </div>}
     </div>}

@@ -56,8 +56,9 @@ describe('v0.5.17 — regras táticas e leituras reais',()=>{
   expect(enemy).toEqual(before)
  })
  it('mostra intenção de acordo com o mesmo ciclo de habilidades do motor',()=>{
-  const {battle,enemy}=scenario()
+  const {battle,enemy,player}=scenario()
   turnReady(battle)
+  player.physicalGuard=2
   const initial=structuredClone(battle)
   expect(getEnemyIntentV0517(battle,enemy,content,1)?.kind).toBe('basic')
   expect(getEnemyIntentV0517(battle,enemy,content,3)).toMatchObject({
@@ -133,7 +134,7 @@ describe('v0.5.17 — regras táticas e leituras reais',()=>{
     const slow=scenario('enemy_spore_sower')
     turnReady(slow.battle)
     slow.battle.round=2
-    expect(getEnemyIntentV0517(slow.battle,slow.enemy,content)?.skillId).toBe('skill_enemy_spore_miasma_v0517')
+    expect(getEnemyIntentV0517(slow.battle,slow.enemy,content)?.skillId).toBe('skill_spore_burst')
     slow.player.statusEffects.push({definitionId:'status_slow_v0517',sourceId:slow.enemy.id,remainingTurns:2})
     expect(getEnemyIntentV0517(slow.battle,slow.enemy,content)?.kind).toBe('basic')
   })
