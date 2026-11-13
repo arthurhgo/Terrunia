@@ -9,6 +9,7 @@ import type { BoundSlot } from '../domain/shared/types'
 import { visualEquipmentCatalog } from '../content/visualEquipment'
 import { gemComponentDefinitions } from '../content/gems'
 import { npcVisualDefinitions } from '../content/npcVisuals'
+import {weaponPartDefinitionsV05171,modularElementalJewelItemsV05171} from '../content/weaponPartsV05171'
 
 export type AssetEntry = {
   id: string
@@ -32,6 +33,12 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
+ ...weaponPartDefinitionsV05171.map(p=>({id:p.assetId,
+   path:'/assets/weapon-parts/v05171/'+p.family+'/'+p.slot+'_t'+p.tier+'.svg',
+   fallback:'/assets/placeholders/item.svg',alt:p.name,pixelArt:true})),
+ ...modularElementalJewelItemsV05171.map(item=>({id:item.iconAssetId,
+   path:'/assets/weapon-parts/v05171/gems/'+item.affinityTags[2]+'.svg',
+   fallback:'/assets/placeholders/item.svg',alt:item.name,pixelArt:true})),
   ...equipmentOffersV0515.flatMap((gear) => ([1,2,3] as GearGrade[]).map((grade) => ({
     id: gearSpriteId(gear,grade),
     path: '/assets/equipment/v05151/' + gear.id + '_g' + grade + '.png',

@@ -3,6 +3,15 @@ import type { GemComponentDefinition } from './types'
 // The names and broad identities come from the v0.4 canon. Numeric modifiers,
 // compatibility and first-slice acquisition remain data-driven drafts.
 export const gemComponentDefinitions = [
+ ...(['earth','air'] as const).map(element=>({
+   id:element==='earth'?'gema_terra_v05171':'gema_ar_v05171',
+   name:element==='earth'?'Gema Telúrica':'Gema dos Ventos',
+   description:element==='earth'?'Gema elemental de terra. Propriedades finais exigem OWNER_DECISION.':'Gema elemental de ar. Propriedades finais exigem OWNER_DECISION.',
+   rarity:'rare',tier:1,modifiers:[],activeEffectIds:[],skillTreeHooks:[],
+   affinityTags:[element],compatibility:{anyEssenceTags:[],blockedEssenceTags:[]},
+   visualTags:[element],unique:false,
+   iconAssetId:'item.modular-gem-'+element,status:'CONTENT_DRAFT',mechanicsStatus:'OWNER_DECISION'
+ })),
   {
     id: 'safira_mares',
     name: 'Safira das Marés',
