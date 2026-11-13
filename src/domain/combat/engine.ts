@@ -241,17 +241,28 @@ const applyCombatEffects = (
 ) => {
   // A protected construct is immune to every offensive effect, including AoE and splash.
   if (actor.side !== target.side && isProtectedBoss(state, target)) return { damage: 0, face: 1, sides: selectDamageDie(actor, skill), critical: false }
-  // Defending against the telegraphed boulder also prevents its Stagger debuff.
-  const guardedBoulder = Boolean(target.defending && skill?.id === 'skill_granite_slam')
+  // A telegraphed boulder prevents Stagger only after a successful rolled defense.
+  let guardedBoulder = false
   let dealt = 0
   let usedFace = 1
   let usedSides = selectDamageDie(actor, skill)
   let usedCritical = false
   for (const effect of effects) {
     if (effect.type === 'damage') {
-      const guardMitigation = target.defending
-        ? BALANCE.defendMitigation + (guardedBoulder ? GRANITE_GOLEM_BALANCE.throwBonusGuardMitigation : 0)
-        : 0
+      const mode = target.defending ? target.activeDefense : undefined
+      const stance = mode && actor.side !== target.side ? DEFENSE_RULES_V0517[mode] : null
+      const defenseSides = mode ? target.defenseDice?.[mode] ?? 4 : 4
+      const defenseFace = stance ? rollCombatDie(state, defenseSides) : 0
+      const shieldBonus = stance?.usesShield && target.hasBoundShield ? 1 : 0
+      const success = Boolean(stance && defenseFace + shieldBonus >= stance.dc)
+      if (stance) addLog(state, target.name+' tenta '+stance.name+': d'+defenseSides+'='+defenseFace+
+        (shieldBonus ? ' +1 Escudo' : '')+' contra '+stance.dc+' — '+(success?'SUCESSO':'FALHA')+'.', 'defense')
+      guardedBoulder = Boolean(target.defending && (!stance || success) && skill?.id === 'skill_granite_slam')
+      const guardMitigation = stance
+        ? success ? stance.reduction + (mode === 'block' && target.hasBoundShield ? 1 : 0) : 0
+        : target.defending ? BALANCE.defendMitigation : 0
+      const appliedGuardMitigation = guardMitigation +
+        (guardedBoulder ? GRANITE_GOLEM_BALANCE.throwBonusGuardMitigation : 0)
       const sides = selectDamageDie(actor, skill)
       const face = rollCombatDie(state, sides)
       const bonusFace = actor.weaponBonusDie ? rollCombatDie(state, actor.weaponBonusDie) : 0
@@ -260,8 +271,12 @@ const applyCombatEffects = (
       const breakdown = calculateRolledDamage(
         getEffectiveAttackPower(actor, catalog) + bonusFace,
         getEffectiveMitigation(target, catalog),
-        face, sides, effect.powerBonus, guardMitigation,
+        face, sides, effect.powerBonus, appliedGuardMitigation,
       )
+      if (success && (mode === 'parry' || mode === 'dodge')) {
+        breakdown.guardPrevented += breakdown.finalDamage
+        breakdown.finalDamage = 0
+      }
       // No second critical roll: face === sides is the ONLY critical trigger.
       const damage = breakdown.finalDamage
       usedCritical = breakdown.critical
@@ -269,11 +284,18 @@ const applyCombatEffects = (
       target.hp = Math.max(0, target.hp - damage)
       target.alive = target.hp > 0
       target.defending = false
+      delete target.activeDefense
+      if (success && mode === 'counter' && target.alive && actor.alive && !isProtectedBoss(state,actor)) {
+        const retaliation = Math.min(actor.hp,Math.max(1,Math.floor(getEffectiveAttackPower(target,catalog)*0.4)))
+        actor.hp = Math.max(0,actor.hp-retaliation)
+        actor.alive = actor.hp>0
+        addLog(state,target.name+' responde com Contragolpe e causa '+retaliation+' de dano em '+actor.name+'.','damage')
+      }
       const guardNote = guardMitigation
         ? ` · Guarda evitou ${breakdown.guardPrevented} de dano.` : ''
       const critNote = breakdown.critical ? ' ACERTO CRÍTICO!' : ''
       addLog(state,
-        `${actor.name} causa ${damage} de dano em ${target.name}.${critNote} d${sides}=${face}${actor.weaponBonusDie ? ` + d${actor.weaponBonusDie} da arma=${bonusFace}` : ''}, ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${guardMitigation}.${guardNote}`,
+        `${actor.name} causa ${damage} de dano em ${target.name}.${critNote} d${sides}=${face}${actor.weaponBonusDie ? ` + d${actor.weaponBonusDie} da arma=${bonusFace}` : ''}, ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${appliedGuardMitigation}.${guardNote}`,
         'damage', { actorId: actor.id, targetId: target.id, sides, face, action, critical: breakdown.critical, damageBreakdown: breakdown,
           ...(actor.weaponBonusDie ? { weaponBonusRoll: { sides: actor.weaponBonusDie, face: bonusFace } } : {}) },
       )
