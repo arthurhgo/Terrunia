@@ -27,6 +27,7 @@ import { BattleVictorySummaryV0516 } from '../battle/BattleVictorySummaryV0516'
 import { getCombatQuestProgressV0516 } from '../../domain/quests/questFlowV0516'
 import { canUseVictoryRecovery } from '../../domain/combat/victoryRecoveryV05152'
 import { getWeaponAttackCardsV0517 } from '../../content/combatStylesV0517'
+import { getInitiativeModifiersV0517 } from '../../domain/combat/layeredDefenseV0517'
 import { getEnemyReadouts, getImpactReadout } from '../../domain/combat/combatReadoutsV05153'
 import { playGameplaySfx } from '../../services/gameplaySfx'
 import './battlePixel.css'
@@ -481,10 +482,12 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const receivingId = diceStage === 'impact' && activeDice?.kind === 'damage' ? activeDice.targetId : undefined
   const damageRevealed = diceStage === 'impact' && activeDice?.id === impactEventId
 
+  const modifiers=getInitiativeModifiersV0517(player,content)
+  const latestDamage=battle.log.slice().reverse().find(entry=>entry.roll?.damageBreakdown)
   const statusesFor=(actor:NonNullable<typeof player>)=><div className="pixel-battle__status-strip" aria-label="Efeitos ativos">
     {actor.statusEffects.map((effect,index)=>{
       const definition=content.statusEffects[effect.definitionId]
-      return <span key={effect.definitionId+'-'+index} title={`${definition?.name??effect.definitionId} · ${effect.remainingTurns} turno(s): ${definition?.description??''}`}>
+      return <span key={effect.definitionId+'-'+index} title={`${definition?.name??effect.definitionId} · ${effect.remainingTurns} turno(s): ${definition?.description??''} · Iniciativa ${(definition?.initiativeModifier??0)>=0?'+':''}${definition?.initiativeModifier??0} · Dado ${(definition?.initiativeDieSteps??0)>=0?'+':''}${definition?.initiativeDieSteps??0} passo(s)`}>
         <AssetImage assetId={`status.${effect.definitionId}`} alt={definition?.name??effect.definitionId}/>
         <b>{effect.remainingTurns}T</b>
       </span>
@@ -552,7 +555,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         </button>)}
       </div>
       {graniteRockIncoming && <div className="pixel-battle__granite-warning" role="status" aria-live="polite">
-        <strong>ROCHA PREPARADA — DEFENDA!</strong>
+        <strong>ROCHA PREPARADA — USE BLOQUEIO OU APARAR!</strong>
         <span>O Golem vai arremessar uma pedra. Bloquear reduz o dano e impede o Abalo. Use poções para recuperar Vida.</span>
       </div>}
       {battle.bossMechanics && <div className="pixel-battle__boss-timers" role="status">
@@ -594,9 +597,21 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             <strong>{player.name}</strong>
             <div className="pixel-battle__meter hp" role="progressbar" aria-label="Vida" aria-valuenow={visualHp(player.id)} aria-valuemin={0} aria-valuemax={player.maxHp}><i style={{ width: clampPercent(visualHp(player.id), player.maxHp) + '%' }} /><span>VIDA {visualHp(player.id)} / {player.maxHp}</span></div>
             <div className="pixel-battle__meter mp" role="progressbar" aria-label="Mana" aria-valuenow={player.mp} aria-valuemin={0} aria-valuemax={player.maxMp}><i style={{ width: clampPercent(player.mp, player.maxMp) + '%' }} /><span>MANA {player.mp} / {player.maxMp}</span></div>
+            <div className="pixel-battle__defense-readout" role="group" aria-label="Camadas defensivas do Terrírian">
+              <span title="ESC: número do Escudo que precisa ser superado em um ataque físico">ESC <b>{player.physicalGuard??0}</b></span>
+              <span title="ARM: mitigação por armadura e proteção física">ARM <b>{player.mitigation}</b></span>
+              <span title="ARC: reserva arcana que absorve o próximo dano mágico">ARC <b>{player.arcaneGuard??0}/{player.maxArcaneGuard??0}</b></span>
+            </div>
           </div>
         </div>
         {statusesFor(player)}
+        {latestDamage?.roll?.damageBreakdown && <small className="pixel-battle__layer-log" role="note" aria-label="Última absorção defensiva">
+          ÚLTIMO GOLPE · {(latestDamage.roll.damageBreakdown.damageAspect??'physical')==='arcane'?'MÁGICO':'FÍSICO'}
+          {' · '}ESC {latestDamage.roll.damageBreakdown.shieldAbsorbed??0}
+          {' · '}ARM {latestDamage.roll.damageBreakdown.armorAbsorbed??0}
+          {' · '}ARC {latestDamage.roll.damageBreakdown.arcaneAbsorbed??0}
+          {' · '}HP -{latestDamage.roll.damageBreakdown.finalDamage}
+        </small>}
         <BattleEquipmentHud save={save} />
       </section>
       <section className={'pixel-battle__panel pixel-battle__actions' + (battle.phase === 'Victory' ? ' pixel-battle__actions--victory' : '')} aria-label="Ações de combate" data-turn-gate={actionGate}>
@@ -609,10 +624,10 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         </div>}
         {battle.phase === 'AwaitingInitiative' ? <div className="pixel-battle__initiative" aria-label="Preparar rolagem de iniciativa">
           <strong>{initiativeReady ? 'ROLAGEM DE INICIATIVA' : 'TURNO ' + battle.round}</strong>
-          <DraggableBattleDie sides={player.initiativeDie ?? 4}
-            disabled={!initiativeReady || resolvingRolls || Boolean(roundCurtain)} ariaLabel={`Arrastar dado de iniciativa d${player.initiativeDie ?? 4} para cima para rolar`}
+          <DraggableBattleDie sides={modifiers.die}
+            disabled={!initiativeReady || resolvingRolls || Boolean(roundCurtain)} ariaLabel={`Arrastar dado de iniciativa d${modifiers.die} para cima para rolar`}
             onThrow={() => send({ type: 'rollInitiative' })} />
-          <small>Seu dado de Agilidade define a ordem junto à iniciativa-base. Monstros rolam automaticamente.</small>
+          <small>Agilidade d{modifiers.die} · status {modifiers.flat>=0?'+':''}{modifiers.flat}. O valor real define a ordem. Monstros também rolam.</small>
         </div> : battle.phase === 'AwaitingAction' ? <>
           <div className="pixel-battle__commands" aria-label="Barra de ações">
             {button('ATAQUE', <Swords />, () => openMenu('attack'), !isPlayerTurn || !target.alive, menu==='attack')}
