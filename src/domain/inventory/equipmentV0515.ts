@@ -9,6 +9,9 @@ import { createRandomId } from '../shared/randomId'
 
 /** Market authorization is validated again in the domain, never only in disabled UI buttons. */
 export function checkGearAccess(save:GameSave,offer:GearOffer,merchantId:string):Result<true>{
+ // The permanent weapon Bond is never a commercial gear shell. Preserve existing
+ // inventory entries and saves, but refuse new purchases through any merchant.
+ if(offer.slot==='weapon')return fail('BOUND_WEAPON_NOT_FOR_SALE','Armas vinculadas não são vendidas. Procure Durnan para montar suas quatro partes.')
  if (offer.channel === 'PUBLIC_TERRAN') {
    if (!isTerranMerchantOffer(merchantId,offer))
      return fail('GEAR_MERCHANT','Este item comum pertence ao comerciante especializado em '+getTerranMerchantForSlot(offer.slot)+'.')
@@ -69,6 +72,7 @@ export function purchaseGear(save:GameSave,offerIds:readonly string[],now:string
 }
 
 export function checkGearWear(save:GameSave,offer:GearOffer):Result<true>{
+ if(offer.slot==='weapon')return fail('BOUND_WEAPON_NOT_EQUIPPABLE','Revestimentos antigos permanecem guardados, mas a arma vinculada é permanente.')
  if(save.battle)return fail('GEAR_BATTLE','Não é possível equipar durante o combate.')
  if(save.character.level<offer.level)return fail('GEAR_LEVEL','Requer nível '+offer.level+'.')
  if(offer.clanId&&save.character.clan.clanId!==offer.clanId)return fail('GEAR_CLAN','Este equipamento exige seu Clã.')
@@ -80,6 +84,7 @@ const isBound=(slot:GearSlot):slot is BoundSlot =>
  ['weapon','shield','armor','necklace','bracelet'].includes(slot)
 export function equipGearStyle(save:GameSave,instanceId:string|null,slot:BoundSlot,
  now:string):Result<GameSave>{
+ if(slot==='weapon')return fail('BOUND_WEAPON_NOT_EQUIPPABLE','A arma vinculada não pode ser substituída por um revestimento comercial.')
  if(save.battle)return fail('GEAR_BATTLE','Não é possível trocar revestimentos no combate.')
  const existing=save.equippedGearStyles?.[slot]
  if(!instanceId&&!existing)return ok(save)

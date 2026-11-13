@@ -53,6 +53,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
       <h3>{merchant.label}</h3>
       <p>{merchant.description} Sem exigência de Clã ou Classe. Tier I · Grau 1.</p>
       <small>Escolha uma peça avulsa; não é necessário comprar um conjunto.</small>
+      {merchantId==='presence_terran_weaponsmith' && <p role="note">Armas completas não estão à venda: o Vínculo é permanente. Compre partes e leve-as a Durnan para montar sua própria arma.</p>}
     </header>
     <div className="terran-specialist__view" role="group" aria-label="Visualização dos equipamentos">
       <button type="button" aria-pressed={viewMode==='list'} onClick={()=>setViewMode('list')}><List size={14}/> Lista detalhada</button>
