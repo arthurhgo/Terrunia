@@ -65,7 +65,7 @@ const makeGradeThreeRiteSave = () => {
 
 describe('itens vinculados', () => {
   it('registra as dez Joias previstas pela especificação v0.4', () => {
-    expect(Object.keys(content.gems)).toHaveLength(10)
+    expect(Object.keys(content.gems)).toHaveLength(12)
     expect(content.gems).toHaveProperty('esmeralda_crescimento')
     expect(content.gems).toHaveProperty('coracao_kethzar')
   })
