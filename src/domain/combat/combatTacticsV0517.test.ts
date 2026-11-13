@@ -31,7 +31,7 @@ function turnReady(battle:BattleState){
 }
 describe('v0.5.17 — regras táticas e leituras reais',()=>{
  it('guarda pressionada diminui ESC apenas durante o status e não altera o Vínculo',()=>{
-  const {save,battle,player}=scenario()
+  const {save,battle}=scenario()
   const item=createBoundItem(save.character.id,content.boundItemBases.bound_shield_round,NOW,'guard-test')
   save.boundItems[item.id]=item
   save.character.bondedEquipment.shield=item.id
