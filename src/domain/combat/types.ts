@@ -45,6 +45,7 @@ export type Combatant = {
   maxArcaneGuard?: number
   /** Save preserves the original rolled total without temporary status bonuses. */
   initiativeRolledBase?: number
+  initiativeAppliedDieSteps?: number
   skillIds: string[]
   /** Optional for compatibility with battles serialized before v0.5.7. */
   skillCooldowns?: Record<string, number>

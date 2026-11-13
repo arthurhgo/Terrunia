@@ -252,6 +252,7 @@ const combatantSchema = z.object({
   arcaneGuard: nonnegativeNumber.optional(),
   maxArcaneGuard: nonnegativeNumber.optional(),
   initiativeRolledBase: z.number().finite().optional(),
+  initiativeAppliedDieSteps: z.number().int().finite().optional(),
   skillIds: z.array(idSchema),
   skillCooldowns: z.record(z.string(), nonnegativeInteger).optional(),
   statusEffects: z.array(z.object({

@@ -636,7 +636,7 @@ const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
       // Reorder only when a status changes initiative. Legacy battles and the
       // Golem's telegraph must NEVER acquire an extra enemy turn here.
       const actors=Object.values(state.combatants)
-      const modified=actors.some(a=>getInitiativeModifiersV0517(a,catalog).flat!==0)
+      const modified=actors.some(a=>{const m=getInitiativeModifiersV0517(a,catalog);return m.flat!==0 || m.steps!==(a.initiativeAppliedDieSteps??0)})
       if(modified||state.initiativeStatusOrderModified){
         for(const actor of actors)actor.initiativeRolledBase??=actor.initiative
         state.initiativeOrder=actors
@@ -684,6 +684,7 @@ const resolveInitiative = (state: BattleState, catalog: ContentCatalog): void =>
     const modifiers = getInitiativeModifiersV0517(actor, catalog)
     const sides = modifiers.die
     const face = rollCombatDie(state, sides)
+    actor.initiativeAppliedDieSteps = modifiers.steps
     actor.initiativeRolledBase = actor.initiative + face
     actor.initiative = actor.initiativeRolledBase + modifiers.flat
     addLog(state, `${actor.name} rola iniciativa: d${sides} = ${face} + base ${actor.initiativeRolledBase-face} + status ${modifiers.flat} (total ${actor.initiative}).`, 'system',

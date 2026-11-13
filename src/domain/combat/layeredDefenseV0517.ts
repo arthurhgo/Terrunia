@@ -69,5 +69,10 @@ export function getInitiativeModifiersV0517(actor:Combatant,catalog:ContentCatal
  return {flat,steps,die:stepInitiativeDieV0517(actor.initiativeDie??4,steps)}
 }
 export function getEffectiveInitiativeV0517(actor:Combatant,catalog:ContentCatalog){
- return (actor.initiativeRolledBase??actor.initiative)+getInitiativeModifiersV0517(actor,catalog).flat
+ const modifier=getInitiativeModifiersV0517(actor,catalog)
+ // Manual initiative rolls once per encounter. When a status changes the die
+ // MID-FIGHT, apply its one-step expected-value delta (+/-2) next round,
+ // without rolling twice or violating the deterministic turn FSM.
+ const stepsSinceRoll=modifier.steps-(actor.initiativeAppliedDieSteps??0)
+ return (actor.initiativeRolledBase??actor.initiative)+modifier.flat+stepsSinceRoll*2
 }
