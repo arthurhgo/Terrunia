@@ -35,7 +35,7 @@ describe('Galeria do primeiro Vínculo', () => {
     expect(screen.queryByText(/Bônus futuros, somente após filiação/)).not.toBeInTheDocument()
 
     fireEvent.mouseEnter(screen.getByRole('button', { name: 'Escolher Cetro Arcano' }))
-    expect(screen.getByText('Pulso do Cetro')).toBeInTheDocument()
+    expect(screen.getByText('Pulso Mágico do Cetro')).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Sinergias de Clã para Machado de Guerra' })).toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Sinergias de Clã para Cetro Arcano' })).not.toBeInTheDocument()
   })

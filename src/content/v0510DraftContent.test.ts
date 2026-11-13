@@ -11,7 +11,7 @@ describe('v0.5.10 content integration and canon guards', () => {
     const weapons = boundItemBaseDefinitions.filter((item) => item.slot === 'weapon' && item.skillUnlocks.length >= 3)
     expect(weapons).toHaveLength(7)
     for (const weapon of weapons) {
-      expect(weapon.skillUnlocks.map((unlock) => unlock.grade)).toEqual([1, 2, 3])
+      expect([...new Set(weapon.skillUnlocks.map((unlock) => unlock.grade))]).toEqual([1, 2, 3]) // scepter earns extra techniques at I and II
       for (const unlock of weapon.skillUnlocks) {
         expect(content.combatSkills[unlock.skillId]).toBeDefined()
       }
