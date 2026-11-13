@@ -19,7 +19,7 @@ export function checkOffhandRiteV0517(save:GameSave,baseId:string,catalog:Conten
  const offer=OFFHAND_RITE_V0517.offers.find(o=>o.baseId===baseId)
  if(!offer)return fail('OFFHAND_UNKNOWN','Esta manifestação não pertence à Escudaria.')
  if(save.battle||save.world.currentLocationId!==OFFHAND_RITE_V0517.locationId||npcId!==OFFHAND_RITE_V0517.npcId)
-  return fail('OFFHAND_NPC_REQUIRED','Converse com Ed'ran na Oficina de Vínculos em Terran.')
+  return fail('OFFHAND_NPC_REQUIRED',"Converse com Ed'ran na Oficina de Vínculos em Terran.")
  if(!save.character.bondedEquipment.weapon)return fail('OFFHAND_WEAPON_REQUIRED','Vincule sua primeira arma antes do rito de Escudaria.')
  const available=canBindSlot(save.character.bondedEquipment,'shield')
  if(!available.ok)return available
