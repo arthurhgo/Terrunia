@@ -34,6 +34,18 @@ export type Combatant = {
   initiative: number
   alive: boolean
   defending: boolean
+  activeDefense?: import('../../content/combatStylesV0517').DefenseModeV0517
+  defenseDice?: Record<import('../../content/combatStylesV0517').DefenseModeV0517, CombatDie>
+  hasBoundShield?: boolean
+  weaponArchetype?: string
+  offhandKind?: import('./layeredDefenseV0517').OffhandKindV0517
+  combatProfile?: import('./layeredDefenseV0517').CombatProfileV0517
+  physicalGuard?: number
+  arcaneGuard?: number
+  maxArcaneGuard?: number
+  /** Save preserves the original rolled total without temporary status bonuses. */
+  initiativeRolledBase?: number
+  initiativeAppliedDieSteps?: number
   skillIds: string[]
   /** Optional for compatibility with battles serialized before v0.5.7. */
   skillCooldowns?: Record<string, number>
@@ -67,6 +79,12 @@ export type CombatRoll = {
     guardMitigation: number
     guardPrevented: number
     finalDamage: number
+    damageAspect?: import('./layeredDefenseV0517').DamageTypeV0517
+    shieldAbsorbed?: number
+    arcaneAbsorbed?: number
+    armorAbsorbed?: number
+    affinityDelta?: number
+    resistancePercent?: number
     critical?: boolean
   }
 }
@@ -124,6 +142,8 @@ export type BattleState = {
   actorId: string
   actorCursor: number
   initiativeOrder: string[]
+  /** Only reorder next rounds after a status affects initiative. */
+  initiativeStatusOrderModified?: boolean
   combatants: Record<string, Combatant>
   log: BattleLogEntry[]
   rewards: BattleRewards
@@ -137,7 +157,6 @@ export type BattleCommand =
   | { type: 'rollInitiative' }
   | { type: 'attack'; targetId: string }
   | { type: 'areaAttack'; targetId?: string }
-  | { type: 'doubleAttack'; targetId: string }
   | { type: 'defend' }
   | { type: 'skill'; skillId: string; targetId: string }
   | { type: 'item'; itemInstanceId: string; targetId: string }

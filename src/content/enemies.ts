@@ -49,7 +49,7 @@ export const enemyDefinitions = ([
     boundResonanceReward: 10,
     lootDefinitionIds: ['drop_spore_cluster'],
     skillIds: ['skill_spore_burst'],
-    aiSkillEveryRounds: 2,
+    aiSkillEveryRounds: 2, aiArchetype:'controller', damageResistances:{fire:-0.2,poison:0.2},
     weaknessTags: ['light', 'fire'],
     assetId: 'enemy.spore-sower',
     status: 'BALANCE_DRAFT',
@@ -58,18 +58,18 @@ export const enemyDefinitions = ([
   // Reuse existing material families and never drop bound equipment.
   {
     id: 'enemy_fungorro_thornback', name: 'Fungorro Espinhal',
-    level: 2, maxHp: 10, mitigation: 1, attackPower: 3,
+    level: 2, maxHp: 10, mitigation: 1, attackPower: 3, initiativeDie:6,
     xpReward: 22, goldReward: 10, boundResonanceReward: 13,
     lootDefinitionIds: ['drop_fungal_nucleus'],
-    skillIds: [], weaknessTags: ['light', 'fire'],
+    skillIds: ['skill_enemy_thorn_pressure_v0517'], aiSkillEveryRounds: 3, aiArchetype:'breaker',damageResistances:{physical:0.1,fire:-0.15}, weaknessTags: ['light', 'fire'],
     assetId: 'enemy.fungorro-thornback', status: 'CONTENT_DRAFT',
   },
   {
     id: 'enemy_spore_bulwark', name: 'Casco de Esporos',
-    level: 3, maxHp: 14, mitigation: 2, attackPower: 3,
+    level: 3, maxHp: 14, mitigation: 2, attackPower: 3, attackDie:6,
     xpReward: 34, goldReward: 15, boundResonanceReward: 19,
     lootDefinitionIds: ['drop_spore_chitin'],
-    skillIds: [], weaknessTags: ['fire', 'blunt'],
+    skillIds: [], aiArchetype:'brute',damageResistances:{physical:0.2,fire:-0.15},weaknessTags: ['fire', 'blunt'],
     assetId: 'enemy.spore-bulwark', status: 'CONTENT_DRAFT',
   },
   {
@@ -86,7 +86,7 @@ export const enemyDefinitions = ([
     level: 5, maxHp: 21, mitigation: 3, attackPower: 5,
     xpReward: 80, goldReward: 38, boundResonanceReward: 40,
     lootDefinitionIds: ['drop_ruin_shard'],
-    skillIds: [], weaknessTags: ['resonance', 'blunt'],
+    skillIds: ['skill_enemy_ruin_arcane_v0517'], aiSkillEveryRounds:3,aiArchetype:'caster',damageResistances:{physical:0.15,arcane:-0.1},weaknessTags: ['resonance', 'blunt'],
     assetId: 'enemy.ruin-warden', status: 'CONTENT_DRAFT',
   },
   {
@@ -109,10 +109,10 @@ export const enemyDefinitions = ([
   },
   {
     id: 'enemy_fungal_slime', name: 'Bola de Gosma Fúngica',
-    level: 3, maxHp: 12, mitigation: 1, attackPower: 4,
+    level: 3, maxHp: 12, mitigation: 1, attackPower: 4, initiativeDie:6,
     xpReward: 50, goldReward: 11, boundResonanceReward: 18,
     lootDefinitionIds: ['drop_fungal_gel'],
-    skillIds: [], weaknessTags: ['light', 'fire'],
+    skillIds: [], aiArchetype:'skirmisher',damageResistances:{physical:0.1,fire:-0.2}, weaknessTags: ['light', 'fire'],
     assetId: 'enemy.fungal-slime', status: 'BALANCE_DRAFT',
   },
   {

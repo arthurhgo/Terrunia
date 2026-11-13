@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Backpack, Bomb, BookOpen, Crosshair, Gem, ScrollText, Shield, Sparkles, Swords, Zap } from 'lucide-react'
+import { Backpack, Bomb, BookOpen, Crosshair, Gem, ScrollText, Sparkles, Swords, Zap } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { isProtectedBoss, submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
@@ -26,8 +26,10 @@ import { groupBattleLoot } from '../../domain/inventory/battleLoot'
 import { BattleVictorySummaryV0516 } from '../battle/BattleVictorySummaryV0516'
 import { getCombatQuestProgressV0516 } from '../../domain/quests/questFlowV0516'
 import { canUseVictoryRecovery } from '../../domain/combat/victoryRecoveryV05152'
-import { DOUBLE_ATTACK_V05152 } from '../../content/combatActionRulesV05152'
-import { getEnemyReadouts, getImpactReadout } from '../../domain/combat/combatReadoutsV05153'
+import { getWeaponAttackCardsV0517 } from '../../content/combatStylesV0517'
+import { getInitiativeModifiersV0517 } from '../../domain/combat/layeredDefenseV0517'
+import {getEnemyIntentV0517,getEffectiveShieldV0517} from '../../domain/combat/combatTacticsV0517'
+import { getEnemyReadouts, getLayerImpactV0517 } from '../../domain/combat/combatReadoutsV05153'
 import { playGameplaySfx } from '../../services/gameplaySfx'
 import './battlePixel.css'
 import './battleRemake.css'
@@ -36,6 +38,7 @@ import './battleCinematic.css'
 import './gameplayV057.css'
 import './battleV0513.css'
 import './battleVictoryV05161.css'
+import './battleWeaponV0517.css'
 
 type Menu = 'attack' | 'skills' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const POTION_CARD_ID = 'skill.use-healing-potion'
@@ -44,9 +47,9 @@ const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.
 const getBattleStrikeFx = (event: BattleDiceEvent) => {
   const action = event.action.toLowerCase()
   const style = /pulso ressonante|golpe ressonante/i.test(action) ? 'resonance' as const
-    : /ataque em área/i.test(action) ? 'area' as const
+    : /ataque em área|varredura|dispersão|nova arcana|onda de energia/i.test(action) ? 'area' as const
     : /arco|bow|flecha|arremess|projectile/i.test(action) ? 'projectile' as const
-    : /arcano|magic|magia|arcane|runa|scepter|staff|grimoire|spell/i.test(action) ? 'arcane' as const
+    : /arcano|mágico|mágica|etéreo|magic|magia|arcane|runa|scepter|staff|grimoire|spell/i.test(action) ? 'arcane' as const
       : 'slash' as const
   return {
     actorId: event.actorId ?? (event.actorSide === 'enemy' ? '' : 'combatant_player'),
@@ -73,9 +76,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const player = battle?.combatants.combatant_player
   const [targetId, setTargetId] = useState('')
   const [menu, setMenu] = useState<Menu>(null)
-  const [victoryTab, setVictoryTab] = useState<'next' | 'bag'>('next')
   const [rollReturnMenu, setRollReturnMenu] = useState<Menu>(null)
-  const [confirmDefense, setConfirmDefense] = useState(false)
   const [selectedConsumableId, setSelectedConsumableId] = useState('')
   const [hit, setHit] = useState<'player' | 'enemy' | null>(null)
   const [turnCue, setTurnCue] = useState(false)
@@ -116,8 +117,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }, [battle, enemies, targetId])
   useEffect(() => {
     setMenu(null)
-    setVictoryTab('next')
-    setConfirmDefense(false)
     setRollReturnMenu(null)
     setActiveDice(null)
     setDiceStage('focus')
@@ -176,6 +175,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         actorId: entry.roll.actorId, targetId: entry.roll.targetId ?? (actor?.side === 'enemy' ? 'combatant_player' : targetId),
         damage: Number(damage[1]), action: entry.roll.action,
         critical: entry.roll.critical,
+        ...(entry.roll.damageBreakdown?{absorbed:{shield:entry.roll.damageBreakdown.shieldAbsorbed??0,armor:entry.roll.damageBreakdown.armorAbsorbed??0,arcane:entry.roll.damageBreakdown.arcaneAbsorbed??0,affinity:entry.roll.damageBreakdown.affinityDelta??0}}:{}),
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy',
       }]
     })
@@ -286,15 +286,9 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const visibleSkills = menu === 'magic' || menu === 'skills'
     ? skills.filter((skill) => menu === 'magic' ? isMagicSkill(skill.id) : !isMagicSkill(skill.id))
     : []
-  const attackCards: CombatSkillDefinition[] = [
-    {id:'attack_single_v05141',name:'Ataque Único',description:'Ataque concentrado no inimigo selecionado, com força integral.',target:'enemy',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-single',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
-    {id:'attack_double_v05152',name:'Ataque Duplo',description:`Uma rolagem, dois impactos no mesmo alvo. ${DOUBLE_ATTACK_V05152.fractionPerHit*100}% do dano original em cada impacto (BALANCE_DRAFT).`,target:'enemy',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-single',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
-    {id:'skill_basic_area_attack',name:'Ataque em Área',description:'60% do ataque no alvo central + 30% desse dano no inimigo de cada lado.',target:'enemy',mpCost:0,cooldownTurns:0,damageDieSteps:0,iconAssetId:'action.attack-area',effects:[{type:'damage',powerBonus:0}],status:'BALANCE_DRAFT'},
-  ]
+  const attackCards = getWeaponAttackCardsV0517(player.weaponArchetype)
   const attackCommand=(id:string):Parameters<typeof submit>[0] =>
-    id==='attack_single_v05141'?{type:'attack',targetId:target.id}:
-    id==='attack_double_v05152'?{type:'doubleAttack',targetId:target.id}:
-      {type:'areaAttack',targetId:target.id}
+    id==='attack_single_v05141'?{type:'attack',targetId:target.id}:{type:'areaAttack',targetId:target.id}
   const skillColumns = Math.max(1, Math.min(4, visibleSkills.length))
   const skillRows = Math.max(1, Math.ceil(visibleSkills.length / skillColumns))
   const hasUsefulSupplies = (kind: 'throwable' | 'rune' | 'essence') =>
@@ -411,7 +405,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     if (initiative ? battle.phase !== 'AwaitingInitiative' || !initiativeReady || Boolean(roundCurtain) : !isPlayerTurn) return
     setRollReturnMenu(menu)
     setMenu(null)
-    setConfirmDefense(false)
     const preview = previewBattleCommand(battle, command, content, save.inventory)
     if (!preview.ok) { submit(command); return }
 
@@ -436,6 +429,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         actorId: roll.actorId, targetId: roll.targetId ?? (actor?.side === 'enemy' ? player.id : target.id),
         action: roll.action, kind: 'damage' as const,
         critical: roll.critical,
+        ...(roll.damageBreakdown?{absorbed:{shield:roll.damageBreakdown.shieldAbsorbed??0,armor:roll.damageBreakdown.armorAbsorbed??0,arcane:roll.damageBreakdown.arcaneAbsorbed??0,affinity:roll.damageBreakdown.affinityDelta??0}}:{}),
         ...(roll.weaponBonusRoll ? { weaponBonusRoll: roll.weaponBonusRoll } : {}),
         actorName: actor?.name ?? 'Combatente', actorSide: actor?.side ?? 'enemy' as const,
       }]
@@ -462,7 +456,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const openMenu = (next: Menu) => {
     setHoveredSkillId(null)
     setPinnedSkillId(null)
-    setConfirmDefense(false)
     setMenu(menu === next ? null : next)
   }
   const end = (toCity: boolean) => {
@@ -492,10 +485,21 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const receivingId = diceStage === 'impact' && activeDice?.kind === 'damage' ? activeDice.targetId : undefined
   const damageRevealed = diceStage === 'impact' && activeDice?.id === impactEventId
 
+  const modifiers=getInitiativeModifiersV0517(player,content)
+  const latestDamage=battle.log.slice().reverse().find(entry=>entry.roll?.targetId===player.id && entry.roll?.damageBreakdown)
+  const intentViews=battle.phase==='AwaitingAction'
+    ? enemies.filter(enemy=>enemy.alive).map(enemy=>{
+       const enemyIndex=battle.initiativeOrder.indexOf(enemy.id)
+       const intentRound=enemyIndex<=battle.actorCursor?battle.round+1:battle.round
+       return getEnemyIntentV0517(battle,enemy,content,intentRound)
+      }).filter((intent):intent is NonNullable<typeof intent>=>intent!==null)
+    : []
+  const impactLabel=getLayerImpactV0517(activeDice?.damage??0,Boolean(activeDice?.critical),activeDice?.absorbed)
+
   const statusesFor=(actor:NonNullable<typeof player>)=><div className="pixel-battle__status-strip" aria-label="Efeitos ativos">
     {actor.statusEffects.map((effect,index)=>{
       const definition=content.statusEffects[effect.definitionId]
-      return <span key={effect.definitionId+'-'+index} title={`${definition?.name??effect.definitionId} · ${effect.remainingTurns} turno(s): ${definition?.description??''}`}>
+      return <span key={effect.definitionId+'-'+index} title={`${definition?.name??effect.definitionId} · ${effect.remainingTurns} turno(s): ${definition?.description??''} · Iniciativa ${(definition?.initiativeModifier??0)>=0?'+':''}${definition?.initiativeModifier??0} · Dado ${(definition?.initiativeDieSteps??0)>=0?'+':''}${definition?.initiativeDieSteps??0} passo(s) · ESC ${(definition?.shieldGuardModifier??0)>=0?'+':''}${definition?.shieldGuardModifier??0}`}>
         <AssetImage assetId={`status.${effect.definitionId}`} alt={definition?.name??effect.definitionId}/>
         <b>{effect.remainingTurns}T</b>
       </span>
@@ -511,7 +515,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
     <main className="pixel-battle__arena" aria-label="Campo de batalha por turnos">
       <BattleArenaBackdrop dungeon={save.world.currentLocationId === FUNGAL_DUNGEON_ID} biome={battleBiome} />
       <div className={`pixel-battle__hero ${hit === 'player' ? 'is-hit' : ''} ${!player.alive ? 'is-fallen' : ''} ${strikeFx?.actorId === player.id ? 'is-striking' : ''} ${strikeFx?.targetId === player.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === player.id ? 'is-acting' : ''} ${receivingId === player.id ? 'is-receiving' : ''}`}>
-        {damageRevealed && receivingId === player.id && <b className="pixel-battle__damage-number" data-feedback={getImpactReadout(activeDice?.damage ?? 0, Boolean(activeDice?.critical))} role="status">{activeDice?.damage ? '−'+activeDice.damage : '0'} · {getImpactReadout(activeDice?.damage ?? 0, Boolean(activeDice?.critical))}</b>}
+        {damageRevealed && receivingId === player.id && <b className="pixel-battle__damage-number" data-feedback={impactLabel} role="status">{activeDice?.damage ? '−'+activeDice.damage : '0'} · {impactLabel}</b>}
         <EquippedCharacter save={save} facing="right" alt={player.alive ? 'Terrírian voltado para os inimigos' : 'Terrírian derrotado'} />
       </div>
       <div className={`pixel-battle__enemies pixel-battle__enemies--${enemies.length}`}>
@@ -521,7 +525,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             '--enemy-width': `${getEnemyFormationSlot(i, enemies.length).widthPercent}%`,
             zIndex: getEnemyFormationSlot(i, enemies.length).layer } as React.CSSProperties}
           data-granite-golem={enemy.definitionId === 'enemy_granite_golem' ? 'true' : undefined}
-          className={`pixel-battle__enemy ${activeDice?.action==='Ataque Duplo' && diceStage==='impact' && activeDice.targetId===enemy.id?'is-double-hit':''} ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
+          className={`pixel-battle__enemy ${enemy.id === target.id ? 'is-target' : ''} ${visualHp(enemy.id) === 0 ? 'is-dead' : ''} ${hit === 'enemy' && enemy.id === target.id ? 'is-hit' : ''} ${strikeFx?.actorId === enemy.id ? 'is-striking' : ''} ${strikeFx?.targetId === enemy.id ? 'is-strike-target' : ''} ${activeDice && diceStage === 'impact' && actingId === enemy.id ? 'is-acting' : ''} ${receivingId === enemy.id ? 'is-receiving' : ''}`}
           onClick={() => enemy.alive && !isProtectedBoss(battle, enemy) && setTargetId(enemy.id)}
            disabled={!enemy.alive || isProtectedBoss(battle, enemy)}
           onMouseEnter={() => setHoveredEnemyId(enemy.id)} onMouseLeave={() => setHoveredEnemyId(null)}
@@ -546,7 +550,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             motion={visualHp(enemy.id) <= 0 ? 'defeat'
               : strikeFx?.actorId === enemy.id ? 'attack'
                 : strikeFx?.targetId === enemy.id || receivingId === enemy.id ? 'hit' : 'idle'} />
-          {damageRevealed && receivingId === enemy.id && <b className="pixel-battle__damage-number" data-feedback={getImpactReadout(activeDice?.damage ?? 0, Boolean(activeDice?.critical))} role="status">{activeDice?.damage ? '−'+activeDice.damage : '0'} · {getImpactReadout(activeDice?.damage ?? 0, Boolean(activeDice?.critical))}</b>}
+          {damageRevealed && receivingId === enemy.id && <b className="pixel-battle__damage-number" data-feedback={impactLabel} role="status">{activeDice?.damage ? '−'+activeDice.damage : '0'} · {impactLabel}</b>}
            <small>{enemy.name}</small>
           {enemy.alive && getEnemyReadouts(enemy, player, isProtectedBoss(battle, enemy)).length > 0 &&
             <span className="pixel-battle__threat-badge" aria-hidden="true">{getEnemyReadouts(enemy, player, isProtectedBoss(battle, enemy))[0]}</span>}
@@ -563,7 +567,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         </button>)}
       </div>
       {graniteRockIncoming && <div className="pixel-battle__granite-warning" role="status" aria-live="polite">
-        <strong>ROCHA PREPARADA — DEFENDA!</strong>
+        <strong>ROCHA PREPARADA — USE BLOQUEIO OU APARAR!</strong>
         <span>O Golem vai arremessar uma pedra. Bloquear reduz o dano e impede o Abalo. Use poções para recuperar Vida.</span>
       </div>}
       {battle.bossMechanics && <div className="pixel-battle__boss-timers" role="status">
@@ -605,12 +609,25 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             <strong>{player.name}</strong>
             <div className="pixel-battle__meter hp" role="progressbar" aria-label="Vida" aria-valuenow={visualHp(player.id)} aria-valuemin={0} aria-valuemax={player.maxHp}><i style={{ width: clampPercent(visualHp(player.id), player.maxHp) + '%' }} /><span>VIDA {visualHp(player.id)} / {player.maxHp}</span></div>
             <div className="pixel-battle__meter mp" role="progressbar" aria-label="Mana" aria-valuenow={player.mp} aria-valuemin={0} aria-valuemax={player.maxMp}><i style={{ width: clampPercent(player.mp, player.maxMp) + '%' }} /><span>MANA {player.mp} / {player.maxMp}</span></div>
+            <div className="pixel-battle__defense-readout" role="group" aria-label="Camadas defensivas do Terrírian">
+              <span title="ESC: número do Escudo que precisa ser superado em um ataque físico">ESC <b>{getEffectiveShieldV0517(player,content)}</b></span>
+              <span title="ARM: mitigação por armadura e proteção física">ARM <b>{player.mitigation}</b></span>
+              <span title="ARC: reserva arcana que absorve o próximo dano mágico">ARC <b>{player.arcaneGuard??0}/{player.maxArcaneGuard??0}</b></span>
+            </div>
           </div>
         </div>
         {statusesFor(player)}
+        {latestDamage?.roll?.damageBreakdown && <small className="pixel-battle__layer-log" role="note" aria-label="Última absorção defensiva">
+          ÚLTIMO GOLPE · {(latestDamage.roll.damageBreakdown.damageAspect??'physical')==='arcane'?'MÁGICO':'FÍSICO'}
+          {' · '}ESC {latestDamage.roll.damageBreakdown.shieldAbsorbed??0}
+          {' · '}ARM {latestDamage.roll.damageBreakdown.armorAbsorbed??0}
+          {' · '}ARC {latestDamage.roll.damageBreakdown.arcaneAbsorbed??0}
+          {' · '}HP -{latestDamage.roll.damageBreakdown.finalDamage}
+          {latestDamage.roll.damageBreakdown.affinityDelta ? ' · Afinidade '+(latestDamage.roll.damageBreakdown.affinityDelta>0?'+':'')+latestDamage.roll.damageBreakdown.affinityDelta : ''}
+        </small>}
         <BattleEquipmentHud save={save} />
       </section>
-      <section className="pixel-battle__panel pixel-battle__actions" aria-label="Ações de combate" data-turn-gate={actionGate}>
+      <section className={'pixel-battle__panel pixel-battle__actions' + (battle.phase === 'Victory' ? ' pixel-battle__actions--victory' : '')} aria-label="Ações de combate" data-turn-gate={actionGate}>
         <h2>{diceAwaitingClick ? 'LANCE SEU DADO' : battle.phase === 'AwaitingInitiative' ? 'ROLAGEM DE INICIATIVA' : battle.phase === 'AwaitingAction' ? 'ESCOLHA SUA AÇÃO' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'COMBATE'}</h2>
         {diceAwaitingClick && activeDice && <div className="pixel-battle__roll-choice">
           <DraggableBattleDie key={activeDice.id} sides={activeDice.sides}
@@ -620,31 +637,25 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         </div>}
         {battle.phase === 'AwaitingInitiative' ? <div className="pixel-battle__initiative" aria-label="Preparar rolagem de iniciativa">
           <strong>{initiativeReady ? 'ROLAGEM DE INICIATIVA' : 'TURNO ' + battle.round}</strong>
-          <DraggableBattleDie sides={player.initiativeDie ?? 4}
-            disabled={!initiativeReady || resolvingRolls || Boolean(roundCurtain)} ariaLabel={`Arrastar dado de iniciativa d${player.initiativeDie ?? 4} para cima para rolar`}
+          <DraggableBattleDie sides={modifiers.die}
+            disabled={!initiativeReady || resolvingRolls || Boolean(roundCurtain)} ariaLabel={`Arrastar dado de iniciativa d${modifiers.die} para cima para rolar`}
             onThrow={() => send({ type: 'rollInitiative' })} />
-          <small>Seu dado de Agilidade define a ordem junto à iniciativa-base. Monstros rolam automaticamente.</small>
+          <small>Agilidade d{modifiers.die} · status {modifiers.flat>=0?'+':''}{modifiers.flat}. O valor real define a ordem. Monstros também rolam.</small>
         </div> : battle.phase === 'AwaitingAction' ? <>
           <div className="pixel-battle__commands" aria-label="Barra de ações">
             {button('ATAQUE', <Swords />, () => openMenu('attack'), !isPlayerTurn || !target.alive, menu==='attack')}
             {button('HABILIDADES', <BookOpen />, () => openMenu('skills'), !isPlayerTurn || skills.filter((skill) => !isMagicSkill(skill.id)).length === 0, menu === 'skills')}
             {button('MAGIAS', <Sparkles />, () => openMenu('magic'), !isPlayerTurn || skills.filter((skill) => isMagicSkill(skill.id)).length === 0, menu === 'magic')}
-            {button('DEFENDER', <Shield />, () => { setConfirmDefense(true); setMenu(null) }, !isPlayerTurn, confirmDefense)}
             {button('POÇÕES', <Backpack />, () => openMenu('items'), !isPlayerTurn || !hasUsableConsumable, menu === 'items')}
             {button('ARREMESSÁVEIS', <Bomb />, () => openMenu('throwables'), !isPlayerTurn || !hasUsefulSupplies('throwable'), menu === 'throwables')}
             {button('RUNAS', <Gem />, () => openMenu('runes'), !isPlayerTurn || !hasUsefulSupplies('rune'), menu === 'runes')}
             {button('ESSÊNCIAS', <Zap />, () => openMenu('essences'), !isPlayerTurn || !hasUsefulSupplies('essence'), menu === 'essences')}
           </div>
-          {confirmDefense && <div className="pixel-battle__submenu pixel-battle__submenu--confirm" role="group" aria-label="Confirmar defesa">
-            <strong>DEFESA · próximo turno</strong>
-            <button type="button" onClick={() => setConfirmDefense(false)} aria-label="Voltar sem defender">VOLTAR</button>
-            <button type="button" onClick={() => send({ type: 'defend' })}>CONFIRMAR DEFESA</button>
-          </div>}
           {menu && <div className={`pixel-battle__submenu ${skillPickerOpen ? 'pixel-battle__submenu--skill-picker' : ''}`}
             aria-label={skillPickerOpen ? 'Seleção de habilidades sem rolagem' : undefined}>
             <button type="button" aria-label="Voltar sem executar a ação" onClick={() => setMenu(null)}>VOLTAR</button>
             {menu === 'attack' && <div className="pixel-battle__skill-grid pixel-battle__attack-grid"
-                style={{'--skill-columns':3,'--skill-rows':1,'--skill-max-width':'324px'} as React.CSSProperties}
+                style={{'--skill-columns':2,'--skill-rows':1,'--skill-max-width':'252px'} as React.CSSProperties}
                 aria-label="Escolher modo de ataque">
               {attackCards.map((attack) => <SkillCard key={attack.id} skill={attack}
                 preview={previewCombatSkill(player,target,attack,content)} remaining={0}
@@ -721,48 +732,23 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             </div>)}
             {combatQuestUpdates.length > 3 && <small>+{combatQuestUpdates.length - 3} missão(ões) relacionada(s) no Diário.</small>}
           </div>}
-          {!battle.claimed && <small className="pixel-battle__victory-collect-note">Recolha os espólios no painel à direita.</small>}
+          {!battle.claimed && <small className="pixel-battle__victory-collect-note">Recolha os espólios antes de avançar.</small>}
         </div> : <div className="pixel-battle__result"><p>O Nexo retorna à Base. Sem perda de XP, Ouro ou equipamentos nesta versão.</p>
           <button onClick={() => end(true)}>DESPERTAR NA BASE</button></div>}
+        {battle.phase === 'Victory' && <nav className="pixel-battle__victory-footer" aria-label="Próximos passos após a vitória">
+          <strong>PRÓXIMOS PASSOS</strong>
+          {!battle.claimed ? <button type="button" onClick={claim}>RECOLHER TODOS OS ESPÓLIOS</button> : <>
+            {battle.waveIndex ? <button type="button" onClick={nextWave}>PRÓXIMA ONDA · {battle.waveIndex+1}</button> :
+              battle.portalHuntId ? null : <button type="button" onClick={()=>end(false)}>{battle.clanTrialQuestId||battle.clanBossQuestId ? 'VOLTAR AO SALÃO DOS CLÃS' : 'CONTINUAR EXPEDIÇÃO'}</button>}
+            <button type="button" onClick={()=>end(true)}>{battle.portalHuntId?'VOLTAR AO PORTAL':'RETORNAR A TERRAN'}</button>
+          </>}
+        </nav>}
       </section>
       <section className={'pixel-battle__panel pixel-battle__target' + (battle.phase === 'Victory' && !enemies.some(enemy=>enemy.alive) ? ' pixel-battle__target--victory' : '')}>
         {battle.phase === 'Victory' && !enemies.some(enemy=>enemy.alive) ? <>
-          <h2>PÓS-VITÓRIA · PREPARAÇÃO</h2>
-          <div className="pixel-battle__victory-tabs" role="tablist" aria-label="Abas da pós-vitória">
-            <button type="button" role="tab" id="victory-tab-next" aria-selected={victoryTab==='next'}
-              aria-controls="victory-panel-next" onClick={()=>setVictoryTab('next')}
-              onKeyDown={(event)=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){
-                event.preventDefault();setVictoryTab('bag')
-                ;(event.currentTarget.nextElementSibling as HTMLButtonElement|null)?.focus()
-              }}}>PRÓXIMOS PASSOS</button>
-            <button type="button" role="tab" id="victory-tab-bag" aria-selected={victoryTab==='bag'}
-              aria-controls="victory-panel-bag" onClick={()=>setVictoryTab('bag')}
-              onKeyDown={(event)=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){
-                event.preventDefault();setVictoryTab('next')
-                ;(event.currentTarget.previousElementSibling as HTMLButtonElement|null)?.focus()
-              }}}>MOCHILA · POÇÕES</button>
-          </div>
-          {victoryTab==='next' ? <div role="tabpanel" id="victory-panel-next" aria-labelledby="victory-tab-next"
-            className="pixel-battle__victory-tabpanel pixel-battle__victory-tabpanel--next">
-            <div className="pixel-battle__victory-reminder" role="note">
-              {battle.claimed ? <>
-                <strong>USAR POÇÃO ANTES DE SEGUIR?</strong>
-                <p>Abra a Mochila para usar poções ou avance sem usar. A escolha é sua.</p>
-                <button type="button" className="pixel-battle__victory-open-bag"
-                  onClick={()=>setVictoryTab('bag')}><Backpack size={14}/> ABRIR MOCHILA · POÇÕES</button>
-              </> : <p>Recolha os espólios para liberar a saída. Você poderá usar poções antes de avançar.</p>}
-            </div>
-            <nav className="pixel-battle__victory-navigation" aria-label="Ações de saída após a vitória">
-              {!battle.claimed ? <button type="button" onClick={claim}>RECOLHER TODOS OS ESPÓLIOS</button> : <>
-                {battle.waveIndex ? <button type="button" onClick={nextWave}>PRÓXIMA ONDA · {battle.waveIndex+1}</button> :
-                  battle.portalHuntId ? null : <button type="button" onClick={()=>end(false)}>{battle.clanTrialQuestId||battle.clanBossQuestId ? 'VOLTAR AO SALÃO DOS CLÃS' : 'CONTINUAR EXPEDIÇÃO'}</button>}
-                <button type="button" onClick={()=>end(true)}>{battle.portalHuntId?'VOLTAR AO PORTAL':'RETORNAR A TERRAN'}</button>
-              </>}
-            </nav>
-          </div> : <div role="tabpanel" id="victory-panel-bag" aria-labelledby="victory-tab-bag"
-            className="pixel-battle__victory-tabpanel pixel-battle__victory-tabpanel--bag">
-            <div className="pixel-battle__victory-bag" aria-label="Mochila após a vitória">
-            <strong>{battle.claimed ? 'ESPÓLIOS RECOLHIDOS' : 'NOVOS DROPS · RECOLHER'}</strong>
+          <h2>MOCHILA · POÇÕES</h2>
+          <div className="pixel-battle__victory-bag" aria-label="Mochila após a vitória">
+            <strong>{battle.claimed ? 'ESPÓLIOS RECOLHIDOS' : 'NOVOS DROPS · RECOLHER NO CENTRO'}</strong>
             <div className="pixel-battle__victory-drops">
               {lootGroups.map(({definitionId,quantity})=><div className="pixel-battle__victory-drop" key={definitionId}>
                 <AssetImage assetId={content.items[definitionId]?.iconAssetId ?? 'item.fungal-nucleus'} alt="" />
@@ -785,11 +771,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               })}
               {!victoryRecoveryItems.length && <small>Sem consumíveis de recuperação. Compre poções ou encontre suprimentos.</small>}
             </div>
-            <small>Use poções sem gastar turno ou siga sem usar. Vida e Mana seguem para o próximo encontro.</small>
-            </div>
-            <button type="button" className="pixel-battle__victory-bag-back"
-              onClick={()=>setVictoryTab('next')}>VOLTAR AOS PRÓXIMOS PASSOS</button>
-          </div>}
+            <small>Antes de avançar, você pode usar uma poção ou continuar sem usar. Próximos passos estão no painel VITÓRIA ao lado.</small>
+          </div>
         </> : <>
         <h2>ALVO <button type="button" onClick={() => setShowLog(!showLog)} aria-expanded={showLog} aria-label="Abrir registro de combate"><ScrollText size={16} /></button></h2>
         {showLog ? <div className="pixel-battle__log" aria-live="polite">
@@ -800,6 +783,14 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             {getEnemyReadouts(target, player, isProtectedBoss(battle, target)).length > 0 &&
               <small className="pixel-battle__target-alert">{getEnemyReadouts(target, player, isProtectedBoss(battle, target)).join(' · ')}</small>}
             <div className="pixel-battle__meter hp" role="progressbar" aria-label="Vida do alvo" aria-valuenow={visualHp(target.id)} aria-valuemin={0} aria-valuemax={target.maxHp}><i style={{ width: clampPercent(visualHp(target.id), target.maxHp) + '%' }} /><span>VIDA {visualHp(target.id)} / {target.maxHp}</span></div></div>
+        </div>}
+        {intentViews.length>0 && <div className="pixel-battle__intent-list" role="note" aria-label="Intenções declaradas dos inimigos">
+          <strong>INTENÇÕES DOS INIMIGOS</strong>
+          {intentViews.map(intent=><div key={intent.actorId} className="pixel-battle__intent" data-aspect={intent.aspect} title={intent.warning}>
+            <b>{battle.combatants[intent.actorId]?.name}</b>
+            <span>R{intent.round} · {intent.action} · {intent.aspect==='physical'?'FÍSICO':'MÁGICO / ELEMENTAL'}</span>
+            <small>{intent.warning}</small>
+          </div>)}
         </div>}
         <p className="pixel-battle__hint"><Crosshair size={14} /> {battle.phase === 'Victory' ? 'Recolha tudo de uma vez e continue.' : battle.phase === 'Defeat' ? 'A expedição foi interrompida.' : 'Selecione um inimigo e escolha sua ação.'}</p>
         </>}

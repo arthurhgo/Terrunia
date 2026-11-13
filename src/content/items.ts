@@ -343,7 +343,7 @@ export const boundItemBaseDefinitions: BoundItemBaseDefinition[] = [
     id: 'bound_weapon_long_bow', name: 'Arco Longo', description: 'Arma leve de alcance, precisão e perfuração.',
     archetype: 'bow', basePower: 2, powerType: 'physical', damageType: 'piercing', weightClass: 'light',
     scalingAttribute: 'agility', requirements: { level: 1, attributes: { agility: 6 } },
-    skillUnlocks: [{ grade: 1, skillId: 'skill_bow_piercing_shot' }, { grade: 2, skillId: 'skill_bow_focus' }, { grade: 3, skillId: 'skill_bow_volley' }], assetId: 'equipment.catalog.weapon_long_bow',
+    skillUnlocks: [{ grade: 1, skillId: 'skill_bow_piercing_shot' }, { grade: 2, skillId: 'skill_bow_focus' }, { grade: 2, skillId: 'skill_bow_fire_arrow_v0517' }, { grade: 3, skillId: 'skill_bow_volley' }, { grade: 3, skillId: 'skill_bow_poison_arrow_v0517' }], assetId: 'equipment.catalog.weapon_long_bow',
   }),
   weapon({
     id: 'bound_weapon_dagger', name: 'Adaga', description: 'Lâmina curta, veloz e de baixo custo de ação.',
@@ -355,7 +355,7 @@ export const boundItemBaseDefinitions: BoundItemBaseDefinition[] = [
     id: 'bound_weapon_arcane_scepter', name: 'Cetro Arcano', description: 'Foco leve para manipulação e descarga de energia.',
     archetype: 'arcaneFocus', basePower: 2, powerType: 'magical', damageType: 'arcane', weightClass: 'light',
     scalingAttribute: 'cunning', requirements: { level: 1, attributes: { cunning: 6 } },
-    skillUnlocks: [{ grade: 1, skillId: 'skill_scepter_arc_pulse' }, { grade: 2, skillId: 'skill_scepter_channel' }, { grade: 3, skillId: 'skill_scepter_prism' }], assetId: 'equipment.catalog.weapon_arcane_scepter',
+    skillUnlocks: [{ grade: 1, skillId: 'skill_scepter_arc_pulse' }, { grade: 1, skillId: 'skill_scepter_ethereal_arrow_v0517' }, { grade: 2, skillId: 'skill_scepter_channel' }, { grade: 2, skillId: 'skill_scepter_arcane_nova_v0517' }, { grade: 2, skillId: 'skill_scepter_fire_spark_v0517' }, { grade: 3, skillId: 'skill_scepter_prism' }, { grade: 3, skillId: 'skill_scepter_dispel_v0517' }], assetId: 'equipment.catalog.weapon_arcane_scepter',
   }),
   weapon({
     id: 'bound_weapon_spellbook', name: 'Livro de Magias — Projéteis', description: 'Grimório ofensivo de alto poder e alta exigência mental.',
@@ -380,6 +380,17 @@ export const boundItemBaseDefinitions: BoundItemBaseDefinition[] = [
     archetype: 'arcaneWard', basePower: 1, powerType: 'defensive', damageType: 'protection', weightClass: 'light',
     scalingAttribute: 'spirit', requirements: { level: 2, attributes: { spirit: 6 } }, statBonuses: { mitigation: 1, maxMp: 2 },
     treeId: 'tree_shield_arcane', assetId: 'equipment.catalog.shield_arcane',
+  }),
+  // Escudaria: a Aljava is a manifestation of the existing permanent shield slot.
+  // Acquisition remains gated by NPC/Clã/Shop; not granted to raw Terrírians.
+  equipment({
+    id: 'bound_shield_quiver_v0517', name: 'Aljava Vinculada',
+    description: 'Aljava de flechas rúnicas; substitui a manifestação de escudo no mesmo Vínculo sem criar sexto slot.',
+    slot: 'shield', archetype: 'quiver', basePower: 0, powerType: 'utility',
+    damageType: 'piercing', weightClass: 'light', scalingAttribute: 'agility',
+    requirements: { level: 2, attributes: { agility: 6 } },
+    statBonuses: { initiative: 1 }, treeId: 'tree_shield_foundation',
+    assetId: 'equipment.offhand.quiver_v0517',
   }),
   equipment({
     id: 'bound_armor_mystic_tunic', name: 'Túnica Mística', description: 'Vestimenta leve para canalização.', slot: 'armor',

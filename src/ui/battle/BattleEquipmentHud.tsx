@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { content } from '../../content/catalog'
 import { boundSlotPreviewAssetIds } from '../../assets/assetRegistry'
 import { getBattleGearSummary, type BattleGearStatKey } from '../../domain/combat/battleEquipment'
+import { deriveOffhandCombatV0517 } from '../../domain/combat/layeredDefenseV0517'
 import { deriveCharacterStats } from '../../domain/character/derivedStats'
 import type { GameSave } from '../../domain/game/types'
 import type { BoundSlot } from '../../domain/shared/types'
@@ -36,6 +37,7 @@ function positionDetail(element: HTMLElement) {
 export function BattleEquipmentHud({ save }: { save: GameSave }) {
   const { slots, totals } = useMemo(() => getBattleGearSummary(save, content), [save])
   const effective = useMemo(() => deriveCharacterStats(save, content), [save])
+  const offhand = useMemo(()=>deriveOffhandCombatV0517(save,content),[save])
   const [visible, setVisible] = useState<VisibleDetail | null>(null)
   const tooltipId = useId()
   const selected = visible ? slots.find((slot) => slot.slot === visible.slot) : null
@@ -102,6 +104,7 @@ export function BattleEquipmentHud({ save }: { save: GameSave }) {
           Vida máx. {effective.life.value} · Mana máx. {effective.mana.value} ·
           Iniciativa {effective.initiative.value}
         </small>
+        <small className="battle-gear__note">ESCUDARIA · {offhand.label} · ESC {offhand.physicalGuard} · ARC {offhand.arcaneGuard}. ESC absorve impactos físicos por golpe; ARC é reserva consumível contra magia.</small>
         <small className="battle-gear__note">Totais incluem personagem e equipamento; não incluem efeitos temporários da batalha.</small>
       </div>
     </div>

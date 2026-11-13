@@ -2,7 +2,10 @@ import type { ContentCatalog } from '../../content/catalog'
 import { BALANCE } from '../../content/balance'
 import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/fungalChambers'
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
-import { DOUBLE_ATTACK_V05152 } from '../../content/combatActionRulesV05152'
+import { DEFENSE_RULES_V0517, COMMON_DEFENSE_SKILL_IDS_V0517, getWeaponAttackNamesV0517 } from '../../content/combatStylesV0517'
+import {CLASS_DISCIPLINE_SKILLS_V0517} from '../../content/classDisciplinesV0517'
+import { deriveOffhandCombatV0517, getDamageTypeV0517, applyLayeredProtectionV0517, getInitiativeModifiersV0517, getEffectiveInitiativeV0517 } from './layeredDefenseV0517'
+import {applyAffinityV0517,getScheduledEnemySkillV0517} from './combatTacticsV0517'
 import { nextCombatRandomSeed, rollSeededCombatDie } from './rng'
 import type {
   CombatEffectDefinition,
@@ -134,6 +137,15 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     ? (save.character.clan.selectedClanSkillId === null ? undefined :
        save.character.clan.selectedClanSkillId ?? clanSkills[save.character.clan.clanId]) : undefined
   const stats = deriveCharacterStats(save, catalog)
+  const weaponBase = catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']
+  const offhand = deriveOffhandCombatV0517(save, catalog)
+  const shieldInstance=character.bondedEquipment.shield ? save.boundItems[character.bondedEquipment.shield] : null
+  const shieldDefinition=shieldInstance?catalog.boundItemBases[shieldInstance.baseItemId]:undefined
+  // Do not count a bound shield's mitigation AGAIN as body armor: ESC/ARC are separate.
+  const bodyMitigation=Math.max(0,stats.defense.value-(shieldDefinition?.statBonuses.mitigation??0))
+  const classDefinition=character.classProgression.classId ? catalog.classes[character.classProgression.classId] : undefined
+  const validClass=classDefinition && character.classProgression.masteryLevel>=1 && classDefinition.clanId===character.clan.clanId && save.quests[classDefinition.trialQuestId]?.status==='completed'
+  const classSkillId=validClass ? CLASS_DISCIPLINE_SKILLS_V0517[character.classProgression.classId!] : undefined
   const maxHp = stats.life.value
   const maxMp = stats.mana.value
 
@@ -147,12 +159,28 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     mp: Math.min(maxMp, Math.max(0, save.vitals.mp)),
     maxMp,
     attackPower: stats.primaryAttack.value,
-    mitigation: stats.defense.value,
+    mitigation: bodyMitigation,
     initiative: stats.initiative.value,
     initiativeDie: character.attributes.agility.die,
     alive: true,
     defending: false,
-    skillIds: [...new Set([...equipmentSkillIds, ...unlockedSkillIds, ...(clanSkillId ? [clanSkillId] : [])])],
+    weaponArchetype: weaponBase?.archetype ?? 'blade',
+    offhandKind: offhand.kind,
+    combatProfile: offhand.style,
+    physicalGuard: offhand.physicalGuard,
+    arcaneGuard: offhand.arcaneGuard,
+    maxArcaneGuard: offhand.arcaneGuard + (offhand.clanDunavar ? 4 : offhand.style==='arcaneCaster' ? 3 : 0),
+    hasBoundShield: offhand.kind === 'shield',
+    defenseDice: {block:character.attributes.vigor.die,parry:character.attributes.agility.die,dodge:character.attributes.agility.die,counter:character.attributes.strength.die},
+    skillIds: [...new Set([
+      ...COMMON_DEFENSE_SKILL_IDS_V0517,
+      ...equipmentSkillIds, ...unlockedSkillIds,
+      ...(offhand.style==='arcaneCaster'?['skill_caster_arcane_guard_v0517','skill_scepter_accelerate_v0517']:[]),
+      ...(offhand.kind==='quiver'&&offhand.style==='archer'?['skill_quiver_focus_v0517']:[]),
+      ...(offhand.clanDunavar?['skill_clan_dunavar_arcane_shield_v0517']:[]),
+      ...(clanSkillId ? [clanSkillId] : []),
+      ...(classSkillId ? [classSkillId] : []),
+    ])],
     attackDie: character.attributes[catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.scalingAttribute ?? 'strength'].die,
     ...(catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.bonusAttackDie
       ? { weaponBonusDie: catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? ''].bonusAttackDie }
@@ -180,12 +208,12 @@ const deriveEnemyCombatant = (
     attackPower: enemy.attackPower,
     mitigation: enemy.mitigation,
     initiative: Math.max(1, enemy.level + 3),
-    initiativeDie: 4, // BALANCE_DRAFT until each creature's initiative die is authored.
+    initiativeDie: enemy.initiativeDie??4, // BALANCE_DRAFT, source-driven
     alive: true,
     defending: false,
     skillIds: enemy.skillIds,
     // BALANCE_DRAFT: enemies without explicit dice currently use d4, not a new damage rule.
-    attackDie: 4,
+    attackDie: enemy.attackDie??4,
     statusEffects: [],
     // Firestore rejects undefined; enemies without a special skill omit this field.
     ...(enemy.aiSkillEveryRounds !== undefined
@@ -237,40 +265,76 @@ const applyCombatEffects = (
 ) => {
   // A protected construct is immune to every offensive effect, including AoE and splash.
   if (actor.side !== target.side && isProtectedBoss(state, target)) return { damage: 0, face: 1, sides: selectDamageDie(actor, skill), critical: false }
-  // Defending against the telegraphed boulder also prevents its Stagger debuff.
-  const guardedBoulder = Boolean(target.defending && skill?.id === 'skill_granite_slam')
+  // A telegraphed boulder prevents Stagger only after a successful rolled defense.
+  let guardedBoulder = false
   let dealt = 0
   let usedFace = 1
   let usedSides = selectDamageDie(actor, skill)
   let usedCritical = false
   for (const effect of effects) {
     if (effect.type === 'damage') {
-      const guardMitigation = target.defending
-        ? BALANCE.defendMitigation + (guardedBoulder ? GRANITE_GOLEM_BALANCE.throwBonusGuardMitigation : 0)
-        : 0
+      const mode = target.defending ? target.activeDefense : undefined
+      const stance = mode && actor.side !== target.side ? DEFENSE_RULES_V0517[mode] : null
+      const defenseSides = mode ? target.defenseDice?.[mode] ?? 4 : 4
+      const defenseFace = stance ? rollCombatDie(state, defenseSides) : 0
+      const shieldBonus = stance?.usesShield && target.hasBoundShield ? 1 : 0
+      const duelistBonus = (mode === 'parry' || mode === 'counter') && target.combatProfile === 'duelist' ? 1 : 0
+      const archerBonus = mode==='dodge' && target.combatProfile==='archer' ? 1 : 0
+      const success = Boolean(stance && defenseFace + shieldBonus + duelistBonus + archerBonus >= stance.dc)
+      if (stance) addLog(state, target.name+' tenta '+stance.name+': d'+defenseSides+'='+defenseFace+
+        (shieldBonus ? ' +1 Escudo' : '')+(duelistBonus ? ' +1 Duelista' : '')+(archerBonus ? ' +1 Arqueiro' : '')+' contra '+stance.dc+' — '+(success?'SUCESSO':'FALHA')+'.', 'defense')
+      guardedBoulder = Boolean(target.defending && (!stance || success) && skill?.id === 'skill_granite_slam')
+      const guardMitigation = stance
+        ? success ? stance.reduction + (mode === 'block' && target.hasBoundShield ? 1 : 0) : 0
+        : target.defending ? BALANCE.defendMitigation : 0
+      const appliedGuardMitigation = guardMitigation +
+        (guardedBoulder ? GRANITE_GOLEM_BALANCE.throwBonusGuardMitigation : 0)
       const sides = selectDamageDie(actor, skill)
       const face = rollCombatDie(state, sides)
       const bonusFace = actor.weaponBonusDie ? rollCombatDie(state, actor.weaponBonusDie) : 0
       usedFace = face
       usedSides = sides
-      const breakdown = calculateRolledDamage(
-        getEffectiveAttackPower(actor, catalog) + bonusFace,
-        getEffectiveMitigation(target, catalog),
-        face, sides, effect.powerBonus, guardMitigation,
-      )
+      const aspect=getDamageTypeV0517(actor,skill)
+      // ARM only protects from physical blows. Magic first faces a depletable ARC ward.
+      const armor=aspect==='physical' ? getEffectiveMitigation(target,catalog):0
+      const basePower=getEffectiveAttackPower(actor,catalog)+bonusFace
+      const breakdown=calculateRolledDamage(basePower,armor,face,sides,effect.powerBonus,appliedGuardMitigation)
+      const unarmored=aspect==='physical'
+        ? calculateRolledDamage(basePower,0,face,sides,effect.powerBonus,appliedGuardMitigation).finalDamage
+        : breakdown.finalDamage
+      const armorAbsorbed=Math.max(0,unarmored-breakdown.finalDamage)
+      if(success&&(mode==='parry'||mode==='dodge')){
+        breakdown.guardPrevented+=breakdown.finalDamage
+        breakdown.finalDamage=0
+      }
+      const affinity=applyAffinityV0517(target,breakdown.finalDamage,aspect,catalog)
+      const layer=applyLayeredProtectionV0517(target,affinity.damage,aspect,catalog)
+      breakdown.finalDamage=layer.hpDamage
+      const detailed={...breakdown,damageAspect:aspect,
+        shieldAbsorbed:layer.shieldAbsorbed,arcaneAbsorbed:layer.arcaneAbsorbed,armorAbsorbed,
+        affinityDelta:affinity.delta,resistancePercent:Math.round(affinity.resistance*100)}
       // No second critical roll: face === sides is the ONLY critical trigger.
-      const damage = breakdown.finalDamage
+      const damage=detailed.finalDamage
       usedCritical = breakdown.critical
       dealt += damage
       target.hp = Math.max(0, target.hp - damage)
       target.alive = target.hp > 0
       target.defending = false
+      delete target.activeDefense
+      if (success && mode === 'counter' && target.alive && actor.alive && !isProtectedBoss(state,actor)) {
+        const retaliation = Math.min(actor.hp,Math.max(1,Math.floor(getEffectiveAttackPower(target,catalog)*0.4)))
+        actor.hp = Math.max(0,actor.hp-retaliation)
+        actor.alive = actor.hp>0
+        addLog(state,target.name+' responde com Contragolpe e causa '+retaliation+' de dano em '+actor.name+'.','damage')
+      }
       const guardNote = guardMitigation
-        ? ` · Guarda evitou ${breakdown.guardPrevented} de dano.` : ''
+        ? ` · Reação evitou ${breakdown.guardPrevented}.` : ''
+      const affinityNote=affinity.resistance ? ` · Afinidade ${Math.round(affinity.resistance*100)}%.` : ''
+      const layerNote = ` · ESC ${layer.shieldAbsorbed} · ARM ${armorAbsorbed} · ARC ${layer.arcaneAbsorbed} · HP -${damage}.${affinityNote}`
       const critNote = breakdown.critical ? ' ACERTO CRÍTICO!' : ''
       addLog(state,
-        `${actor.name} causa ${damage} de dano em ${target.name}.${critNote} d${sides}=${face}${actor.weaponBonusDie ? ` + d${actor.weaponBonusDie} da arma=${bonusFace}` : ''}, ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${guardMitigation}.${guardNote}`,
-        'damage', { actorId: actor.id, targetId: target.id, sides, face, action, critical: breakdown.critical, damageBreakdown: breakdown,
+        `${actor.name} causa ${damage} de dano em ${target.name}.${critNote} d${sides}=${face}${actor.weaponBonusDie ? ` + d${actor.weaponBonusDie} da arma=${bonusFace}` : ''}, ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${appliedGuardMitigation}.${guardNote}${layerNote}`,
+        'damage', { actorId: actor.id, targetId: target.id, sides, face, action, critical: breakdown.critical, damageBreakdown: detailed,
           ...(actor.weaponBonusDie ? { weaponBonusRoll: { sides: actor.weaponBonusDie, face: bonusFace } } : {}) },
       )
     }
@@ -278,6 +342,23 @@ const applyCombatEffects = (
       const restored = Math.min(effect.value, target.maxHp - target.hp)
       target.hp += restored
       addLog(state, `${target.name} recupera ${restored} de Vida.`, 'reward')
+    }
+    if (effect.type === 'drainArcaneGuard') {
+      const drained=Math.min(target.arcaneGuard??0,Math.max(0,effect.value))
+      target.arcaneGuard=Math.max(0,(target.arcaneGuard??0)-drained)
+      addLog(state,`${actor.name} rompe ${drained} de ARC de ${target.name}.`,'defense')
+    }
+    if (effect.type === 'cleanseBeneficial') {
+      const before=target.statusEffects.length
+      target.statusEffects=target.statusEffects.filter(status=>catalog.statusEffects[status.definitionId]?.tone!=='beneficial')
+      addLog(state,`${actor.name} dissipa ${before-target.statusEffects.length} efeito(s) benéfico(s) de ${target.name}.`,'defense')
+    }
+    if (effect.type === 'restoreArcaneGuard') {
+      const capacity=Math.max(target.maxArcaneGuard??0,effect.value)
+      target.maxArcaneGuard=capacity
+      const added=Math.min(effect.value,capacity-(target.arcaneGuard??0))
+      target.arcaneGuard=(target.arcaneGuard??0)+Math.max(0,added)
+      addLog(state,`${target.name} conjura Proteção Arcana +${Math.max(0,added)} (ARC ${target.arcaneGuard}/${capacity}).`,'defense')
     }
     if (effect.type === 'restoreMp') {
       const restored = Math.min(effect.value, target.maxMp - target.mp)
@@ -306,7 +387,7 @@ const resolveAttack = (
 ) => {
   addPhase(state, 'SelectingTarget')
   addPhase(state, 'ResolvingAction')
-  applyCombatEffects(state, actor, target, [{ type: 'damage', powerBonus: 0 }], catalog)
+  applyCombatEffects(state, actor, target, [{ type: 'damage', powerBonus: 0 }], catalog, getWeaponAttackNamesV0517(actor.weaponArchetype).single)
   addPhase(state, 'ResolvingReactions')
   addPhase(state, 'ApplyingStatuses')
   addPhase(state, 'CheckEndConditions')
@@ -328,6 +409,15 @@ const resolveSkill = (
     actor.skillCooldowns[skill.id] = Math.floor(skill.cooldownTurns) + 1
   }
   addLog(state, `${actor.name} usa ${skill.name}.`, 'system')
+  if (skill.defenseStance) {
+    target.defending = true
+    target.activeDefense = skill.defenseStance
+    addLog(state, `${target.name} prepara ${skill.name}; o próximo golpe exigirá uma rolagem de reação.`, 'defense')
+    addPhase(state, 'ResolvingReactions')
+    addPhase(state, 'ApplyingStatuses')
+    addPhase(state, 'CheckEndConditions')
+    return
+  }
   if (skill.id === 'skill_basic_area_attack') {
     resolveAreaAttack(state,actor,target,catalog)
     return
@@ -336,7 +426,7 @@ const resolveSkill = (
     ? state.bossMechanics.bossId : undefined
   const primary = applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name, skill)
   for(const effect of skill.effects) if(effect.type==='adjacentSplash'&&primary.damage>0)
-    applySplash(state,actor,target,Math.floor(primary.damage*effect.fraction),skill.name,primary.sides,primary.face,effect.maxTargets,protectedBossId,primary.critical)
+    applySplash(state,actor,target,Math.floor(primary.damage*effect.fraction),skill.name,primary.sides,primary.face,effect.maxTargets,protectedBossId,primary.critical,getDamageTypeV0517(actor,skill),catalog)
   if (skill.id === 'skill_resonant_strike' && primary.damage > 0) {
     // BALANCE_DRAFT OD-06: 5% final primary damage to each other unprotected enemy.
     // Snapshot the shield from action start; AoE never hits the boss accidentally.
@@ -348,7 +438,9 @@ const resolveSkill = (
       if (other.id === target.id ||
           (bossProtected && other.id === state.bossMechanics?.bossId) ||
           !validTarget(actor, other, 'enemy', state)) continue
-      const damage = Math.min(other.hp, splash)
+      const affinity=applyAffinityV0517(other,splash,'arcane',catalog)
+      const protection=applyLayeredProtectionV0517(other,affinity.damage,'arcane',catalog)
+      const damage = Math.min(other.hp, protection.hpDamage)
       other.hp = Math.max(0, other.hp - damage)
       other.alive = other.hp > 0
       addLog(state, `${actor.name} causa ${damage} de dano em ${other.name} por Pulso Ressonante.`, 'damage',
@@ -368,61 +460,43 @@ const adjacentEnemies = (state:BattleState,target:Combatant):Combatant[] => {
     (other):other is Combatant=>Boolean(other?.alive))
 }
 const applySplash=(state:BattleState,actor:Combatant,target:Combatant,damage:number,
-  action:string,sides:CombatDie,face:number,maxTargets:number,protectedBossId?:string,critical=false) => {
+  action:string,sides:CombatDie,face:number,maxTargets:number,protectedBossId:string|undefined,critical:boolean,
+  aspect:import('./layeredDefenseV0517').DamageTypeV0517,catalog:ContentCatalog) => {
   for(const other of adjacentEnemies(state,target).filter(c=>c.id!==protectedBossId && validTarget(actor,c,'enemy',state)).slice(0,maxTargets)){
-    const dealt=Math.min(other.hp,Math.max(0,damage))
-    if(!dealt)continue
+    const armor=aspect==='physical'?getEffectiveMitigation(other,catalog):0
+    const afterArmor=Math.max(0,damage-armor)
+    const affinity=applyAffinityV0517(other,afterArmor,aspect,catalog)
+    const protection=applyLayeredProtectionV0517(other,affinity.damage,aspect,catalog)
+    const dealt=Math.min(other.hp,protection.hpDamage)
+    if(!dealt&&!protection.shieldAbsorbed&&!protection.arcaneAbsorbed)continue
     other.hp=Math.max(0,other.hp-dealt);other.alive=other.hp>0
-    addLog(state,`${actor.name} causa ${dealt} de dano em ${other.name} por ${action}.`,'damage',
+    addLog(state,`${actor.name} causa ${dealt} de dano em ${other.name} por ${action}. ESC ${protection.shieldAbsorbed} · ARM ${armor} · ARC ${protection.arcaneAbsorbed} · afinidade ${Math.round(affinity.resistance*100)}%.`,'damage',
       {actorId:actor.id,targetId:other.id,sides,face,action,critical})
   }
 }
-/** Two animated impacts calculated from ONE authoritative die roll.
- * One log entry owns the roll, so the UI never demands a second die.
- * Each hit is 30% of the post-mitigation original attack (BALANCE_DRAFT).
- */
-const resolveDoubleAttack=(state:BattleState,actor:Combatant,target:Combatant,catalog:ContentCatalog) => {
- addPhase(state,'SelectingTarget');addPhase(state,'ResolvingAction')
- if(isProtectedBoss(state,target))return
- const sides=selectDamageDie(actor),face=rollCombatDie(state,sides)
- const bonusFace=actor.weaponBonusDie?rollCombatDie(state,actor.weaponBonusDie):0
- const guard=target.defending?BALANCE.defendMitigation:0
- const base=calculateRolledDamage(getEffectiveAttackPower(actor,catalog)+bonusFace,
-  getEffectiveMitigation(target,catalog),face,sides,0,guard)
- const each=Math.max(1,Math.floor(base.finalDamage*DOUBLE_ATTACK_V05152.fractionPerHit))
- const hits:number[]=[]
- for(let impact=0;impact<DOUBLE_ATTACK_V05152.impacts&&target.alive;impact++){
-   const damage=Math.min(target.hp,each)
-   target.hp=Math.max(0,target.hp-damage)
-   target.alive=target.hp>0
-   hits.push(damage)
- }
- target.defending=false
- const total=hits.reduce((sum,n)=>sum+n,0)
- addLog(state,`${actor.name} causa ${total} de dano em ${target.name} com Ataque Duplo (${hits.join(' + ')}; um único d${sides}=${face}).`,
-  'damage',{actorId:actor.id,targetId:target.id,sides,face,action:'Ataque Duplo',
-    critical:base.critical,damageBreakdown:{...base,finalDamage:total},
-    ...(actor.weaponBonusDie?{weaponBonusRoll:{sides:actor.weaponBonusDie,face:bonusFace}}:{})})
- addPhase(state,'ResolvingReactions');addPhase(state,'ApplyingStatuses');addPhase(state,'CheckEndConditions')
-}
-
 const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,catalog:ContentCatalog) => {
   addPhase(state,'SelectingTarget');addPhase(state,'ResolvingAction')
   const sides=selectDamageDie(actor),face=rollCombatDie(state,sides)
   const bonusFace=actor.weaponBonusDie?rollCombatDie(state,actor.weaponBonusDie):0
   const guard=target.defending?BALANCE.defendMitigation:0
+  const aspect=getDamageTypeV0517(actor)
+  const armor=aspect==='physical'?getEffectiveMitigation(target,catalog):0
   const rolled=calculateRolledDamage(getEffectiveAttackPower(actor,catalog)+bonusFace,
-    getEffectiveMitigation(target,catalog),face,sides,0,guard)
+    armor,face,sides,0,guard)
   // BALANCE_DRAFT: 60% normal center, 30% of inflicted center for each flank.
   const protectedBossId=state.bossMechanics && isProtectedBoss(state,state.combatants[state.bossMechanics.bossId])
     ? state.bossMechanics.bossId : undefined
-  const centerDamage=Math.min(target.hp,Math.max(1,Math.floor(rolled.finalDamage*0.6)))
+  const areaPower=Math.max(1,Math.floor(rolled.finalDamage*0.6))
+  const affinity=applyAffinityV0517(target,areaPower,aspect,catalog)
+  const protection=applyLayeredProtectionV0517(target,affinity.damage,aspect,catalog)
+  const centerDamage=Math.min(target.hp,protection.hpDamage)
   target.hp=Math.max(0,target.hp-centerDamage);target.alive=target.hp>0;target.defending=false
-  addLog(state,`${actor.name} causa ${centerDamage} de dano em ${target.name} com Ataque em Área.${rolled.critical ? ' ACERTO CRÍTICO!' : ''}`,'damage',
-    {actorId:actor.id,targetId:target.id,sides,face,action:'Ataque em Área',critical:rolled.critical,
-      damageBreakdown:{...rolled,finalDamage:centerDamage},
+  delete target.activeDefense
+  addLog(state,`${actor.name} causa ${centerDamage} de dano em ${target.name} com ${getWeaponAttackNamesV0517(actor.weaponArchetype).area}. ESC ${protection.shieldAbsorbed} · ARC ${protection.arcaneAbsorbed}.${rolled.critical ? ' ACERTO CRÍTICO!' : ''}`,'damage',
+    {actorId:actor.id,targetId:target.id,sides,face,action:getWeaponAttackNamesV0517(actor.weaponArchetype).area,critical:rolled.critical,
+      damageBreakdown:{...rolled,finalDamage:centerDamage,damageAspect:aspect,shieldAbsorbed:protection.shieldAbsorbed,arcaneAbsorbed:protection.arcaneAbsorbed,armorAbsorbed:Math.min(armor,Math.max(0,rolled.baseAttack+rolled.dieAdjustment)),affinityDelta:affinity.delta,resistancePercent:Math.round(affinity.resistance*100)},
       ...(actor.weaponBonusDie?{weaponBonusRoll:{sides:actor.weaponBonusDie,face:bonusFace}}:{})})
-  applySplash(state,actor,target,Math.floor(centerDamage*0.3),'Splash de Área',sides,face,2,protectedBossId,rolled.critical)
+  applySplash(state,actor,target,Math.floor(centerDamage*0.3),'Splash de Área',sides,face,2,protectedBossId,rolled.critical,aspect,catalog)
   addPhase(state,'ResolvingReactions');addPhase(state,'ApplyingStatuses');addPhase(state,'CheckEndConditions')
 }
 
@@ -558,14 +632,10 @@ const resolveEnemyAction = (
   // receives one full opportunity to defend before the boulder is thrown.
   if (actor.definitionId === GRANITE_GOLEM_ENEMY_ID &&
       state.round % GRANITE_GOLEM_BALANCE.throwIntervalRounds === GRANITE_GOLEM_BALANCE.windupRoundRemainder) {
-    addLog(state, 'O Golem ergue uma rocha! Na próxima rodada ele vai arremessá-la. Use DEFENDER e uma poção se necessário.', 'system')
+    addLog(state, 'O Golem ergue uma rocha! Na próxima rodada ele vai arremessá-la. Use a habilidade BLOQUEIO ou APARAR e uma poção se necessário.', 'system')
     return
   }
-  const skillId =
-    actor.aiSkillEveryRounds && state.round % actor.aiSkillEveryRounds === 0
-      ? actor.skillIds[0]
-      : undefined
-  const skill = skillId ? catalog.combatSkills[skillId] : undefined
+  const skill=getScheduledEnemySkillV0517(state,actor,player,catalog)
   if (skill && actor.mp >= skill.mpCost && !(actor.skillCooldowns?.[skill.id] ?? 0) && validTarget(actor, player, skill.target)) {
     resolveSkill(state, actor, player, skill, catalog)
   } else {
@@ -584,6 +654,20 @@ const advanceUntilPlayer = (state: BattleState, catalog: ContentCatalog) => {
     if (state.actorCursor <= previousCursor) {
       state.round += 1
       applyBossRound(state, catalog)
+      // Reorder only when a status changes initiative. Legacy battles and the
+      // Golem's telegraph must NEVER acquire an extra enemy turn here.
+      const actors=Object.values(state.combatants)
+      const modified=actors.some(a=>{const m=getInitiativeModifiersV0517(a,catalog);return m.flat!==0 || m.steps!==(a.initiativeAppliedDieSteps??0)})
+      if(modified||state.initiativeStatusOrderModified){
+        for(const actor of actors)actor.initiativeRolledBase??=actor.initiative
+        state.initiativeOrder=actors
+          .sort((a,b)=>getEffectiveInitiativeV0517(b,catalog)-getEffectiveInitiativeV0517(a,catalog)||a.id.localeCompare(b.id))
+          .map(a=>a.id)
+        for(const next of actors)next.initiative=getEffectiveInitiativeV0517(next,catalog)
+        state.initiativeStatusOrderModified=modified
+        addLog(state,'Iniciativa reordenada pelos efeitos de status ativos.', 'system')
+      }
+      state.actorCursor=0
     }
     state.actorId = state.initiativeOrder[state.actorCursor]
     const actor = state.combatants[state.actorId]
@@ -618,10 +702,13 @@ const resolveInitiative = (state: BattleState, catalog: ContentCatalog): void =>
   // Presentation rolls the player's die first; initiative totals still determine turn order.
   const actors = Object.values(state.combatants).sort((a, b) => Number(b.side === 'player') - Number(a.side === 'player'))
   for (const actor of actors) {
-    const sides = actor.initiativeDie ?? 4
+    const modifiers = getInitiativeModifiersV0517(actor, catalog)
+    const sides = modifiers.die
     const face = rollCombatDie(state, sides)
-    actor.initiative += face
-    addLog(state, `${actor.name} rola iniciativa: d${sides} = ${face} (total ${actor.initiative}).`, 'system',
+    actor.initiativeAppliedDieSteps = modifiers.steps
+    actor.initiativeRolledBase = actor.initiative + face
+    actor.initiative = actor.initiativeRolledBase + modifiers.flat
+    addLog(state, `${actor.name} rola iniciativa: d${sides} = ${face} + base ${actor.initiativeRolledBase-face} + status ${modifiers.flat} (total ${actor.initiative}).`, 'system',
       { actorId: actor.id, sides, face, action: 'Iniciativa' })
   }
   state.initiativeOrder = actors.sort((a, b) => b.initiative - a.initiative || a.id.localeCompare(b.id)).map((actor) => actor.id)
@@ -743,6 +830,7 @@ export const submitBattleCommand = (
     resolveInitiative(next, catalog)
     return ok(next)
   }
+  if ((command as {type:string}).type === 'doubleAttack') return fail('REMOVED_ACTION_V0517', 'Ataque Duplo foi removido na v0.5.17.')
   if (battle.phase !== 'AwaitingAction') {
     return fail('INVALID_BATTLE_PHASE', 'A batalha não está aguardando uma ação do jogador.')
   }
@@ -765,7 +853,7 @@ export const submitBattleCommand = (
   let skill: CombatSkillDefinition | undefined
   let item: ItemDefinition | undefined
 
-  if (command.type === 'attack' || command.type === 'areaAttack' || command.type === 'doubleAttack') {
+  if (command.type === 'attack' || command.type === 'areaAttack') {
     target = battle.combatants[command.targetId ?? Object.values(battle.combatants).find(c=>c.side==='enemy'&&c.alive&&!isProtectedBoss(battle,c))?.id ?? '']
     if (!target || !validTarget(currentPlayer, target, 'enemy', battle)) {
       return fail('INVALID_TARGET', 'Escolha um alvo inimigo válido.')
@@ -849,9 +937,6 @@ export const submitBattleCommand = (
     addPhase(state, 'ResolvingReactions')
     addPhase(state, 'ApplyingStatuses')
     addPhase(state, 'CheckEndConditions')
-  }
-  if (command.type === 'doubleAttack' && resolvedTarget) {
-    resolveDoubleAttack(state,player,resolvedTarget,catalog)
   }
   if (command.type === 'areaAttack' && resolvedTarget) {
     resolveAreaAttack(state,player,resolvedTarget,catalog)

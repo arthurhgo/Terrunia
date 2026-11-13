@@ -39,7 +39,7 @@ describe('v0.5.14 · combate das Câmaras Fúngicas', () => {
     expect(area.ok).toBe(true)
     if (!area.ok) return
     expect(area.value.combatants[boss.id].hp).toBe(boss.hp)
-    expect(area.value.log.some((entry) => entry.message.includes('Ataque em Área'))).toBe(true)
+    expect(area.value.log.some((entry) => entry.message.includes('Varredura da Lâmina'))).toBe(true)
 
     for (const actor of enemies(battle).filter((actor) => actor.id !== boss.id)) {
       actor.hp = 0

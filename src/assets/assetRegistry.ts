@@ -1,6 +1,7 @@
 import { castleGearMerchantsV05151 } from '../content/castleMerchantsV05151'
 import { equipmentOffersV0515, gearSpriteId, type GearGrade } from '../content/equipmentV0515'
 import { combatSkillDefinitions } from '../content/combat'
+import { extraCombatStatusesV0517 } from '../content/combatAdvancementsV0517'
 import type { CombatSkillDefinition } from '../content/types'
 import { biomeMaterialDefinitions, biomeEnemyDefinitions } from '../content/biomeExpeditions'
 import { complementaryItemDefinitions } from '../content/complementaryItems'
@@ -48,12 +49,21 @@ const entries: AssetEntry[] = [
 
   {id:'action.attack-single',path:'/assets/actions/attack_single.png',fallback:'/assets/placeholders/skill.svg',alt:'Ataque Único',pixelArt:true},
   {id:'action.attack-area',path:'/assets/actions/attack_cleave.png',fallback:'/assets/placeholders/skill.svg',alt:'Ataque em Área',pixelArt:true},
+  ...['blade','axe','bow','dagger','arcaneFocus','grimoire','staff'].flatMap(family=>
+    ['single','area'].map(kind=>({id:'action.weapon.'+family+'.'+kind,
+      path:'/assets/actions/v0517/'+family+'_'+kind+'.svg',fallback:'/assets/placeholders/skill.svg',
+      alt:family+' · '+kind,pixelArt:true,draftPlaceholder:true as const}))),
+  {id:'equipment.offhand.quiver_v0517',path:'/assets/equipment/offhand/quiver_v0517.svg',
+    fallback:'/assets/placeholders/item.svg',alt:'Aljava Vinculada',pixelArt:true,draftPlaceholder:true},
+  ...extraCombatStatusesV0517.map(effect=>({id:'status.'+effect.id,
+    path:'/assets/status/'+effect.id+'.svg',fallback:'/assets/placeholders/skill.svg',
+    alt:effect.name,pixelArt:true,draftPlaceholder:true as const})),
   ...['status_resonant_fracture','status_clan_aegis','status_clan_rune_ward','status_clan_disjunction','status_clan_omen','status_clan_containment']
     .map(id=>({id:`status.${id}`,path:`/assets/status/${id}.png`,fallback:'/assets/placeholders/skill.svg',alt:id,pixelArt:true})),
 
   { id: 'skill.use-healing-potion', path: '/assets/skills/skill_use_healing_potion.png',
     fallback: '/assets/placeholders/skill.svg', alt: 'Poção Restauradora', pixelArt: true },
-  { id: 'item.clan-granite-emblem', path: '/assets/items/quest_clan_granite_emblem.png',
+  { id: 'item.clan-granite-emblem', path: '/assets/items/quest_clan_granite_emblem.svg',
     fallback: '/assets/placeholders/item.svg', alt: 'Emblema de Clã', pixelArt: true, draftPlaceholder: true },
   { id: 'enemy.granite-golem', path: '/assets/enemies/bosses/enemy_granite_golem_idle.svg',
     fallback: '/assets/placeholders/enemy.svg', alt: 'Golem de Granito · Korduun', pixelArt: true, draftPlaceholder: true },
@@ -61,17 +71,17 @@ const entries: AssetEntry[] = [
     fallback: '/assets/placeholders/enemy.svg', alt: 'Sentinela Corrompida · Núcleo da Ruína', pixelArt: true },
   ...(combatSkillDefinitions as CombatSkillDefinition[]).map((skill) => ({
     id: skill.iconAssetId ?? `skill.${skill.id}`,
-    path: `/assets/skills/${skill.id}.png`,
+    path: `/assets/skills/${skill.id}.${skill.id.endsWith('_v0517') ? 'svg' : 'png'}`,
     fallback: '/assets/placeholders/skill.svg',
     alt: skill.name, pixelArt: true,
-    ...(skill.id === 'skill_granite_slam' ? { draftPlaceholder: true as const } : {}),
+    ...((skill.id === 'skill_granite_slam' || skill.id.endsWith('_v0517')) ? { draftPlaceholder: true as const } : {}),
   })),
   ...complementaryItemDefinitions.map((item) => ({
-    id: item.iconAssetId, path: '/assets/items/complementary/' + item.id + '.png',
+    id: item.iconAssetId, path: '/assets/items/complementary/' + item.id + '.svg',
     fallback: '/assets/placeholders/item.svg', alt: item.name, pixelArt: true, draftPlaceholder: true as const,
   })),
   ...biomeMaterialDefinitions.map((item) => ({
-    id: item.iconAssetId, path: '/assets/items/biomes/' + item.id + '.png',
+    id: item.iconAssetId, path: '/assets/items/biomes/' + item.id + '.svg',
     fallback: '/assets/placeholders/item.svg', alt: item.name, pixelArt: true, draftPlaceholder: true,
   })),
   ...biomeEnemyDefinitions.map((enemy) => ({
@@ -272,6 +282,7 @@ const entries: AssetEntry[] = [
     fallback: '/assets/placeholders/item.svg',
     alt: `Conceito pixel art: ${item.name}`,
     pixelArt: true,
+    ...(item.id==='shield_quiver_v0517'?{draftPlaceholder:true as const}:{}),
   })),
 ]
 

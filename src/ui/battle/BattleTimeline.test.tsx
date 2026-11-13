@@ -53,4 +53,25 @@ describe('timeline visual minimalista', () => {
       )
   })
 
+  it('exibe próxima iniciativa alterada por status sem divulgar dados pendentes',()=>{
+    const save=createNewSave('timeline-v0517','Terrírian','character.terririan.default',content)
+    const battle=createBattle(save,content.encounters.encounter_fungorro_01,content,'timeline-v0517',{manualInitiative:true})
+    const player=battle.combatants.combatant_player
+    const enemy=Object.values(battle.combatants).find(c=>c.side==='enemy')!
+    battle.phase='AwaitingAction';battle.actorId=player.id;battle.actorCursor=0
+    battle.initiativeOrder=[player.id,enemy.id]
+    player.initiative=10;player.initiativeRolledBase=10
+    enemy.initiative=9;enemy.initiativeRolledBase=9
+    enemy.statusEffects.push({definitionId:'status_haste_v0517',sourceId:enemy.id,remainingTurns:2})
+    const snapshot=structuredClone(battle)
+    const view=render(<BattleTimeline battle={battle}/>)
+    const next=screen.getByRole('note',{name:'Previsão da próxima ordem por status'})
+    expect(next).toHaveTextContent('PRÓXIMA RODADA')
+    expect(next).toHaveTextContent('1º '+enemy.name)
+    expect(battle).toEqual(snapshot)
+    battle.phase='AwaitingInitiative'
+    view.rerender(<BattleTimeline battle={battle}/>)
+    expect(screen.queryByRole('note',{name:'Previsão da próxima ordem por status'})).not.toBeInTheDocument()
+  })
+
 })

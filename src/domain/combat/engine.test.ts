@@ -196,7 +196,14 @@ describe('máquina de estados de combate', () => {
       content.encounters.encounter_fungal_core_sentinel,
       content,
       'battle_boss',
+      { manualInitiative: true },
     )
+    // Test protection/targeting independently from enemy-first damage resolution.
+    // Real matches retain the normal deterministic initiative roll.
+    battle.phase='AwaitingAction'
+    battle.actorId='combatant_player'
+    battle.actorCursor=0
+    battle.initiativeOrder=['combatant_player',...battle.initiativeOrder.filter(id=>id!=='combatant_player')]
     const bossId = 'combatant_enemy_ruin_corrupted_sentinel_1'
     expect(battle.combatants[bossId]).toMatchObject({
       name: 'Sentinela Corrompida · Núcleo da Ruína',

@@ -6,6 +6,9 @@ export type CombatEffectDefinition =
   | { type: 'damage'; powerBonus: number }
   | { type: 'restoreHp'; value: number }
   | { type: 'restoreMp'; value: number }
+  | { type: 'restoreArcaneGuard'; value: number }
+  | { type: 'drainArcaneGuard'; value: number }
+  | { type: 'cleanseBeneficial' }
   | { type: 'cleanseHarmful' }
   | { type: 'adjacentSplash'; fraction: number; maxTargets: 1 | 2; basis: 'primaryFinalDamage' }
   | { type: 'applyStatus'; statusId: string; durationTurns: number; chance: number }
@@ -110,6 +113,12 @@ export type EnemyDefinition = {
   lootDefinitionIds: string[]
   skillIds: string[]
   aiSkillEveryRounds?: number
+  attackDie?: import('../domain/game/types').AttributeDie
+  initiativeDie?: import('../domain/game/types').AttributeDie
+  /** Tactical archetype is descriptive; attacks still execute via the battle FSM. */
+  aiArchetype?: 'breaker' | 'caster' | 'controller' | 'skirmisher' | 'brute' | 'sentinel'
+  /** Fraction absorbed (+) or amplified (-), capped to ±50%. BALANCE_DRAFT. */
+  damageResistances?: Partial<Record<import('../domain/combat/layeredDefenseV0517').DamageTypeV0517, number>>
   boss?: boolean
   weaknessTags: string[]
   assetId: string
@@ -123,6 +132,9 @@ export type CombatSkillDefinition = {
   target: 'enemy' | 'self'
   /** Player-facing category is explicit: never infer magic from the skill ID. */
   presentationGroup?: 'skills' | 'magic' | 'attack'
+  /** BALANCE_DRAFT: reaction is rolled at incoming attack. */
+  defenseStance?: import('./combatStylesV0517').DefenseModeV0517
+  damageAspect?: import('../domain/combat/layeredDefenseV0517').DamageTypeV0517
   mpCost: number
   /** BALANCE_DRAFT: future personal turns when this skill cannot be used. */
   cooldownTurns?: number
@@ -142,6 +154,11 @@ export type StatusEffectDefinition = {
   startTurnDamage: number
   attackModifier: number
   mitigationModifier: number
+  /** Temporary change to passive bound-shield threshold, not permanent wear. */
+  shieldGuardModifier?: number
+  /** BALANCE_DRAFT: modifies the existing seed-based die and turn order. */
+  initiativeModifier?: number
+  initiativeDieSteps?: number
   status: DraftStatus
 }
 

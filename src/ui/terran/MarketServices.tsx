@@ -10,6 +10,7 @@ import { Backpack, Coins, FlaskConical, Gem, Hammer, Sparkles } from 'lucide-rea
 import type { TerranNpcPresence } from '../../content/types'
 import { content } from '../../content/catalog'
 import { getGradeThreeGemCandidates, getGradeTwoInfusionCandidates } from '../../domain/bond/boundItems'
+import {checkOffhandRiteV0517,OFFHAND_RITE_V0517} from '../../domain/bond/offhandRiteV0517'
 import { MARKET_SERVICES, MARKET_STOCK, type MarketNpcId } from '../../domain/terran/market'
 import { BOUND_SLOT_LABELS, BOUND_SLOTS } from '../../domain/shared/types'
 import type { GameSave } from '../../domain/game/types'
@@ -21,6 +22,7 @@ import { BACKPACK_UPGRADES, backpackFlag, getBackpackCapacity } from '../../doma
 function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
   const buy = useGameStore((state) => state.buyFromMarket)
   const buyAndEquipArmor = useGameStore((state) => state.buyAndEquipMarketArmor)
+  const bindOffhand=useGameStore((state)=>state.bindOffhandAtWorkshop)
   const [quantities,setQuantities]=useState<Record<string,number>>({})
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
   const equippedArmor = getEquippedBasicArmor(save, content)
@@ -108,6 +110,29 @@ function Merchant({ save, npcId }: { save: GameSave; npcId: MarketNpcId }) {
         </article>
       })}
     </div>
+    {npcId===OFFHAND_RITE_V0517.npcId && <section className="terran-shop__escudaria" aria-label="Rito da Escudaria">
+      <h3><Sparkles size={18}/> Rito da Escudaria · primeiro Vínculo de mão secundária</h3>
+      <p>Escolha uma manifestação permanente: Escudo, Protetor Arcano ou Aljava.
+        Uma peça vinculada nunca é substituída. Requer arma inicial, nível e atributo.</p>
+      <div className="terran-shop__stock">
+        {OFFHAND_RITE_V0517.offers.map(offer=>{
+          const base=content.boundItemBases[offer.baseId]
+          const check=checkOffhandRiteV0517(save,offer.baseId,content,npcId)
+          return <article key={offer.baseId} className="terran-shop__offer">
+            <AssetImage assetId={base.assetIdByGrade[1]??'equipment.slot-preview.shield'} alt={base.name}/>
+            <div><strong>{base.name}</strong>
+              <small>{offer.label} · Grau I · {offer.cost} Ouro</small>
+              <small>{check.ok?'Requisitos completos · vínculo permanente':check.message}</small>
+            </div>
+            <button type="button" disabled={!check.ok}
+              aria-label={'Vincular '+base.name+' por '+offer.cost+' ouro'}
+              onClick={()=>bindOffhand(offer.baseId)}>
+              {save.character.bondedEquipment.shield?'Slot ocupado':'Realizar rito'}
+            </button>
+          </article>
+        })}
+      </div>
+    </section>}
     {npcId === 'presence_edran' && <section className="terran-shop__backpacks" aria-label="Mochilas de expansão">
       <h3><Backpack size={18} /> Mochilas · {save.inventory.length}/{getBackpackCapacity(save)} espaços</h3>
       <p>Uma melhoria permanente de capacidade, separada dos cinco Vínculos.</p>
