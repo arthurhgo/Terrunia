@@ -257,6 +257,7 @@ const entries: AssetEntry[] = [
     fallback: '/assets/placeholders/item.svg',
     alt: gem.name,
     pixelArt: true,
+    ...(gem.id==='terra_v05171'||gem.id==='ar_v05171'?{draftPlaceholder:true as const}:{})
   })),
   ...(['fungal_weak', 'mycelial'] as const).map((essence) => ({
     id: `essence.${essence.replaceAll('_', '-')}`,
