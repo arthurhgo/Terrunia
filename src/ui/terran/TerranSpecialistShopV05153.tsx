@@ -10,6 +10,7 @@ import { content } from '../../content/catalog'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
 import './terranSpecialistShopV05153.css'
+import {ModularPartsShopV05171} from './ModularPartsShopV05171'
 
 type Stat = keyof typeof GEAR_STAT_LABELS
 const statOptions = Object.entries(GEAR_STAT_LABELS) as [Stat,string][]
@@ -47,6 +48,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
   const inspect=inspectId?stock.find(offer=>offer.id===inspectId):undefined
   const comparison=inspect?previewCommercialEquip(save,itemPreview(inspect),content):null
 
+  if(merchantId==='presence_terran_weaponsmith')return <ModularPartsShopV05171 save={save}/>
   return <section className={'terran-specialist terran-specialist--'+merchant.tone}
     aria-label={'Loja do '+merchant.label}>
     <header>

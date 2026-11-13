@@ -1,0 +1,28 @@
+.modular-shop,.modular-bench{border:2px solid #796341;background:#101e26;color:#e7d4ad;padding:12px;margin:8px 0;font:13px/1.4 Georgia,serif}
+.modular-shop h3,.modular-bench h3{color:#f5d79b;margin:2px 0 8px}
+.modular-controls,.modular-bench__switch{display:flex;gap:8px;flex-wrap:wrap;margin:9px 0}
+.modular-controls label{display:grid;gap:4px;min-width:110px}
+.modular-controls input,.modular-controls select{background:#172d36;border:1px solid #927c51;color:#f4e6ca;padding:5px}
+.modular-shop button,.modular-bench button{color:#f2daa8;background:#263840;border:1px solid #8a744f;padding:7px;cursor:pointer}
+.modular-shop button:disabled,.modular-bench button:disabled{opacity:.5;cursor:not-allowed}
+.modular-shop button[aria-pressed=true],.modular-bench button[aria-pressed=true],.modular-bench .is-selected{outline:2px solid #e5c47a}
+.modular-shop__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:9px;max-height:44vh;overflow-y:auto}
+.modular-shop__item{display:grid;grid-template-columns:48px 1fr;gap:7px;background:#172b34;padding:8px;border:1px solid #566866}
+.modular-shop__item>img,.modular-bench__parts img{width:42px;height:42px;object-fit:contain;image-rendering:pixelated}
+.modular-shop__item small{display:block;color:#b9c9bb}.modular-shop__item button{grid-column:span 2}
+.modular-bench__layout{display:grid;grid-template-columns:minmax(160px,1fr) minmax(210px,1.2fr) minmax(170px,.9fr);gap:12px}
+.modular-bench__trays,.modular-bench__weapon,.modular-bench__stats{min-width:0;background:#182a33;border:1px solid #665a41;padding:9px}
+.modular-bench__trays section{margin:5px 0}.modular-bench__trays section>button{width:100%;text-align:left}
+.modular-bench__parts{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:5px 0;max-height:180px;overflow:auto}
+.modular-bench__parts button{display:grid;justify-items:center;gap:3px;max-width:100%;font-size:10px}
+.modular-bench__sprite{position:relative;margin:auto;width:clamp(105px,14vw,180px);aspect-ratio:1;display:grid;place-items:center;background:radial-gradient(#395057,#121d2c)}
+.modular-bench__sprite>img:first-child{width:80%;height:80%;object-fit:contain;image-rendering:pixelated}
+.modular-bench__layer{position:absolute;max-width:32%;max-height:32%;image-rendering:pixelated;filter:drop-shadow(1px 2px 2px #000)}
+.modular-bench__layer--body{left:6%;top:8%}.modular-bench__layer--handle{right:7%;bottom:9%}
+.modular-bench__layer--coreHousing{left:6%;bottom:8%}.modular-bench__layer--focusMount{right:7%;top:8%}
+.modular-bench__sockets{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0}
+.modular-bench__sockets button{min-width:0;text-align:left;overflow-wrap:anywhere}
+.modular-bench__sockets small{display:block}.modular-bench__delta{display:flex;gap:6px;justify-content:space-between;padding:3px;border-bottom:1px solid #56605b}
+.modular-bench__stats button{width:100%;margin-top:6px}
+@media(max-width:900px){.modular-bench__layout{grid-template-columns:1fr}.modular-bench__trays,.modular-bench__weapon,.modular-bench__stats{max-height:none}}
+@media(prefers-reduced-motion:reduce){.modular-bench *{animation:none!important;transition:none!important}}

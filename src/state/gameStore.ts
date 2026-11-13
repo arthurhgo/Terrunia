@@ -1,6 +1,7 @@
 import { enterBiomeTrail } from '../domain/exploration/biomeAccess'
 import { BACKPACK_UPGRADES, routeNewItemOverflow } from '../domain/inventory/backpacks'
 import { executeForgeRecipe, executeGoldForgeUpgrade } from '../domain/terran/forge'
+import {commitAssemblyV05171,purchaseModularPartV05171} from '../domain/terran/modularAssemblyV05171'
 import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmor'
 import { purchaseGear, equipGearStyle, refineCatalogGear } from '../domain/inventory/equipmentV0515'
 import { purchaseAndEquipGear, purchaseAndEquipStarterArmor } from '../domain/inventory/marketQuickEquipV05153'
@@ -140,6 +141,8 @@ type GameState = {
   receiveDaerynAid: () => void
   buyFromSylwen: (itemId: string, quantity?: number) => void
   forge: (recipeId: string) => void
+  assembleBoundPart:(slot:'weapon'|'shield',partId:string,revision:number)=>void
+  purchaseModularPart:(partId:string)=>void
   goldForge: (slot: BoundSlot) => void
   equipArmor: (instanceId: string | null) => void
   equipComplementary: (slot: ComplementarySlot, instanceId: string | null) => void
@@ -784,6 +787,23 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!result.ok) return failAction(result.message)
       commit(result.value)
       show('Proteção aprimorada', 'A peça alcançou +1 e ganhou 1 de Defesa.', 'success')
+    },
+
+    purchaseModularPart:(partId)=>{
+      const save=get().save
+      if(!save)return
+      const result=purchaseModularPartV05171(save,partId,content,nowIso())
+      if(!result.ok)return failAction(result.message)
+      commit(result.value)
+      show('Componente adquirido',content.items[partId].name+' guardado na Mochila para montar em Durnan.','success')
+    },
+    assembleBoundPart:(slot,partId,revision)=>{
+      const save=get().save
+      if(!save)return
+      const result=commitAssemblyV05171(save,slot,partId,content,nowIso(),revision)
+      if(!result.ok)return failAction(result.message)
+      commit(result.value)
+      show('Montagem concluída','O Vínculo original foi preservado. A ficha e o dano já usam os atributos novos.','success')
     },
 
     forge: (recipeId) => {
