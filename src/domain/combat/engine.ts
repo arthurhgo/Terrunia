@@ -283,17 +283,25 @@ const applyCombatEffects = (
       const bonusFace = actor.weaponBonusDie ? rollCombatDie(state, actor.weaponBonusDie) : 0
       usedFace = face
       usedSides = sides
-      const breakdown = calculateRolledDamage(
-        getEffectiveAttackPower(actor, catalog) + bonusFace,
-        getEffectiveMitigation(target, catalog),
-        face, sides, effect.powerBonus, appliedGuardMitigation,
-      )
-      if (success && (mode === 'parry' || mode === 'dodge')) {
-        breakdown.guardPrevented += breakdown.finalDamage
-        breakdown.finalDamage = 0
+      const aspect=getDamageTypeV0517(actor,skill)
+      // ARM only protects from physical blows. Magic first faces a depletable ARC ward.
+      const armor=aspect==='physical' ? getEffectiveMitigation(target,catalog):0
+      const basePower=getEffectiveAttackPower(actor,catalog)+bonusFace
+      const breakdown=calculateRolledDamage(basePower,armor,face,sides,effect.powerBonus,appliedGuardMitigation)
+      const unarmored=aspect==='physical'
+        ? calculateRolledDamage(basePower,0,face,sides,effect.powerBonus,appliedGuardMitigation).finalDamage
+        : breakdown.finalDamage
+      const armorAbsorbed=Math.max(0,unarmored-breakdown.finalDamage)
+      if(success&&(mode==='parry'||mode==='dodge')){
+        breakdown.guardPrevented+=breakdown.finalDamage
+        breakdown.finalDamage=0
       }
+      const layer=applyLayeredProtectionV0517(target,breakdown.finalDamage,aspect)
+      breakdown.finalDamage=layer.hpDamage
+      const detailed={...breakdown,damageAspect:aspect,
+        shieldAbsorbed:layer.shieldAbsorbed,arcaneAbsorbed:layer.arcaneAbsorbed,armorAbsorbed}
       // No second critical roll: face === sides is the ONLY critical trigger.
-      const damage = breakdown.finalDamage
+      const damage=detailed.finalDamage
       usedCritical = breakdown.critical
       dealt += damage
       target.hp = Math.max(0, target.hp - damage)
@@ -307,11 +315,12 @@ const applyCombatEffects = (
         addLog(state,target.name+' responde com Contragolpe e causa '+retaliation+' de dano em '+actor.name+'.','damage')
       }
       const guardNote = guardMitigation
-        ? ` · Guarda evitou ${breakdown.guardPrevented} de dano.` : ''
+        ? ` · Reação evitou ${breakdown.guardPrevented}.` : ''
+      const layerNote = ` · ESC ${layer.shieldAbsorbed} · ARM ${armorAbsorbed} · ARC ${layer.arcaneAbsorbed} · HP -${damage}.`
       const critNote = breakdown.critical ? ' ACERTO CRÍTICO!' : ''
       addLog(state,
-        `${actor.name} causa ${damage} de dano em ${target.name}.${critNote} d${sides}=${face}${actor.weaponBonusDie ? ` + d${actor.weaponBonusDie} da arma=${bonusFace}` : ''}, ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${appliedGuardMitigation}.${guardNote}`,
-        'damage', { actorId: actor.id, targetId: target.id, sides, face, action, critical: breakdown.critical, damageBreakdown: breakdown,
+        `${actor.name} causa ${damage} de dano em ${target.name}.${critNote} d${sides}=${face}${actor.weaponBonusDie ? ` + d${actor.weaponBonusDie} da arma=${bonusFace}` : ''}, ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${appliedGuardMitigation}.${guardNote}${layerNote}`,
+        'damage', { actorId: actor.id, targetId: target.id, sides, face, action, critical: breakdown.critical, damageBreakdown: detailed,
           ...(actor.weaponBonusDie ? { weaponBonusRoll: { sides: actor.weaponBonusDie, face: bonusFace } } : {}) },
       )
     }
@@ -393,7 +402,7 @@ const resolveSkill = (
     ? state.bossMechanics.bossId : undefined
   const primary = applyCombatEffects(state, actor, target, skill.effects, catalog, skill.name, skill)
   for(const effect of skill.effects) if(effect.type==='adjacentSplash'&&primary.damage>0)
-    applySplash(state,actor,target,Math.floor(primary.damage*effect.fraction),skill.name,primary.sides,primary.face,effect.maxTargets,protectedBossId,primary.critical)
+    applySplash(state,actor,target,Math.floor(primary.damage*effect.fraction),skill.name,primary.sides,primary.face,effect.maxTargets,protectedBossId,primary.critical,getDamageTypeV0517(actor,skill))
   if (skill.id === 'skill_resonant_strike' && primary.damage > 0) {
     // BALANCE_DRAFT OD-06: 5% final primary damage to each other unprotected enemy.
     // Snapshot the shield from action start; AoE never hits the boss accidentally.
@@ -405,7 +414,8 @@ const resolveSkill = (
       if (other.id === target.id ||
           (bossProtected && other.id === state.bossMechanics?.bossId) ||
           !validTarget(actor, other, 'enemy', state)) continue
-      const damage = Math.min(other.hp, splash)
+      const protection=applyLayeredProtectionV0517(other,splash,'arcane')
+      const damage = Math.min(other.hp, protection.hpDamage)
       other.hp = Math.max(0, other.hp - damage)
       other.alive = other.hp > 0
       addLog(state, `${actor.name} causa ${damage} de dano em ${other.name} por Pulso Ressonante.`, 'damage',
@@ -425,12 +435,14 @@ const adjacentEnemies = (state:BattleState,target:Combatant):Combatant[] => {
     (other):other is Combatant=>Boolean(other?.alive))
 }
 const applySplash=(state:BattleState,actor:Combatant,target:Combatant,damage:number,
-  action:string,sides:CombatDie,face:number,maxTargets:number,protectedBossId?:string,critical=false) => {
+  action:string,sides:CombatDie,face:number,maxTargets:number,protectedBossId?:string,critical=false,
+  aspect:import('./layeredDefenseV0517').DamageTypeV0517='physical') => {
   for(const other of adjacentEnemies(state,target).filter(c=>c.id!==protectedBossId && validTarget(actor,c,'enemy',state)).slice(0,maxTargets)){
-    const dealt=Math.min(other.hp,Math.max(0,damage))
-    if(!dealt)continue
+    const protection=applyLayeredProtectionV0517(other,Math.max(0,damage),aspect)
+    const dealt=Math.min(other.hp,protection.hpDamage)
+    if(!dealt&&!protection.shieldAbsorbed&&!protection.arcaneAbsorbed)continue
     other.hp=Math.max(0,other.hp-dealt);other.alive=other.hp>0
-    addLog(state,`${actor.name} causa ${dealt} de dano em ${other.name} por ${action}.`,'damage',
+    addLog(state,`${actor.name} causa ${dealt} de dano em ${other.name} por ${action}. ESC ${protection.shieldAbsorbed} · ARC ${protection.arcaneAbsorbed}.`,'damage',
       {actorId:actor.id,targetId:other.id,sides,face,action,critical})
   }
 }
@@ -439,18 +451,23 @@ const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,cata
   const sides=selectDamageDie(actor),face=rollCombatDie(state,sides)
   const bonusFace=actor.weaponBonusDie?rollCombatDie(state,actor.weaponBonusDie):0
   const guard=target.defending?BALANCE.defendMitigation:0
+  const aspect=getDamageTypeV0517(actor)
+  const armor=aspect==='physical'?getEffectiveMitigation(target,catalog):0
   const rolled=calculateRolledDamage(getEffectiveAttackPower(actor,catalog)+bonusFace,
-    getEffectiveMitigation(target,catalog),face,sides,0,guard)
+    armor,face,sides,0,guard)
   // BALANCE_DRAFT: 60% normal center, 30% of inflicted center for each flank.
   const protectedBossId=state.bossMechanics && isProtectedBoss(state,state.combatants[state.bossMechanics.bossId])
     ? state.bossMechanics.bossId : undefined
-  const centerDamage=Math.min(target.hp,Math.max(1,Math.floor(rolled.finalDamage*0.6)))
+  const areaPower=Math.max(1,Math.floor(rolled.finalDamage*0.6))
+  const protection=applyLayeredProtectionV0517(target,areaPower,aspect)
+  const centerDamage=Math.min(target.hp,protection.hpDamage)
   target.hp=Math.max(0,target.hp-centerDamage);target.alive=target.hp>0;target.defending=false
-  addLog(state,`${actor.name} causa ${centerDamage} de dano em ${target.name} com ${getWeaponAttackNamesV0517(actor.weaponArchetype).area}.${rolled.critical ? ' ACERTO CRÍTICO!' : ''}`,'damage',
+  delete target.activeDefense
+  addLog(state,`${actor.name} causa ${centerDamage} de dano em ${target.name} com ${getWeaponAttackNamesV0517(actor.weaponArchetype).area}. ESC ${protection.shieldAbsorbed} · ARC ${protection.arcaneAbsorbed}.${rolled.critical ? ' ACERTO CRÍTICO!' : ''}`,'damage',
     {actorId:actor.id,targetId:target.id,sides,face,action:getWeaponAttackNamesV0517(actor.weaponArchetype).area,critical:rolled.critical,
-      damageBreakdown:{...rolled,finalDamage:centerDamage},
+      damageBreakdown:{...rolled,finalDamage:centerDamage,damageAspect:aspect,shieldAbsorbed:protection.shieldAbsorbed,arcaneAbsorbed:protection.arcaneAbsorbed,armorAbsorbed:armor},
       ...(actor.weaponBonusDie?{weaponBonusRoll:{sides:actor.weaponBonusDie,face:bonusFace}}:{})})
-  applySplash(state,actor,target,Math.floor(centerDamage*0.3),'Splash de Área',sides,face,2,protectedBossId,rolled.critical)
+  applySplash(state,actor,target,Math.floor(centerDamage*0.3),'Splash de Área',sides,face,2,protectedBossId,rolled.critical,aspect)
   addPhase(state,'ResolvingReactions');addPhase(state,'ApplyingStatuses');addPhase(state,'CheckEndConditions')
 }
 
