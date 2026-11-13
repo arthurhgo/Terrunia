@@ -2,9 +2,8 @@ import { describe,expect,it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave,bindPrologueWeapon } from '../game/createSave'
 import type { InventoryItemInstance } from '../game/types'
-import { createBattle,submitBattleCommand,calculateRolledDamage } from './engine'
+import { createBattle,submitBattleCommand } from './engine'
 import { applyVictoryRecovery } from './victoryRecoveryV05152'
-import { DOUBLE_ATTACK_V05152 } from '../../content/combatActionRulesV05152'
 import { gameSaveSchema } from '../../persistence/saveSchema'
 
 const NOW='2026-11-10T15:00:00.000Z'
@@ -65,21 +64,13 @@ describe('v0.5.15.2 — consumable and one-die combat FSM',()=>{
   expect(offensive.ok).toBe(true)
   if(offensive.ok)expect(offensive.value.log.some(entry=>entry.tone==='damage')).toBe(true)
  })
- it('double attack delivers two 30-percent hits with a single primary roll and one action',()=>{
-  const {battle,player}=start()
+ it('removes legacy Ataque Duplo without advancing the battle or spending RNG',()=>{
+  const {battle}=start()
   const enemy=Object.values(battle.combatants).find(c=>c.side==='enemy')!
-  enemy.hp=enemy.maxHp=200
-  const result=submitBattleCommand(battle,{type:'doubleAttack',targetId:enemy.id},content)
-  expect(result.ok).toBe(true)
-  if(!result.ok)return
-  const playerRolls=result.value.log.filter(entry=>entry.roll?.actorId===player.id&&entry.roll.action==='Ataque Duplo')
-  expect(playerRolls).toHaveLength(1)
-  const roll=playerRolls[0].roll!
-  const original=calculateRolledDamage(player.attackPower+(roll.weaponBonusRoll?.face??0),
-   enemy.mitigation,roll.face,roll.sides)
-  const expected=2*Math.max(1,Math.floor(original.finalDamage*DOUBLE_ATTACK_V05152.fractionPerHit))
-  expect(200-result.value.combatants[enemy.id].hp).toBe(expected)
-  expect(playerRolls[0].message).toContain('um único d')
+  const result=submitBattleCommand(battle,
+    {type:'doubleAttack',targetId:enemy.id} as unknown as Parameters<typeof submitBattleCommand>[1],content)
+  expect(result).toMatchObject({ok:false,code:'REMOVED_ACTION_V0517'})
+  expect(battle.phase).toBe('AwaitingAction')
  })
  it('the area action requires one die roll while respecting protection and follow-up turn',()=>{
   const {battle,player}=start()
@@ -88,7 +79,7 @@ describe('v0.5.15.2 — consumable and one-die combat FSM',()=>{
   const result=submitBattleCommand(battle,{type:'areaAttack',targetId:enemy.id},content)
   expect(result.ok).toBe(true)
   if(!result.ok)return
-  const rolls=result.value.log.filter(x=>x.roll?.actorId===player.id&&x.roll.action==='Ataque em Área')
+  const rolls=result.value.log.filter(x=>x.roll?.actorId===player.id&&x.roll.action==='Varredura da Lâmina')
   expect(rolls).toHaveLength(1)
  })
  it('restores resources atomically in Victory without consuming turns or accepting offensive items',()=>{
