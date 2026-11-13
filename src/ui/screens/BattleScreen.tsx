@@ -74,7 +74,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const player = battle?.combatants.combatant_player
   const [targetId, setTargetId] = useState('')
   const [menu, setMenu] = useState<Menu>(null)
-  const [victoryTab, setVictoryTab] = useState<'next' | 'bag'>('next')
   const [rollReturnMenu, setRollReturnMenu] = useState<Menu>(null)
   const [selectedConsumableId, setSelectedConsumableId] = useState('')
   const [hit, setHit] = useState<'player' | 'enemy' | null>(null)
@@ -116,7 +115,6 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   }, [battle, enemies, targetId])
   useEffect(() => {
     setMenu(null)
-    setVictoryTab('next')
     setRollReturnMenu(null)
     setActiveDice(null)
     setDiceStage('focus')
@@ -601,7 +599,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         {statusesFor(player)}
         <BattleEquipmentHud save={save} />
       </section>
-      <section className="pixel-battle__panel pixel-battle__actions" aria-label="Ações de combate" data-turn-gate={actionGate}>
+      <section className={'pixel-battle__panel pixel-battle__actions' + (battle.phase === 'Victory' ? ' pixel-battle__actions--victory' : '')} aria-label="Ações de combate" data-turn-gate={actionGate}>
         <h2>{diceAwaitingClick ? 'LANCE SEU DADO' : battle.phase === 'AwaitingInitiative' ? 'ROLAGEM DE INICIATIVA' : battle.phase === 'AwaitingAction' ? 'ESCOLHA SUA AÇÃO' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : 'COMBATE'}</h2>
         {diceAwaitingClick && activeDice && <div className="pixel-battle__roll-choice">
           <DraggableBattleDie key={activeDice.id} sides={activeDice.sides}
@@ -706,48 +704,23 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
             </div>)}
             {combatQuestUpdates.length > 3 && <small>+{combatQuestUpdates.length - 3} missão(ões) relacionada(s) no Diário.</small>}
           </div>}
-          {!battle.claimed && <small className="pixel-battle__victory-collect-note">Recolha os espólios no painel à direita.</small>}
+          {!battle.claimed && <small className="pixel-battle__victory-collect-note">Recolha os espólios antes de avançar.</small>}
         </div> : <div className="pixel-battle__result"><p>O Nexo retorna à Base. Sem perda de XP, Ouro ou equipamentos nesta versão.</p>
           <button onClick={() => end(true)}>DESPERTAR NA BASE</button></div>}
+        {battle.phase === 'Victory' && <nav className="pixel-battle__victory-footer" aria-label="Próximos passos após a vitória">
+          <strong>PRÓXIMOS PASSOS</strong>
+          {!battle.claimed ? <button type="button" onClick={claim}>RECOLHER TODOS OS ESPÓLIOS</button> : <>
+            {battle.waveIndex ? <button type="button" onClick={nextWave}>PRÓXIMA ONDA · {battle.waveIndex+1}</button> :
+              battle.portalHuntId ? null : <button type="button" onClick={()=>end(false)}>{battle.clanTrialQuestId||battle.clanBossQuestId ? 'VOLTAR AO SALÃO DOS CLÃS' : 'CONTINUAR EXPEDIÇÃO'}</button>}
+            <button type="button" onClick={()=>end(true)}>{battle.portalHuntId?'VOLTAR AO PORTAL':'RETORNAR A TERRAN'}</button>
+          </>}
+        </nav>}
       </section>
       <section className={'pixel-battle__panel pixel-battle__target' + (battle.phase === 'Victory' && !enemies.some(enemy=>enemy.alive) ? ' pixel-battle__target--victory' : '')}>
         {battle.phase === 'Victory' && !enemies.some(enemy=>enemy.alive) ? <>
-          <h2>PÓS-VITÓRIA · PREPARAÇÃO</h2>
-          <div className="pixel-battle__victory-tabs" role="tablist" aria-label="Abas da pós-vitória">
-            <button type="button" role="tab" id="victory-tab-next" aria-selected={victoryTab==='next'}
-              aria-controls="victory-panel-next" onClick={()=>setVictoryTab('next')}
-              onKeyDown={(event)=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){
-                event.preventDefault();setVictoryTab('bag')
-                ;(event.currentTarget.nextElementSibling as HTMLButtonElement|null)?.focus()
-              }}}>PRÓXIMOS PASSOS</button>
-            <button type="button" role="tab" id="victory-tab-bag" aria-selected={victoryTab==='bag'}
-              aria-controls="victory-panel-bag" onClick={()=>setVictoryTab('bag')}
-              onKeyDown={(event)=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){
-                event.preventDefault();setVictoryTab('next')
-                ;(event.currentTarget.previousElementSibling as HTMLButtonElement|null)?.focus()
-              }}}>MOCHILA · POÇÕES</button>
-          </div>
-          {victoryTab==='next' ? <div role="tabpanel" id="victory-panel-next" aria-labelledby="victory-tab-next"
-            className="pixel-battle__victory-tabpanel pixel-battle__victory-tabpanel--next">
-            <div className="pixel-battle__victory-reminder" role="note">
-              {battle.claimed ? <>
-                <strong>USAR POÇÃO ANTES DE SEGUIR?</strong>
-                <p>Abra a Mochila para usar poções ou avance sem usar. A escolha é sua.</p>
-                <button type="button" className="pixel-battle__victory-open-bag"
-                  onClick={()=>setVictoryTab('bag')}><Backpack size={14}/> ABRIR MOCHILA · POÇÕES</button>
-              </> : <p>Recolha os espólios para liberar a saída. Você poderá usar poções antes de avançar.</p>}
-            </div>
-            <nav className="pixel-battle__victory-navigation" aria-label="Ações de saída após a vitória">
-              {!battle.claimed ? <button type="button" onClick={claim}>RECOLHER TODOS OS ESPÓLIOS</button> : <>
-                {battle.waveIndex ? <button type="button" onClick={nextWave}>PRÓXIMA ONDA · {battle.waveIndex+1}</button> :
-                  battle.portalHuntId ? null : <button type="button" onClick={()=>end(false)}>{battle.clanTrialQuestId||battle.clanBossQuestId ? 'VOLTAR AO SALÃO DOS CLÃS' : 'CONTINUAR EXPEDIÇÃO'}</button>}
-                <button type="button" onClick={()=>end(true)}>{battle.portalHuntId?'VOLTAR AO PORTAL':'RETORNAR A TERRAN'}</button>
-              </>}
-            </nav>
-          </div> : <div role="tabpanel" id="victory-panel-bag" aria-labelledby="victory-tab-bag"
-            className="pixel-battle__victory-tabpanel pixel-battle__victory-tabpanel--bag">
-            <div className="pixel-battle__victory-bag" aria-label="Mochila após a vitória">
-            <strong>{battle.claimed ? 'ESPÓLIOS RECOLHIDOS' : 'NOVOS DROPS · RECOLHER'}</strong>
+          <h2>MOCHILA · POÇÕES</h2>
+          <div className="pixel-battle__victory-bag" aria-label="Mochila após a vitória">
+            <strong>{battle.claimed ? 'ESPÓLIOS RECOLHIDOS' : 'NOVOS DROPS · RECOLHER NO CENTRO'}</strong>
             <div className="pixel-battle__victory-drops">
               {lootGroups.map(({definitionId,quantity})=><div className="pixel-battle__victory-drop" key={definitionId}>
                 <AssetImage assetId={content.items[definitionId]?.iconAssetId ?? 'item.fungal-nucleus'} alt="" />
@@ -770,11 +743,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
               })}
               {!victoryRecoveryItems.length && <small>Sem consumíveis de recuperação. Compre poções ou encontre suprimentos.</small>}
             </div>
-            <small>Use poções sem gastar turno ou siga sem usar. Vida e Mana seguem para o próximo encontro.</small>
-            </div>
-            <button type="button" className="pixel-battle__victory-bag-back"
-              onClick={()=>setVictoryTab('next')}>VOLTAR AOS PRÓXIMOS PASSOS</button>
-          </div>}
+            <small>Antes de avançar, você pode usar uma poção ou continuar sem usar. Próximos passos estão no painel VITÓRIA ao lado.</small>
+          </div>
         </> : <>
         <h2>ALVO <button type="button" onClick={() => setShowLog(!showLog)} aria-expanded={showLog} aria-label="Abrir registro de combate"><ScrollText size={16} /></button></h2>
         {showLog ? <div className="pixel-battle__log" aria-live="polite">
