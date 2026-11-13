@@ -12,7 +12,7 @@ describe('contratos secundários dos NPCs', () => {
     const originalContracts = sideQuestDefinitions.filter((quest) => !quest.turnInItems && !quest.id.startsWith('side_astravel_') && !quest.id.startsWith('side_clan_'))
     expect(originalContracts).toHaveLength(questGivers.length)
     expect(sideQuestDefinitions.filter((quest) => !quest.turnInItems)).toHaveLength(questGivers.length + 8 + astravelProgressionQuests.filter((quest) => !quest.turnInItems).length)
-    expect(content.npcs.npc_rosetta.questIds).toHaveLength(6)
+    expect(content.npcs.npc_rosetta.questIds).toHaveLength(11)
     expect(sideQuestDefinitions.filter((quest) => quest.id.startsWith('side_clan_'))).toHaveLength(8)
     for (const npc of questGivers) {
       const quest = content.quests[npc.questIds.find((id) => content.quests[id]?.category === 'secondary') ?? '']
