@@ -3,6 +3,7 @@ import { BALANCE } from '../../content/balance'
 import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/fungalChambers'
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
 import { DEFENSE_RULES_V0517, COMMON_DEFENSE_SKILL_IDS_V0517, getWeaponAttackNamesV0517 } from '../../content/combatStylesV0517'
+import {CLASS_DISCIPLINE_SKILLS_V0517} from '../../content/classDisciplinesV0517'
 import { deriveOffhandCombatV0517, getDamageTypeV0517, applyLayeredProtectionV0517, getInitiativeModifiersV0517, getEffectiveInitiativeV0517 } from './layeredDefenseV0517'
 import {applyAffinityV0517,getScheduledEnemySkillV0517} from './combatTacticsV0517'
 import { nextCombatRandomSeed, rollSeededCombatDie } from './rng'
@@ -142,6 +143,8 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
   const shieldDefinition=shieldInstance?catalog.boundItemBases[shieldInstance.baseItemId]:undefined
   // Do not count a bound shield's mitigation AGAIN as body armor: ESC/ARC are separate.
   const bodyMitigation=Math.max(0,stats.defense.value-(shieldDefinition?.statBonuses.mitigation??0))
+  const validClass=character.classProgression.classId && character.classProgression.masteryLevel>=1 && catalog.classes[character.classProgression.classId]?.clanId===character.clan.clanId
+  const classSkillId=validClass ? CLASS_DISCIPLINE_SKILLS_V0517[character.classProgression.classId!] : undefined
   const maxHp = stats.life.value
   const maxMp = stats.mana.value
 
@@ -175,6 +178,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
       ...(offhand.kind==='quiver'&&offhand.style==='archer'?['skill_quiver_focus_v0517']:[]),
       ...(offhand.clanDunavar?['skill_clan_dunavar_arcane_shield_v0517']:[]),
       ...(clanSkillId ? [clanSkillId] : []),
+      ...(classSkillId ? [classSkillId] : []),
     ])],
     attackDie: character.attributes[catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.scalingAttribute ?? 'strength'].die,
     ...(catalog.boundItemBases[save.boundItems[character.bondedEquipment.weapon ?? '']?.baseItemId ?? '']?.bonusAttackDie
