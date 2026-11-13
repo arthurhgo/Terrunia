@@ -34,6 +34,10 @@ export type Combatant = {
   initiative: number
   alive: boolean
   defending: boolean
+  activeDefense?: import('../../content/combatStylesV0517').DefenseModeV0517
+  defenseDice?: Record<import('../../content/combatStylesV0517').DefenseModeV0517, CombatDie>
+  hasBoundShield?: boolean
+  weaponArchetype?: string
   skillIds: string[]
   /** Optional for compatibility with battles serialized before v0.5.7. */
   skillCooldowns?: Record<string, number>
@@ -137,7 +141,6 @@ export type BattleCommand =
   | { type: 'rollInitiative' }
   | { type: 'attack'; targetId: string }
   | { type: 'areaAttack'; targetId?: string }
-  | { type: 'doubleAttack'; targetId: string }
   | { type: 'defend' }
   | { type: 'skill'; skillId: string; targetId: string }
   | { type: 'item'; itemInstanceId: string; targetId: string }

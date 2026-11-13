@@ -123,6 +123,8 @@ export type CombatSkillDefinition = {
   target: 'enemy' | 'self'
   /** Player-facing category is explicit: never infer magic from the skill ID. */
   presentationGroup?: 'skills' | 'magic' | 'attack'
+  /** BALANCE_DRAFT: reaction is rolled at incoming attack. */
+  defenseStance?: import('./combatStylesV0517').DefenseModeV0517
   mpCost: number
   /** BALANCE_DRAFT: future personal turns when this skill cannot be used. */
   cooldownTurns?: number

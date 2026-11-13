@@ -242,6 +242,10 @@ const combatantSchema = z.object({
   initiative: z.number().finite(),
   alive: z.boolean(),
   defending: z.boolean(),
+  activeDefense: z.enum(['block','parry','dodge','counter']).optional(),
+  defenseDice: z.object({block:attributeDieSchema,parry:attributeDieSchema,dodge:attributeDieSchema,counter:attributeDieSchema}).optional(),
+  hasBoundShield: z.boolean().optional(),
+  weaponArchetype: z.string().optional(),
   skillIds: z.array(idSchema),
   skillCooldowns: z.record(z.string(), nonnegativeInteger).optional(),
   statusEffects: z.array(z.object({

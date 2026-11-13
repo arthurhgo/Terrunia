@@ -355,7 +355,7 @@ export const boundItemBaseDefinitions: BoundItemBaseDefinition[] = [
     id: 'bound_weapon_arcane_scepter', name: 'Cetro Arcano', description: 'Foco leve para manipulação e descarga de energia.',
     archetype: 'arcaneFocus', basePower: 2, powerType: 'magical', damageType: 'arcane', weightClass: 'light',
     scalingAttribute: 'cunning', requirements: { level: 1, attributes: { cunning: 6 } },
-    skillUnlocks: [{ grade: 1, skillId: 'skill_scepter_arc_pulse' }, { grade: 2, skillId: 'skill_scepter_channel' }, { grade: 3, skillId: 'skill_scepter_prism' }], assetId: 'equipment.catalog.weapon_arcane_scepter',
+    skillUnlocks: [{ grade: 1, skillId: 'skill_scepter_arc_pulse' }, { grade: 1, skillId: 'skill_scepter_ethereal_arrow_v0517' }, { grade: 2, skillId: 'skill_scepter_channel' }, { grade: 2, skillId: 'skill_scepter_arcane_nova_v0517' }, { grade: 3, skillId: 'skill_scepter_prism' }], assetId: 'equipment.catalog.weapon_arcane_scepter',
   }),
   weapon({
     id: 'bound_weapon_spellbook', name: 'Livro de Magias — Projéteis', description: 'Grimório ofensivo de alto poder e alta exigência mental.',

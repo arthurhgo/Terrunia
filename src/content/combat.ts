@@ -4,6 +4,7 @@ import { fungalDungeonEncounters } from './fungalChambers'
 import { newClanSpells, newClanStatuses } from './clanSpells'
 import { clanTrialEncounters } from './clanTrials'
 import { CLAN_EMBLEM_ITEM_ID } from './clanProgressionV05142'
+import { defensiveSkillDefinitionsV0517, scepterExtraSkillDefinitionsV0517 } from './combatStylesV0517'
 import type {
   CombatSkillDefinition,
   EncounterDefinition,
@@ -11,6 +12,8 @@ import type {
 } from './types'
 
 export const combatSkillDefinitions = [
+  ...defensiveSkillDefinitionsV0517,
+  ...scepterExtraSkillDefinitionsV0517,
   {
     id: 'skill_sentinel_arcane_pulse', name: 'Pulso Arcano Corrompido',
     description: 'A Sentinela dispara energia mágica de seu núcleo inorgânico.',
@@ -56,7 +59,7 @@ export const combatSkillDefinitions = [
   },
   {
     id: 'skill_bow_piercing_shot',
-    name: 'Disparo Perfurante',
+    name: 'Flecha Perfurante',
     description: 'Tiro preciso que explora a Agilidade do portador.',
     target: 'enemy',
     mpCost: 2, cooldownTurns: 2, damageDieSteps: 0, 
@@ -77,7 +80,7 @@ export const combatSkillDefinitions = [
   },
   {
     id: 'skill_scepter_arc_pulse',
-    name: 'Pulso do Cetro',
+    name: 'Pulso Mágico do Cetro',
     description: 'Descarga curta guiada pela Astúcia do Terrírian.',
     target: 'enemy',
     mpCost: 2, cooldownTurns: 2, damageDieSteps: 0, 
@@ -137,7 +140,7 @@ export const combatSkillDefinitions = [
     status: 'BALANCE_DRAFT',
   },
   {
-    id: 'skill_bow_volley', name: 'Rajada da Trilha', description: 'Rajada de precisão contra o alvo escolhido.',
+    id: 'skill_bow_volley', name: 'Chuva de Flechas', description: 'Dispersão de flechas concentrada no alvo escolhido.',
     target: 'enemy', mpCost: 4, cooldownTurns: 3, damageDieSteps: 1,
     effects: [{ type: 'damage', powerBonus: 3 }],
     status: 'BALANCE_DRAFT',
