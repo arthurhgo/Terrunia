@@ -355,6 +355,7 @@ const battleSchema = z.object({
   canFlee: z.boolean(),
   consumedItemInstanceIds: z.array(idSchema),
   rngSeed: z.number().int(),
+  modularLootRollV05171:z.object({version:z.literal(1),seed:nonnegativeInteger,source:z.enum(['trail','wave']),sourceIndex:positiveInteger,itemIds:z.array(idSchema)}).optional(),
 })
 
 export const gameSaveSchema = z.object({

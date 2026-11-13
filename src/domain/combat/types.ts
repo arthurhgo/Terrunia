@@ -151,6 +151,7 @@ export type BattleState = {
   canFlee: boolean
   consumedItemInstanceIds: string[]
   rngSeed: number
+  modularLootRollV05171?:import('./modularLootV05171').ModularLootRollV05171
 }
 
 export type BattleCommand =

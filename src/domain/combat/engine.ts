@@ -4,6 +4,7 @@ import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/funga
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
 import { DEFENSE_RULES_V0517, COMMON_DEFENSE_SKILL_IDS_V0517, getWeaponAttackNamesV0517 } from '../../content/combatStylesV0517'
 import {CLASS_DISCIPLINE_SKILLS_V0517} from '../../content/classDisciplinesV0517'
+import {rollModularLootV05171} from './modularLootV05171'
 import { deriveOffhandCombatV0517, getDamageTypeV0517, applyLayeredProtectionV0517, getInitiativeModifiersV0517, getEffectiveInitiativeV0517 } from './layeredDefenseV0517'
 import {applyAffinityV0517,getScheduledEnemySkillV0517} from './combatTacticsV0517'
 import { nextCombatRandomSeed, rollSeededCombatDie } from './rng'
@@ -787,6 +788,13 @@ export const createBattle = (
       : {}),
   }
 
+  if(encounter.id!=='encounter_astravel_wave'){
+    const loot=rollModularLootV05171(save,state.id,state.rngSeed,encounter.trailNodeId,undefined,catalog)
+    if(loot){
+      state.modularLootRollV05171=loot
+      state.rewards.lootDefinitionIds.push(...loot.itemIds)
+    }
+  }
   addLog(state, `${encounter.name} bloqueia o avanço em Astravél.`, 'system')
   if (encounter.id === GRANITE_GOLEM_ENCOUNTER_ID)
     addLog(state, `Golem adaptado ao seu poder: +10% de Vida e Ataque, Defesa equivalente. Uma rocha é arremessada a cada três rodadas, com preparação antecipada.`, 'system')
