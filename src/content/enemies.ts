@@ -58,7 +58,7 @@ export const enemyDefinitions = ([
   // Reuse existing material families and never drop bound equipment.
   {
     id: 'enemy_fungorro_thornback', name: 'Fungorro Espinhal',
-    level: 2, maxHp: 10, mitigation: 1, attackPower: 3,
+    level: 2, maxHp: 10, mitigation: 1, attackPower: 3, initiativeDie:6,
     xpReward: 22, goldReward: 10, boundResonanceReward: 13,
     lootDefinitionIds: ['drop_fungal_nucleus'],
     skillIds: ['skill_enemy_thorn_pressure_v0517'], aiSkillEveryRounds: 3, aiArchetype:'breaker',damageResistances:{physical:0.1,fire:-0.15}, weaknessTags: ['light', 'fire'],
@@ -66,7 +66,7 @@ export const enemyDefinitions = ([
   },
   {
     id: 'enemy_spore_bulwark', name: 'Casco de Esporos',
-    level: 3, maxHp: 14, mitigation: 2, attackPower: 3,
+    level: 3, maxHp: 14, mitigation: 2, attackPower: 3, attackDie:6,
     xpReward: 34, goldReward: 15, boundResonanceReward: 19,
     lootDefinitionIds: ['drop_spore_chitin'],
     skillIds: [], aiArchetype:'brute',damageResistances:{physical:0.2,fire:-0.15},weaknessTags: ['fire', 'blunt'],
@@ -109,7 +109,7 @@ export const enemyDefinitions = ([
   },
   {
     id: 'enemy_fungal_slime', name: 'Bola de Gosma Fúngica',
-    level: 3, maxHp: 12, mitigation: 1, attackPower: 4,
+    level: 3, maxHp: 12, mitigation: 1, attackPower: 4, initiativeDie:6,
     xpReward: 50, goldReward: 11, boundResonanceReward: 18,
     lootDefinitionIds: ['drop_fungal_gel'],
     skillIds: [], aiArchetype:'skirmisher',damageResistances:{physical:0.1,fire:-0.2}, weaknessTags: ['light', 'fire'],

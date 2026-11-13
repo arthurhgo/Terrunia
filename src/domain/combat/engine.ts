@@ -4,7 +4,7 @@ import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/funga
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
 import { DEFENSE_RULES_V0517, COMMON_DEFENSE_SKILL_IDS_V0517, getWeaponAttackNamesV0517 } from '../../content/combatStylesV0517'
 import { deriveOffhandCombatV0517, getDamageTypeV0517, applyLayeredProtectionV0517, getInitiativeModifiersV0517, getEffectiveInitiativeV0517 } from './layeredDefenseV0517'
-import {applyAffinityV0517} from './combatTacticsV0517'
+import {applyAffinityV0517,getScheduledEnemySkillV0517} from './combatTacticsV0517'
 import { nextCombatRandomSeed, rollSeededCombatDie } from './rng'
 import type {
   CombatEffectDefinition,
@@ -203,12 +203,12 @@ const deriveEnemyCombatant = (
     attackPower: enemy.attackPower,
     mitigation: enemy.mitigation,
     initiative: Math.max(1, enemy.level + 3),
-    initiativeDie: 4, // BALANCE_DRAFT until each creature's initiative die is authored.
+    initiativeDie: enemy.initiativeDie??4, // BALANCE_DRAFT, source-driven
     alive: true,
     defending: false,
     skillIds: enemy.skillIds,
     // BALANCE_DRAFT: enemies without explicit dice currently use d4, not a new damage rule.
-    attackDie: 4,
+    attackDie: enemy.attackDie??4,
     statusEffects: [],
     // Firestore rejects undefined; enemies without a special skill omit this field.
     ...(enemy.aiSkillEveryRounds !== undefined
@@ -630,11 +630,7 @@ const resolveEnemyAction = (
     addLog(state, 'O Golem ergue uma rocha! Na próxima rodada ele vai arremessá-la. Use a habilidade BLOQUEIO ou APARAR e uma poção se necessário.', 'system')
     return
   }
-  const skillId =
-    actor.aiSkillEveryRounds && state.round % actor.aiSkillEveryRounds === 0
-      ? actor.skillIds[0]
-      : undefined
-  const skill = skillId ? catalog.combatSkills[skillId] : undefined
+  const skill=getScheduledEnemySkillV0517(state,actor,player,catalog)
   if (skill && actor.mp >= skill.mpCost && !(actor.skillCooldowns?.[skill.id] ?? 0) && validTarget(actor, player, skill.target)) {
     resolveSkill(state, actor, player, skill, catalog)
   } else {

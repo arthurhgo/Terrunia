@@ -113,6 +113,8 @@ export type EnemyDefinition = {
   lootDefinitionIds: string[]
   skillIds: string[]
   aiSkillEveryRounds?: number
+  attackDie?: import('../domain/game/types').AttributeDie
+  initiativeDie?: import('../domain/game/types').AttributeDie
   /** Tactical archetype is descriptive; attacks still execute via the battle FSM. */
   aiArchetype?: 'breaker' | 'caster' | 'controller' | 'skirmisher' | 'brute' | 'sentinel'
   /** Fraction absorbed (+) or amplified (-), capped to ±50%. BALANCE_DRAFT. */
