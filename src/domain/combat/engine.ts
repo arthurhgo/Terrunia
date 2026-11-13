@@ -143,7 +143,8 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
   const shieldDefinition=shieldInstance?catalog.boundItemBases[shieldInstance.baseItemId]:undefined
   // Do not count a bound shield's mitigation AGAIN as body armor: ESC/ARC are separate.
   const bodyMitigation=Math.max(0,stats.defense.value-(shieldDefinition?.statBonuses.mitigation??0))
-  const validClass=character.classProgression.classId && character.classProgression.masteryLevel>=1 && catalog.classes[character.classProgression.classId]?.clanId===character.clan.clanId
+  const classDefinition=character.classProgression.classId ? catalog.classes[character.classProgression.classId] : undefined
+  const validClass=classDefinition && character.classProgression.masteryLevel>=1 && classDefinition.clanId===character.clan.clanId && save.quests[classDefinition.trialQuestId]?.status==='completed'
   const classSkillId=validClass ? CLASS_DISCIPLINE_SKILLS_V0517[character.classProgression.classId!] : undefined
   const maxHp = stats.life.value
   const maxMp = stats.mana.value

@@ -34,6 +34,7 @@ describe('v0.5.17 — doze disciplinas de Classe (sem seleção no prólogo)',()
    save.character.clan.clanId=classDef.clanId
    save.character.classProgression.classId=classDef.id
    save.character.classProgression.masteryLevel=1
+   save.quests[classDef.trialQuestId].status='completed'
    const player=battleWith(save).combatants.combatant_player
    const id=CLASS_DISCIPLINE_SKILLS_V0517[classDef.id]
    expect(player.skillIds).toContain(id)
@@ -48,6 +49,8 @@ describe('v0.5.17 — doze disciplinas de Classe (sem seleção no prólogo)',()
   save.character.classProgression.masteryLevel=1
   expect(battleWith(save).combatants.combatant_player.skillIds).not.toContain(CLASS_DISCIPLINE_SKILLS_V0517[sample.id])
   save.character.clan.clanId=sample.clanId
+  expect(battleWith(save).combatants.combatant_player.skillIds).not.toContain(CLASS_DISCIPLINE_SKILLS_V0517[sample.id]) // missing completed trial
+  save.quests[sample.trialQuestId].status='completed'
   save.character.classProgression.masteryLevel=0
   expect(battleWith(save).combatants.combatant_player.skillIds).not.toContain(CLASS_DISCIPLINE_SKILLS_V0517[sample.id])
  })
