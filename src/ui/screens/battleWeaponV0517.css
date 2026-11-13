@@ -62,3 +62,22 @@
 .pixel-battle__defense-readout>span:last-child{border-color:#628abb;color:#a0d7ff}
 .pixel-battle__layer-log{display:block;margin:2px 0;padding:3px 4px;background:#15252c;color:#b6d0c8;border-left:2px solid #9e855a;font:10px/1.2 Georgia,serif}
 @media(max-height:650px){.pixel-battle__layer-log{display:none}.pixel-battle__defense-readout{font-size:9px}}
+
+/* v0.5.17 tactical pass: information only; never blocks real combat actions. */
+.pixel-battle__intent-list{display:grid;gap:3px;min-height:0;max-height:clamp(78px,14vh,126px);
+  overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;margin:5px 0;
+  padding:5px;border:1px solid #816b4c;background:#0d2128;font:10px/1.24 var(--display)}
+.pixel-battle__intent-list>strong{font:700 10px var(--display);letter-spacing:.04em;color:#f5d098}
+.pixel-battle__intent{display:grid;grid-template-columns:1fr;gap:2px;padding:4px;border-left:3px solid #b2915f;background:#203038}
+.pixel-battle__intent[data-aspect="arcane"],.pixel-battle__intent[data-aspect="ruin"]{border-left-color:#b282ee}
+.pixel-battle__intent[data-aspect="fire"]{border-left-color:#ee9056}
+.pixel-battle__intent[data-aspect="poison"]{border-left-color:#7ebd7e}
+.pixel-battle__intent b{color:#efdec0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pixel-battle__intent span{color:#a5cdda}
+.pixel-battle__intent small{color:#d2c0a1}
+.pixel-battle__damage-number[data-feedback="ESCUDO"],.pixel-battle__damage-number[data-feedback="ARMADURA"]{
+ color:#ffd891!important;text-shadow:1px 1px #141926,0 0 10px #ffc45c!important}
+.pixel-battle__damage-number[data-feedback="ABSORVIDO"]{
+ color:#9ed9ff!important;text-shadow:1px 1px #16152f,0 0 12px #4b9be7!important}
+@media(max-height:650px){.pixel-battle__intent-list{max-height:80px;font-size:9px}}
+@media(prefers-reduced-motion:reduce){.pixel-battle__damage-number{animation:none!important}}
