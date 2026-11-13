@@ -1,0 +1,31 @@
+.assembly-v05171{margin:12px 0;padding:10px;background:#142329;border:1px solid #a98e5b;color:#e9dfca;font-size:12px}
+.assembly-v05171__header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:9px}
+.assembly-v05171 h3,.assembly-v05171 h4{margin:0 0 6px;color:#e8c47c}
+.assembly-v05171 p{margin:4px 0 9px;line-height:1.4}
+.assembly-v05171 button,.assembly-v05171 select{border:1px solid #7a876f;border-radius:3px;padding:5px;background:#22343c;color:#f3ead9;cursor:pointer}
+.assembly-v05171 button:disabled{opacity:.52;cursor:not-allowed}
+.assembly-v05171 button[aria-pressed=true]{outline:2px solid #d9bb7c}
+.assembly-v05171__layout{display:grid;grid-template-columns:minmax(150px,1.1fr) minmax(190px,1.5fr) minmax(165px,1fr);gap:10px;max-height:45vh}
+.assembly-v05171__tray,.assembly-v05171__table,.assembly-v05171__preview{min-width:0;padding:8px;border:1px solid #536057;background:#101c24;overflow-y:auto}
+.assembly-v05171__tray label{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.assembly-v05171__stock{display:grid;gap:5px;margin-top:7px;max-height:30vh;overflow-y:auto}
+.assembly-v05171__stock button{display:flex;align-items:center;text-align:left;gap:6px}
+.assembly-v05171__stock img{width:34px;height:34px;object-fit:contain;image-rendering:pixelated}
+.assembly-v05171__stock small,.assembly-v05171__socket small{display:block;color:#becab6}
+.assembly-v05171__layers{height:100px;display:grid;place-items:center;background:radial-gradient(#2f3c49,#15262f);position:relative;margin-bottom:5px}
+.assembly-v05171__layers img{grid-area:1/1;height:90px;width:90px;object-fit:contain;image-rendering:pixelated}
+.assembly-v05171__sockets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.assembly-v05171__socket{min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.assembly-v05171__socket img{height:27px;width:27px;image-rendering:pixelated}
+.assembly-v05171__socket span{font-size:11px}
+.assembly-v05171__stats{display:grid;gap:4px;margin-bottom:10px}
+.assembly-v05171__stats span{padding:2px;background:#263e47}
+.assembly-v05171__warning{color:#edb77a}
+.assembly-v05171__preview>button{display:block;width:100%;margin:6px 0}
+.assembly-v05171__filters{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
+.assembly-v05171__market-stock{display:grid;grid-template-columns:repeat(auto-fill,minmax(126px,1fr));gap:6px;max-height:40vh;overflow-y:auto}
+.assembly-v05171__market-stock article{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:5px;padding:8px;border:1px solid #59665e;text-align:center;background:#1b2b30}
+.assembly-v05171__market-stock img{height:38px;width:38px;image-rendering:pixelated}
+.assembly-v05171__market-stock small{color:#c1cab8}
+@media(max-width:850px){.assembly-v05171__layout{grid-template-columns:1fr;max-height:60vh;overflow-y:auto}.assembly-v05171__stock{max-height:130px}.assembly-v05171__market-stock{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.assembly-v05171 *{transition:none!important;animation:none!important}}

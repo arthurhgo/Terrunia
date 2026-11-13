@@ -41,6 +41,7 @@ import { chooseClanCandidate as chooseClanCandidateDomain, chooseInitialClanSpel
 import { startClanTrialWave as prepareClanWave, claimClanTrialWave } from '../domain/progression/clanTrials'
 import { bindPrologueWeapon, createNewSave } from '../domain/game/createSave'
 import { prepareStarterWeapon } from '../domain/bond/starterWeaponPlan'
+import {commitAssemblyV05171,buyModularPartV05171} from '../domain/bond/weaponAssemblyV05171'
 import {performOffhandRiteV0517} from '../domain/bond/offhandRiteV0517'
 import { requestCampaignReset } from '../domain/game/campaignReset'
 import { ATTRIBUTE_IDS, type AttributeId, type GameSave } from '../domain/game/types'
@@ -140,6 +141,8 @@ type GameState = {
   receiveDaerynAid: () => void
   buyFromSylwen: (itemId: string, quantity?: number) => void
   forge: (recipeId: string) => void
+  assembleBoundModule:(boundItemId:string,partId:string)=>void
+  buyModularPart:(partId:string,quantity:number)=>void
   goldForge: (slot: BoundSlot) => void
   equipArmor: (instanceId: string | null) => void
   equipComplementary: (slot: ComplementarySlot, instanceId: string | null) => void
@@ -784,6 +787,23 @@ export const useGameStore = create<GameState>((set, get) => {
       if (!result.ok) return failAction(result.message)
       commit(result.value)
       show('Proteção aprimorada', 'A peça alcançou +1 e ganhou 1 de Defesa.', 'success')
+    },
+
+    assembleBoundModule:(boundItemId,partId)=>{
+      const save=get().save
+      if(!save)return
+      const result=commitAssemblyV05171(save,boundItemId,partId,content,nowIso())
+      if(!result.ok)return failAction(result.message)
+      commit(result.value)
+      show('Montagem concluída','Durnan atualizou a arma vinculada. Ataque, ESC, ARC e reações serão recalculados automaticamente.','success')
+    },
+    buyModularPart:(partId,quantity)=>{
+      const save=get().save
+      if(!save)return
+      const result=buyModularPartV05171(save,partId,quantity,content,nowIso())
+      if(!result.ok)return failAction(result.message)
+      commit(result.value)
+      show('Componente adquirido','A parte foi adicionada à mochila para a montagem em Durnan.','success')
     },
 
     forge: (recipeId) => {
