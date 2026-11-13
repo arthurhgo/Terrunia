@@ -281,18 +281,26 @@ const applyCombatEffects = (
     if (effect.type === 'damage') {
       const mode = target.defending ? target.activeDefense : undefined
       const stance = mode && actor.side !== target.side ? DEFENSE_RULES_V0517[mode] : null
+      const incoming=getAttackDeliveryV05171(actor,skill)
+      const applicable=Boolean(mode && stance && (mode==='dodge' ||
+        mode==='block'&&['melee','projectile'].includes(incoming) ||
+        (mode==='parry'||mode==='counter')&&incoming==='melee'))
       const defenseSides = mode ? target.defenseDice?.[mode] ?? 4 : 4
-      const defenseFace = stance ? rollCombatDie(state, defenseSides) : 0
-      const shieldBonus = stance?.usesShield && target.hasBoundShield ? 1 : 0
-      const duelistBonus = (mode === 'parry' || mode === 'counter') && target.combatProfile === 'duelist' ? 1 : 0
-      const archerBonus = mode==='dodge' && target.combatProfile==='archer' ? 1 : 0
-      const success = Boolean(stance && defenseFace + shieldBonus + duelistBonus + archerBonus >= stance.dc)
-      if (stance) addLog(state, target.name+' tenta '+stance.name+': d'+defenseSides+'='+defenseFace+
-        (shieldBonus ? ' +1 Escudo' : '')+(duelistBonus ? ' +1 Duelista' : '')+(archerBonus ? ' +1 Arqueiro' : '')+' contra '+stance.dc+' — '+(success?'SUCESSO':'FALHA')+'.', 'defense')
-      guardedBoulder = Boolean(target.defending && (!stance || success) && skill?.id === 'skill_granite_slam')
+      const defenseFace = applicable ? rollCombatDie(state, defenseSides) : 0
+      const outcome=mode&&stance?calculateDefenseReactionV05171(target,mode,defenseFace,incoming):undefined
+      const success=outcome?.success??false
+      if(stance) addLog(state,applicable
+        ? target.name+' tenta '+stance.name+': d'+defenseSides+'='+defenseFace+
+          (outcome?.shield?' +1 Escudo':'')+(outcome?.duelist?' +1 Duelista':'')+
+          (outcome?.archer?' +1 Arqueiro':'')+(outcome?.module?' +'+outcome.module+' Módulo':'')+
+          ' contra '+stance.dc+' — '+(success?'SUCESSO':'FALHA')+'.'
+        : target.name+' não pode usar '+stance.name+' contra '+incoming+'.',
+        'defense')
+      guardedBoulder = Boolean(target.defending && applicable && success && skill?.id === 'skill_granite_slam')
       const guardMitigation = stance
-        ? success ? stance.reduction + (mode === 'block' && target.hasBoundShield ? 1 : 0) : 0
-        : target.defending ? BALANCE.defendMitigation : 0
+        ? success ? stance.reduction + (mode === 'block' && target.hasBoundShield ? 1 : 0) +
+          (mode==='block'?(target.defenseModuleBonuses?.block??0):0) : 0
+        : target.defending && !mode ? BALANCE.defendMitigation : 0
       const appliedGuardMitigation = guardMitigation +
         (guardedBoulder ? GRANITE_GOLEM_BALANCE.throwBonusGuardMitigation : 0)
       const sides = selectDamageDie(actor, skill)
@@ -304,12 +312,13 @@ const applyCombatEffects = (
       // ARM only protects from physical blows. Magic first faces a depletable ARC ward.
       const armor=aspect==='physical' ? getEffectiveMitigation(target,catalog):0
       const basePower=getEffectiveAttackPower(actor,catalog)+bonusFace
-      const breakdown=calculateRolledDamage(basePower,armor,face,sides,effect.powerBonus,appliedGuardMitigation)
+      const skillPower=effect.powerBonus+(skill?.id==='skill_shield_bash_v05171'?(actor.shieldBashBonus??0)+1:0)
+      const breakdown=calculateRolledDamage(basePower,armor,face,sides,skillPower,appliedGuardMitigation)
       const unarmored=aspect==='physical'
-        ? calculateRolledDamage(basePower,0,face,sides,effect.powerBonus,appliedGuardMitigation).finalDamage
+        ? calculateRolledDamage(basePower,0,face,sides,skillPower,appliedGuardMitigation).finalDamage
         : breakdown.finalDamage
       const armorAbsorbed=Math.max(0,unarmored-breakdown.finalDamage)
-      if(success&&(mode==='parry'||mode==='dodge')){
+      if(success&&(mode==='parry'||mode==='dodge'&&incoming!=='area')){
         breakdown.guardPrevented+=breakdown.finalDamage
         breakdown.finalDamage=0
       }
@@ -327,7 +336,7 @@ const applyCombatEffects = (
       target.alive = target.hp > 0
       target.defending = false
       delete target.activeDefense
-      if (success && mode === 'counter' && target.alive && actor.alive && !isProtectedBoss(state,actor)) {
+      if (success && applicable && mode === 'counter' && target.alive && actor.alive && !isProtectedBoss(state,actor)) {
         const retaliation = Math.min(actor.hp,Math.max(1,Math.floor(getEffectiveAttackPower(target,catalog)*0.4)))
         actor.hp = Math.max(0,actor.hp-retaliation)
         actor.alive = actor.hp>0
