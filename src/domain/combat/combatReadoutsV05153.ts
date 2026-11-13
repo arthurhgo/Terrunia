@@ -16,3 +16,12 @@ export function getEnemyReadouts(enemy: Combatant, hero: Combatant, protectedBos
 export function getImpactReadout(damage: number, critical: boolean): 'CRÍTICO!' | 'SEM DANO' | 'ACERTO' {
   return critical && damage > 0 ? 'CRÍTICO!' : damage <= 0 ? 'SEM DANO' : 'ACERTO'
 }
+
+/** Visual feedback comes exclusively from an authoritative resolved hit. */
+export function getLayerImpactV0517(damage:number,critical:boolean,layers?:{shield?:number;armor?:number;arcane?:number}) {
+ if(damage>0)return critical?'CRÍTICO!':'ACERTO'
+ if((layers?.shield??0)>0)return 'ESCUDO'
+ if((layers?.arcane??0)>0)return 'ABSORVIDO'
+ if((layers?.armor??0)>0)return 'ARMADURA'
+ return 'SEM DANO'
+}

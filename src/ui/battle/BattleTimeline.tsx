@@ -1,6 +1,7 @@
 import { content } from '../../content/catalog'
 import type { CharacterAppearance } from '../../domain/character/appearance'
 import type { BattleState } from '../../domain/combat/types'
+import {getPredictedTurnOrderV0517} from '../../domain/combat/combatTacticsV0517'
 import { CharacterPortrait } from '../characters/CharacterSprite'
 import { AssetImage } from '../components/AssetImage'
 
@@ -20,6 +21,7 @@ export function BattleTimeline({ battle, playerAppearance, playerPortraitAssetId
   const rolled = battle.phase !== 'AwaitingInitiative'
   const currentId = activeActorId ?? battle.actorId
   const activeIndex = battle.initiativeOrder.indexOf(currentId)
+  const nextOrder=getPredictedTurnOrderV0517(battle,content)
   return <nav className="combat-timeline combat-timeline--portraits" aria-label="Linha do tempo do combate">
     <ol className="combat-timeline__actors" aria-label="Ordem de turnos">
       {battle.initiativeOrder.map((id, index) => {
@@ -49,5 +51,10 @@ export function BattleTimeline({ battle, playerAppearance, playerPortraitAssetId
         </li>
       })}
     </ol>
+    {nextOrder && <div className="combat-timeline__next-order" role="note" aria-label="Previsão da próxima ordem por status">
+      <strong>PRÓXIMA RODADA</strong>
+      <span>{nextOrder.map((id,index)=>(index+1)+'º '+(battle.combatants[id]?.name??id)).join(' · ')}</span>
+      <small>Previsão pelos status; não é uma nova rolagem.</small>
+    </div>}
   </nav>
 }
