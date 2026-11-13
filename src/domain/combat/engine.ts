@@ -4,6 +4,7 @@ import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/funga
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
 import { DEFENSE_RULES_V0517, COMMON_DEFENSE_SKILL_IDS_V0517, getWeaponAttackNamesV0517 } from '../../content/combatStylesV0517'
 import {CLASS_DISCIPLINE_SKILLS_V0517} from '../../content/classDisciplinesV0517'
+import {getModularDefenseBonusesV05171,getAttackDeliveryV05171,calculateDefenseReactionV05171} from './defensiveResolutionV05171'
 import {rollModularLootV05171} from './modularLootV05171'
 import { deriveOffhandCombatV0517, getDamageTypeV0517, applyLayeredProtectionV0517, getInitiativeModifiersV0517, getEffectiveInitiativeV0517 } from './layeredDefenseV0517'
 import {applyAffinityV0517,getScheduledEnemySkillV0517} from './combatTacticsV0517'
@@ -147,6 +148,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
   const classDefinition=character.classProgression.classId ? catalog.classes[character.classProgression.classId] : undefined
   const validClass=classDefinition && character.classProgression.masteryLevel>=1 && classDefinition.clanId===character.clan.clanId && save.quests[classDefinition.trialQuestId]?.status==='completed'
   const classSkillId=validClass ? CLASS_DISCIPLINE_SKILLS_V0517[character.classProgression.classId!] : undefined
+  const modularDefense=getModularDefenseBonusesV05171(save)
   const maxHp = stats.life.value
   const maxMp = stats.mana.value
 
@@ -173,8 +175,11 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     maxArcaneGuard: offhand.arcaneGuard + (offhand.clanDunavar ? 4 : offhand.style==='arcaneCaster' ? 3 : 0),
     hasBoundShield: offhand.kind === 'shield',
     defenseDice: {block:character.attributes.vigor.die,parry:character.attributes.agility.die,dodge:character.attributes.agility.die,counter:character.attributes.strength.die},
+    defenseModuleBonuses:{block:modularDefense.block,parry:modularDefense.parry,dodge:modularDefense.dodge,counter:modularDefense.counter},
+    shieldBashBonus:modularDefense.shieldBash,
     skillIds: [...new Set([
       ...COMMON_DEFENSE_SKILL_IDS_V0517,
+      ...(offhand.kind==='shield'?['skill_shield_bash_v05171']:[]),
       ...equipmentSkillIds, ...unlockedSkillIds,
       ...(offhand.style==='arcaneCaster'?['skill_caster_arcane_guard_v0517','skill_scepter_accelerate_v0517']:[]),
       ...(offhand.kind==='quiver'&&offhand.style==='archer'?['skill_quiver_focus_v0517']:[]),
