@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test'
 
 test('primeiro Vínculo mantém atributos e arsenal lado a lado em zoom 100%, inclusive janelas baixas', async ({ page }) => {
   test.setTimeout(60_000)
+  // This is a geometry test, not an animation test: disable motion so the CTA stays stable.
+  await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/login')
   await page.getByRole('button', { name: 'Continuar como convidado local' }).click()
   await page.getByPlaceholder('Ex.: Aron').fill('Lysa')
