@@ -42,7 +42,7 @@ export function deriveOffhandCombatV0517(save: GameSave, catalog: ContentCatalog
    kind==='quiver'?'Aljava Vinculada':'Mão secundária livre' }
 }
 
-export type DamageTypeV0517 = 'physical' | 'arcane' | 'fire' | 'poison' | 'ruin'
+export type DamageTypeV0517 = 'physical' | 'arcane' | 'fire' | 'water' | 'earth' | 'air' | 'poison' | 'ruin'
 export function getDamageTypeV0517(actor:Combatant, skill?:{damageAspect?:DamageTypeV0517;presentationGroup?:string}):DamageTypeV0517 {
  if(skill?.damageAspect)return skill.damageAspect
  if(skill?.presentationGroup==='magic'||MAGE_WEAPONS.has(actor.weaponArchetype??''))return 'arcane'

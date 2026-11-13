@@ -33,6 +33,12 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
+ ...(['fire','water','earth','air'] as const).map(element=>({
+   id:'skill.skill_modular_'+element+'_v05171',
+   path:'/assets/weapon-parts/v05171/skills/'+element+'.svg',
+   fallback:'/assets/placeholders/skill.svg',alt:'Habilidade elemental de '+element,
+   pixelArt:true,draftPlaceholder:true
+ })),
  ...weaponPartDefinitionsV05171.map(p=>({id:p.assetId,
    path:'/assets/weapon-parts/v05171/'+p.family+'/'+p.slot+'_t'+p.tier+'.svg',
    fallback:'/assets/placeholders/item.svg',alt:p.name,pixelArt:true,draftPlaceholder:true})),

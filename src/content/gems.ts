@@ -7,10 +7,15 @@ export const gemComponentDefinitions = [
    id:element==='earth'?'gema_terra_v05171':'gema_ar_v05171',
    name:element==='earth'?'Gema Telúrica':'Gema dos Ventos',
    description:element==='earth'?'Gema elemental de terra. Propriedades finais exigem OWNER_DECISION.':'Gema elemental de ar. Propriedades finais exigem OWNER_DECISION.',
-   rarity:'rare',tier:1,modifiers:[],activeEffectIds:[],skillTreeHooks:[],
+   rarity:'rare',tier:1,modifiers:element==='earth'?
+    [{type:'statModifier',stat:'mitigation',operation:'flat',value:1},
+     {type:'unlockSkill',skillId:'skill_modular_earth_v05171'}]:
+    [{type:'statModifier',stat:'initiative',operation:'flat',value:1},
+     {type:'unlockSkill',skillId:'skill_modular_air_v05171'}],
+   activeEffectIds:[],skillTreeHooks:[],
    affinityTags:[element],compatibility:{anyEssenceTags:[],blockedEssenceTags:[]},
    visualTags:[element],unique:false,
-   iconAssetId:'item.modular-gem-'+element,status:'CONTENT_DRAFT',mechanicsStatus:'OWNER_DECISION'
+   iconAssetId:'item.modular-gem-'+element,status:'CONTENT_DRAFT',mechanicsStatus:'BALANCE_DRAFT'
  })),
   {
     id: 'safira_mares',
@@ -18,7 +23,8 @@ export const gemComponentDefinitions = [
     description: 'Canaliza água, cura e resistência ao calor.',
     rarity: 'rare',
     tier: 1,
-    modifiers: [],
+    modifiers: [{type:'statModifier',stat:'mitigation',operation:'flat',value:1},
+      {type:'unlockSkill',skillId:'skill_modular_water_v05171'}],
     activeEffectIds: [],
     skillTreeHooks: [],
     affinityTags: ['water', 'healing', 'heat-resistance'],
@@ -27,7 +33,7 @@ export const gemComponentDefinitions = [
     unique: false,
     iconAssetId: 'gem.sapphire-tides',
     status: 'CANON',
-    mechanicsStatus: 'OWNER_DECISION',
+    mechanicsStatus: 'BALANCE_DRAFT',
   },
   {
     id: 'rubi_ira',
@@ -35,7 +41,8 @@ export const gemComponentDefinitions = [
     description: 'Canaliza força física, fogo e combustão.',
     rarity: 'rare',
     tier: 1,
-    modifiers: [],
+    modifiers: [{type:'statModifier',stat:'attackPower',operation:'flat',value:1},
+      {type:'unlockSkill',skillId:'skill_modular_fire_v05171'}],
     activeEffectIds: [],
     skillTreeHooks: [],
     affinityTags: ['fire', 'physical', 'burning'],
@@ -44,7 +51,7 @@ export const gemComponentDefinitions = [
     unique: false,
     iconAssetId: 'gem.ruby-wrath',
     status: 'CANON',
-    mechanicsStatus: 'OWNER_DECISION',
+    mechanicsStatus: 'BALANCE_DRAFT',
   },
   {
     id: 'esmeralda_crescimento',

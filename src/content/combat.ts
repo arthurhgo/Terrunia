@@ -7,6 +7,7 @@ import { CLAN_EMBLEM_ITEM_ID } from './clanProgressionV05142'
 import { defensiveSkillDefinitionsV0517, scepterExtraSkillDefinitionsV0517 } from './combatStylesV0517'
 import { extraCombatSkillsV0517, extraCombatStatusesV0517 } from './combatAdvancementsV0517'
 import {classDisciplineSkillDefinitionsV0517} from './classDisciplinesV0517'
+import {elementalGemSkillDefinitionsV05171} from './modularGemSkillsV05171'
 import type {
   CombatSkillDefinition,
   EncounterDefinition,
@@ -23,6 +24,7 @@ export const combatSkillDefinitions = [
   ...scepterExtraSkillDefinitionsV0517,
   ...extraCombatSkillsV0517,
   ...classDisciplineSkillDefinitionsV0517,
+  ...elementalGemSkillDefinitionsV05171,
   {
     id: 'skill_sentinel_arcane_pulse', name: 'Pulso Arcano Corrompido',
     description: 'A Sentinela dispara energia mágica de seu núcleo inorgânico.',
