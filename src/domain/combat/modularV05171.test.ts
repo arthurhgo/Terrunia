@@ -5,7 +5,7 @@ import {createBattle} from './engine'
 import {createWaveBattle} from './waves'
 import {rollModularLootV05171} from './modularLootV05171'
 import {getAttackDeliveryV05171,getDefenseChanceV05171,calculateDefenseReactionV05171,
- isDefenseApplicableV05171} from './defensiveResolutionV05171'
+ isDefenseApplicableV05171,applyAreaDodgeV05171} from './defensiveResolutionV05171'
 import {gameSaveSchema} from '../../persistence/saveSchema'
 import {astravelCombatNodes,astravelEncounterDefinitions} from '../../content/astravel'
 const NOW='2026-11-13T21:00:00Z'
@@ -64,4 +64,18 @@ describe('v0.5.17.1 — persistent drops and contextual skill reactions',()=>{
   const bow={...player,weaponArchetype:'bow'}
   expect(getAttackDeliveryV05171(bow)).toBe('projectile')
  })
+ it('a successful area dodge mitigates damage without granting immunity, while failure preserves damage',()=>{
+  for(const damage of [1,2,3,6,11,25]){
+   expect(applyAreaDodgeV05171(damage,true)).toBeGreaterThan(0)
+   expect(applyAreaDodgeV05171(damage,true)).toBeLessThanOrEqual(damage)
+   expect(applyAreaDodgeV05171(damage,false)).toBe(damage)
+  }
+  expect(applyAreaDodgeV05171(0,true)).toBe(0)
+  const battle=createBattle(setup(),content.encounters.encounter_fungorro_01,content,'dodge-area',{manualInitiative:true})
+  const actor=battle.combatants.combatant_player
+  expect(isDefenseApplicableV05171('dodge','area')).toBe(true)
+  expect(isDefenseApplicableV05171('parry','area')).toBe(false)
+  expect(calculateDefenseReactionV05171(actor,'dodge',1,'area').success).toBe(false)
+ })
+
 })
