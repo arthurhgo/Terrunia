@@ -113,7 +113,7 @@ describe('contratos de entrega de Terran', () => {
     for (const quest of collectionContractDefinitions) delete save.quests[quest.id]
     const oldQuests = structuredClone(save.quests)
     const migrated = migrateAndValidateSave(save)
-    expect(migrated.schemaVersion).toBe(17)
+    expect(migrated.schemaVersion).toBe(18)
     expect(migrated.wallet).toEqual(save.wallet)
     expect(migrated.inventory).toEqual(save.inventory)
     expect(migrated.character).toEqual(save.character)

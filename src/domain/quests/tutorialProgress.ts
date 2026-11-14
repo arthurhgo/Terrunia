@@ -5,19 +5,34 @@ import type { GameSave } from '../game/types'
 export function refreshTutorialQuestProgress(save: GameSave, catalog: ContentCatalog, now: string): GameSave {
   const armor = save.equippedBasicArmor?.instanceId === save.character.basicArmorInstanceId ? save.equippedBasicArmor : null
   let next: GameSave | undefined
+  const hasEvent=(prefix:string)=>save.eventLog.some(event=>event.startsWith(prefix))
   for (const definition of Object.values(catalog.quests)) {
-    if (!definition.id.startsWith('rosetta_tutorial_') || save.quests[definition.id]?.status !== 'active') continue
+    if (!(definition.id.startsWith('rosetta_tutorial_') || definition.id.startsWith('rosetta_modular_')) ||
+      save.quests[definition.id]?.status !== 'active') continue
     for (const objective of definition.objectives) {
       const met = objective.type === 'talk'
         ? save.eventLog.includes('MarketSpecialistTalk:'+objective.targetId)
         : objective.type === 'visit' ? (save.world.unlockedLocationIds.includes(objective.targetId) ||
           save.world.currentLocationId === objective.targetId ||
           (definition.id === 'rosetta_tutorial_equip' && (save.quests[definition.id].objectives.wear_armor ?? 0) >= 1))
-        : objective.type === 'purchase' ? save.eventLog.some((event) => event.startsWith('MarketPurchase:') && event.split(':')[2] === objective.targetId)
+        : objective.type === 'purchase' ? objective.targetId==='modular_part'
+          ? hasEvent('ModularPartPurchased:') : save.eventLog.some(event=>event.startsWith('MarketPurchase:') && event.split(':')[2]===objective.targetId)
+        : objective.type === 'collect' ? objective.targetId==='modular_part'&&hasEvent('ModularPartCollected:')
+        : objective.type === 'interact' ?
+          objective.targetId==='modular_defense'?hasEvent('ModularDefensePrepared')
+          :objective.targetId==='modular_attack'?hasEvent('ModularAttackCommitted')
+          :objective.targetId==='modular_shield_bash'?hasEvent('ModularShieldBashUsed')
+          :false
+        : objective.type === 'completeRite' ?
+          objective.targetId==='modular_grade_two'?Object.values(save.boundItems).some(item=>item.grade>=2)
+          :objective.targetId==='modular_grade_three'?Object.values(save.boundItems).some(item=>item.grade>=3)
+          :false
         : objective.type === 'equip' ? Boolean(save.character.bondedEquipment.armor || (armor && catalog.items[armor.definitionId]?.basicArmor &&
           (objective.targetId === 'basic_armor' || armor.definitionId === objective.targetId)))
-        : objective.type === 'refine' ? [...save.inventory, ...(save.equippedBasicArmor ? [save.equippedBasicArmor] : [])].some((item) => catalog.items[item.definitionId]?.basicArmor && (item.refinementLevel ?? 0) >= 1)
-          || save.eventLog.some((event) => event.startsWith('BasicArmorRefined:')) : false
+        : objective.type === 'refine' ? objective.targetId==='modular_weapon'
+          ? hasEvent('ModularAssembly:')
+          : [...save.inventory, ...(save.equippedBasicArmor ? [save.equippedBasicArmor] : [])].some(item=>catalog.items[item.definitionId]?.basicArmor && (item.refinementLevel??0)>=1)
+            || hasEvent('BasicArmorRefined:') : false
       if (!met || (save.quests[definition.id].objectives[objective.id] ?? 0) >= objective.required) continue
       next ??= structuredClone(save)
       next.quests[definition.id].objectives[objective.id] = objective.required

@@ -10,6 +10,7 @@ import { content } from '../../content/catalog'
 import { useGameStore } from '../../state/gameStore'
 import { AssetImage } from '../components/AssetImage'
 import './terranSpecialistShopV05153.css'
+import {ModularPartsShopV05171} from './ModularPartsShopV05171'
 
 type Stat = keyof typeof GEAR_STAT_LABELS
 const statOptions = Object.entries(GEAR_STAT_LABELS) as [Stat,string][]
@@ -25,15 +26,31 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
   const [query,setQuery]=useState('')
   const [slot,setSlot]=useState('all')
   const [stat,setStat]=useState<Stat|'all'>('all')
+  const [recommend,setRecommend]=useState('all')
   const [sort,setSort]=useState('catalog')
   const [hovered,setHovered]=useState<string|null>(null)
   const [inspected,setInspected]=useState<string|null>(null)
   const [viewMode,setViewMode]=useState<'list'|'grid'>('list')
+  const buildStyle=(offer:GearOffer)=>{
+    const cls=offer.recommendedClassId??offer.classId??''
+    if(['guardiao_das_inscricoes','gravador_das_sombras','astrologo_celestial','profeta_do_orbe','canalizador_do_caos','mago_da_ruina'].includes(cls))return {id:'MAGIA',label:'Magia · tecido arcano'}
+    if(['batedor_da_vigilia','cacador_de_constelacoes'].includes(cls))return {id:'ARCO',label:'Precisão · leve'}
+    if(['gladiador_da_barreira','sentinela_da_luz','guardador_da_ruptura'].includes(cls))return {id:'GUERRA',label:'Guerreiro · proteção'}
+    return {id:'VERSATIL',label:'Híbrido · utilidade'}
+  }
+  const currentPreference=(()=>{
+    const id=save.character.bondedEquipment.weapon
+    const weapon=id?content.boundItemBases[save.boundItems[id]?.baseItemId??'']:undefined
+    return ['arcaneFocus','staff','grimoire'].includes(weapon?.archetype??'')?'MAGIA':
+      weapon?.archetype==='bow'?'ARCO':
+      ['blade','axe','dagger'].includes(weapon?.archetype??'')?'GUERRA':'VERSATIL'
+  })()
   const buy=useGameStore(state=>state.buyGear)
   const buyAndEquip=useGameStore(state=>state.buyAndEquipGear)
   const merchant=TERRAN_GEAR_MERCHANTS[merchantId]
-  const stock=equipmentOffersV0515.filter(offer=>isTerranMerchantOffer(merchantId,offer))
+  const stock=equipmentOffersV0515.filter(offer=>offer.slot!=='weapon'&&isTerranMerchantOffer(merchantId,offer))
   const visible=stock.filter(offer=>
+    (recommend==='all'||(recommend==='build'?buildStyle(offer).id===currentPreference:buildStyle(offer).id===recommend)) &&
     (slot==='all'||offer.slot===slot) &&
     (stat==='all'||offer.stat===stat||offer.secondaryStat===stat) &&
     (query.trim()==='' ||
@@ -47,6 +64,7 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
   const inspect=inspectId?stock.find(offer=>offer.id===inspectId):undefined
   const comparison=inspect?previewCommercialEquip(save,itemPreview(inspect),content):null
 
+  if(merchantId==='presence_terran_weaponsmith')return <ModularPartsShopV05171 save={save}/>
   return <section className={'terran-specialist terran-specialist--'+merchant.tone}
     aria-label={'Loja do '+merchant.label}>
     <header>
@@ -60,6 +78,13 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
       <span>{save.wallet.gold} Ouro disponível</span>
     </div>
     <div className="terran-specialist__filters">
+      <label>Recomendado para
+        <select value={recommend} aria-label="Filtrar por estilo de personagem" onChange={e=>setRecommend(e.target.value)}>
+          <option value="all">Todos os estilos</option><option value="build">Minha arma atual</option>
+          <option value="MAGIA">Magia</option><option value="GUERRA">Guerreiro</option>
+          <option value="ARCO">Arqueiro</option><option value="VERSATIL">Híbrido</option>
+        </select>
+      </label>
       <label><Search size={13} /> Buscar
         <input type="search" aria-label="Buscar equipamentos pelo nome ou atributos"
           placeholder="Buscar item ou função" value={query} onChange={e=>setQuery(e.target.value)}/>
@@ -100,6 +125,8 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
         const owned=save.inventory.some(item=>item.definitionId===offer.id)
         const stored=save.baseStorage.some(item=>item.definitionId===offer.id)
         const profile=gearSetById[offer.setId]?.roleLabel
+        const suggestion=buildStyle(offer)
+        const suitable=suggestion.id===currentPreference
         const canWear=offer.slot!=='weapon'||Boolean(save.character.bondedEquipment.weapon)
         const canBuy=access.ok&&save.wallet.gold>=offer.price
         return <article key={offer.id} className="terran-specialist__offer" data-ownership={equipped?'equipped':owned?'backpack':stored?'storage':'new'}
@@ -116,7 +143,8 @@ export function TerranSpecialistShopV05153({save,merchantId}:{save:GameSave;merc
           <div className="terran-specialist__copy"
             onMouseEnter={()=>setHovered(offer.id)} onMouseLeave={()=>setHovered(null)}>
             <strong>{offer.name}</strong>
-            <small>Tier {offer.tier} · Grau 1 · {profile??'Equipamento comum'}</small>
+            <small className="terran-specialist__style" data-style={suggestion.id}>{suggestion.label}</small>
+            <small>{suitable?'★ Combina com sua arma atual · ':''}Tier {offer.tier} · Grau 1 · {profile??'Equipamento comum'}</small>
             <span>{formatGearStats(offer,1)}</span>
             <small className="terran-specialist__state">{equipped?'Equipado':owned?'Na mochila':stored?'No baú da Base':!access.ok?access.message:'Comum · Sem Clã ou Classe'}</small>
             {(equipped||owned||stored)&&<small className="terran-specialist__duplicate">Você já possui esta peça; confirme a necessidade de outra antes da compra.</small>}

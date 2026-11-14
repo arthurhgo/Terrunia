@@ -4,6 +4,7 @@ import { basicArmorItems } from './rosettaTutorial'
 import { complementaryItemDefinitions } from './complementaryItems'
 import { biomeMaterialDefinitions } from './biomeExpeditions'
 import { CLAN_EMBLEM_ITEM_ID } from './clanProgressionV05142'
+import {modularPartItemsV05171} from './modularWeaponsV05171'
 
 export const itemDefinitions = [
   {
@@ -36,6 +37,19 @@ export const itemDefinitions = [
   },
   ...complementaryItemDefinitions,
   ...gearItemDefinitionsV0515,
+  ...modularPartItemsV05171,
+  ...([
+    { id:'item_gem_rubi_ira_v05171',name:'Rubi da Ira · Fogo',component:'rubi_ira',tags:['fire','gem'],asset:'gem.ruby-wrath' },
+    { id:'item_gem_safira_mares_v05171',name:'Safira das Marés · Água',component:'safira_mares',tags:['water','gem'],asset:'gem.sapphire-tides' },
+    { id:'item_gem_terra_v05171',name:'Joia da Terra',component:'terra_v05171',tags:['earth','gem'],asset:'gem.earth-v05171' },
+    { id:'item_gem_ar_v05171',name:'Joia do Ar',component:'ar_v05171',tags:['air','gem'],asset:'gem.air-v05171' },
+  ] as const).map(gem=>({
+    id:gem.id,name:gem.name,description:'Joia elemental obtida nas trilhas e ondas. Somente o rito do Grau III permite instalá-la em um Vínculo.',
+    category:'gem' as const,rarity:'rare' as const,convertToEssence:false,essenceValue:0,
+    sellable:false,sellValue:0,questLocked:false,canInfuseBoundItem:false,
+    gemComponentId:gem.component,combatEffects:[],affinityTags:[...gem.tags],
+    iconAssetId:gem.asset,status:'BALANCE_DRAFT' as const
+  })),
   ...biomeMaterialDefinitions,
   { id: 'material_linen_thread', name: 'Linha de Linho', description: 'Linha resistente usada por Durnan para o primeiro reforço das proteções simples.',
     category: 'material', rarity: 'common', convertToEssence: false, essenceValue: 0, sellable: false, sellValue: 0,

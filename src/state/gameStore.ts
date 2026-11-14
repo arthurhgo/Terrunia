@@ -1,6 +1,8 @@
 import { enterBiomeTrail } from '../domain/exploration/biomeAccess'
 import { BACKPACK_UPGRADES, routeNewItemOverflow } from '../domain/inventory/backpacks'
 import { executeForgeRecipe, executeGoldForgeUpgrade } from '../domain/terran/forge'
+import {commitAssemblyV05171,purchaseModularPartV05171} from '../domain/terran/modularAssemblyV05171'
+import {modularPartById} from '../content/modularWeaponsV05171'
 import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmor'
 import { purchaseGear, equipGearStyle, refineCatalogGear } from '../domain/inventory/equipmentV0515'
 import { purchaseAndEquipGear, purchaseAndEquipStarterArmor } from '../domain/inventory/marketQuickEquipV05153'
@@ -140,6 +142,8 @@ type GameState = {
   receiveDaerynAid: () => void
   buyFromSylwen: (itemId: string, quantity?: number) => void
   forge: (recipeId: string) => void
+  assembleBoundPart:(slot:'weapon'|'shield',partId:string,revision:number)=>void
+  purchaseModularPart:(partId:string)=>void
   goldForge: (slot: BoundSlot) => void
   equipArmor: (instanceId: string | null) => void
   equipComplementary: (slot: ComplementarySlot, instanceId: string | null) => void
@@ -786,6 +790,23 @@ export const useGameStore = create<GameState>((set, get) => {
       show('Proteção aprimorada', 'A peça alcançou +1 e ganhou 1 de Defesa.', 'success')
     },
 
+    purchaseModularPart:(partId)=>{
+      const save=get().save
+      if(!save)return
+      const result=purchaseModularPartV05171(save,partId,content,nowIso())
+      if(!result.ok)return failAction(result.message)
+      commit(result.value)
+      show('Componente adquirido',content.items[partId].name+' guardado na Mochila para montar em Durnan.','success')
+    },
+    assembleBoundPart:(slot,partId,revision)=>{
+      const save=get().save
+      if(!save)return
+      const result=commitAssemblyV05171(save,slot,partId,content,nowIso(),revision)
+      if(!result.ok)return failAction(result.message)
+      commit(result.value)
+      show('Montagem concluída','O Vínculo original foi preservado. A ficha e o dano já usam os atributos novos.','success')
+    },
+
     forge: (recipeId) => {
       const save = get().save
       if (!save) return
@@ -879,7 +900,7 @@ export const useGameStore = create<GameState>((set, get) => {
     buyGearSet: (merchantId, setId) => {
       const setDefinition = gearSetById[setId]
       if (!setDefinition) return failAction('Kit não encontrado.')
-      get().buyGear(merchantId, setDefinition.itemIds)
+      get().buyGear(merchantId, setDefinition.itemIds.filter(id=>gearOfferById[id]?.slot!=='weapon'))
     },
 
     equipGearStyle: (slot, instanceId) => {
@@ -1176,9 +1197,29 @@ export const useGameStore = create<GameState>((set, get) => {
         else next.inventory.splice(index, 1)
         next.eventLog.push(`CombatItemConsumed:${instanceId}`)
       }
-      next.updatedAt = nowIso()
-      next.revision += 1
-      commit(next)
+      const now=nowIso()
+      // Quest progress comes only from an authoritative, accepted battle command.
+      let progressed=next
+      if(command.type==='skill'&&content.combatSkills[command.skillId]?.defenseStance){
+        progressed=applyQuestEvent(progressed,{type:'interact',targetId:'modular_defense'},content,now)
+        if(!progressed.eventLog.includes('ModularDefensePrepared'))progressed.eventLog.push('ModularDefensePrepared')
+      }
+      if(command.type==='skill'&&command.skillId==='skill_shield_bash_v05171'&&
+         progressed.character.bondedEquipment.shield&&
+         progressed.battle?.combatants.combatant_player.offhandKind==='shield'){
+        progressed=applyQuestEvent(progressed,{type:'interact',targetId:'modular_shield_bash'},content,now)
+        if(!progressed.eventLog.includes('ModularShieldBashUsed'))progressed.eventLog.push('ModularShieldBashUsed')
+      }
+      const currentWeaponId=progressed.character.bondedEquipment.weapon
+      if((command.type==='attack'||command.type==='areaAttack'||
+         (command.type==='skill'&&content.combatSkills[command.skillId]?.target==='enemy')) &&
+         currentWeaponId&&progressed.boundItems[currentWeaponId]?.assembly?.revision){
+        progressed=applyQuestEvent(progressed,{type:'interact',targetId:'modular_attack'},content,now)
+        if(!progressed.eventLog.includes('ModularAttackCommitted'))progressed.eventLog.push('ModularAttackCommitted')
+      }
+      progressed.updatedAt=now
+      progressed.revision+=1
+      commit(progressed)
     },
 
     claimBattleRewards: () => {
@@ -1278,6 +1319,10 @@ export const useGameStore = create<GameState>((set, get) => {
       }
       for (const item of loot) {
         next = applyQuestEvent(next, { type: 'collect', targetId: item.definitionId, amount: item.quantity }, content, acquiredAt)
+        if(modularPartById[item.definitionId]){
+          next.eventLog.push('ModularPartCollected:'+item.definitionId+':'+battle.id)
+          next=applyQuestEvent(next,{type:'collect',targetId:'modular_part',amount:item.quantity},content,acquiredAt)
+        }
       }
       for (const enemy of Object.values(battle.combatants).filter(
         (combatant) => combatant.side === 'enemy' && !combatant.alive,
@@ -1412,7 +1457,7 @@ export const useGameStore = create<GameState>((set, get) => {
         nowIso(),
       )
       if (!result.ok) return failAction(result.message)
-      commit(result.value)
+      commit(applyQuestEvent(result.value,{type:'completeRite',targetId:'modular_grade_two'},content,nowIso()))
       show(
         'Vínculo elevado ao Grau II',
         'A primeira Essência foi incorporada e um novo ramo da Skill Tree foi revelado.',
@@ -1431,7 +1476,7 @@ export const useGameStore = create<GameState>((set, get) => {
         nowIso(),
       )
       if (!result.ok) return failAction(result.message)
-      commit(result.value)
+      commit(applyQuestEvent(result.value,{type:'completeRite',targetId:'modular_grade_three'},content,nowIso()))
       show(
         'Vínculo elevado ao Grau III',
         'A primeira Joia foi lapidada, seus efeitos estão ativos e novos ramos foram revelados.',

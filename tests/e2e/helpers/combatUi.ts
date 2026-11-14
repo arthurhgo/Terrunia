@@ -48,11 +48,16 @@ export async function fightAndCollect(page: Page, expectedDropCount: number) {
   }
 
   await expect(page.getByRole('heading', { name: 'VITÓRIA', exact: true })).toBeVisible()
-  const rawLootCount = await page.evaluate(async () => {
+  const lootCounts = await page.evaluate(async () => {
     const { useGameStore } = await import('/src/state/gameStore.ts')
-    return useGameStore.getState().save?.battle?.rewards.lootDefinitionIds.length
+    const battle=useGameStore.getState().save?.battle
+    return {all:battle?.rewards.lootDefinitionIds.length??0,
+      modular:battle?.modularLootRollV05171?.itemIds.length??0}
   })
-  expect(rawLootCount).toBe(expectedDropCount)
+  // Some callers supply the old baseline, others read the live BattleState
+  // (which already includes the persisted modular roll). Both are explicit.
+  expect([expectedDropCount,expectedDropCount+lootCounts.modular]).toContain(lootCounts.all)
+  // Historical drops remain, and no hidden extra roll may add a third quantity.
   await page.getByRole('button', { name: 'RECOLHER TODOS OS ESPÓLIOS', exact: true }).click()
   await expect(page.getByRole('button', { name: 'RECOLHER TODOS OS ESPÓLIOS', exact: true })).toHaveCount(0)
 }

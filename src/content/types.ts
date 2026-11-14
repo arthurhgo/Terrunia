@@ -133,6 +133,7 @@ export type CombatSkillDefinition = {
   /** Player-facing category is explicit: never infer magic from the skill ID. */
   presentationGroup?: 'skills' | 'magic' | 'attack'
   /** BALANCE_DRAFT: reaction is rolled at incoming attack. */
+  attackDelivery?:import('../domain/combat/defensiveResolutionV05171').IncomingDeliveryV05171
   defenseStance?: import('./combatStylesV0517').DefenseModeV0517
   damageAspect?: import('../domain/combat/layeredDefenseV0517').DamageTypeV0517
   mpCost: number

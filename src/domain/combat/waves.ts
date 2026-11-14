@@ -3,6 +3,7 @@ import type { EncounterDefinition } from '../../content/types'
 import type { GameSave } from '../game/types'
 import type { BattleState } from './types'
 import { createBattle } from './engine'
+import {rollModularLootV05171} from './modularLootV05171'
 
 /** BALANCE_DRAFT — endless, deterministic enemy roster, no boss or story-node replay. */
 export const waveEncounter = (catalog: ContentCatalog, requestedWave: number): EncounterDefinition => {
@@ -58,5 +59,7 @@ export const createWaveBattle = (save: GameSave, catalog: ContentCatalog, wave: 
     enemy.mitigation += Math.floor((requested - 1) / 5)
   }
   battle.waveIndex = requested
+  const roll=rollModularLootV05171(save,battle.id,battle.rngSeed,battle.trailNodeId,requested,catalog)
+  if(roll){battle.modularLootRollV05171=roll;battle.rewards.lootDefinitionIds.push(...roll.itemIds)}
   return battle
 }

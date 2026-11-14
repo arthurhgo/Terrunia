@@ -62,7 +62,7 @@ describe('save versionado', () => {
     )
     const legacy = { ...save, schemaVersion: 0, eventLog: undefined }
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(17)
+    expect(migrated.schemaVersion).toBe(18)
     expect(migrated.character.name).toBe('Aron')
     expect(migrated.eventLog).toContain('SaveMigrated:0->1')
     expect(migrated.eventLog).toContain('SaveMigrated:1->2')
@@ -94,8 +94,8 @@ describe('save versionado', () => {
     delete legacy.quests.side_npc_durnan
     const before = structuredClone(legacy)
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(17)
-    expect(migrated.gameVersion).toBe('0.17.1')
+    expect(migrated.schemaVersion).toBe(18)
+    expect(migrated.gameVersion).toBe('0.5.17.1')
     expect(ids.map((id) => migrated.quests[id])).toEqual(ids.map((id) => before.quests[id]))
     expect(migrated.quests.vs_astravel_first_contact.status).toBe('completed')
     expect(migrated.quests.side_npc_neris.status).toBe('available')
@@ -137,7 +137,7 @@ describe('save versionado', () => {
       },
     }
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(17)
+    expect(migrated.schemaVersion).toBe(18)
     expect(migrated.wallet.gold).toBe(77)
     expect(migrated.world.trailNodeStates.astravel_luminous_02).toBe('current')
     expect(migrated.eventLog).toContain('SaveMigrated:1->2')
@@ -169,8 +169,8 @@ describe('save versionado', () => {
       },
     }
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(17)
-    expect(migrated.gameVersion).toBe('0.17.1')
+    expect(migrated.schemaVersion).toBe(18)
+    expect(migrated.gameVersion).toBe('0.5.17.1')
     expect(migrated.world.trailNodeStates.astravel_boss_preview).toBe('boss')
     expect(migrated.world.trailNodeStates.astravel_ruin_threshold_05).toBe('completed')
     expect(migrated.eventLog).toContain('SaveMigrated:2->3')
@@ -197,7 +197,7 @@ describe('save versionado', () => {
       schemaVersion: 3,
       gameVersion: '0.3.0',
     })
-    expect(migrated.schemaVersion).toBe(17)
+    expect(migrated.schemaVersion).toBe(18)
     expect(migrated.boundItems.bound_1.resonance).toBe(300)
     expect(migrated.inventory).toEqual(
       expect.arrayContaining([
@@ -226,7 +226,7 @@ describe('save versionado', () => {
     quests.vs_astravel_first_contact.status = 'active'
     delete quests.vs_astravel_first_contact.tracked
     const migrated = migrateAndValidateSave(legacy)
-    expect(migrated.schemaVersion).toBe(17)
+    expect(migrated.schemaVersion).toBe(18)
     expect(migrated.character.titleIds).toEqual([])
     expect(migrated.quests.vs_astravel_first_contact.tracked).toBe(true)
     expect(migrated.eventLog).toContain('SaveMigrated:4->5')

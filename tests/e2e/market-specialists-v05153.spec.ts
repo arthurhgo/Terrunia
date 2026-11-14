@@ -43,8 +43,14 @@ test('Mercado v0.5.15.3: Neris só vende consumíveis, 3 NPCs vendem peças ilus
     const save=useGameStore.getState().save!
     return save.inventory.some(i=>i.definitionId==='consumable_minor_tonic')
    })).toBe(true)
+  }else if(index===1){
+   const modular=dialog.getByLabel('Peças estruturais de arma · Torvan')
+   await expect(modular.locator('article')).toHaveCount(32)
+   await expect(modular.getByText(/Não vendemos armas completas/)).toBeVisible()
+   await expect(modular.getByRole('button',{name:/Comprar ·/}).first()).toBeEnabled()
+   await expect(dialog.getByRole('group',{name:'Conjuntos disponíveis'})).toHaveCount(0)
   }else{
-   const expected=[0,12,60,48][index]
+   const expected=[0,0,60,48][index]
    const list=dialog.getByLabel('Equipamentos individuais à venda')
    await expect(list.locator('article')).toHaveCount(expected)
    await expect(list.locator('article').first().locator('img')).toBeVisible()

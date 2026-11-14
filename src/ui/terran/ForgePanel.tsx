@@ -1,5 +1,6 @@
 import { gearOfferById } from '../../content/equipmentV0515'
 import { GearForgeV0515 } from './GearForgeV0515'
+import {WeaponAssemblyWorkbenchV05171} from './WeaponAssemblyWorkbenchV05171'
 import { Link } from 'react-router-dom'
 import type { GameSave } from '../../domain/game/types'
 import { content } from '../../content/catalog'
@@ -31,6 +32,7 @@ export function ForgePanel({ save, onClose, onQuest }: { save: GameSave; onClose
             <div><h3>{definition.name}{item.refinementLevel ? ' +1' : ''}</h3><small>{item.instanceId === save.equippedBasicArmor?.instanceId ? 'Equipada · ' : ''}{!permission.ok ? permission.message : 'Pronta para reforçar'}</small></div>
             <button type="button" disabled={!permission.ok} aria-label={`Aprimorar ${definition.name} para +1`} onClick={() => refine(item.instanceId)}>Aprimorar +1</button></article>
         })}</section>}
+      <WeaponAssemblyWorkbenchV05171 save={save}/>
       <GearForgeV0515 save={save} />
       <section className="forge-premium" aria-label="Melhorias permanentes em Ouro">
         <h3>Forja Magistral · Melhorias por Ouro</h3>

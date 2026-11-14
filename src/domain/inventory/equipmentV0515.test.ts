@@ -5,7 +5,7 @@ import { equipmentOffersV0515, equipmentSetsV0515, gearOfferById, getGearGrade }
 import { equipComplementaryItem } from './complementaryEquipment'
 import { createNewSave } from '../game/createSave'
 import { createBoundItem } from '../bond/boundItems'
-import { purchaseGear, checkGearAccess, equipGearStyle, refineCatalogGear, getGearBonuses, getSetPrice } from './equipmentV0515'
+import { purchaseGear, checkGearAccess, refineCatalogGear, getGearBonuses, getSetPrice } from './equipmentV0515'
 import { gameSaveSchema } from '../../persistence/saveSchema'
 
 const NOW='2026-11-09T18:00:00.000Z'
@@ -45,14 +45,14 @@ describe('v0.5.15 gear rules',()=>{
   const tierTwo=equipmentOffersV0515.find(o=>o.channel==='PUBLIC_TERRAN'&&o.tier===2&&o.slot==='armor')!
   const clan=equipmentOffersV0515.find(o=>o.channel==='CLAN_EXCLUSIVE')!
   expect(checkGearAccess(save,armor,'presence_terran_armorer')).toMatchObject({ok:true})
-  expect(checkGearAccess(save,weapon,'presence_terran_weaponsmith')).toMatchObject({ok:true})
+  expect(checkGearAccess(save,weapon,'presence_terran_weaponsmith')).toMatchObject({ok:false,code:'BOUND_WEAPON_ONLY'})
   expect(checkGearAccess(save,necklace,'presence_terran_accessory_artisan')).toMatchObject({ok:true})
-  for(const offer of [armor,weapon,necklace,tierTwo,clan]){
+  for(const offer of [armor,necklace,tierTwo,clan]){
     expect(checkGearAccess(save,offer,'presence_neris')).toMatchObject({ok:false,code:'GEAR_MERCHANT'})
   }
-  expect(checkGearAccess(save,weapon,'presence_terran_armorer')).toMatchObject({ok:false,code:'GEAR_MERCHANT'})
+  expect(checkGearAccess(save,weapon,'presence_terran_armorer')).toMatchObject({ok:false,code:'BOUND_WEAPON_ONLY'})
   expect(checkGearAccess(save,tierTwo,'presence_terran_armorer')).toMatchObject({ok:false,code:'GEAR_MERCHANT'})
-  expect(purchaseGear(save,[weapon.id],NOW,'presence_neris')).toMatchObject({ok:false,code:'GEAR_MERCHANT'})
+  expect(purchaseGear(save,[weapon.id],NOW,'presence_neris')).toMatchObject({ok:false,code:'BOUND_WEAPON_ONLY'})
  })
  it('uses the same castle merchant for all three classes while strictly enforcing the unlocked Class',()=>{
   const save=base()
@@ -111,10 +111,10 @@ describe('v0.5.15 gear rules',()=>{
   const cost=getSetPrice(set.id)
   expect(cost).toBeGreaterThan(0)
   expect(purchaseGear(save,set.itemIds,NOW,'presence_terran_armorer'))
-   .toMatchObject({ok:false,code:'GEAR_MERCHANT'})
-  for(const slot of ['weapon','armor','necklace'] as const){
+   .toMatchObject({ok:false,code:'BOUND_WEAPON_ONLY'})
+  for(const slot of ['armor','necklace'] as const){
     const offer=gearOfferById[set.itemIds.find(id=>gearOfferById[id].slot===slot)!]
-    const merchant=slot==='weapon'?'presence_terran_weaponsmith':slot==='armor'?
+    const merchant=slot==='armor'?
       'presence_terran_armorer':'presence_terran_accessory_artisan'
     const result=purchaseGear(save,[offer.id],NOW,merchant)
     expect(result.ok,slot).toBe(true)
@@ -171,7 +171,7 @@ describe('v0.5.15 gear rules',()=>{
   expect(refineCatalogGear(gradeThree.value,itemId,NOW)).toMatchObject({ok:false,code:'GEAR_FORGE_MAX'})
   expect(gradeThree.value.wallet.gold).toBe(paid.value.wallet.gold-offer.forgeG2-offer.forgeG3)
  })
- it('equips a new shell while retaining exactly the same bound item and soul memories',()=>{
+ it('rejects commercial weapon purchase while preserving permanent Bond and soul memories',()=>{
   const save=base()
   const baseWeapon=content.boundItemBases.bound_weapon_prologue_base
   const linked=createBoundItem(save.character.id,baseWeapon,NOW,'bond-v0515')
@@ -179,16 +179,12 @@ describe('v0.5.15 gear rules',()=>{
   linked.memories.push({id:'memory-v0515',type:'special',sourceId:'quest-example',title:'Memória',description:'Protegida',createdAt:NOW})
   save.boundItems[linked.id]=linked
   save.character.bondedEquipment.weapon=linked.id
+  const snapshot=structuredClone(save)
   const weapon=equipmentOffersV0515.find(o=>o.channel==='PUBLIC_TERRAN'&&o.slot==='weapon'&&o.tier===1)!
-  const purchased=purchaseGear(save,[weapon.id],NOW,'presence_terran_weaponsmith')
-  if(!purchased.ok)throw Error('missing weapon purchase')
-  const worn=equipGearStyle(purchased.value,purchased.value.inventory[0].instanceId,'weapon',NOW)
-  if(!worn.ok)throw Error('missing equip')
-  expect(worn.value.character.bondedEquipment.weapon).toBe(linked.id)
-  expect(worn.value.boundItems[linked.id]).toEqual(linked)
-  expect(worn.value.equippedGearStyles?.weapon?.definitionId).toBe(weapon.id)
-  expect(getGearBonuses(worn.value)[weapon.stat]).toBe(weapon.values[0])
-  expect(getGearBonuses(worn.value)[weapon.secondaryStat]).toBe(weapon.secondaryValues[0])
-  expect(gameSaveSchema.safeParse(worn.value).success).toBe(true)
+  expect(purchaseGear(save,[weapon.id],NOW,'presence_terran_weaponsmith')).toMatchObject({ok:false,code:'BOUND_WEAPON_ONLY'})
+  expect(save).toEqual(snapshot)
+  expect(save.boundItems[linked.id]).toEqual(linked)
+  expect(getGearBonuses(save)[weapon.stat]).toBe(0)
+  expect(gameSaveSchema.safeParse(save).success).toBe(true)
  })
 })
