@@ -28,7 +28,7 @@
 ## 3. Correções da consolidação
 
 1. **Compatibilidade de mão secundária:** `getAssemblyFamily` agora impede aplicar módulos de escudo físico à Aljava ou Protetor Arcano; o slot `shield` continua um único Vínculo permanente.
-2. **Dano sem contagem indevida:** bônus do módulo de escudo deixam de entrar em `primaryAttack` e nas técnicas da mão principal. O Golpe de Escudo continua a usar `shieldBashBonus` próprio.
+2. **Camadas sem contagem indevida:** bônus do módulo de escudo deixam de entrar em `primaryAttack` ou ARM do corpo. Sua proteção física alimenta somente ESC, via `deriveOffhandCombatV0517`. O Golpe de Escudo continua a usar `shieldBashBonus` próprio.
 3. **Prévia inequívoca:** forja apresenta Dano físico, Dano mágico, ARM, ESC, ARC, Iniciativa, Vida e Mana, com `Atual → Após` e delta explícito.
 4. **Teste de regressão:** incompatibilidade com Protetor Arcano/Aljava, isolamento de dano principal e bônus ofensivo do escudo.
 5. **Reação contra Área:** `applyAreaDodgeV05171` concentra uma regra parcial BALANCE_DRAFT (50% de dano retido), chamada em ataques direcionados com tipo Área e no ataque de área básico. Uma Esquiva bem-sucedida não gera imunidade a Área; Bloqueio/Aparar/Contragolpe não ganham elegibilidade contra Área. Teste de função pura e elegibilidade adicionados.
