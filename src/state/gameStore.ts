@@ -2,6 +2,7 @@ import { enterBiomeTrail } from '../domain/exploration/biomeAccess'
 import { BACKPACK_UPGRADES, routeNewItemOverflow } from '../domain/inventory/backpacks'
 import { executeForgeRecipe, executeGoldForgeUpgrade } from '../domain/terran/forge'
 import {commitAssemblyV05171,purchaseModularPartV05171} from '../domain/terran/modularAssemblyV05171'
+import {modularPartById} from '../content/modularWeaponsV05171'
 import { equipBasicArmor, refineBasicArmor } from '../domain/inventory/basicArmor'
 import { purchaseGear, equipGearStyle, refineCatalogGear } from '../domain/inventory/equipmentV0515'
 import { purchaseAndEquipGear, purchaseAndEquipStarterArmor } from '../domain/inventory/marketQuickEquipV05153'
@@ -1201,6 +1202,10 @@ export const useGameStore = create<GameState>((set, get) => {
       let progressed=next
       if(command.type==='skill'&&content.combatSkills[command.skillId]?.defenseStance)
         progressed=applyQuestEvent(progressed,{type:'interact',targetId:'modular_defense'},content,now)
+      if(command.type==='skill'&&command.skillId==='skill_shield_bash_v05171'&&
+         progressed.character.bondedEquipment.shield&&
+         progressed.battle?.combatants.combatant_player.offhandKind==='shield')
+        progressed=applyQuestEvent(progressed,{type:'interact',targetId:'modular_shield_bash'},content,now)
       const currentWeaponId=progressed.character.bondedEquipment.weapon
       if((command.type==='attack'||command.type==='areaAttack'||
          (command.type==='skill'&&content.combatSkills[command.skillId]?.target==='enemy')) &&
@@ -1308,6 +1313,10 @@ export const useGameStore = create<GameState>((set, get) => {
       }
       for (const item of loot) {
         next = applyQuestEvent(next, { type: 'collect', targetId: item.definitionId, amount: item.quantity }, content, acquiredAt)
+        if(modularPartById[item.definitionId]){
+          next.eventLog.push('ModularPartCollected:'+item.definitionId+':'+battle.id)
+          next=applyQuestEvent(next,{type:'collect',targetId:'modular_part',amount:item.quantity},content,acquiredAt)
+        }
       }
       for (const enemy of Object.values(battle.combatants).filter(
         (combatant) => combatant.side === 'enemy' && !combatant.alive,
@@ -1442,7 +1451,7 @@ export const useGameStore = create<GameState>((set, get) => {
         nowIso(),
       )
       if (!result.ok) return failAction(result.message)
-      commit(result.value)
+      commit(applyQuestEvent(result.value,{type:'completeRite',targetId:'modular_grade_two'},content,nowIso()))
       show(
         'Vínculo elevado ao Grau II',
         'A primeira Essência foi incorporada e um novo ramo da Skill Tree foi revelado.',
@@ -1461,7 +1470,7 @@ export const useGameStore = create<GameState>((set, get) => {
         nowIso(),
       )
       if (!result.ok) return failAction(result.message)
-      commit(result.value)
+      commit(applyQuestEvent(result.value,{type:'completeRite',targetId:'modular_grade_three'},content,nowIso()))
       show(
         'Vínculo elevado ao Grau III',
         'A primeira Joia foi lapidada, seus efeitos estão ativos e novos ramos foram revelados.',
