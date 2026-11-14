@@ -55,8 +55,10 @@ export const modularPartItemsV05171:ItemDefinition[]=modularPartsV05171.map(p=>(
 export type AssemblyBonuses=ModularPart['bonuses']
 export const EMPTY_ASSEMBLY_BONUSES:AssemblyBonuses={attack:0,mitigation:0,maxHp:0,maxMp:0,initiative:0}
 export function getAssemblyFamily(baseArchetype:string,slot:string):ModularFamily|undefined{
- if(slot==='shield')return 'shield'
- return MODULAR_FAMILIES.find(f=>f===baseArchetype)
+ // Only a physical Shield may receive physical shield modules. An Arcane
+ // Protector or Quiver occupies the same permanent axis but is not a shield.
+ if(slot==='shield')return baseArchetype==='shield'?'shield':undefined
+ return MODULAR_FAMILIES.find(f=>f!=='shield'&&f===baseArchetype)
 }
 export function getAssemblyBonuses(item?:BoundEquipmentInstance):AssemblyBonuses{
  const totals={...EMPTY_ASSEMBLY_BONUSES}
@@ -74,6 +76,7 @@ export function getEquippedAssemblyBonuses(save:GameSave){
  const weapon=save.character.bondedEquipment.weapon,shield=save.character.bondedEquipment.shield
  const main=getAssemblyBonuses(weapon?save.boundItems[weapon]:undefined)
  const off=getAssemblyBonuses(shield?save.boundItems[shield]:undefined)
- return {attack:main.attack+off.attack,mitigation:main.mitigation+off.mitigation,
+ // Offhand attack power belongs to explicit shield actions, not every main-hand attack.
+ return {attack:main.attack,mitigation:main.mitigation+off.mitigation,
   maxHp:main.maxHp+off.maxHp,maxMp:main.maxMp+off.maxMp,initiative:main.initiative+off.initiative}
 }
