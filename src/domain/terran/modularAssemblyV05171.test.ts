@@ -7,6 +7,7 @@ import {createBattle} from '../combat/engine'
 import {modularPartsV05171,getEquippedAssemblyBonuses} from '../../content/modularWeaponsV05171'
 import {createBoundItem} from '../bond/boundItems'
 import {deriveCharacterStats} from '../character/derivedStats'
+import {deriveOffhandCombatV0517} from '../combat/layeredDefenseV0517'
 const NOW='2026-11-13T20:00:00.000Z'
 function fixture(){
  const raw=createNewSave('forge-test','Terrírian','character.terririan.default',content,NOW,{saveId:'forge-test-save',characterId:'forge-test-character'})
@@ -108,7 +109,9 @@ describe('v0.5.17.1 — modular Bond protection',()=>{
   if(!preview.ok)return
   expect(preview.value.after.primaryAttack.value).toBe(before.primaryAttack.value)
   expect(preview.value.after.physicalAttack.value).toBe(before.physicalAttack.value)
-  expect(preview.value.after.defense.value).toBeGreaterThan(before.defense.value)
+  expect(preview.value.after.defense.value).toBe(before.defense.value)
+  expect(deriveOffhandCombatV0517(preview.value.afterSave,content).physicalGuard)
+    .toBeGreaterThan(deriveOffhandCombatV0517(save,content).physicalGuard)
   const applied=commitAssemblyV05171(save,'shield',part,content,NOW)
   expect(applied.ok).toBe(true)
   if(!applied.ok)return
@@ -116,6 +119,9 @@ describe('v0.5.17.1 — modular Bond protection',()=>{
   expect(getEquippedAssemblyBonuses(applied.value).attack).toBe(0)
   const combat=createBattle(applied.value,content.encounters.encounter_fungorro_01,content,'shield-test',{manualInitiative:true})
   expect(combat.combatants.combatant_player.attackPower).toBe(before.primaryAttack.value)
+  expect(combat.combatants.combatant_player.mitigation).toBe(before.defense.value-
+    (content.boundItemBases.bound_shield_round.statBonuses.mitigation??0))
+  expect(combat.combatants.combatant_player.physicalGuard).toBeGreaterThan(0)
   expect(combat.combatants.combatant_player.shieldBashBonus).toBeGreaterThan(0)
  })
 
