@@ -1200,17 +1200,23 @@ export const useGameStore = create<GameState>((set, get) => {
       const now=nowIso()
       // Quest progress comes only from an authoritative, accepted battle command.
       let progressed=next
-      if(command.type==='skill'&&content.combatSkills[command.skillId]?.defenseStance)
+      if(command.type==='skill'&&content.combatSkills[command.skillId]?.defenseStance){
         progressed=applyQuestEvent(progressed,{type:'interact',targetId:'modular_defense'},content,now)
+        if(!progressed.eventLog.includes('ModularDefensePrepared'))progressed.eventLog.push('ModularDefensePrepared')
+      }
       if(command.type==='skill'&&command.skillId==='skill_shield_bash_v05171'&&
          progressed.character.bondedEquipment.shield&&
-         progressed.battle?.combatants.combatant_player.offhandKind==='shield')
+         progressed.battle?.combatants.combatant_player.offhandKind==='shield'){
         progressed=applyQuestEvent(progressed,{type:'interact',targetId:'modular_shield_bash'},content,now)
+        if(!progressed.eventLog.includes('ModularShieldBashUsed'))progressed.eventLog.push('ModularShieldBashUsed')
+      }
       const currentWeaponId=progressed.character.bondedEquipment.weapon
       if((command.type==='attack'||command.type==='areaAttack'||
          (command.type==='skill'&&content.combatSkills[command.skillId]?.target==='enemy')) &&
-         currentWeaponId&&progressed.boundItems[currentWeaponId]?.assembly?.revision)
+         currentWeaponId&&progressed.boundItems[currentWeaponId]?.assembly?.revision){
         progressed=applyQuestEvent(progressed,{type:'interact',targetId:'modular_attack'},content,now)
+        if(!progressed.eventLog.includes('ModularAttackCommitted'))progressed.eventLog.push('ModularAttackCommitted')
+      }
       progressed.updatedAt=now
       progressed.revision+=1
       commit(progressed)
