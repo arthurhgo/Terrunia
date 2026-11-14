@@ -76,7 +76,9 @@ export function getEquippedAssemblyBonuses(save:GameSave){
  const weapon=save.character.bondedEquipment.weapon,shield=save.character.bondedEquipment.shield
  const main=getAssemblyBonuses(weapon?save.boundItems[weapon]:undefined)
  const off=getAssemblyBonuses(shield?save.boundItems[shield]:undefined)
- // Offhand attack power belongs to explicit shield actions, not every main-hand attack.
- return {attack:main.attack,mitigation:main.mitigation+off.mitigation,
+ // The physical shield's structural protection belongs to ESC, not body ARM.
+ // Its modules feed deriveOffhandCombatV0517, never both defense layers.
+ // Offhand attack power belongs to an explicit shield action, not main-hand attacks.
+ return {attack:main.attack,mitigation:main.mitigation,
   maxHp:main.maxHp+off.maxHp,maxMp:main.maxMp+off.maxMp,initiative:main.initiative+off.initiative}
 }
