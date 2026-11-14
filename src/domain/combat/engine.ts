@@ -4,7 +4,7 @@ import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/funga
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
 import { DEFENSE_RULES_V0517, COMMON_DEFENSE_SKILL_IDS_V0517, getWeaponAttackNamesV0517 } from '../../content/combatStylesV0517'
 import {CLASS_DISCIPLINE_SKILLS_V0517} from '../../content/classDisciplinesV0517'
-import {getModularDefenseBonusesV05171,getAttackDeliveryV05171,calculateDefenseReactionV05171} from './defensiveResolutionV05171'
+import {getModularDefenseBonusesV05171,getAttackDeliveryV05171,calculateDefenseReactionV05171,applyAreaDodgeV05171} from './defensiveResolutionV05171'
 import {rollModularLootV05171} from './modularLootV05171'
 import { deriveOffhandCombatV0517, getDamageTypeV0517, applyLayeredProtectionV0517, getInitiativeModifiersV0517, getEffectiveInitiativeV0517 } from './layeredDefenseV0517'
 import {applyAffinityV0517,getScheduledEnemySkillV0517} from './combatTacticsV0517'
@@ -321,6 +321,11 @@ const applyCombatEffects = (
       if(success&&(mode==='parry'||mode==='dodge'&&incoming!=='area')){
         breakdown.guardPrevented+=breakdown.finalDamage
         breakdown.finalDamage=0
+      } else if(success&&mode==='dodge'&&incoming==='area'){
+        // Area remains dangerous even after a successful reaction.
+        const reduced=applyAreaDodgeV05171(breakdown.finalDamage,true)
+        breakdown.guardPrevented+=breakdown.finalDamage-reduced
+        breakdown.finalDamage=reduced
       }
       const affinity=applyAffinityV0517(target,breakdown.finalDamage,aspect,catalog)
       const layer=applyLayeredProtectionV0517(target,affinity.damage,aspect,catalog)
@@ -495,7 +500,13 @@ const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,cata
   addPhase(state,'SelectingTarget');addPhase(state,'ResolvingAction')
   const sides=selectDamageDie(actor),face=rollCombatDie(state,sides)
   const bonusFace=actor.weaponBonusDie?rollCombatDie(state,actor.weaponBonusDie):0
-  const guard=target.defending?BALANCE.defendMitigation:0
+  const mode=target.defending?target.activeDefense:undefined
+  const areaDodge=mode==='dodge'?calculateDefenseReactionV05171(target,'dodge',
+    rollCombatDie(state,target.defenseDice?.dodge??4),'area'):undefined
+  if(mode) addLog(state,mode==='dodge'
+    ?target.name+' tenta Esquiva de área: '+(areaDodge?.success?'SUCESSO parcial':'FALHA')+'.'
+    :target.name+' não pode aplicar '+DEFENSE_RULES_V0517[mode].name+' contra ataque em área.','defense')
+  const guard=target.defending&&!mode?BALANCE.defendMitigation:0
   const aspect=getDamageTypeV0517(actor)
   const armor=aspect==='physical'?getEffectiveMitigation(target,catalog):0
   const rolled=calculateRolledDamage(getEffectiveAttackPower(actor,catalog)+bonusFace,
@@ -504,7 +515,8 @@ const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,cata
   const protectedBossId=state.bossMechanics && isProtectedBoss(state,state.combatants[state.bossMechanics.bossId])
     ? state.bossMechanics.bossId : undefined
   const areaPower=Math.max(1,Math.floor(rolled.finalDamage*0.6))
-  const affinity=applyAffinityV0517(target,areaPower,aspect,catalog)
+  const afterDodge=applyAreaDodgeV05171(areaPower,Boolean(areaDodge?.success))
+  const affinity=applyAffinityV0517(target,afterDodge,aspect,catalog)
   const protection=applyLayeredProtectionV0517(target,affinity.damage,aspect,catalog)
   const centerDamage=Math.min(target.hp,protection.hpDamage)
   target.hp=Math.max(0,target.hp-centerDamage);target.alive=target.hp>0;target.defending=false
