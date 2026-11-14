@@ -30,11 +30,12 @@
 1. **Compatibilidade de mão secundária:** `getAssemblyFamily` agora impede aplicar módulos de escudo físico à Aljava ou Protetor Arcano; o slot `shield` continua um único Vínculo permanente.
 2. **Dano sem contagem indevida:** bônus do módulo de escudo deixam de entrar em `primaryAttack` e nas técnicas da mão principal. O Golpe de Escudo continua a usar `shieldBashBonus` próprio.
 3. **Prévia inequívoca:** forja apresenta Dano físico, Dano mágico, ARM, ESC, ARC, Iniciativa, Vida e Mana, com `Atual → Após` e delta explícito.
-4. **Testes de regressão:** casos para incompatibilidade com Protetor Arcano/Aljava e efeitos independentes de ataque e defesa do escudo.
+4. **Teste de regressão:** incompatibilidade com Protetor Arcano/Aljava, isolamento de dano principal e bônus ofensivo do escudo.
+5. **Reação contra Área:** `applyAreaDodgeV05171` concentra uma regra parcial BALANCE_DRAFT (50% de dano retido), chamada em ataques direcionados com tipo Área e no ataque de área básico. Uma Esquiva bem-sucedida não gera imunidade a Área; Bloqueio/Aparar/Contragolpe não ganham elegibilidade contra Área. Teste de função pura e elegibilidade adicionados.
 
 ## 4. Pendências P0 antes de declarar a v0.5.17.1 completa
 
-- **Regra de reação em área:** `resolveAreaAttack` usa a proteção genérica `defending`, mas não chama a mesma rolagem de Esquiva/Bloqueio do caminho de dano direcionado; uniformizar o tratamento, usando regra de mitigação parcial para Área definida e testada.
+- **Área — QA de integração:** a aplicação parcial de Esquiva foi adicionada ao motor com fator configurável BALANCE_DRAFT; validar a rodada visual no navegador, efeitos de Área multialvo, cooldown, dano crítico e comportamento com ARM/ESC/ARC antes de aprovar o balanço.
 - **Economia/drops:** a rotina atual garante uma peça a cada batalha, com Tier por índice, sem catálogo completo de matéria-prima/proveniência, pesos e `firstClearOnly` por fonte. Especificar limites de repetição e proteger os primeiros clears antes de aprovar a economia.
 - **Rosetta:** a cadeia atual ensina compra e montagem; faltam os passos de coleta contextualizada, leitura explícita de stats, rito opcional Grau II, rito opcional Grau III e ação ofensiva específica do escudo previstos no plano. Nenhum tutorial deve exigir sorteio ou desbloqueio prematuro de Joias/Essências.
 - **Idempotência e segurança:** estender testes para duplo clique/repetição após refresh, salvamento concorrente local/cloud, inventário lotado, componentes protegidos e migração de estilo comercial legado; rollback/backup antes de primeira gravação do schema 18.
