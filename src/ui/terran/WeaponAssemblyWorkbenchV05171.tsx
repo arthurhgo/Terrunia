@@ -1,8 +1,9 @@
 import {useMemo,useState,type DragEvent} from 'react'
 import type {GameSave} from '../../domain/game/types'
-import {MODULAR_SLOTS,modularPartById,modularPartsV05171,type ModularSlot} from '../../content/modularWeaponsV05171'
+import {MODULAR_SLOTS,modularPartById,modularPartsV05171,getAssemblyFamily,type ModularSlot} from '../../content/modularWeaponsV05171'
 import {buildAssemblyPreviewV05171,getCurrentBoundAssemblyV05171} from '../../domain/terran/modularAssemblyV05171'
 import {content} from '../../content/catalog'
+import {deriveOffhandCombatV0517} from '../../domain/combat/layeredDefenseV0517'
 import {useGameStore} from '../../state/gameStore'
 import {AssetImage} from '../components/AssetImage'
 import './modularV05171.css'
@@ -10,7 +11,7 @@ import './modularV05171.css'
 const NAMES:Record<ModularSlot,string>={
  body:'1 · Corpo',handle:'2 · Empunhadura',coreHousing:'3 · Núcleo estrutural',focusMount:'4 · Encaixe da joia'
 }
-const STATS=[['primaryAttack','Dano'],['defense','Defesa'],['life','Vida máxima'],['mana','Mana máxima'],['initiative','Iniciativa']] as const
+const STATS=[['physicalAttack','Dano físico'],['magicalAttack','Dano mágico'],['defense','ARM · Armadura'],['initiative','Iniciativa'],['life','Vida máxima'],['mana','Mana máxima']] as const
 export function WeaponAssemblyWorkbenchV05171({save}:{save:GameSave}){
  const forge=useGameStore(state=>state.assembleBoundPart)
  const [slot,setSlot]=useState<'weapon'|'shield'>('weapon')
@@ -18,13 +19,22 @@ export function WeaponAssemblyWorkbenchV05171({save}:{save:GameSave}){
  const [selected,setSelected]=useState<string|null>(null)
  const bound=getCurrentBoundAssemblyV05171(save,slot)
  const currentFamily=bound?content.boundItemBases[bound.baseItemId]?.archetype:undefined
- const family=slot==='shield'?'shield':currentFamily
+ const family=bound?getAssemblyFamily(currentFamily??'',slot):undefined
  const available=modularPartsV05171.filter(p=>p.family===family&&p.partSlot===focus&&
   save.inventory.some(i=>i.definitionId===p.id&&i.quantity>0&&!i.locked&&!i.favorite))
  const permitted=selected?available.some(p=>p.id===selected):false
  const preview=useMemo(()=>permitted&&selected?buildAssemblyPreviewV05171(save,slot,selected,content,save.updatedAt):null,
   [save,slot,selected,permitted])
  const selectedPart=selected?modularPartById[selected]:undefined
+ // ESC and ARC are combat offhand protections, distinct from ARM mitigation.
+ // Show unchanged zero deltas too: never imply that an unapproved module
+ // raises a defense layer just because its sprite contains a magical socket.
+ const guardBefore=deriveOffhandCombatV0517(save,content)
+ const guardAfter=preview?.ok?deriveOffhandCombatV0517(preview.value.afterSave,content):guardBefore
+ const extraStats=[
+  {label:'ESC · Escudo físico',before:guardBefore.physicalGuard,after:guardAfter.physicalGuard},
+  {label:'ARC · Proteção arcana',before:guardBefore.arcaneGuard,after:guardAfter.arcaneGuard},
+ ]
  const onDrop=(event:DragEvent<HTMLElement>,target:ModularSlot)=>{
   event.preventDefault()
   const id=event.dataTransfer.getData('application/x-terrunia-part')
@@ -39,6 +49,7 @@ export function WeaponAssemblyWorkbenchV05171({save}:{save:GameSave}){
     onClick={()=>{setSlot(s);setSelected(null);setFocus('body')}}>{s==='weapon'?'Arma':'Escudo / Protetor'}</button>)}
   </div>
   {!bound?<p>Obtenha o Vínculo permanente deste slot para abrir a bancada.</p>:
+   !family?<p>Este Vínculo é um Protetor Arcano ou Aljava. Ele mantém seu próprio sistema de evolução; módulos de escudo físico não são compatíveis.</p>:
    <div className="modular-bench__layout">
     <div className="modular-bench__trays">
      <h4>Recipientes de componentes</h4>
@@ -85,6 +96,10 @@ export function WeaponAssemblyWorkbenchV05171({save}:{save:GameSave}){
       return <div key={key} className="modular-bench__delta"><span>{label}</span><strong>{before} → {after}</strong>
        <small>{after-before>=0?'+':''}{after-before}</small></div>
      }):<p>{preview&&!preview.ok?preview.message:'Selecione uma peça para comparar dano e proteção.'}</p>}
+     {preview?.ok?extraStats.map(stat=><div key={stat.label} className="modular-bench__delta">
+      <span>{stat.label}</span><strong>{stat.before} → {stat.after}</strong>
+      <small>{stat.after-stat.before>=0?'+':''}{stat.after-stat.before}</small>
+     </div>):null}
      <strong>Forja: {preview?.ok?preview.value.price:0} Ouro</strong>
      <button type="button" disabled={!preview?.ok||!selected}
       onClick={()=>{if(selected){forge(slot,selected,save.revision);setSelected(null)}}}>Confirmar montagem</button>
