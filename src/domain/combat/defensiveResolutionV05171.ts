@@ -6,6 +6,12 @@ import type {GameSave} from '../game/types'
 import {modularPartById} from '../../content/modularWeaponsV05171'
 
 export type IncomingDeliveryV05171='melee'|'projectile'|'arcane'|'area'
+/** BALANCE_DRAFT: area damage cannot be dodged entirely. Tune only after playtesting. */
+export const AREA_DODGE_RETAINED_FRACTION_V05171=0.5
+export function applyAreaDodgeV05171(damage:number,successfulDodge:boolean):number{
+ const safe=Math.max(0,Math.floor(damage))
+ return successfulDodge ? Math.ceil(safe*AREA_DODGE_RETAINED_FRACTION_V05171) : safe
+}
 const allowed:Record<DefenseModeV0517,IncomingDeliveryV05171[]>={
  block:['melee','projectile'],parry:['melee'],dodge:['melee','projectile','arcane','area'],counter:['melee']
 }
