@@ -20,7 +20,7 @@
 | Forja | `WeaponAssemblyWorkbenchV05171.tsx` e `ForgePanel.tsx`: seleção/drag-and-drop, renderização de camadas, confirmação, mantendo serviços antigos | Implementado; UX e arte VISUAL_DRAFT |
 | Dano e defesa | `derivedStats.ts`, `engine.ts`, `defensiveResolutionV05171.ts`: atributos derivados e Bloqueio/Aparar/Esquiva/Contragolpe; Golpe de Escudo explícito | Implementado; balanço BALANCE_DRAFT |
 | Drops | `modularLootV05171.ts`, `waves.ts` e `engine.ts`: roll determinístico no estado da batalha, com partes adicionadas ao loot original nas 15 trilhas e Ondas | Implementado; tabelas e limites econômicos pendentes |
-| Rosetta | Cinco missões `rosetta_modular_*_v05171` em `rosettaTutorial.ts`, atreladas a compra/forja/defesa/combate | Implementado parcialmente frente ao plano completo |
+| Rosetta | Cinco missões de forja e quatro aulas opcionais de coleta, Grau II, Grau III e Golpe de Escudo; os objetivos usam evidências de ações reais, com reconciliação após reload | Implementado; fluxo E2E completo pendente |
 | Gems | Fogo, Água, Terra e Ar catalogados, com acesso condicionado ao rito de Grau III | Conteúdo BALANCE_DRAFT |
 | Save | Schema 18 e migração 17→18; mantenimento do ID dos Vínculos e preservação de revestimentos legados | Implementado; falta teste de sync/rollback completo |
 | Assets | 160 SVGs de partes, sistema de ID/registry e fallback | VISUAL_DRAFT, não arte final |
@@ -32,12 +32,13 @@
 3. **Prévia inequívoca:** forja apresenta Dano físico, Dano mágico, ARM, ESC, ARC, Iniciativa, Vida e Mana, com `Atual → Após` e delta explícito.
 4. **Teste de regressão:** incompatibilidade com Protetor Arcano/Aljava, isolamento de dano principal e bônus ofensivo do escudo.
 5. **Reação contra Área:** `applyAreaDodgeV05171` concentra uma regra parcial BALANCE_DRAFT (50% de dano retido), chamada em ataques direcionados com tipo Área e no ataque de área básico. Uma Esquiva bem-sucedida não gera imunidade a Área; Bloqueio/Aparar/Contragolpe não ganham elegibilidade contra Área. Teste de função pura e elegibilidade adicionados.
+6. **Rosetta estendida:** quatro lições opcionais não bloqueantes para coleta real de peças de drop, rito do Grau II, rito do Grau III e Golpe de Escudo. Registro de eventos é idempotente para evidência de combate; `refreshTutorialQuestProgress` evita confundir refino de armadura com montagem de arma e reconhece progressão já concluída sem dar recompensas retroativas duplicadas.
 
 ## 4. Pendências P0 antes de declarar a v0.5.17.1 completa
 
 - **Área — QA de integração:** a aplicação parcial de Esquiva foi adicionada ao motor com fator configurável BALANCE_DRAFT; validar a rodada visual no navegador, efeitos de Área multialvo, cooldown, dano crítico e comportamento com ARM/ESC/ARC antes de aprovar o balanço.
 - **Economia/drops:** a rotina atual garante uma peça a cada batalha, com Tier por índice, sem catálogo completo de matéria-prima/proveniência, pesos e `firstClearOnly` por fonte. Especificar limites de repetição e proteger os primeiros clears antes de aprovar a economia.
-- **Rosetta:** a cadeia atual ensina compra e montagem; faltam os passos de coleta contextualizada, leitura explícita de stats, rito opcional Grau II, rito opcional Grau III e ação ofensiva específica do escudo previstos no plano. Nenhum tutorial deve exigir sorteio ou desbloqueio prematuro de Joias/Essências.
+- **Rosetta — QA end-to-end:** novas aulas opcionais existem, mas é preciso provar navegação completa Rosetta → Torvan/Trilhas → Durnan → combates → ritos → Rosetta; verificar visibilidade no diário, contexto narrativo e indicadores de mapa, sem sorteio obrigatório ou Joia prematura. A comparação de atributos ainda requer orientação visual contextual na interface.
 - **Idempotência e segurança:** estender testes para duplo clique/repetição após refresh, salvamento concorrente local/cloud, inventário lotado, componentes protegidos e migração de estilo comercial legado; rollback/backup antes de primeira gravação do schema 18.
 - **Apresentação visual:** sprites são SVGs funcionais, não pixel-art final; confirmar qualidade das 8 famílias e sobreposição das 4 camadas (em todos os Tiers), animação de forja e viewport 1366×768.
 - **Matriz E2E de jogabilidade:** iniciar Terrírian cru, obter vínculo, receber instrução de Rosetta, comprar e instalar peça, verificar ataque real e ESC, vencer encontro, recolher drop só uma vez, recarregar save sem perder estrutura. Repetir para Aljava e Protetor Arcano (deve rejeitar módulos físicos), além de legado do schema 17.
