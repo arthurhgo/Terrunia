@@ -136,6 +136,13 @@ test('Rosetta → Torvan → Durnan: montagem real, camadas visuais, navegação
     document.documentElement.scrollWidth>window.innerWidth+2
   })
   expect(outside,'Horizontal forge overflow at '+w+'x'+h).toBe(false)
+  const narrative=await forge.evaluate(dialog=>{
+   const speech=dialog.querySelector('.vn-conversation')?.getBoundingClientRect()
+   const details=dialog.querySelector('.vn-details')?.getBoundingClientRect()
+   return {height:speech?.height??0,overlap:Boolean(speech&&details&&speech.bottom>details.top+1)}
+  })
+  expect(narrative.height,'Durnan dialogue must remain readable at '+w+'x'+h).toBeGreaterThanOrEqual(110)
+  expect(narrative.overlap,'Durnan dialogue must not overlap forge at '+w+'x'+h).toBe(false)
   await page.screenshot({path:testInfo.outputPath('forge-'+w+'x'+h+'.png')})
  }
  await page.setViewportSize({width:1366,height:768})
