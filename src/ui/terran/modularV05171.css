@@ -16,13 +16,51 @@
 .modular-bench__parts{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:5px 0;max-height:180px;overflow:auto}
 .modular-bench__parts button{display:grid;justify-items:center;gap:3px;max-width:100%;font-size:10px}
 .modular-bench__sprite{position:relative;margin:auto;width:clamp(105px,14vw,180px);aspect-ratio:1;display:grid;place-items:center;background:radial-gradient(#395057,#121d2c)}
-.modular-bench__sprite>img:first-child{width:80%;height:80%;object-fit:contain;image-rendering:pixelated}
-.modular-bench__layer{position:absolute;max-width:32%;max-height:32%;image-rendering:pixelated;filter:drop-shadow(1px 2px 2px #000)}
-.modular-bench__layer--body{left:6%;top:8%}.modular-bench__layer--handle{right:7%;bottom:9%}
-.modular-bench__layer--coreHousing{left:6%;bottom:8%}.modular-bench__layer--focusMount{right:7%;top:8%}
+/* Every SVG occupies the SAME 16x16 coordinate system: compose in-place,
+ * not as four unrelated icon thumbnails scattered around the corners. */
+.modular-bench__sprite>img:first-child{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;opacity:.20}
+.modular-bench__layer{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(1px 2px 2px #000)}
+.modular-bench__layer--body{z-index:1}.modular-bench__layer--handle{z-index:2}
+.modular-bench__layer--coreHousing{z-index:3}.modular-bench__layer--focusMount{z-index:4}
+.modular-bench__sprite.is-forged{animation:modular-forge-commit .7s ease-out both}
+@keyframes modular-forge-commit {
+  0%{filter:brightness(1.65) drop-shadow(0 0 12px #f1d48e);transform:scale(1.06)}
+  60%{filter:brightness(1.15) drop-shadow(0 0 6px #cea45b);transform:scale(1)}
+  100%{filter:none;transform:scale(1)}
+}
 .modular-bench__sockets{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0}
 .modular-bench__sockets button{min-width:0;text-align:left;overflow-wrap:anywhere}
 .modular-bench__sockets small{display:block}.modular-bench__delta{display:flex;gap:6px;justify-content:space-between;padding:3px;border-bottom:1px solid #56605b}
 .modular-bench__stats button{width:100%;margin-top:6px}
 @media(max-width:900px){.modular-bench__layout{grid-template-columns:1fr}.modular-bench__trays,.modular-bench__weapon,.modular-bench__stats{max-height:none}}
 @media(prefers-reduced-motion:reduce){.modular-bench *{animation:none!important;transition:none!important}}
+
+/* Scoped visual audit: retain the 860px NPC dialogue boundaries, never
+ * enlarge the viewport or horizontally scroll the game at 1366×768. */
+.modular-bench{box-sizing:border-box;width:100%;min-width:0;overflow-wrap:anywhere}
+.modular-bench__layout{grid-template-columns:minmax(150px,1fr) minmax(200px,1.25fr) minmax(170px,1fr)}
+.modular-bench__trays,.modular-bench__weapon,.modular-bench__stats{box-sizing:border-box}
+.modular-bench__weapon{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+.modular-bench__sprite{flex-shrink:0;border:1px solid #8a7852;box-shadow:inset 0 0 0 3px #16252c,0 0 0 1px #101920}
+.modular-bench__parts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.modular-bench__parts button{min-width:0;overflow-wrap:anywhere}
+.modular-bench__stats{font-variant-numeric:tabular-nums}
+.modular-bench__delta{align-items:baseline;flex-wrap:wrap;gap:3px 8px}
+.modular-bench__delta strong{white-space:nowrap}
+.modular-bench button:focus-visible{outline:2px solid #ffe2a1;outline-offset:2px}
+@media(max-width:1000px){
+ .modular-bench__layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .modular-bench__stats{grid-column:1/-1}
+ .modular-bench__stats .modular-bench__delta{display:grid;grid-template-columns:minmax(125px,1fr) auto auto}
+}
+@media(max-width:580px){
+ .modular-bench{padding:8px}
+ .modular-bench__layout{grid-template-columns:minmax(0,1fr)}
+ .modular-bench__stats{grid-column:auto}
+ .modular-bench__sprite{width:min(52vw,180px)}
+ .modular-bench__parts{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .modular-bench__stats .modular-bench__delta{grid-template-columns:minmax(100px,1fr) auto auto}
+}
+@media(prefers-reduced-motion:reduce){
+ .modular-bench__sprite.is-forged{animation:none}
+}
