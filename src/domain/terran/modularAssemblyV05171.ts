@@ -5,6 +5,7 @@ import {deriveCharacterStats} from '../character/derivedStats'
 import {fail,ok,type Result} from '../shared/types'
 import {applyQuestEvent} from '../quests/questEngine'
 import {FORGE_LOCATION_ID} from './forge'
+import {modularAssemblyFeeV05171} from '../../content/modularBalanceV05171'
 
 export type AssemblyPreviewV05171={
  boundItemId:string;partId:string;price:number;previousPartId?:string;
@@ -34,7 +35,7 @@ export function buildAssemblyPreviewV05171(save:GameSave,slot:'weapon'|'shield',
  if(installed?.tier&&installed.tier>=part.tier)
   return fail('ASSEMBLY_TIER','A estrutura só aceita um Tier mais alto; partes antigas ficam registradas como memória.')
  if(unprotected(save,part.itemId)<1)return fail('ASSEMBLY_PART','Adquira esta parte na oficina ou obtenha como drop antes de montar.')
- const price=Math.max(0,Math.floor(part.price/4))
+ const price=modularAssemblyFeeV05171(part.price)
  if(save.wallet.gold<price)return fail('ASSEMBLY_GOLD','São necessários '+price+' Ouro para instalar o módulo.')
  const next=structuredClone(save)
  const item=next.boundItems[original.id]
