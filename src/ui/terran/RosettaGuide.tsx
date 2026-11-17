@@ -133,10 +133,7 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
             </p>)}
             <div className="rosetta-tutorial__actions">
               {['available','offered'].includes(state.status)&&<button type="button"
-                onClick={()=>{
-                  if(state.status==='available')offer(quest.id)
-                  accept(quest.id)
-                }}>Aceitar: {quest.title}</button>}
+                onClick={()=>accept(quest.id)}>Aceitar: {quest.title}</button>}
               {state.status==='ready_to_turn_in'&&<button type="button"
                 onClick={()=>complete(quest.id,'npc_rosetta')}>Entregar: {quest.title}</button>}
               {state.status==='active'&&<small>Em andamento · consulte o Diário para acompanhar a missão.</small>}
