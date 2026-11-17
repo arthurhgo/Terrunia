@@ -66,6 +66,30 @@ describe('v0.5.17.1 — modular Bond protection',()=>{
   expect(first.ok).toBe(true)
   if(first.ok)expect(commitAssemblyV05171(first.value,'weapon','part_blade_body_t1',content,NOW).ok).toBe(false)
  })
+ it('returns upgraded predecessor to inventory exactly once and keeps the same Bond',()=>{
+  const raw=fixture()
+  raw.character.level=4
+  raw.world.currentLocationId='location_terran_forge'
+  raw.inventory.push(
+   {instanceId:'t1',definitionId:'part_blade_body_t1',quantity:1,rarity:'common',locked:false,favorite:false,acquiredAt:NOW},
+   {instanceId:'t2',definitionId:'part_blade_body_t2',quantity:1,rarity:'uncommon',locked:false,favorite:false,acquiredAt:NOW},
+  )
+  const bondId=raw.character.bondedEquipment.weapon!
+  const first=commitAssemblyV05171(raw,'weapon','part_blade_body_t1',content,NOW)
+  expect(first.ok).toBe(true)
+  if(!first.ok)return
+  const second=commitAssemblyV05171(first.value,'weapon','part_blade_body_t2',content,NOW)
+  expect(second.ok).toBe(true)
+  if(!second.ok)return
+  const save=second.value
+  expect(save.character.bondedEquipment.weapon).toBe(bondId)
+  expect(save.boundItems[bondId].assembly?.parts.body).toBe('part_blade_body_t2')
+  expect(save.boundItems[bondId].assembly?.history).toContain('part_blade_body_t1')
+  expect(save.inventory.filter(i=>i.definitionId==='part_blade_body_t1').reduce((n,i)=>n+i.quantity,0)).toBe(1)
+  expect(save.inventory.filter(i=>i.definitionId==='part_blade_body_t2').reduce((n,i)=>n+i.quantity,0)).toBe(0)
+  expect(commitAssemblyV05171(save,'weapon','part_blade_body_t2',content,NOW).ok).toBe(false)
+  expect(gameSaveSchema.safeParse(save).success).toBe(true)
+ })
  it('reconstructs old schema17 saves with weapon, quest and inventory intact',()=>{
   const old=fixture(),id=old.character.bondedEquipment.weapon!
   old.schemaVersion=17
