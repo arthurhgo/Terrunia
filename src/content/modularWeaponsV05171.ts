@@ -1,5 +1,6 @@
 import type {ItemDefinition} from './types'
 import type {BoundEquipmentInstance,GameSave} from '../domain/game/types'
+import {MODULAR_BALANCE_V05171} from './modularBalanceV05171'
 
 export const MODULAR_FAMILIES=['blade','dagger','axe','bow','arcaneFocus','staff','grimoire','shield'] as const
 export type ModularFamily=typeof MODULAR_FAMILIES[number]
@@ -19,8 +20,8 @@ const SLOT_LABEL:Record<ModularSlot,string>={
  body:'Corpo',handle:'Empunhadura',coreHousing:'Núcleo estrutural',focusMount:'Encaixe de joia'
 }
 const TIER_LABEL=['','Bruto','Tratado','Refinado','Nobre','Magistral']
-const PRICES=[0,12,32,80,168,310]
-const LEVELS=[0,1,4,7,10,13]
+const PRICES=MODULAR_BALANCE_V05171.pricesByTier
+const LEVELS=MODULAR_BALANCE_V05171.minLevelByTier
 const styleFor=(family:ModularFamily):ModularPart['style'] =>
  ['arcaneFocus','staff','grimoire'].includes(family)?'MAGIA':
  family==='bow'?'ARCO':family==='shield'?'DEFESA':
