@@ -70,7 +70,7 @@ test('Rosetta → Torvan → Durnan: montagem real, camadas visuais, navegação
  const first=await snapshot(page)
  expect(first.id).toBeTruthy()
  let guide=await rosetta(page)
- const firstLesson=guide.getByRole('region',{name:'Lições de armas modulares de Rosetta'})
+ const firstLesson=guide.getByRole('article',{name:'Lições de armas modulares de Rosetta'})
  await expect(firstLesson).toBeVisible()
  await firstLesson.getByRole('button',{name:'Aceitar: Uma Arma, Quatro Partes'}).click()
  expect((await snapshot(page)).quests.one).toBe('active')
