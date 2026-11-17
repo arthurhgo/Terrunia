@@ -10,7 +10,7 @@ async function createTerririan(page:Page) {
  await page.getByRole('button',{name:'Continuar como convidado local'}).click()
  await page.getByPlaceholder('Ex.: Aron').fill('FerreiroE2E')
  await page.getByRole('button',{name:'Confirmar e continuar'}).click()
- await page.getByRole('button',{name:'Escolher Espada Longa',exact:true}).click()
+ await page.getByRole('button',{name:'Escolher Espada Longa',exact:true}).press('Enter')
  await page.getByRole('button',{name:'Distribuir pontos e vincular Espada Longa',exact:true}).click()
  for(const name of ['Força','Força','Astúcia','Agilidade','Vigor','Espírito'])
   await page.getByRole('button',{name:'Aumentar '+name}).click()
