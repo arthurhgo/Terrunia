@@ -37,8 +37,8 @@
 ## 4. Pendências P0 antes de declarar a v0.5.17.1 completa
 
 - **Área — QA de integração:** a aplicação parcial de Esquiva foi adicionada ao motor com fator configurável BALANCE_DRAFT; validar a rodada visual no navegador, efeitos de Área multialvo, cooldown, dano crítico e comportamento com ARM/ESC/ARC antes de aprovar o balanço.
-- **Economia/drops:** a rotina atual garante uma peça a cada batalha, com Tier por índice, sem catálogo completo de matéria-prima/proveniência, pesos e `firstClearOnly` por fonte. Especificar limites de repetição e proteger os primeiros clears antes de aprovar a economia.
-- **Rosetta — QA end-to-end:** novas aulas opcionais existem, mas é preciso provar navegação completa Rosetta → Torvan/Trilhas → Durnan → combates → ritos → Rosetta; verificar visibilidade no diário, contexto narrativo e indicadores de mapa, sem sorteio obrigatório ou Joia prematura. A comparação de atributos ainda requer orientação visual contextual na interface.
+- **Economia/drops:** ondas agora têm probabilidade de uma peça por vitória e T5 raro (cf. `modularBalanceV05171.ts`), sem multiplicação por inimigos; o roll é persistido. Chances, proveniência de materiais e restrições de farm adicionais continuam `BALANCE_DRAFT`/`OWNER_DECISION`, com proteção de first clears a revisar.
+- **Rosetta — QA complementar:** E2E de Rosetta → Torvan → Durnan e save schema 18 foi adicionado e passou em Chromium no commit `bc7f516`; a correção de compressão de diálogo em mobile requer nova validação. Aulas opcionais de Grau II/III e ataques de escudo ainda precisam de fluxos visuais completos, sem exigências prematuras.
 - **Idempotência e segurança:** estender testes para duplo clique/repetição após refresh, salvamento concorrente local/cloud, inventário lotado, componentes protegidos e migração de estilo comercial legado; rollback/backup antes de primeira gravação do schema 18.
 - **Apresentação visual:** sprites são SVGs funcionais, não pixel-art final; confirmar qualidade das 8 famílias e sobreposição das 4 camadas (em todos os Tiers), animação de forja e viewport 1366×768.
 - **Matriz E2E de jogabilidade:** iniciar Terrírian cru, obter vínculo, receber instrução de Rosetta, comprar e instalar peça, verificar ataque real e ESC, vencer encontro, recolher drop só uma vez, recarregar save sem perder estrutura. Repetir para Aljava e Protetor Arcano (deve rejeitar módulos físicos), além de legado do schema 17.
@@ -54,3 +54,26 @@
 - Status de arte final, nomenclatura de materiais e atribuição de vendedores por família.
 
 **Gate de liberação:** só declarar `v0.5.17.1 RELEASE` quando nenhum item P0 estiver aberto, CI + E2E + QA visual + Preview forem revalidados no mesmo SHA, e decisões canônicas forem registradas em `docs/CANON_DECISIONS.md`. Até lá, manter a PR em draft e a `main` intocada.
+
+## 6. Rodada de consolidação em 17/11/2026
+
+**Contratos implementados:**
+- `src/content/modularBalanceV05171.ts`: custos/Tiers e distribuição de drops configuráveis, `BALANCE_DRAFT`.
+- RNG com avalanche nas escolhas de drop de onda: evita correlação de seeds e inflação estatística do T5.
+- Cada onda concede no máximo uma peça estrutural, com chance variável e T5 raro; espólios antigos permanecem somados.
+- Upgrade estrutural retorna a peça antiga ao inventário no commit, sem trocar Vínculo ou ressarcir Ouro; regra temporária `OWNER_DECISION`.
+- `RosettaGuide.tsx`: aulas opcionais aceitas e concluídas no próprio diálogo; `questPacingV0516.ts` não as relega ao pós-Astravél.
+- E2E `tests/e2e/modular-v05171-complete.spec.ts`: jornada de compra/montagem/compare/save e combate/loot/claim/reload; `src/assets/modularSpritesV05171.test.ts` verifica 160 sprites e fallback.
+- Composição visual passa a usar 4 camadas no mesmo viewBox 16×16, breakpoints 1000/580px e animação respeitando `prefers-reduced-motion`.
+
+**Evidências até o commit `bc7f51642fc7140e5bfb63181a704e7e2baf3dcb`:**
+- GitHub CI `44151187223`: **SUCCESS** (`npm run check`).
+- GitHub Playwright E2E `44151187272`: **SUCCESS**, 18 testes, incluindo novos cenários.
+- GitHub Vercel statuses: **SUCCESS** no commit `bc7f516`.
+- Screenshots `playwright-viewport-evidence` da run `44151187272` inspecionados em 1366×768, 820×720 e 390×844: sem overflow horizontal, mas revelaram fala do ferreiro comprimida. Foi aplicada uma correção CSS reservando altura legível e incluído novo assert de ausência de sobreposição. **Novo SHA deve ser revalidado antes de release.**
+- A integração Vercel desta sessão não lista o projeto nem autoriza inspecionar o Preview diretamente (404), apesar do check verde no GitHub. Build remoto validado; inspeção visual publicada ainda pendente.
+- `npm ci` reportou 14 alertas de dependências (1 moderado, 13 altos). Registrar análise de `npm audit` antes de produção; não aplicar upgrades destrutivos sem revisar breaking changes.
+
+**Permanecem OWNER_DECISION** e não foram canonizadas: origem/efeitos das Joias novas, restrição incompleta do escudo ofensivo, política definitiva de desmontagem, preço/limites de repetição T1–T5 e aprovação de arte final.
+
+**No merge**: permanecer em PR draft. A aprovação final exige novamente CI+E2E+Vercel no mesmo SHA, validação visual, auditoria de segurança e decisões registradas pelo autor.
