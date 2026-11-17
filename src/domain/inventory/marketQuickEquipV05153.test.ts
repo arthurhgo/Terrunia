@@ -76,17 +76,15 @@ describe('v0.5.15.3 — atomic shop Buy & Equip and persistent bonuses',()=>{
     const item=common('weapon')
     const snapshot=structuredClone(save)
     expect(purchaseAndEquipGear(save,'presence_terran_weaponsmith',item.id,content,NOW))
-      .toMatchObject({ok:false,code:'GEAR_BOND'})
+      .toMatchObject({ok:false,code:'BOUND_WEAPON_ONLY'})
     expect(save).toEqual(snapshot)
     const armed=bindPrologueWeapon(save,content,NOW,'qa-weapon')
     expect(armed.ok).toBe(true)
     if(!armed.ok)return
     const result=purchaseAndEquipGear(armed.value,'presence_terran_weaponsmith',item.id,content,NOW)
-    expect(result.ok).toBe(true)
-    if(!result.ok)return
-    expect(result.value.equippedGearStyles?.weapon?.definitionId).toBe(item.id)
-    expect(result.value.character.bondedEquipment.weapon).toBe(armed.value.character.bondedEquipment.weapon)
-    expect(result.value.wallet.gold).toBe(1000-item.price)
+    expect(result).toMatchObject({ok:false,code:'BOUND_WEAPON_ONLY'})
+    expect(armed.value.character.bondedEquipment.weapon).toBe('qa-weapon')
+    expect(armed.value.wallet.gold).toBe(1000)
   })
   it('rejects a mismatched seller, insufficient Gold, and unusable armor with no Gold loss',()=>{
     const item=common('armor'),save=make()

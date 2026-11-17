@@ -9,6 +9,7 @@ import { createRandomId } from '../shared/randomId'
 
 /** Market authorization is validated again in the domain, never only in disabled UI buttons. */
 export function checkGearAccess(save:GameSave,offer:GearOffer,merchantId:string):Result<true>{
+ if (offer.slot==='weapon') return fail('BOUND_WEAPON_ONLY','Armas completas não são vendidas: monte partes na Casa do Ferreiro.');
  if (offer.channel === 'PUBLIC_TERRAN') {
    if (!isTerranMerchantOffer(merchantId,offer))
      return fail('GEAR_MERCHANT','Este item comum pertence ao comerciante especializado em '+getTerranMerchantForSlot(offer.slot)+'.')
@@ -41,10 +42,11 @@ export function purchaseGear(save:GameSave,offerIds:readonly string[],now:string
   return fail('GEAR_SET','Escolha uma peça ou um kit completo sem duplicações.')
  const offers=offerIds.map(id=>gearOfferById[id])
  if(offers.some(offer=>!offer))return fail('GEAR_UNKNOWN','Peça não cadastrada no catálogo.')
+ if(offers.some(offer=>offer.slot==='weapon'))return fail('BOUND_WEAPON_ONLY','Kits não podem incluir armas comerciais; o Vínculo original é permanente.')
  if(offers.length>1){
   const set=gearSetById[offers[0].setId]
-  if(!set||set.itemIds.length!==offerIds.length||set.itemIds.some(id=>!offerIds.includes(id)))
-   return fail('GEAR_SET','A compra conjunta deve conter todas as dez peças de um kit.')
+  if(!set||set.itemIds.filter(id=>gearOfferById[id]?.slot!=='weapon').length!==offerIds.length||set.itemIds.filter(id=>gearOfferById[id]?.slot!=='weapon').some(id=>!offerIds.includes(id)))
+   return fail('GEAR_SET','O kit contém somente as nove peças comerciais; a arma permanece vinculada.')
  }
  for(const offer of offers){const access=checkGearAccess(save,offer,merchantId);if(!access.ok)return access}
  const cost=offers.reduce((sum,offer)=>sum+offer.price,0)
@@ -69,6 +71,7 @@ export function purchaseGear(save:GameSave,offerIds:readonly string[],now:string
 }
 
 export function checkGearWear(save:GameSave,offer:GearOffer):Result<true>{
+ if(offer.slot==='weapon')return fail('BOUND_WEAPON_ONLY','Revestimentos comerciais de arma são legados; personalize o Vínculo no ferreiro.')
  if(save.battle)return fail('GEAR_BATTLE','Não é possível equipar durante o combate.')
  if(save.character.level<offer.level)return fail('GEAR_LEVEL','Requer nível '+offer.level+'.')
  if(offer.clanId&&save.character.clan.clanId!==offer.clanId)return fail('GEAR_CLAN','Este equipamento exige seu Clã.')
@@ -81,6 +84,7 @@ const isBound=(slot:GearSlot):slot is BoundSlot =>
 export function equipGearStyle(save:GameSave,instanceId:string|null,slot:BoundSlot,
  now:string):Result<GameSave>{
  if(save.battle)return fail('GEAR_BATTLE','Não é possível trocar revestimentos no combate.')
+ if(slot==='weapon'&&instanceId)return fail('BOUND_WEAPON_ONLY','O Vínculo da arma não pode ser substituído; utilize a mesa modular do ferreiro.')
  const existing=save.equippedGearStyles?.[slot]
  if(!instanceId&&!existing)return ok(save)
  if(instanceId===existing?.instanceId)return ok(save)
@@ -161,4 +165,4 @@ export function getGearBonuses(save:GameSave){
 }
 
 export const getSetPrice=(setId:string)=>
- gearSetById[setId]?.itemIds.reduce((sum,id)=>sum+gearOfferById[id].price,0)??0
+ gearSetById[setId]?.itemIds.filter(id=>gearOfferById[id]?.slot!=='weapon').reduce((sum,id)=>sum+gearOfferById[id].price,0)??0

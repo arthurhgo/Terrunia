@@ -1,5 +1,6 @@
 import { castleGearMerchantsV05151 } from '../content/castleMerchantsV05151'
 import { equipmentOffersV0515, gearSpriteId, type GearGrade } from '../content/equipmentV0515'
+import {modularPartsV05171} from '../content/modularWeaponsV05171'
 import { combatSkillDefinitions } from '../content/combat'
 import { extraCombatStatusesV0517 } from '../content/combatAdvancementsV0517'
 import type { CombatSkillDefinition } from '../content/types'
@@ -32,6 +33,7 @@ export type AssetEntry = {
 const FALLBACK = '/assets/placeholders/generic.svg'
 
 const entries: AssetEntry[] = [
+ ...modularPartsV05171.map(part=>({id:part.assetId,path:'/assets/modular/'+part.family+'/'+part.partSlot+'_t'+part.tier+'.svg',fallback:'/assets/placeholders/item.svg',alt:part.name,pixelArt:true,draftPlaceholder:true as const})),
   ...equipmentOffersV0515.flatMap((gear) => ([1,2,3] as GearGrade[]).map((grade) => ({
     id: gearSpriteId(gear,grade),
     path: '/assets/equipment/v05151/' + gear.id + '_g' + grade + '.png',
@@ -71,10 +73,10 @@ const entries: AssetEntry[] = [
     fallback: '/assets/placeholders/enemy.svg', alt: 'Sentinela Corrompida · Núcleo da Ruína', pixelArt: true },
   ...(combatSkillDefinitions as CombatSkillDefinition[]).map((skill) => ({
     id: skill.iconAssetId ?? `skill.${skill.id}`,
-    path: `/assets/skills/${skill.id}.${skill.id.endsWith('_v0517') ? 'svg' : 'png'}`,
+    path: `/assets/skills/${skill.id}.${(skill.id.endsWith('_v0517')||skill.id.endsWith('_v05171')) ? 'svg' : 'png'}`,
     fallback: '/assets/placeholders/skill.svg',
     alt: skill.name, pixelArt: true,
-    ...((skill.id === 'skill_granite_slam' || skill.id.endsWith('_v0517')) ? { draftPlaceholder: true as const } : {}),
+    ...((skill.id === 'skill_granite_slam' || (skill.id.endsWith('_v0517')||skill.id.endsWith('_v05171'))) ? { draftPlaceholder: true as const } : {}),
   })),
   ...complementaryItemDefinitions.map((item) => ({
     id: item.iconAssetId, path: '/assets/items/complementary/' + item.id + '.svg',
@@ -250,10 +252,11 @@ const entries: AssetEntry[] = [
   },
   ...gemComponentDefinitions.map((gem) => ({
     id: gem.iconAssetId,
-    path: `/assets/gems/gem_${gem.iconAssetId.slice(4).replaceAll('-', '_')}.png`,
+    path: gem.id==='terra_v05171'||gem.id==='ar_v05171'?`/assets/gems/gem_${gem.id}.svg`:`/assets/gems/gem_${gem.iconAssetId.slice(4).replaceAll('-', '_')}.png`,
     fallback: '/assets/placeholders/item.svg',
     alt: gem.name,
     pixelArt: true,
+    ...(gem.id==='terra_v05171'||gem.id==='ar_v05171'?{draftPlaceholder:true as const}:{})
   })),
   ...(['fungal_weak', 'mycelial'] as const).map((essence) => ({
     id: `essence.${essence.replaceAll('_', '-')}`,

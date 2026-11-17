@@ -115,3 +115,10 @@
     contain-intrinsic-size: auto 225px;
   }
 }
+
+/* v0.5.17.1: neutral, recognizable equipment roles without inventing Class prerequisites. */
+.terran-specialist__style{display:inline-flex;width:max-content;max-width:100%;font-size:10px!important;font-weight:700!important;letter-spacing:.025em;padding:2px 6px;border-radius:2px;border:1px solid currentColor}
+.terran-specialist__style[data-style="MAGIA"]{color:#c1a8e5!important}
+.terran-specialist__style[data-style="ARCO"]{color:#9ecb9a!important}
+.terran-specialist__style[data-style="GUERRA"]{color:#d0b49a!important}
+.terran-specialist__style[data-style="VERSATIL"]{color:#b1cbd4!important}

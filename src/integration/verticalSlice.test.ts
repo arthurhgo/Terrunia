@@ -104,7 +104,7 @@ describe('vertical slice integrada', () => {
     await flushPersistence()
     const reloaded = await getLatestLocalSave(ownerId)
     expect(reloaded?.boundItems[weaponId].skillTree.unlockedNodeIds).toContain('weapon_bond_core')
-    expect(reloaded?.inventory).toHaveLength(0)
+    expect(reloaded?.inventory.every(item=>item.definitionId.startsWith('part_'))).toBe(true)
   })
 
   it('percorre 15 combates, entrega as missões nos NPCs, converte drops e mantém os Vínculos no reload', async () => {

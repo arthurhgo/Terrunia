@@ -56,10 +56,10 @@ describe('v0.5.15.2 — every equipment bonus has a live stat delta and Bond-saf
    save.character.classProgression.classId=offer.classId??null
    const preview=previewCommercialEquip(save,item(offer.id),content)!
    expect(preview,offer.id).toBeTruthy()
-   expect(preview.wearable,offer.id).toBe(true)
+   expect(preview.wearable,offer.id).toBe(offer.slot!=='weapon')
    expect(preview.stats).toHaveLength(2)
    expect(preview.stats[0].value,offer.id).toBeGreaterThan(0)
-   expect(preview.deltas.some(delta=>delta.difference>0),offer.id).toBe(true)
+   if(offer.slot!=='weapon') expect(preview.deltas.some(delta=>delta.difference>0),offer.id).toBe(true)
    usedSlots.add(offer.slot)
    usedStats.add(offer.stat)
    usedStats.add(offer.secondaryStat)

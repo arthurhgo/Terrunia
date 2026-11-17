@@ -35,6 +35,9 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
     ? lesson.objectives.find(objective => (progress.objectives[objective.id] ?? 0) < objective.required)
     : undefined
   const lessonIndex = lesson ? ROSETTA_CORE_LESSON_IDS.findIndex(id => id === lesson.id) + 1 : 0
+  const modularLessons=rosettaTutorialQuests.filter(quest=>quest.id.startsWith('rosetta_modular_') &&
+    ['available','offered','active','ready_to_turn_in','completed'].includes(save.quests[quest.id]?.status??''))
+  const pendingModular=modularLessons.filter(quest=>save.quests[quest.id]?.status!=='completed')
   const marketTour=content.quests.rosetta_tutorial_market_specialists
   const marketTourProgress=save.quests.rosetta_tutorial_market_specialists
   const offered = progress && ['available', 'offered'].includes(progress.status)
@@ -113,6 +116,31 @@ export function RosettaGuide({ save, onClose, onOpenQuests, onOpenInventory, onS
                 <small>Converse com os três especialistas no Mercado. Não precisa comprar nenhum item.</small>}
             </div>
           </div>}
+      </article>}
+      {modularLessons.length>0&&<article className="rosetta-guide__next rosetta-guide__modular" aria-label="Lições de armas modulares de Rosetta">
+        <h3><Shield size={16}/> Aulas de Vínculos e Forja · OPCIONAL</h3>
+        <p>Aprenda a recolher peças, forjar no mesmo Vínculo e usar suas defesas. Nenhuma lição desbloqueia Essência ou Joia antes do Grau exigido.</p>
+        <small>{modularLessons.length-pendingModular.length} concluídas · {pendingModular.length} acessíveis ou em andamento</small>
+        {modularLessons.map(quest=>{
+          const state=save.quests[quest.id]
+          return <section key={quest.id} className="rosetta-tutorial rosetta-guide__modular-lesson"
+            aria-label={quest.title}>
+            <h4>{quest.title}</h4>
+            <p>{quest.summary}</p>
+            {quest.objectives.map(objective=><p key={objective.id} className="rosetta-tutorial__objective">
+              <CheckCircle2 size={14}/><span>{objective.label}</span>
+              <strong>{state.objectives[objective.id]??0}/{objective.required}</strong>
+            </p>)}
+            <div className="rosetta-tutorial__actions">
+              {['available','offered'].includes(state.status)&&<button type="button"
+                onClick={()=>accept(quest.id)}>Aceitar: {quest.title}</button>}
+              {state.status==='ready_to_turn_in'&&<button type="button"
+                onClick={()=>complete(quest.id,'npc_rosetta')}>Entregar: {quest.title}</button>}
+              {state.status==='active'&&<small>Em andamento · consulte o Diário para acompanhar a missão.</small>}
+              {state.status==='completed'&&<strong>Concluída</strong>}
+            </div>
+          </section>
+        })}
       </article>}
       <article className="rosetta-guide__next" aria-label="Orientação de Clãs e arma vinculada">
         <h3><Compass size={16}/> Os Quatro Caminhos · Clã único</h3>

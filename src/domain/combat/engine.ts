@@ -4,6 +4,8 @@ import { FUNGAL_BOSS_ENCOUNTER_ID, FUNGAL_BOSS_RULES } from '../../content/funga
 import { GRANITE_GOLEM_BALANCE, GRANITE_GOLEM_ENCOUNTER_ID, GRANITE_GOLEM_ENEMY_ID } from '../../content/clanProgressionV05142'
 import { DEFENSE_RULES_V0517, COMMON_DEFENSE_SKILL_IDS_V0517, getWeaponAttackNamesV0517 } from '../../content/combatStylesV0517'
 import {CLASS_DISCIPLINE_SKILLS_V0517} from '../../content/classDisciplinesV0517'
+import {getModularDefenseBonusesV05171,getAttackDeliveryV05171,calculateDefenseReactionV05171,applyAreaDodgeV05171} from './defensiveResolutionV05171'
+import {rollModularLootV05171} from './modularLootV05171'
 import { deriveOffhandCombatV0517, getDamageTypeV0517, applyLayeredProtectionV0517, getInitiativeModifiersV0517, getEffectiveInitiativeV0517 } from './layeredDefenseV0517'
 import {applyAffinityV0517,getScheduledEnemySkillV0517} from './combatTacticsV0517'
 import { nextCombatRandomSeed, rollSeededCombatDie } from './rng'
@@ -146,6 +148,7 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
   const classDefinition=character.classProgression.classId ? catalog.classes[character.classProgression.classId] : undefined
   const validClass=classDefinition && character.classProgression.masteryLevel>=1 && classDefinition.clanId===character.clan.clanId && save.quests[classDefinition.trialQuestId]?.status==='completed'
   const classSkillId=validClass ? CLASS_DISCIPLINE_SKILLS_V0517[character.classProgression.classId!] : undefined
+  const modularDefense=getModularDefenseBonusesV05171(save)
   const maxHp = stats.life.value
   const maxMp = stats.mana.value
 
@@ -172,8 +175,11 @@ const derivePlayerCombatant = (save: GameSave, catalog: ContentCatalog): Combata
     maxArcaneGuard: offhand.arcaneGuard + (offhand.clanDunavar ? 4 : offhand.style==='arcaneCaster' ? 3 : 0),
     hasBoundShield: offhand.kind === 'shield',
     defenseDice: {block:character.attributes.vigor.die,parry:character.attributes.agility.die,dodge:character.attributes.agility.die,counter:character.attributes.strength.die},
+    defenseModuleBonuses:{block:modularDefense.block,parry:modularDefense.parry,dodge:modularDefense.dodge,counter:modularDefense.counter},
+    shieldBashBonus:modularDefense.shieldBash,
     skillIds: [...new Set([
       ...COMMON_DEFENSE_SKILL_IDS_V0517,
+      ...(offhand.kind==='shield'?['skill_shield_bash_v05171']:[]),
       ...equipmentSkillIds, ...unlockedSkillIds,
       ...(offhand.style==='arcaneCaster'?['skill_caster_arcane_guard_v0517','skill_scepter_accelerate_v0517']:[]),
       ...(offhand.kind==='quiver'&&offhand.style==='archer'?['skill_quiver_focus_v0517']:[]),
@@ -275,18 +281,26 @@ const applyCombatEffects = (
     if (effect.type === 'damage') {
       const mode = target.defending ? target.activeDefense : undefined
       const stance = mode && actor.side !== target.side ? DEFENSE_RULES_V0517[mode] : null
+      const incoming=getAttackDeliveryV05171(actor,skill)
+      const applicable=Boolean(mode && stance && (mode==='dodge' ||
+        mode==='block'&&['melee','projectile'].includes(incoming) ||
+        (mode==='parry'||mode==='counter')&&incoming==='melee'))
       const defenseSides = mode ? target.defenseDice?.[mode] ?? 4 : 4
-      const defenseFace = stance ? rollCombatDie(state, defenseSides) : 0
-      const shieldBonus = stance?.usesShield && target.hasBoundShield ? 1 : 0
-      const duelistBonus = (mode === 'parry' || mode === 'counter') && target.combatProfile === 'duelist' ? 1 : 0
-      const archerBonus = mode==='dodge' && target.combatProfile==='archer' ? 1 : 0
-      const success = Boolean(stance && defenseFace + shieldBonus + duelistBonus + archerBonus >= stance.dc)
-      if (stance) addLog(state, target.name+' tenta '+stance.name+': d'+defenseSides+'='+defenseFace+
-        (shieldBonus ? ' +1 Escudo' : '')+(duelistBonus ? ' +1 Duelista' : '')+(archerBonus ? ' +1 Arqueiro' : '')+' contra '+stance.dc+' — '+(success?'SUCESSO':'FALHA')+'.', 'defense')
-      guardedBoulder = Boolean(target.defending && (!stance || success) && skill?.id === 'skill_granite_slam')
+      const defenseFace = applicable ? rollCombatDie(state, defenseSides) : 0
+      const outcome=mode&&stance?calculateDefenseReactionV05171(target,mode,defenseFace,incoming):undefined
+      const success=outcome?.success??false
+      if(stance) addLog(state,applicable
+        ? target.name+' tenta '+stance.name+': d'+defenseSides+'='+defenseFace+
+          (outcome?.shield?' +1 Escudo':'')+(outcome?.duelist?' +1 Duelista':'')+
+          (outcome?.archer?' +1 Arqueiro':'')+(outcome?.module?' +'+outcome.module+' Módulo':'')+
+          ' contra '+stance.dc+' — '+(success?'SUCESSO':'FALHA')+'.'
+        : target.name+' não pode usar '+stance.name+' contra '+incoming+'.',
+        'defense')
+      guardedBoulder = Boolean(target.defending && (!stance||(applicable&&success)) && skill?.id === 'skill_granite_slam')
       const guardMitigation = stance
-        ? success ? stance.reduction + (mode === 'block' && target.hasBoundShield ? 1 : 0) : 0
-        : target.defending ? BALANCE.defendMitigation : 0
+        ? success ? stance.reduction + (mode === 'block' && target.hasBoundShield ? 1 : 0) +
+          (mode==='block'?(target.defenseModuleBonuses?.block??0):0) : 0
+        : target.defending && !mode ? BALANCE.defendMitigation : 0
       const appliedGuardMitigation = guardMitigation +
         (guardedBoulder ? GRANITE_GOLEM_BALANCE.throwBonusGuardMitigation : 0)
       const sides = selectDamageDie(actor, skill)
@@ -298,14 +312,20 @@ const applyCombatEffects = (
       // ARM only protects from physical blows. Magic first faces a depletable ARC ward.
       const armor=aspect==='physical' ? getEffectiveMitigation(target,catalog):0
       const basePower=getEffectiveAttackPower(actor,catalog)+bonusFace
-      const breakdown=calculateRolledDamage(basePower,armor,face,sides,effect.powerBonus,appliedGuardMitigation)
+      const skillPower=effect.powerBonus+(skill?.id==='skill_shield_bash_v05171'?(actor.shieldBashBonus??0)+1:0)
+      const breakdown=calculateRolledDamage(basePower,armor,face,sides,skillPower,appliedGuardMitigation)
       const unarmored=aspect==='physical'
-        ? calculateRolledDamage(basePower,0,face,sides,effect.powerBonus,appliedGuardMitigation).finalDamage
+        ? calculateRolledDamage(basePower,0,face,sides,skillPower,appliedGuardMitigation).finalDamage
         : breakdown.finalDamage
       const armorAbsorbed=Math.max(0,unarmored-breakdown.finalDamage)
-      if(success&&(mode==='parry'||mode==='dodge')){
+      if(success&&(mode==='parry'||mode==='dodge'&&incoming!=='area')){
         breakdown.guardPrevented+=breakdown.finalDamage
         breakdown.finalDamage=0
+      } else if(success&&mode==='dodge'&&incoming==='area'){
+        // Area remains dangerous even after a successful reaction.
+        const reduced=applyAreaDodgeV05171(breakdown.finalDamage,true)
+        breakdown.guardPrevented+=breakdown.finalDamage-reduced
+        breakdown.finalDamage=reduced
       }
       const affinity=applyAffinityV0517(target,breakdown.finalDamage,aspect,catalog)
       const layer=applyLayeredProtectionV0517(target,affinity.damage,aspect,catalog)
@@ -321,11 +341,13 @@ const applyCombatEffects = (
       target.alive = target.hp > 0
       target.defending = false
       delete target.activeDefense
-      if (success && mode === 'counter' && target.alive && actor.alive && !isProtectedBoss(state,actor)) {
-        const retaliation = Math.min(actor.hp,Math.max(1,Math.floor(getEffectiveAttackPower(target,catalog)*0.4)))
+      if (success && applicable && mode === 'counter' && target.alive && actor.alive && !isProtectedBoss(state,actor)) {
+        const replySides=target.attackDie??4,replyFace=rollCombatDie(state,replySides)
+        const retaliation = Math.min(actor.hp,Math.max(1,Math.floor(getEffectiveAttackPower(target,catalog)*0.25)+
+          Math.floor(replyFace/2)))
         actor.hp = Math.max(0,actor.hp-retaliation)
         actor.alive = actor.hp>0
-        addLog(state,target.name+' responde com Contragolpe e causa '+retaliation+' de dano em '+actor.name+'.','damage')
+        addLog(state,target.name+' responde com Contragolpe: d'+replySides+'='+replyFace+' · '+retaliation+' de dano em '+actor.name+'.','damage')
       }
       const guardNote = guardMitigation
         ? ` · Reação evitou ${breakdown.guardPrevented}.` : ''
@@ -478,7 +500,13 @@ const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,cata
   addPhase(state,'SelectingTarget');addPhase(state,'ResolvingAction')
   const sides=selectDamageDie(actor),face=rollCombatDie(state,sides)
   const bonusFace=actor.weaponBonusDie?rollCombatDie(state,actor.weaponBonusDie):0
-  const guard=target.defending?BALANCE.defendMitigation:0
+  const mode=target.defending?target.activeDefense:undefined
+  const areaDodge=mode==='dodge'?calculateDefenseReactionV05171(target,'dodge',
+    rollCombatDie(state,target.defenseDice?.dodge??4),'area'):undefined
+  if(mode) addLog(state,mode==='dodge'
+    ?target.name+' tenta Esquiva de área: '+(areaDodge?.success?'SUCESSO parcial':'FALHA')+'.'
+    :target.name+' não pode aplicar '+DEFENSE_RULES_V0517[mode].name+' contra ataque em área.','defense')
+  const guard=target.defending&&!mode?BALANCE.defendMitigation:0
   const aspect=getDamageTypeV0517(actor)
   const armor=aspect==='physical'?getEffectiveMitigation(target,catalog):0
   const rolled=calculateRolledDamage(getEffectiveAttackPower(actor,catalog)+bonusFace,
@@ -487,7 +515,8 @@ const resolveAreaAttack=(state:BattleState,actor:Combatant,target:Combatant,cata
   const protectedBossId=state.bossMechanics && isProtectedBoss(state,state.combatants[state.bossMechanics.bossId])
     ? state.bossMechanics.bossId : undefined
   const areaPower=Math.max(1,Math.floor(rolled.finalDamage*0.6))
-  const affinity=applyAffinityV0517(target,areaPower,aspect,catalog)
+  const afterDodge=applyAreaDodgeV05171(areaPower,Boolean(areaDodge?.success))
+  const affinity=applyAffinityV0517(target,afterDodge,aspect,catalog)
   const protection=applyLayeredProtectionV0517(target,affinity.damage,aspect,catalog)
   const centerDamage=Math.min(target.hp,protection.hpDamage)
   target.hp=Math.max(0,target.hp-centerDamage);target.alive=target.hp>0;target.defending=false
@@ -787,6 +816,13 @@ export const createBattle = (
       : {}),
   }
 
+  if(encounter.id!=='encounter_astravel_wave'){
+    const loot=rollModularLootV05171(save,state.id,state.rngSeed,encounter.trailNodeId,undefined,catalog)
+    if(loot){
+      state.modularLootRollV05171=loot
+      state.rewards.lootDefinitionIds.push(...loot.itemIds)
+    }
+  }
   addLog(state, `${encounter.name} bloqueia o avanço em Astravél.`, 'system')
   if (encounter.id === GRANITE_GOLEM_ENCOUNTER_ID)
     addLog(state, `Golem adaptado ao seu poder: +10% de Vida e Ataque, Defesa equivalente. Uma rocha é arremessada a cada três rodadas, com preparação antecipada.`, 'system')

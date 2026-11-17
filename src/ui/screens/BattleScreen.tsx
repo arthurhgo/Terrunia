@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Backpack, Bomb, BookOpen, Crosshair, Gem, ScrollText, Sparkles, Swords, Zap } from 'lucide-react'
+import { Backpack, Bomb, BookOpen, Crosshair, Gem, ScrollText, Sparkles, Swords, Zap, ShieldCheck } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { isProtectedBoss, submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
@@ -40,7 +40,7 @@ import './battleV0513.css'
 import './battleVictoryV05161.css'
 import './battleWeaponV0517.css'
 
-type Menu = 'attack' | 'skills' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
+type Menu = 'attack' | 'skills' | 'defense' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const POTION_CARD_ID = 'skill.use-healing-potion'
 const clampPercent = (value: number, max: number) => max > 0 ? Math.max(0, Math.min(100, value / max * 100)) : 0
 
@@ -282,9 +282,11 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const categoryItems = (kind: 'throwable' | 'rune' | 'essence') =>
     save.inventory.filter((instance) => content.items[instance.definitionId]?.combatKind === kind)
   const isMagicSkill = (id: string) => content.combatSkills[id]?.presentationGroup === 'magic'
-  const skillPickerOpen = menu === 'skills' || menu === 'magic' || menu === 'attack'
-  const visibleSkills = menu === 'magic' || menu === 'skills'
-    ? skills.filter((skill) => menu === 'magic' ? isMagicSkill(skill.id) : !isMagicSkill(skill.id))
+  const skillPickerOpen = menu === 'skills' || menu === 'defense' || menu === 'magic' || menu === 'attack'
+  const visibleSkills = menu === 'magic' || menu === 'skills' || menu==='defense'
+    ? skills.filter(skill => menu==='defense' ? Boolean(skill.defenseStance)
+      : menu==='magic'?isMagicSkill(skill.id)&&!skill.defenseStance
+      : !isMagicSkill(skill.id)&&!skill.defenseStance)
     : []
   const attackCards = getWeaponAttackCardsV0517(player.weaponArchetype)
   const attackCommand=(id:string):Parameters<typeof submit>[0] =>
@@ -644,7 +646,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
         </div> : battle.phase === 'AwaitingAction' ? <>
           <div className="pixel-battle__commands" aria-label="Barra de ações">
             {button('ATAQUE', <Swords />, () => openMenu('attack'), !isPlayerTurn || !target.alive, menu==='attack')}
-            {button('HABILIDADES', <BookOpen />, () => openMenu('skills'), !isPlayerTurn || skills.filter((skill) => !isMagicSkill(skill.id)).length === 0, menu === 'skills')}
+            {button('HABILIDADES', <BookOpen />, () => openMenu('skills'), !isPlayerTurn || skills.filter((skill) => !isMagicSkill(skill.id)&&!skill.defenseStance).length === 0, menu === 'skills')}
+            {button('DEFESAS', <ShieldCheck />, () => openMenu('defense'), !isPlayerTurn || !skills.some(skill=>skill.defenseStance), menu==='defense')}
             {button('MAGIAS', <Sparkles />, () => openMenu('magic'), !isPlayerTurn || skills.filter((skill) => isMagicSkill(skill.id)).length === 0, menu === 'magic')}
             {button('POÇÕES', <Backpack />, () => openMenu('items'), !isPlayerTurn || !hasUsableConsumable, menu === 'items')}
             {button('ARREMESSÁVEIS', <Bomb />, () => openMenu('throwables'), !isPlayerTurn || !hasUsefulSupplies('throwable'), menu === 'throwables')}
@@ -664,7 +667,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
                 onPin={()=>setPinnedSkillId(attack.id)}
                 onUse={()=>send(attackCommand(attack.id))}/>) }
             </div>}
-            {(menu === 'skills'||menu === 'magic') && <>
+            {(menu === 'skills'||menu === 'magic'||menu==='defense') && <>
               <div className="pixel-battle__skill-grid"
                 style={{ '--skill-columns': skillColumns, '--skill-rows': skillRows,
                   '--skill-max-width': `${skillColumns * 106 + (skillColumns - 1) * 6}px` } as React.CSSProperties}>

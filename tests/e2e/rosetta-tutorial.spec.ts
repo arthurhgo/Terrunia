@@ -134,7 +134,7 @@ test('Rosetta ensina compras, equipamento e reforço reais; histórico recolhido
       lessons: Object.values(save.quests).filter((quest) => quest.questId.startsWith('rosetta_tutorial_')).map((quest) => quest.status),
       spareTunics: save.inventory.filter((item) => item.definitionId.includes('tunic')).length }
   })
-  expect(persisted).toMatchObject({ schema: 17, gold: 11, armor: { definitionId: 'equipment_worn_linen_tunic', refinementLevel: 1 }, lessons: ['completed','completed','available','available','completed'], spareTunics: 0 })
+  expect(persisted).toMatchObject({ schema: 18, gold: 11, armor: { definitionId: 'equipment_worn_linen_tunic', refinementLevel: 1 }, lessons: ['completed','completed','available','available','completed'], spareTunics: 0 })
   expect(persisted.equippedId).toBe(persisted.armor?.instanceId)
 
   // Only this extra offer is a visual fixture, to check a secondary route without replaying the story.

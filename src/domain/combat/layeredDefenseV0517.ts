@@ -1,6 +1,7 @@
 import type { ContentCatalog } from '../../content/catalog'
 import type { GameSave } from '../game/types'
 import type { Combatant, CombatDie } from './types'
+import {getAssemblyBonuses} from '../../content/modularWeaponsV05171'
 
 /** BALANCE_DRAFT / OWNER_DECISION.
  * Escudaria is one manifestation of the EXISTING 'shield' bound slot.
@@ -27,7 +28,9 @@ export function deriveOffhandCombatV0517(save: GameSave, catalog: ContentCatalog
   : MAGE_WEAPONS.has(weapon?.archetype??'')?'arcaneCaster'
   : DUEL_WEAPONS.has(weapon?.archetype??'')?'duelist':'untrained'
  // A visible physical shield is a repeatable per-hit THRESHOLD, not invulnerability.
- const physicalGuard=kind==='shield' ? Math.min(6,(offhand?.basePower??0)+Math.floor((grade-1)/2)) : 0
+ // Physical shield structure increases ESC. Do not count the same bonus in ARM.
+ const physicalGuard=kind==='shield' ? Math.min(6,
+  (offhand?.basePower??0)+Math.floor((grade-1)/2)+getAssemblyBonuses(bound).mitigation) : 0
  // ARC is a depletable pool and can be replenished by an earned clan spell.
  const arcaneGuard=kind==='arcane'?Math.min(9,(offhand?.basePower??0)+2+Math.floor((grade-1)/2))
   : clanDunavar&&kind==='shield'?1

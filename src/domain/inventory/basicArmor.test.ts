@@ -158,7 +158,7 @@ describe('Rosetta v0.15: escolha de proteção e tiers', () => {
     })))
     const snapshot = structuredClone(save)
     const restored = migrateAndValidateSave(save)
-    expect(restored.schemaVersion).toBe(17)
+    expect(restored.schemaVersion).toBe(18)
     expect(restored.quests.rosetta_tutorial_equip.status).toBe('ready_to_turn_in')
     expect(restored.quests.rosetta_tutorial_equip.objectives.visit_market).toBe(1)
     expect(restored.inventory).toEqual(snapshot.inventory)
@@ -208,7 +208,7 @@ describe('Rosetta v0.15: escolha de proteção e tiers', () => {
     legacy.gameVersion = '0.15.0'
     legacy.equippedBasicArmor = null
     const restored = migrateAndValidateSave(legacy)
-    expect(restored.schemaVersion).toBe(17)
+    expect(restored.schemaVersion).toBe(18)
     expect(restored.equippedBasicArmor).toEqual(original)
     expect(restored.inventory.find((item) => item.instanceId === original.instanceId)).toBeUndefined()
     expect(restored.character.basicArmorInstanceId).toBe(original.instanceId)

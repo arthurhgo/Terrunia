@@ -3,6 +3,7 @@ import type { CombatSkillDefinition } from '../../content/types'
 import type { Combatant } from './types'
 import { BALANCE } from '../../content/balance'
 import { DEFENSE_RULES_V0517 } from '../../content/combatStylesV0517'
+import {getDefenseChanceV05171} from './defensiveResolutionV05171'
 import { getDamageTypeV0517 } from './layeredDefenseV0517'
 import {applyAffinityV0517,getEffectiveShieldV0517} from './combatTacticsV0517'
 import { calculateRolledDamage, getEffectiveAttackPower, getEffectiveMitigation, selectDamageDie } from './engine'
@@ -17,8 +18,9 @@ export function previewCombatSkill(actor: Combatant, target: Combatant, skill: C
     const attack = getEffectiveAttackPower(actor, catalog)
     const guard = target.defending ? BALANCE.defendMitigation : 0
     const protection=aspect==='physical'?getEffectiveShieldV0517(target,catalog):(target.arcaneGuard??0)
-    const minHit=calculateRolledDamage(attack+(actor.weaponBonusDie?1:0),defense,1,die!,effect.powerBonus,guard).finalDamage
-    const maxHit=calculateRolledDamage(attack+(actor.weaponBonusDie??0),defense,die!,die!,effect.powerBonus,guard).finalDamage
+    const bonus=effect.powerBonus+(skill.id==='skill_shield_bash_v05171'?(actor.shieldBashBonus??0)+1:0)
+    const minHit=calculateRolledDamage(attack+(actor.weaponBonusDie?1:0),defense,1,die!,bonus,guard).finalDamage
+    const maxHit=calculateRolledDamage(attack+(actor.weaponBonusDie??0),defense,die!,die!,bonus,guard).finalDamage
     const minimum=Math.max(0,applyAffinityV0517(target,minHit,aspect,catalog).damage-protection)
     const maximum=Math.max(0,applyAffinityV0517(target,maxHit,aspect,catalog).damage-protection)
     return skill.id === 'skill_basic_area_attack'
@@ -42,15 +44,15 @@ export function previewCombatSkill(actor: Combatant, target: Combatant, skill: C
   const reaction = skill.defenseStance ? (() => {
     const mode = skill.defenseStance!
     const rule = DEFENSE_RULES_V0517[mode]
-    const sides = actor.defenseDice?.[mode] ?? 4
-    const shieldBonus = rule.usesShield && actor.hasBoundShield ? 1 : 0
-    const duelistBonus = (mode==='parry'||mode==='counter')&&actor.combatProfile==='duelist'?1:0
+    const sides=actor.defenseDice?.[mode]??4
+    const shieldBonus=rule.usesShield&&actor.hasBoundShield?1:0
+    const duelistBonus=(mode==='parry'||mode==='counter')&&actor.combatProfile==='duelist'?1:0
     const archerBonus=mode==='dodge'&&actor.combatProfile==='archer'?1:0
-    const needed = Math.max(1,rule.dc - shieldBonus - duelistBonus - archerBonus)
-    const chance = Math.round(100*Math.max(0,sides - needed + 1)/sides)
-    return {sides,threshold:rule.dc,shieldBonus,duelistBonus,archerBonus,chance}
+    const moduleBonus=actor.defenseModuleBonuses?.[mode]??0
+    const chance=getDefenseChanceV05171(actor,mode,'melee').chance
+    return {sides,threshold:rule.dc,shieldBonus,duelistBonus,archerBonus,moduleBonus,chance}
   })() : null
-  if (reaction) effects.push('Teste de reação: d'+reaction.sides+(reaction.shieldBonus?' +1 escudo':'')+(reaction.duelistBonus?' +1 duelista':'')+(reaction.archerBonus?' +1 arqueiro':'')+' contra '+reaction.threshold+' ('+reaction.chance+'% de sucesso)')
+  if (reaction) effects.push('Teste de reação: d'+reaction.sides+(reaction.shieldBonus?' +1 escudo':'')+(reaction.duelistBonus?' +1 duelista':'')+(reaction.archerBonus?' +1 arqueiro':'')+(reaction.moduleBonus?' +'+reaction.moduleBonus+' módulo':'')+' contra '+reaction.threshold+' ('+reaction.chance+'% de sucesso)')
   const aspect=getDamageTypeV0517(actor,skill)
   const affinity=applyAffinityV0517(target,10,aspect,catalog)
   return { die, weaponBonusDie: actor.weaponBonusDie, ranges, effects, reaction,

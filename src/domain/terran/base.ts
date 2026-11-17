@@ -1,6 +1,7 @@
 import type { GameSave, InventoryItemInstance } from '../game/types'
 import type { ContentCatalog } from '../../content/catalog'
 import { fail, ok, type Result } from '../shared/types'
+import {getBackpackCapacity} from '../inventory/backpacks'
 
 /** This is a private interior, not a new city institution. */
 export const BASE_LOCATION_ID = 'location_terran_base'
@@ -189,6 +190,18 @@ export function transferBaseChestItem(
   } else {
     from[i].quantity -= quantity
     moving.instanceId = `base_${next.saveId}_${next.revision + 1}_${direction}`
+  }
+  // A full backpack may be packed with modular drops. Let the player
+  // retrieve a quest-critical component by swapping ONE ordinary, unlocked
+  // modular stack into the Base chest; never destroy or auto-sell anything.
+  if(direction==='withdraw'&&to.length>=getBackpackCapacity(next)&&
+    !to.some(item=>item.definitionId===moving.definitionId)){
+    const candidate=to.findIndex(item=>item.definitionId.startsWith('part_')&&!item.locked&&!item.favorite)
+    if(candidate>=0){
+      const [storedPart]=to.splice(candidate,1)
+      next.baseStorage.push(storedPart)
+      next.eventLog.push('ChestModularSwap:'+storedPart.definitionId)
+    }
   }
   if (to.some((item) => item.instanceId === moving.instanceId)) return fail('CHEST_DUPLICATE', 'Instância duplicada no baú.')
   to.push(moving)

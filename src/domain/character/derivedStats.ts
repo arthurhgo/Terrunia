@@ -8,6 +8,7 @@ import { getFlatStatBonus } from '../skillTree/skillTree'
 import { getAttributeScore } from './attributeProgression'
 import { getEquippedBasicArmor } from '../inventory/basicArmor'
 import { ARMOR_REFINEMENT } from '../../content/rosettaTutorial'
+import {getEquippedAssemblyBonuses} from '../../content/modularWeaponsV05171'
 
 export type StatContribution = { label: string; value: number }
 export type DerivedStat = { value: number; contributions: StatContribution[] }
@@ -35,6 +36,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       : basicArmor.armor.mitigation + (basicArmor.instance.refinementLevel ?? 0)*ARMOR_REFINEMENT.mitigationPerLevel
     : 0
   const gear = getGearBonuses(save)
+  const assembly=getEquippedAssemblyBonuses(save)
   const weapon = bondedEquipment.weapon ? save.boundItems[bondedEquipment.weapon] : null
   const weaponBase = weapon ? catalog.boundItemBases[weapon.baseItemId] : null
   const boundDefinitions = Object.values(bondedEquipment)
@@ -69,6 +71,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
     { label: weaponBase?.name ?? 'Sem Arma vinculada', value: weaponBase?.basePower ?? 1 },
     { label: 'Vínculos e Skills', value: attackBonus },
     { label: 'Forja de Durnan', value: forgeAttack },
+    { label: 'Montagem modular', value: assembly.attack },
     { label: 'Equipamento Tier · geral e afinidade da arma', value: equippedAttack },
     { label: 'Clã', value: weaponClanContribution },
   ])
@@ -80,6 +83,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: 'Equipamentos', value: equipmentBonus('maxHp') + gear.maxHp },
       { label: 'Vínculos e Skills', value: maxHpBonus },
       { label: 'Forja de Durnan', value: forgeLife },
+      { label: 'Montagem modular', value: assembly.maxHp },
       { label: 'Clã', value: clanBonuses.maxHp ?? 0 },
     ]),
     mana: sum([
@@ -87,6 +91,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: 'Espírito', value: getAttributeScore(attributes.spirit) * BALANCE.spiritManaMultiplier },
       { label: 'Equipamentos', value: equipmentBonus('maxMp') + gear.maxMp },
       { label: 'Forja de Durnan', value: forgeMana },
+      { label: 'Montagem modular', value: assembly.maxMp },
       { label: 'Clã', value: clanBonuses.mana ?? 0 },
     ]),
     defense: sum([
@@ -95,6 +100,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: basicArmor?.definition.name ?? 'Proteção simples', value: armorDefense },
       { label: 'Vínculos e Skills', value: defenseBonus },
       { label: 'Forja de Durnan', value: forgeDefense },
+      { label: 'Montagem modular', value: assembly.mitigation },
       { label: 'Clã', value: clanBonuses.mitigation ?? 0 },
     ]),
     physicalAttack: sum([
@@ -103,6 +109,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: 'Vínculos e Skills', value: attackBonus },
       { label: 'Forja de Durnan', value: weaponBase?.powerType === 'physical' ? forgeAttack : 0 },
       { label: 'Equipamento Tier · físico e geral', value: gear.physicalAttack + gear.attackPower },
+      { label: 'Montagem modular', value: weaponBase?.powerType==='physical'?assembly.attack:0 },
       { label: 'Clã', value: clanBonuses.physicalAttack ?? 0 },
     ]),
     magicalAttack: sum([
@@ -111,6 +118,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: weaponBase?.powerType === 'magical' ? weaponBase.name : 'Sem foco mágico', value: weaponBase?.powerType === 'magical' ? weaponBase.basePower : 0 },
       { label: 'Forja de Durnan', value: weaponBase?.powerType === 'magical' ? forgeAttack : 0 },
       { label: 'Equipamento Tier · mágico e geral', value: gear.magicalAttack + gear.attackPower },
+      { label: 'Montagem modular', value: weaponBase?.powerType==='magical'?assembly.attack:0 },
       { label: 'Clã', value: clanBonuses.magicalAttack ?? 0 },
     ]),
     primaryAttack,
@@ -119,6 +127,7 @@ export const deriveCharacterStats = (save: GameSave, catalog: ContentCatalog) =>
       { label: 'Equipamentos', value: equipmentBonus('initiative') + gear.initiative },
       { label: basicArmor?.definition.name ?? 'Proteção simples', value: basicArmor?.armor.initiative ?? 0 },
       { label: 'Vínculos e Skills', value: getFlatStatBonus(save, catalog, 'initiative') },
+      { label: 'Montagem modular', value: assembly.initiative },
     ]),
   }
 }

@@ -78,7 +78,18 @@ export type BoundItemScar = {
   effectIds: string[]
 }
 
+export type WeaponAssemblyV05171={
+ assemblyVersion:1
+ boundItemId:string
+ family:import('../../content/modularWeaponsV05171').ModularFamily
+ parts:Partial<Record<import('../../content/modularWeaponsV05171').ModularSlot,string>>
+ history:string[]
+ revision:number
+ assembledAt:string
+}
+
 export type BoundEquipmentInstance = {
+  assembly?:WeaponAssemblyV05171
   id: string
   baseItemId: string
   ownerCharacterId: string

@@ -29,12 +29,12 @@ describe('v0.5.15.3 — 3 specialists + Neris consumables',()=>{
   ] as const)
   const counts=Object.fromEntries(byVendor.map(([id,items])=>[id,items.length]))
   expect(counts).toEqual({
-   presence_terran_weaponsmith:12,presence_terran_armorer:60,
+   presence_terran_weaponsmith:0,presence_terran_armorer:60,
    presence_terran_accessory_artisan:48,
   })
-  expect(new Set(byVendor.flatMap(([,items])=>items.map(o=>o.id))).size).toBe(120)
+  expect(new Set(byVendor.flatMap(([,items])=>items.map(o=>o.id))).size).toBe(108)
   const save=base()
-  for(const offer of common){
+  for(const offer of common.filter(o=>o.slot!=='weapon')){
    const vendor=getTerranMerchantForSlot(offer.slot)
    expect(checkGearAccess(save,offer,vendor).ok,offer.id).toBe(true)
    expect(checkGearAccess(save,offer,'presence_neris'))

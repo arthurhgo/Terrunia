@@ -13,7 +13,7 @@ describe('save 17: tutorial, mochila e slot vestido separado', () => {
     delete legacy.equippedBasicArmor
     for (const quest of rosettaTutorialQuests) delete (legacy.quests as Record<string, unknown>)[quest.id]
     const updated = migrateAndValidateSave(legacy)
-    expect(updated.schemaVersion).toBe(17)
+    expect(updated.schemaVersion).toBe(18)
     expect(updated.equippedBasicArmor).toBeNull()
     expect(updated.character.basicArmorInstanceId).toBeNull()
     expect(updated.inventory).toEqual(save.inventory)
@@ -37,7 +37,7 @@ describe('save 17: tutorial, mochila e slot vestido separado', () => {
     save.schemaVersion = 16
     delete (save as unknown as Record<string, unknown>).equippedBasicArmor
     const restored = migrateAndValidateSave(save)
-    expect(restored.schemaVersion).toBe(17)
+    expect(restored.schemaVersion).toBe(18)
     expect(restored.equippedBasicArmor).toMatchObject({ instanceId: 'tunic', refinementLevel: 1 })
     expect(restored.inventory).toHaveLength(0)
     const missing = structuredClone(save); missing.character.basicArmorInstanceId = 'absent'

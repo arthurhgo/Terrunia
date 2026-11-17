@@ -209,14 +209,15 @@ describe('máquina de estados de combate', () => {
       name: 'Sentinela Corrompida · Núcleo da Ruína',
       maxHp: 86,
     })
-    expect(battle.rewards).toMatchObject({
-      boundResonance: 256,
-      lootDefinitionIds: [
-        'fragment_mycelial_essence',
-        'item_gem_esmeralda_crescimento',
-      ],
-      worldFlags: ['fungal_chambers_first_clear', 'astravel_route_cleared'],
-    })
+    expect(battle.rewards.boundResonance).toBe(256)
+    expect(battle.rewards.lootDefinitionIds).toEqual(expect.arrayContaining([
+      'fragment_mycelial_essence',
+      'item_gem_esmeralda_crescimento',
+    ]))
+    expect(battle.rewards.worldFlags).toEqual(expect.arrayContaining([
+      'fungal_chambers_first_clear','astravel_route_cleared',
+    ]))
+    // New modular drops are additive and never replace a boss reward.
 
     battle.combatants.combatant_player.attackPower = 99
     expect(submitBattleCommand(battle, { type: 'attack', targetId: bossId }, content))
