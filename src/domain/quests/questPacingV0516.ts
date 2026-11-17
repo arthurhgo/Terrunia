@@ -71,7 +71,10 @@ export function questChapterV0516(definition: QuestDefinition): QuestChapterV051
     definition.id.startsWith('side_npc_master_') ||
     ['side_npc_mireya_dunavar', 'side_npc_observador_cebios',
       'side_npc_guardador_estres', 'side_npc_curador_nexo', 'side_npc_master_rustal'].includes(definition.id) ||
-    definition.id.startsWith('rosetta_tutorial_')) return null
+    // Rosetta's modular lessons are gated by their own completed tutorial,
+    // not the optional post-Astravél sidequest calendar.
+    definition.id.startsWith('rosetta_tutorial_') ||
+    definition.id.startsWith('rosetta_modular_')) return null
   // Unscheduled general requests are post-arc optional content, not opening spam.
   return 'aftermath'
 }
