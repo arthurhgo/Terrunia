@@ -8,6 +8,9 @@ export const MODULAR_BALANCE_V05171 = {
  pricesByTier: [0, 12, 32, 80, 168, 310],
  minLevelByTier: [0, 1, 4, 7, 10, 13],
  forgeFeeFraction: 0.25,
+ // Temporary protective policy, still OWNER_DECISION: never silently destroy
+ // an older structural module during upgrade. No currency refund or downgrade.
+ replacedPartDisposition: 'return_to_inventory',
  trailGuaranteedPart: true,
  // Repeated waves should reward progress, but never guarantee high-tier parts.
  // One structural part per wave at most, independent of number of enemies.
