@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { content } from '../../content/catalog'
 import { createNewSave } from '../game/createSave'
 import { refreshTutorialQuestProgress } from './tutorialProgress'
+import {offerQuest,acceptQuest,refreshQuestAvailability} from './questEngine'
+import {questChapterV0516,isQuestOfferUnlockedV0516} from './questPacingV0516'
 
 const NOW = '2026-11-14T09:00:00.000Z'
 const fresh = () => createNewSave('rosetta-owner', 'Explorador', 'character.terririan.default', content, NOW)
@@ -64,4 +66,26 @@ describe('Rosetta modular v0.5.17.1 — optional lessons and genuine evidence', 
     expect(progress.quests[gradeTwo].status).toBe('active')
     expect(progress.quests[gradeThree].status).toBe('active')
   })
+  it('lets Rosetta offer modular tutorial immediately after the base lessons, regardless of Astravél chapter',()=>{
+    const save=fresh()
+    for(const id of ['rosetta_tutorial_equip','rosetta_tutorial_supply','rosetta_tutorial_refine'])
+      save.quests[id].status='completed'
+    save.world.currentLocationId='location_terran_portal_plaza'
+    const prepared=refreshQuestAvailability(save,content,NOW)
+    const id='rosetta_modular_01_v05171'
+    expect(prepared.quests[id].status).toBe('available')
+    expect(questChapterV0516(content.quests[id])).toBeNull()
+    expect(isQuestOfferUnlockedV0516(prepared,content.quests[id])).toBe(true)
+    const offered=offerQuest(prepared,id,content,NOW)
+    expect(offered.ok).toBe(true)
+    if(!offered.ok)return
+    const accepted=acceptQuest(offered.value,id,content,NOW)
+    expect(accepted.ok).toBe(true)
+    if(!accepted.ok)return
+    expect(accepted.value.quests[id].status).toBe('active')
+    expect(accepted.value.eventLog).toContain('QuestAccepted:'+id)
+    expect(accepted.value.character.clan.clanId).toBeNull()
+    expect(accepted.value.character.classProgression.classId).toBeNull()
+  })
+
 })
