@@ -7,7 +7,16 @@ import {MODULAR_BALANCE_V05171,modularWaveDropPercentV05171} from '../../content
 export type ModularLootRollV05171={
  version:1;seed:number;source:'trail'|'wave';sourceIndex:number;itemIds:string[]
 }
-const mix=(seed:number,salt:number)=>((Math.imul(seed^salt,1664525)+1013904223)>>>0)
+// Avalanche all 32 bits: low-bit LCG modulo caused a 3x T5 inflation in
+// seeded batches despite a nominal 8% rate. Battle state keeps rolled loot;
+// this only affects fresh encounters, not already persisted rewards.
+const mix=(seed:number,salt:number)=>{
+ let x=(seed^salt)>>>0
+ x=Math.imul(x^(x>>>16),0x7feb352d)
+ x=Math.imul(x^(x>>>15),0x846ca68b)
+ return (x^(x>>>16))>>>0
+}
+const percent=(seed:number,salt:number)=>Math.floor(mix(seed,salt)/0x100000000*100)
 const fromBattle=(id:string,seed:number)=>{let x=seed>>>0;for(let i=0;i<id.length;i++)x=mix(x,id.charCodeAt(i));return x}
 const tierFor=(source:'trail'|'wave',index:number,seed:number):ModularTier=>{
  if(source==='trail')return index<=3?1:index<=7?2:3
@@ -16,7 +25,7 @@ const tierFor=(source:'trail'|'wave',index:number,seed:number):ModularTier=>{
  if(index<=11)return 3
  if(index<=19)return 4
  // The late-game Tier V material remains rare even in endless waves.
- const roll=mix(seed,997)%100
+ const roll=percent(seed,997)
  return roll<MODULAR_BALANCE_V05171.advancedWaveTier5Percent?5
   :roll<MODULAR_BALANCE_V05171.advancedWaveTier5Percent+
     MODULAR_BALANCE_V05171.advancedWaveTier4Percent?4:3
@@ -36,7 +45,7 @@ export function rollModularLootV05171(save:GameSave,battleId:string,seed:number,
  const slot=MODULAR_SLOTS[(index-1)%MODULAR_SLOTS.length]
  const hasPart=source==='trail'
   ?MODULAR_BALANCE_V05171.trailGuaranteedPart
-  :mix(value,173)%100<modularWaveDropPercentV05171(index)
+  :percent(value,173)<modularWaveDropPercentV05171(index)
  const items=hasPart
   ?['part_'+modularStableKeyV05171(family)+'_'+modularStableKeyV05171(slot)+'_t'+tier]
   :[]
@@ -49,7 +58,7 @@ export function rollModularLootV05171(save:GameSave,battleId:string,seed:number,
  }
  // Earned gems stay inventory-only until Grade III's existing gem rite.
  if(MODULAR_BALANCE_V05171.elementalGemDropsEnabled&&
-    index>=8&&mix(value,311)%20===0){
+    index>=8&&percent(value,311)<5){
   const gems=['item_gem_rubi_ira_v05171','item_gem_safira_mares_v05171',
    'item_gem_terra_v05171','item_gem_ar_v05171']
   const gem=gems[mix(value,229)%gems.length]
