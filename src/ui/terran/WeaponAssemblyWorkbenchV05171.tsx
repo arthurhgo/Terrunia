@@ -69,7 +69,9 @@ export function WeaponAssemblyWorkbenchV05171({save}:{save:GameSave}){
     </div>
     <div className="modular-bench__weapon">
       <h4>Seu Vínculo · Grau {bound.grade}</h4>
-      <div className="modular-bench__sprite" aria-label="Prévia da composição da arma">
+      <div key={bound.id+'-'+(bound.assembly?.revision??0)}
+       className={'modular-bench__sprite'+(bound.assembly?.revision?' is-forged':'')}
+       role="img" aria-label="Prévia composta dos quatro módulos sobre a arma vinculada">
        <AssetImage assetId={content.boundItemBases[bound.baseItemId].assetIdByGrade[bound.grade]??'item.weapon-core'} alt="Arma permanente"/>
        {MODULAR_SLOTS.map(s=>{
         const id=selectedPart?.partSlot===s?selectedPart.id:bound.assembly?.parts[s]
@@ -87,7 +89,7 @@ export function WeaponAssemblyWorkbenchV05171({save}:{save:GameSave}){
         <b>{NAMES[s]}</b><small>{part?.name??'Estrutura original'}</small>
        </button>
       })}</div>
-      <small>O núcleo físico não é uma Essência; o encaixe físico não é uma Joia. Essência: Grau II; Joia: Grau III.</small>
+      <small>As quatro camadas são compostas na mesma grade pixel-art 16×16. O núcleo físico não é uma Essência; o encaixe físico não é uma Joia. Essência: Grau II; Joia: Grau III.</small>
     </div>
     <div className="modular-bench__stats">
      <h4>Prévia dos atributos reais</h4>
