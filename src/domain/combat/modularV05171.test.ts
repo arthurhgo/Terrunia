@@ -8,6 +8,7 @@ import {getAttackDeliveryV05171,getDefenseChanceV05171,calculateDefenseReactionV
  isDefenseApplicableV05171,applyAreaDodgeV05171} from './defensiveResolutionV05171'
 import {gameSaveSchema} from '../../persistence/saveSchema'
 import {astravelCombatNodes,astravelEncounterDefinitions} from '../../content/astravel'
+import {MODULAR_BALANCE_V05171,modularAssemblyFeeV05171,modularWaveDropPercentV05171} from '../../content/modularBalanceV05171'
 const NOW='2026-11-13T21:00:00Z'
 const setup=()=>{
  const s=createNewSave('lootqa','Terrírian','character.terririan.default',content,NOW)
@@ -30,17 +31,37 @@ describe('v0.5.17.1 — persistent drops and contextual skill reactions',()=>{
    expect(createBattle(save,encounter,content,'stage-'+encounter.id,{manualInitiative:true}).modularLootRollV05171).toEqual(battle.modularLootRollV05171)
   }
  })
- it('waves contain material tiers 1 through 5 without granting a new bonded item',()=>{
+ it('waves cap repeatable part rewards; T5 is rare rather than guaranteed from wave 20',()=>{
   const save=setup()
-  for(const [wave,tier] of [[1,1],[4,2],[8,3],[12,4],[20,5],[51,5]] as const){
+  for(const [wave,tiers] of [[1,[1]],[4,[2]],[8,[3]],[12,[4]],[20,[3,4,5]],[51,[3,4,5]]] as const){
    const battle=createWaveBattle(save,content,wave)
    expect(battle.modularLootRollV05171?.sourceIndex).toBe(wave)
-   expect(battle.modularLootRollV05171?.itemIds[0]).toContain('_t'+tier)
-   expect(battle.rewards.lootDefinitionIds).toContain(battle.modularLootRollV05171!.itemIds[0])
+   const parts=battle.modularLootRollV05171?.itemIds.filter(id=>id.startsWith('part_'))??[]
+   expect(parts.length).toBeLessThanOrEqual(1)
+   for(const part of parts){
+    expect(tiers.some(t=>part.endsWith('_t'+t))).toBe(true)
+    expect(battle.rewards.lootDefinitionIds).toContain(part)
+   }
    expect(battle.claimed).toBe(false)
    expect(save.character.bondedEquipment.weapon).toBe('loot-weapon')
    expect(gameSaveSchema.safeParse({...save,battle}).success).toBe(true)
   }
+  const rolls=Array.from({length:300},(_,index)=>
+   rollModularLootV05171(save,'repeat-'+index,42,'astravel_entry',20,content)!.itemIds)
+  const awarded=rolls.filter(ids=>ids.some(id=>id.startsWith('part_')))
+  const tier5=awarded.filter(ids=>ids.some(id=>id.endsWith('_t5')))
+  expect(awarded.length).toBeGreaterThan(40)
+  expect(awarded.length).toBeLessThan(150)
+  expect(tier5.length).toBeLessThan(awarded.length/5)
+  expect(rolls.every(ids=>ids.filter(id=>id.startsWith('part_')).length<=1)).toBe(true)
+ })
+ it('keeps costs and wave band thresholds centralized in BALANCE_DRAFT parameters',()=>{
+  expect(MODULAR_BALANCE_V05171.status).toBe('BALANCE_DRAFT')
+  expect(MODULAR_BALANCE_V05171.pricesByTier).toEqual([0,12,32,80,168,310])
+  expect(MODULAR_BALANCE_V05171.pricesByTier.slice(1).every((p,i,a)=>i===0||p>a[i-1])).toBe(true)
+  expect(modularAssemblyFeeV05171(32)).toBe(8)
+  expect([1,4,8,12,20].map(modularWaveDropPercentV05171)).toEqual([70,55,45,35,30])
+  expect(MODULAR_BALANCE_V05171.elementalGemDropsEnabled).toBe(false)
  })
  it('never gives an elemental gem on a first-stage encounter, and gem IDs are always real',()=>{
   const save=setup()
