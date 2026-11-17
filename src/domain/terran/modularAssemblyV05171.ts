@@ -5,7 +5,7 @@ import {deriveCharacterStats} from '../character/derivedStats'
 import {fail,ok,type Result} from '../shared/types'
 import {applyQuestEvent} from '../quests/questEngine'
 import {FORGE_LOCATION_ID} from './forge'
-import {modularAssemblyFeeV05171} from '../../content/modularBalanceV05171'
+import {MODULAR_BALANCE_V05171,modularAssemblyFeeV05171} from '../../content/modularBalanceV05171'
 
 export type AssemblyPreviewV05171={
  boundItemId:string;partId:string;price:number;previousPartId?:string;
@@ -58,6 +58,21 @@ export function commitAssemblyV05171(save:GameSave,slot:'weapon'|'shield',
  if(id<0)return fail('ASSEMBLY_PART','O componente foi removido antes da confirmação.')
  next.inventory[id].quantity-=1
  next.inventory=next.inventory.filter(item=>item.quantity>0)
+ // OWNER_DECISION protective default: keep every installed predecessor.
+ // Salvaging occurs in the same atomic commit; cancelled previews create nothing.
+ const predecessor=prepared.value.previousPartId
+ if(predecessor&&MODULAR_BALANCE_V05171.replacedPartDisposition==='return_to_inventory'){
+  const previous=modularPartById[predecessor]
+  if(previous){
+   const existing=next.inventory.find(item=>item.definitionId===predecessor&&!item.locked&&!item.favorite)
+   if(existing)existing.quantity+=1
+   else next.inventory.push({
+    instanceId:'recovered_'+next.saveId+'_'+next.revision+'_'+previous.partSlot,
+    definitionId:predecessor,quantity:1,rarity:catalog.items[predecessor].rarity,
+    locked:false,favorite:false,acquiredAt:now,
+   })
+  }
+ }
  next.wallet.gold-=prepared.value.price
  next.updatedAt=now;next.revision+=1
  next.eventLog.push('ModularAssembly:'+slot+':'+partId)
