@@ -69,7 +69,7 @@ export function useIsoMovement({
     const down = (event: KeyboardEvent) => {
       if (!latestRef.current.enabled || event.altKey || event.ctrlKey || event.metaKey) return
       const target = event.target
-      if (target instanceof HTMLElement && (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(target.tagName) || target.isContentEditable)) return
+      if (target instanceof HTMLElement && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable || (target.tagName === 'BUTTON' && !target.closest('.iso-play')))) return
       const key = event.key.toLowerCase()
       if (directionKeys[key]) { keysRef.current.add(key); destinationRef.current = null; event.preventDefault() }
       if (key === 'e' || key === 'enter') {
@@ -159,10 +159,10 @@ function Npc({ presence, marker, point, width, height, onClick }: {
   </button>
 }
 
-export function IsometricCityCanvas({ save, enabled, actors, spawnPoint,
+export function IsometricCityCanvas({ save, enabled, actors, spawnPoint, currentLocationId,
   onEnter, onEnterHome, onTalk, onInspectLandmark,
 }: {
-  save: GameSave; enabled: boolean; actors: readonly CityActor[]; spawnPoint?: WorldPoint | null
+  save: GameSave; enabled: boolean; actors: readonly CityActor[]; spawnPoint?: WorldPoint | null; currentLocationId: string
   onEnter: (id: TerranLocationId) => void; onEnterHome: () => void
   onTalk: (id: TerranLocationId, presence: TerranNpcPresence) => void
   onInspectLandmark: (landmark: TerranLandmark) => void
@@ -191,8 +191,9 @@ export function IsometricCityCanvas({ save, enabled, actors, spawnPoint,
     const landmark = terranLandmarks.find((entry) => distance(point, getLandmarkApproach(entry)) < 22)
     return landmark ? 'landmark:' + landmark.id : null
   }
+  const spawnId = TERRAN_LOCATION_IDS.find((id) => id === currentLocationId) ?? 'location_terran_portal_plaza'
   const { player, travelTo } = useIsoMovement({
-    initial: spawnPoint ?? getCityDoor('location_terran_portal_plaza'),
+    initial: spawnPoint ?? getCityDoor(spawnId),
     enabled, speed: 94, walkable: isCityWalkable, pathTo: findCityPath, onInteract: action, nearest,
   })
   return <section className="iso-play iso-play--city" role="region" aria-label="Cenário isométrico jogável de Terran"
