@@ -8,3 +8,5 @@
 .iso-preview__hero-token span{background:#f6e48b;border-color:#8e5a24;box-shadow:0 0 13px #ffe171;transform:translateZ(22px)}
 .iso-preview__npc-token strong{position:absolute;left:18px;top:-26px;color:#ffe37b;text-shadow:1px 1px 2px #000;font:bold 17px system-ui,sans-serif;transform:translateZ(35px)}
 .iso-preview__npc-token:focus-visible{outline:3px solid #ffdc76}
+
+.iso-preview__npc-head img,.iso-preview__npc-head .asset-image{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}.iso-preview__hero-token .equipped-character{width:30px;height:30px;position:absolute;left:-10px;top:-15px;image-rendering:pixelated}.iso-preview__npc-head{width:24px;height:24px;transform:translateZ(18px)}
