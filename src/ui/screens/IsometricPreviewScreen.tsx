@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { IsometricContext } from './IsometricContext'
 import { getCityCast } from '../terran/cityCast'
-import { CITY_WIDTH, CITY_HEIGHT, getCityDoor, getCityPoint, type WorldPoint } from '../terran/cityWorld'
+import { CITY_WIDTH, CITY_HEIGHT, getCityDoor, type WorldPoint } from '../terran/cityWorld'
 import { findCityPath, isCityWalkable } from '../terran/cityNavigation'
 import { Link } from 'react-router-dom'
 import { content } from '../../content/catalog'
