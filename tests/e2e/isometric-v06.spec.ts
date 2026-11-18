@@ -15,7 +15,8 @@ test('v0.6 isométrico: movimentação, NPCs, interior e retorno preservam o sav
   }
   await page.getByRole('button', { name: 'Confirmar Vínculo de Espada Longa — Grau I', exact: true }).click()
   await page.getByRole('button', { name: 'Pular cena' }).click()
-  await page.getByRole('link', { name: 'Abrir prévia 3D experimental de Terran' }).click()
+  // Laboratório isolado continua acessível diretamente; o botão in-game agora ativa o modo jogável.
+  await page.goto('/visual-v06')
   await expect(page).toHaveURL(/\/visual-v06$/)
   await expect(page.getByRole('heading', { name: 'Terran isométrica · v0.6' })).toBeVisible()
   await expect(page.locator('.iso-preview__hero-token')).toHaveCount(1)
