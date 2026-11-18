@@ -41,7 +41,7 @@ export function IsometricContext({ save, selected }: { save: GameSave; selected:
       {battle ? (
         <div className="iso-context__battle">
           <div className="iso-context__room iso-context__room--arena">
-            {combatants.map((actor, index) => {
+            {combatants.map((actor) => {
               const enemies = combatants.filter((entry) => entry.side === 'enemy')
               const enemyIndex = enemies.findIndex((entry) => entry.id === actor.id)
               return <div key={actor.id} className={'iso-context__unit iso-context__unit--' + actor.side}
