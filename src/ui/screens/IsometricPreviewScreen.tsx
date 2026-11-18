@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { IsometricContext } from './IsometricContext'
+import { AssetImage } from '../components/AssetImage'
+import { EquippedCharacter } from '../characters/EquippedCharacter'
+import { getPresencePortrait } from '../../content/npcVisuals'
 import { getCityCast } from '../terran/cityCast'
 import { CITY_WIDTH, CITY_HEIGHT, getCityDoor, type WorldPoint } from '../terran/cityWorld'
 import { findCityPath, isCityWalkable } from '../terran/cityNavigation'
@@ -114,14 +117,14 @@ export function IsometricPreviewScreen() {
                 title={actor.presence.label}
                 onClick={() => { setSelected(actor.locationId); walkTo(actor.point) }}
                 aria-label={'Caminhar até ' + actor.presence.label}>
-                <span className="iso-preview__npc-head" />
+                <span className="iso-preview__npc-head"><AssetImage assetId={getPresencePortrait(actor.presence)} alt={actor.presence.label} /></span>
                 {actor.marker && <strong>{actor.marker}</strong>}
               </button>
             ))}
             <div className="iso-preview__hero-token" aria-label="Personagem do jogador" style={{
               left: String(player.x / CITY_WIDTH * 100) + '%',
               top: String(player.y / CITY_HEIGHT * 100) + '%' }}>
-              <span />
+              <span><EquippedCharacter save={save} facing="down" alt="Terrírian isométrico" /></span>
             </div>
           </div>
         </div>
