@@ -51,7 +51,7 @@ export function IsometricContext({ save, selected }: { save: GameSave; selected:
                 style={{ left: actor.side === 'player' ? '25%' : String(59 + (enemyIndex % 3) * 13) + '%',
                   top: actor.side === 'player' ? '72%' : String(30 + Math.floor(enemyIndex / 3) * 20) + '%' }}
                 title={actor.name}>
-                <span className="iso-context__unit-body" />
+                <span className="iso-context__unit-body">{actor.side === 'player' ? <EquippedCharacter save={save} facing="right" /> : <AssetImage assetId={content.enemies[actor.definitionId]?.assetId ?? 'enemy.fungorro-crawler'} alt={actor.name} />}</span>
                 <span className="iso-context__unit-name">{actor.name}</span>
               </div>
             })}
