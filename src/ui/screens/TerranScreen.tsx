@@ -366,7 +366,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                 }}
                 onFurniture={inspectFurniture} onExit={exitInterior} />
               : <IsometricCityCanvas key="isometric-city" save={save} enabled={gameEnabled} actors={cityCast}
-                  spawnPoint={streetSpawn} onEnterHome={enterHome} onEnter={openLocation}
+                  spawnPoint={streetSpawn} currentLocationId={save.world.currentLocationId} onEnterHome={enterHome} onEnter={openLocation}
                   onTalk={(id, presence) => talk(presence, id)}
                   onInspectLandmark={(landmark) => {
                     useGameStore.getState().inspectCityLandmark(landmark.id)
