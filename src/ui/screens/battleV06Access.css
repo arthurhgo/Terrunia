@@ -1,0 +1,7 @@
+.pixel-battle__header{position:relative}.battle-v06-access{font:600 11px system-ui,sans-serif;color:#ffebbd;text-decoration:none;border:1px solid #b99e68;background:#112229e8;padding:5px 9px;border-radius:4px;white-space:nowrap;z-index:8}.battle-v06-access:focus-visible{outline:2px solid #f8d890;outline-offset:3px}@media(max-width:720px){.battle-v06-access{font-size:10px;padding:4px 6px}}
+
+.pixel-battle--isometric .pixel-battle__arena{transform:perspective(1500px) rotateX(17deg);transform-origin:50% 58%;box-shadow:0 16px 40px #020b13ad;overflow:visible}
+.pixel-battle--isometric .pixel-battle__hero{filter:drop-shadow(0 14px 11px #0009)}
+.pixel-battle--isometric .pixel-battle__enemy{filter:drop-shadow(0 10px 9px #0009)}
+.pixel-battle--isometric .pixel-battle__arena::after{content:"PERSPECTIVA ISOMÉTRICA EXPERIMENTAL";position:absolute;left:14px;bottom:10px;font:600 9px system-ui,sans-serif;letter-spacing:.13em;color:#f3ddac;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.pixel-battle--isometric .pixel-battle__arena{transition:none}}
