@@ -4,6 +4,12 @@
 Prévia experimental opt-in em `/visual-v06`. Não substituir a cena de produção em `/play` antes de validar renderer, picking, input, navegação, colisão, NPCs, combate, interiores e E2E.
 
 ## Implementado
+- Prévia acessível pelo botão `Visão 3D · v0.6` na cidade funcional.
+- Movimentação experimental via WASD/setas e rotas por clique, reutilizando `findCityPath` e `isCityWalkable` da cidade 2D.
+- NPCs da cidade derivados de `getCityCast(save)` (posições, identificação e sinalizadores reais).
+- Interiores isométricos read-only alimentados por `getRoomPlan`, `getInteriorResidents` e `roomFurniture`.
+- Arena isométrica read-only alimentada pelo estado de combate e PV reais; ações permanecem no jogo oficial.
+- Teste E2E específico cobrindo acesso, deslocamento, interiores e retorno ao jogo.
 - Terran isométrica demonstrativa com projeção 3D via CSS, oito IDs oficiais de instituições (incluindo Portal);
 - seleção acessível de edifícios usando definições oficiais `content.terranLocations`;
 - zoom com controles, detalhe do local e links para telas existentes;
@@ -11,7 +17,7 @@ Prévia experimental opt-in em `/visual-v06`. Não substituir a cena de produç�
 - sem dependências externas nem shaders/assets obrigatórios.
 
 ## Limitações explícitas
-**Não é Gaussian Splat nem motor real de geometria 3D.** Os volumes são placeholders em CSS 3D. Personagem, NPCs, interiors e batalhas permanecem no renderer 2D funcional; o protótipo não afirma o contrário. A prévia não implementa movimentação, colisão, turnos ou 3D real.
+**Não é Gaussian Splat nem motor real de geometria 3D.** Os volumes são placeholders em CSS 3D. Personagem e NPCs possuem tokens volumétricos 3D na prévia; interiores e combates mostram geometria volumétrica ligada aos dados oficiais, mas **não executam as interações de gameplay nessa visualização**. A movimentação da cidade é local à prévia e usa colisão/pathfinding oficial, sem persistir posição no save. O combate, a interação com NPCs, a navegação funcional por casas e todos os turnos continuam no renderer 2D da rota `/play`. Não há Gaussian Splat nem glTF nesta etapa.
 
 ## Próximo slice para renderer 3D real
 1. Renderer Three.js/WebGL como módulo de apresentação, desacoplado do domínio;
