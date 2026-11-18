@@ -1,6 +1,6 @@
 import { Archive, BedDouble, ScrollText, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { TerranLocationDefinition } from '../../content/types'
 import { type TerranLocationId } from '../../content/terran'
@@ -51,6 +51,7 @@ import { Modal } from '../components/Modal'
 import { getReadyDeliveryQuestRoute, getRosettaQuestRoutes, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 
 import './gameplayV057.css'
+import './terranV06Access.css'
 
 type Drawer = 'gear' | 'location' | 'market' | 'home' | 'homeRecords' | 'chest' | 'records' | 'forge' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
@@ -342,6 +343,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             <TerranQuickJournal save={save} />
           </aside>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
+            <Link className="terran-v06-access" to="/visual-v06" aria-label="Abrir prévia 3D experimental de Terran">Visão 3D · v0.6</Link>
             {interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
                 questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
                 showTrackedQuestRoute={Boolean(trackedRoute)} trackedQuestRoute={trackedRoute}
