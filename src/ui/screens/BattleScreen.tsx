@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Backpack, Bomb, BookOpen, Crosshair, Gem, ScrollText, Sparkles, Swords, Zap, ShieldCheck } from 'lucide-react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { isProtectedBoss, submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
@@ -39,6 +39,7 @@ import './gameplayV057.css'
 import './battleV0513.css'
 import './battleVictoryV05161.css'
 import './battleWeaponV0517.css'
+import './battleV06Access.css'
 
 type Menu = 'attack' | 'skills' | 'defense' | 'magic' | 'items' | 'throwables' | 'runes' | 'essences' | null
 const POTION_CARD_ID = 'skill.use-healing-potion'
@@ -509,6 +510,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   </div>
   const scene = <section className={`pixel-battle ${activeDice && diceStage === 'focus' ? "pixel-battle--dice-pending" : ""} ${diceAwaitingClick ? "pixel-battle--dice-awaiting" : ""}`} role="region" aria-label="Viewport unificada de combate">
     <header className="pixel-battle__header" aria-label="Encontro de combate">
+      <Link to="/visual-v06" className="battle-v06-access" aria-label="Abrir arena isométrica experimental">Arena 3D · v0.6</Link>
       <strong>TERRÚNIA</strong>
       <div className="pixel-battle__encounter-label"><h1 title={battleTitle}>{battleTitle}</h1></div>
       <small>{battle.waveIndex ? 'ONDA ' + battle.waveIndex + ' · ' : ''}RODADA {battle.round} · {activeDice?.actorName ? 'VEZ DE ' + activeDice.actorName.toLocaleUpperCase('pt-BR') : turnCue ? 'REAÇÃO INIMIGA' : battle.phase === 'Victory' ? 'VITÓRIA' : battle.phase === 'Defeat' ? 'DERROTA' : battle.phase === 'AwaitingInitiative' ? 'INICIATIVA PENDENTE' : 'TURNO DO JOGADOR'}</small>
