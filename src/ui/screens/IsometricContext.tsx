@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { AssetImage } from '../components/AssetImage'
+import { getPresencePortrait } from '../../content/npcVisuals'
+import { EquippedCharacter } from '../characters/EquippedCharacter'
 import { content } from '../../content/catalog'
 import type { TerranLocationId } from '../../content/terran'
 import type { GameSave } from '../../domain/game/types'
@@ -75,12 +78,12 @@ export function IsometricContext({ save, selected }: { save: GameSave; selected:
               <button key={presence.id} type="button" className="iso-context__unit iso-context__unit--npc"
                 style={positionStyle(position.x, position.y, 384, 256)}
                 onClick={() => setFocused(presence.id)} title={presence.label}>
-                <span className="iso-context__unit-body" />
+                <span className="iso-context__unit-body"><AssetImage assetId={getPresencePortrait(presence)} alt={presence.label} /></span>
                 <span className="iso-context__unit-name">{marker ? String(marker) + ' · ' : ''}{presence.label}</span>
               </button>)}
             {room && <div className="iso-context__unit iso-context__unit--player"
               style={positionStyle(room.spawn.x, room.spawn.y, 384, 256)}>
-              <span className="iso-context__unit-body" />
+              <span className="iso-context__unit-body"><EquippedCharacter save={save} facing="down" /></span>
               <span className="iso-context__unit-name">Seu Terrírian</span>
             </div>}
           </div>
