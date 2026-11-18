@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { IsometricContext } from './IsometricContext'
 import { Link } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
@@ -62,6 +63,7 @@ export function IsometricPreviewScreen() {
         <section aria-live="polite"><span>LOCAL SELECIONADO</span><h2>{location.name}</h2><p>{location.description}</p><Link to={`/terran/${location.id}`}>Abrir serviços existentes de {location.shortName}</Link></section>
         <div className="iso-preview__controls"><button type="button" onClick={() => setZoom((v) => Math.max(.7, Math.round((v - .1) * 10) / 10))} aria-label="Afastar câmera">−</button><output>{Math.round(zoom * 100)}%</output><button type="button" onClick={() => setZoom((v) => Math.min(1.4, Math.round((v + .1) * 10) / 10))} aria-label="Aproximar câmera">+</button></div>
       </footer>
+      <IsometricContext save={save} selected={selected} />
     </main>
   )
 }
