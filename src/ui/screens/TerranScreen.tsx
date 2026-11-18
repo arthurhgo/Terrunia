@@ -346,6 +346,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
           </aside>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
             <Link className="terran-v06-access" to={isoMode ? "/play" : "/play?view=iso"} aria-label={isoMode ? "Voltar à visão clássica de Terran" : "Ativar cena isométrica jogável de Terran"}>{isoMode ? "Visão clássica" : "Jogar em 3D · v0.6"}</Link>
+            <Link className="terran-v06-lab" to="/visual-v06" aria-label="Abrir laboratório isométrico de Terran">Prévia 3D</Link>
             
             {isoMode ? (interiorId ? <IsometricInteriorCanvas key={interiorId} save={save}
                 locationId={interiorId} enabled={gameEnabled}
