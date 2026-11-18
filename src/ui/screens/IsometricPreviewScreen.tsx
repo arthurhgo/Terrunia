@@ -72,8 +72,8 @@ export function IsometricPreviewScreen() {
   return (
     <main className="iso-preview" aria-label="Prévia experimental isométrica de Terran">
       <header className="iso-preview__header">
-        <div><span>Terrúnia · VISUAL_DRAFT</span><h1>Terran em perspectiva isométrica</h1><p>v0.6 · Prévia visual isolada, sem alteração no progresso</p></div>
-        <Link to="/play" className="iso-preview__return">Voltar ao jogo funcional</Link>
+        <div><span>Terrúnia · VISUAL_DRAFT</span><h1>Terran isométrica · v0.6</h1><p>v0.6 · Prévia visual isolada, sem alteração no progresso</p></div>
+        <Link to="/play" className="iso-preview__return">Continuar no jogo completo</Link>
       </header>
       <div className="iso-preview__viewport">
         <div className="iso-preview__camera" style={{ transform: `scale(${zoom})` }}>
