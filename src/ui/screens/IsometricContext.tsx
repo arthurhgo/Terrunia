@@ -60,7 +60,7 @@ export function IsometricContext({ save, selected }: { save: GameSave; selected:
           <div className="iso-context__combatants">{combatants.map((actor) =>
             <div key={actor.id}><strong>{actor.name}</strong><span>{actor.hp}/{actor.maxHp} PV</span>
               <meter min="0" max={actor.maxHp || 1} value={actor.hp} /></div>)}</div>
-          <Link to="/play">Continuar combate oficial e lançar dados</Link>
+          <Link to="/play?view=iso">Jogar combate oficial com câmera isométrica experimental</Link>
         </div>
       ) : showRoom ? (
         <>
