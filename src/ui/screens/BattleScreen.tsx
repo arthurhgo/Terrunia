@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Backpack, Bomb, BookOpen, Crosshair, Gem, ScrollText, Sparkles, Swords, Zap, ShieldCheck } from 'lucide-react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import { isProtectedBoss, submitBattleCommand as previewBattleCommand } from '../../domain/combat/engine'
 import { FUNGAL_DUNGEON_ID } from '../../domain/exploration/dungeonEngine'
@@ -70,6 +70,8 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
   const finishBattleIntoExpedition = useGameStore((state) => state.finishBattleIntoExpedition)
   const returnToTerran = useGameStore((state) => state.returnToTerran)
   const navigate = useNavigate()
+  const { search } = useLocation()
+  const isometricArena = new URLSearchParams(search).get('view') === 'iso'
   const battle = save?.battle
   const enemies = useMemo(() => battle
     ? Object.values(battle.combatants).filter((actor) => actor.side === 'enemy')
@@ -508,7 +510,7 @@ export function BattleScene({ unified = false }: { unified?: boolean }) {
       </span>
     })}
   </div>
-  const scene = <section className={`pixel-battle ${activeDice && diceStage === 'focus' ? "pixel-battle--dice-pending" : ""} ${diceAwaitingClick ? "pixel-battle--dice-awaiting" : ""}`} role="region" aria-label="Viewport unificada de combate">
+  const scene = <section className={`pixel-battle ${isometricArena ? "pixel-battle--isometric" : ""} ${activeDice && diceStage === 'focus' ? "pixel-battle--dice-pending" : ""} ${diceAwaitingClick ? "pixel-battle--dice-awaiting" : ""}`} role="region" aria-label="Viewport unificada de combate">
     <header className="pixel-battle__header" aria-label="Encontro de combate">
       <Link to="/visual-v06" className="battle-v06-access" aria-label="Abrir arena isométrica experimental">Arena 3D · v0.6</Link>
       <strong>TERRÚNIA</strong>
