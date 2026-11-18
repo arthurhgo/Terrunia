@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { IsometricContext } from './IsometricContext'
 import { AssetImage } from '../components/AssetImage'
 import { EquippedCharacter } from '../characters/EquippedCharacter'
@@ -17,6 +17,8 @@ import './isometricPreview.css'
  * World-space interaction and NPC/battle simulation remain authoritative in /play.
  * Do not persist preview camera or selection into the game save.
  */
+const VisualContext = memo(IsometricContext)
+
 export function IsometricPreviewScreen() {
   const save = useGameStore((state) => state.save)
   const [selected, setSelected] = useState<TerranLocationId>('location_terran_portal_plaza')
@@ -25,6 +27,7 @@ export function IsometricPreviewScreen() {
   const [player, setPlayer] = useState<WorldPoint>({ x: 384, y: 312 })
   const heroRef = useRef(player)
   heroRef.current = player
+  const cityCast = useMemo(() => save ? getCityCast(save) : [], [save])
   const pathRef = useRef<WorldPoint[]>([])
   const keysRef = useRef(new Set<string>())
 
@@ -110,7 +113,7 @@ export function IsometricPreviewScreen() {
               )
             })}
 
-            {getCityCast(save).map((actor) => (
+            {cityCast.map((actor) => (
               <button key={actor.id} type="button" className="iso-preview__npc-token"
                 style={{ left: String(actor.point.x / CITY_WIDTH * 100) + '%',
                   top: String(actor.point.y / CITY_HEIGHT * 100) + '%' }}
@@ -134,7 +137,7 @@ export function IsometricPreviewScreen() {
         <section aria-live="polite"><span>LOCAL SELECIONADO</span><h2>{location.name}</h2><p>{location.description}</p><Link to={`/terran/${location.id}`}>Abrir serviços existentes de {location.shortName}</Link></section>
         <div className="iso-preview__controls"><button type="button" onClick={() => setZoom((v) => Math.max(.7, Math.round((v - .1) * 10) / 10))} aria-label="Afastar câmera">−</button><output>{Math.round(zoom * 100)}%</output><button type="button" onClick={() => setZoom((v) => Math.min(1.4, Math.round((v + .1) * 10) / 10))} aria-label="Aproximar câmera">+</button></div>
       </footer>
-      <IsometricContext save={save} selected={selected} />
+      <VisualContext save={save} selected={selected} />
     </main>
   )
 }
