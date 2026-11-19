@@ -16,7 +16,7 @@ import type { RosettaQuestRoute, TrackedQuestRoute } from '../../domain/terran/r
 import { getInteriorQuestPaths } from './interiorQuestPaths'
 import { useWorldViewport } from '../world/useWorldViewport'
 import { createInteriorProjection } from './interiorProjection'
-import { pitchCos } from '../world/isometricProjection'
+import { isometricGround, pitchCos } from '../world/isometricProjection'
 import { interiorPropHeight } from './interiorRoomModel'
 import { createInteriorScene } from './interiorScene3d'
 import './interiorQuestPaths.css'
@@ -174,8 +174,10 @@ export function PixelInteriorCanvas({
       const dt = Math.min(.05, last ? (now - last) / 1000 : 0)
       last = now
       frame += 1
-      let dx = Number(keysRef.current.has('right')) - Number(keysRef.current.has('left'))
-      let dy = Number(keysRef.current.has('down')) - Number(keysRef.current.has('up'))
+      const inputX = Number(keysRef.current.has('right')) - Number(keysRef.current.has('left'))
+      const inputY = Number(keysRef.current.has('down')) - Number(keysRef.current.has('up'))
+      // Use the same screen-relative controls as the isometric city.
+      let { x: dx, y: dy } = isometricGround(inputX, inputY)
       let walking = false
       const speed = dt * 70
       if (enabledRef.current) {
@@ -202,7 +204,9 @@ export function PixelInteriorCanvas({
         }
         if (dx || dy) {
           const length = Math.hypot(dx, dy)
-          faceRef.current = Math.abs(dx) > Math.abs(dy) ? dx > 0 ? 'right' : 'left' : dy > 0 ? 'down' : 'up'
+          const faceX = inputX || inputY ? inputX : dx
+          const faceY = inputX || inputY ? inputY : dy
+          faceRef.current = Math.abs(faceX) > Math.abs(faceY) ? faceX > 0 ? 'right' : 'left' : faceY > 0 ? 'down' : 'up'
           const next = {
             x: playerRef.current.x + dx / length * speed,
             y: playerRef.current.y + dy / length * speed,

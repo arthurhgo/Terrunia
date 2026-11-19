@@ -18,6 +18,7 @@ import { CITY_NPC_SIZE, getCityCamera, getCityDistrict, cityScreenToWorld, getLa
 import { terranLandmarks, cityLandmarkFlag, type TerranLandmark } from '../../content/terranExploration'
 import type { RosettaQuestRoute, TrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 import { pitchCos, projectTerran, terranScreenToGround, terranViewportCorners } from './terranProjection'
+import { isometricGround } from '../world/isometricProjection'
 import type { loadTerranSplatScene } from './terranSplatScene'
 import './questTrackingPaths.css'
 
@@ -238,8 +239,10 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
       liveActorsRef.current = liveCast
       let walking = false
       if (enabledRef.current) {
-        let dx = Number(keysRef.current.has('right')) - Number(keysRef.current.has('left'))
-        let dy = Number(keysRef.current.has('down')) - Number(keysRef.current.has('up'))
+        const inputX = Number(keysRef.current.has('right')) - Number(keysRef.current.has('left'))
+        const inputY = Number(keysRef.current.has('down')) - Number(keysRef.current.has('up'))
+        // Keyboard and D-pad are screen-relative; collision/pathfinding stay in world space.
+        let { x: dx, y: dy } = isometricGround(inputX, inputY)
         const destination = destinationRef.current
         const speed = 94 * delta
         if (dx === 0 && dy === 0 && destination) {
@@ -273,7 +276,10 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
         }
         const magnitude = Math.hypot(dx, dy)
         if (magnitude > 0) {
-          facingRef.current = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up')
+          const faceX = inputX || inputY ? inputX : dx
+          const faceY = inputX || inputY ? inputY : dy
+          facingRef.current = Math.abs(faceX) > Math.abs(faceY)
+            ? (faceX > 0 ? 'right' : 'left') : (faceY > 0 ? 'down' : 'up')
           const next = { x: playerRef.current.x + dx / magnitude * speed, y: playerRef.current.y + dy / magnitude * speed }
           if (isCityWalkable(next)) { playerRef.current = next; walking = true }
           else if (isCityWalkable({ x: next.x, y: playerRef.current.y })) { playerRef.current.x = next.x; walking = true }
