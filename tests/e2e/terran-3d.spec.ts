@@ -23,17 +23,7 @@ test('Terran opens in 3D with live controls, quests and interiors', async ({ pag
   await expect(city).toHaveAttribute('data-city-visual', '3d')
   await expect(city.getByRole('button', { name: 'Ver em 2D' })).toHaveCount(0)
   await expect(canvas).toHaveAttribute('data-player-y', '292')
-  await canvas.focus()
-  await page.keyboard.down('w')
   const playerY = async () => Number(await canvas.getAttribute('data-player-y'))
-  try {
-    await expect.poll(playerY).toBeLessThan(283)
-  } finally {
-    await page.keyboard.up('w')
-  }
-  // The south face of the Portal collision footprint is y=279.
-  expect(await playerY()).toBeGreaterThanOrEqual(279)
-
   const ground = { x: 336, y: 306 }
   const projected = projectTerran(ground)
   const click = await canvas.evaluate((element, point) => {
@@ -47,6 +37,20 @@ test('Terran opens in 3D with live controls, quests and interiors', async ({ pag
   await canvas.click({ position: click })
   await expect.poll(async () => Math.abs(Number(await canvas.getAttribute('data-player-x')) - ground.x)).toBeLessThan(3)
   await expect.poll(async () => Math.abs(await playerY() - ground.y)).toBeLessThan(3)
+
+  // The up arrow should move vertically on screen, rather than along the old Y world axis.
+  const before = { x: Number(await canvas.getAttribute('data-player-x')), y: await playerY() }
+  await canvas.focus()
+  await page.keyboard.down('ArrowUp')
+  try {
+    await expect.poll(playerY).toBeLessThan(before.y - 6)
+  } finally {
+    await page.keyboard.up('ArrowUp')
+  }
+  const after = { x: Number(await canvas.getAttribute('data-player-x')), y: await playerY() }
+  expect(after.x).toBeLessThan(before.x - 6)
+  expect(Math.abs(projectTerran(after).x - projectTerran(before).x)).toBeLessThan(3)
+  expect(projectTerran(after).y).toBeLessThan(projectTerran(before).y)
 
   await city.getByRole('button', { name: 'Conversar com Rosetta', exact: true }).click()
   const guide = page.getByRole('dialog', { name: 'Orientações de Rosetta' })
