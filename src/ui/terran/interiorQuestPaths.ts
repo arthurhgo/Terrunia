@@ -38,12 +38,13 @@ export const getInteriorQuestPaths = (
   from: WorldPoint,
   residents: readonly InteriorResident[],
   routes: readonly RosettaQuestRoute[],
+  project: (point: WorldPoint) => WorldPoint = (point) => point,
 ): InteriorQuestPath[] => routes.flatMap((route) => {
   const target = resolveInteriorRouteTarget(roomId, residents, route)
   if (!target) return []
   const waypoints = findInteriorPath(from, target.point, roomId)
   if (!waypoints.length) return []
-  const vertices = [from, ...waypoints]
+  const vertices = [from, ...waypoints].map(project)
   return [{
     id: route.id,
     questIds: route.questIds,

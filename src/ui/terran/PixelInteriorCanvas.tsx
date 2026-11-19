@@ -1,4 +1,4 @@
-import { useEffect, useRef, type PointerEvent } from 'react'
+import { useEffect, useMemo, useRef, type PointerEvent } from 'react'
 import { NpcNameplate } from './NpcNameplate'
 import { CITY_NPC_SIZE } from './cityWorld'
 import { resolveAsset } from '../../assets/assetRegistry'
@@ -7,14 +7,18 @@ import { getVisualEquipment, equipmentVisualIds } from '../characters/equipmentV
 import { getRoomName, roomFurniture, type RoomFurniture, type TerranInteriorId, PLAYER_HOME_INTERIOR_ID } from './roomContent'
 import type { TerranNpcPresence } from '../../content/types'
 import { findInteriorPath, getInteriorResidents, isInteriorWalkable, type InteriorResident } from './interiorLayout'
-import { getRoomPlan } from './roomGeometry'
+import { containsRoomPoint, getRoomPlan } from './roomGeometry'
 import { CLAN_HALL_MINI_PORTAL_ID, isClanCastleInteriorId } from '../../content/clanCastlesV05142'
-import { drawTerranInterior } from './interiorArt'
 import type { WorldPoint } from './pixelCityArt'
 import type { ActorFacing } from './pixelActorArt'
 import type { GameSave } from '../../domain/game/types'
 import type { RosettaQuestRoute, TrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 import { getInteriorQuestPaths } from './interiorQuestPaths'
+import { useWorldViewport } from '../world/useWorldViewport'
+import { createInteriorProjection } from './interiorProjection'
+import { pitchCos } from '../world/isometricProjection'
+import { interiorPropHeight } from './interiorRoomModel'
+import { createInteriorScene } from './interiorScene3d'
 import './interiorQuestPaths.css'
 
 type Interaction = 'exit' | 'services' | string | null
@@ -28,7 +32,7 @@ const directions: Record<string, Direction> = {
 const distance = (a: WorldPoint, b: WorldPoint) => Math.hypot(a.x - b.x, a.y - b.y)
 
 /**
- * The six institutions are explorable pixel rooms, not navigational pages.
+ * Institutions and homes use walkable room plans.
  * NPC interaction only fires on arrival: clicking a resident walks over first.
  * A saved visit remains tied to the official Terran location ID.
  */
@@ -50,9 +54,25 @@ export function PixelInteriorCanvas({
 }) {
   const equipmentKey = equipmentVisualIds(save)
   const equipped = getVisualEquipment(save)
+  const equippedRef = useRef(equipped)
+  equippedRef.current = equipped
   const residents = getInteriorResidents(save, locationId)
   const furniture = roomFurniture[locationId].filter((item) => item.id !== CLAN_HALL_MINI_PORTAL_ID || Boolean(save.character.clan.clanId))
   const plan = getRoomPlan(locationId)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
+  const viewport = useWorldViewport(stageRef, 532, 552)
+  const spatial = true
+  const width = spatial ? viewport.width : 384
+  const height = spatial ? viewport.height : 256
+  const projection = useMemo(() => spatial ? createInteriorProjection(plan, { width, height }) : null,
+    [plan, width, height, spatial])
+  const routeProjection = useMemo(() => projection ? (point: WorldPoint) => projection.project(point, 1) : undefined,
+    [projection])
+  const anchor = (point: WorldPoint, lift3d = 0, lift2d = 0) => {
+    const screen = projection?.project(point, lift3d) ?? { x: point.x, y: point.y - lift2d }
+    return { left: `${screen.x / width * 100}%`, top: `${screen.y / height * 100}%` }
+  }
   const showRosettaPreview = showQuestRoutes && questRoutes.length > 0
   const showingTracked = showTrackedQuestRoute && !showRosettaPreview
   const activeRoutes: readonly RosettaQuestRoute[] = showRosettaPreview ? questRoutes
@@ -60,7 +80,6 @@ export function PixelInteriorCanvas({
   const routesRef = useRef(activeRoutes)
   const routeElementsRef = useRef(new Map<string, SVGPathElement>())
   routesRef.current = activeRoutes
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const playerRef = useRef<WorldPoint>({ ...plan.spawn })
   const faceRef = useRef<Direction>('up')
   const keysRef = useRef(new Set<Direction>())
@@ -92,7 +111,7 @@ export function PixelInteriorCanvas({
   const nearestInteraction = () => {
     const resident = residentsRef.current.find((entry) => distance(entry.position, playerRef.current) < 21)
     if (resident) return resident.presence.id
-    const item = roomFurniture[locationId].find((entry) => distance(entry.point, playerRef.current) < 21)
+    const item = furniture.find((entry) => distance(entry.point, playerRef.current) < 21)
     if (item) return item.id
     if (distance(plan.exit, playerRef.current) < 21) return 'exit'
     if (distance(plan.service, playerRef.current) < 22) return 'services'
@@ -119,10 +138,13 @@ export function PixelInteriorCanvas({
   }, [enabled])
 
   const appearanceSource = save.character.appearance ? appearanceSpriteSheetUri(save.character.appearance) : null
+  const clanPortalOpen = Boolean(save.character.clan.clanId)
 
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d')
     if (!ctx) return
+    const scene = projection ? createInteriorScene(locationId, clanPortalOpen, { width, height }, projection) : null
+    if (!scene) return
     const sprite = new Image()
     sprite.src = appearanceSource ?? resolveAsset(save.character.portraitAssetId).path
     sprite.onerror = () => { sprite.onerror = null; sprite.src = resolveAsset(save.character.portraitAssetId).fallback }
@@ -192,13 +214,16 @@ export function PixelInteriorCanvas({
         }
       }
       if (frame % 9 === 0 && routesRef.current.length) {
-        for (const route of getInteriorQuestPaths(locationId, playerRef.current, residentsRef.current, routesRef.current)) {
+        for (const route of getInteriorQuestPaths(locationId, playerRef.current, residentsRef.current, routesRef.current, routeProjection)) {
           routeElementsRef.current.get(route.id)?.setAttribute('d', route.d)
         }
       }
-      drawTerranInterior(ctx, locationId, playerRef.current, sprite,
-        reducedRef.current ? 0 : frame, faceRef.current, walking && !reducedRef.current,
-        save.character.portraitAssetId, residentsRef.current, equipped, Boolean(save.character.clan.clanId))
+      const animation = reducedRef.current ? 0 : frame
+      const moving = walking && !reducedRef.current
+      if (scene) {
+        scene(ctx, playerRef.current, sprite, animation, faceRef.current, moving,
+          save.character.portraitAssetId, residentsRef.current, equippedRef.current, destinationRef.current?.target)
+      }
       raf = requestAnimationFrame(tick)
     }
     window.addEventListener('keydown', keydown)
@@ -211,35 +236,39 @@ export function PixelInteriorCanvas({
       window.removeEventListener('keyup', keyup)
       window.removeEventListener('blur', clearKeys)
     }
-  }, [locationId, save.character.portraitAssetId, save.character.clan.clanId, appearanceSource, equipmentKey])
+  }, [locationId, save.character.portraitAssetId, clanPortalOpen, appearanceSource, equipmentKey,
+    projection, routeProjection, width, height])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
     if (!enabled) return
     const rect = event.currentTarget.getBoundingClientRect()
     if (!rect.width || !rect.height) return
-    const point = {
-      x: Math.round((event.clientX - rect.left) / rect.width * 384),
-      y: Math.round((event.clientY - rect.top) / rect.height * 256),
+    const screen = {
+      x: (event.clientX - rect.left) / rect.width * width,
+      y: (event.clientY - rect.top) / rect.height * height,
     }
+    const point = projection?.ground(screen) ?? { x: Math.round(screen.x), y: Math.round(screen.y) }
     const resident = residents.find((entry) => distance(point, entry.position) < 17)
     if (resident) walkTo({ x: resident.position.x, y: resident.position.y + 10 }, resident.presence.id)
     else {
-      const item = roomFurniture[locationId].find((entry) => distance(point, entry.point) < 23)
+      const item = furniture.find((entry) => distance(point, entry.point) < 23)
       if (item) { walkTo(item.point, item.id); return }
       if (distance(point, plan.exit) < 25) walkTo(plan.exit, 'exit')
       else if (distance(point, plan.service) < 27) walkTo(plan.service, 'services')
-      else walkTo(point)
+      else if (!projection || plan.floor.some((area) => containsRoomPoint(area, point))) walkTo(point)
     }
   }
 
-  return <div className={`pixel-interior ${save.settings.reducedMotion ? 'pixel-interior--static' : ''}`} aria-label="Interior explorável de Terran">
-    <canvas ref={canvasRef} width={384} height={256} role="img" tabIndex={0}
+  const spriteSize = CITY_NPC_SIZE * (projection?.scale ?? 1)
+  return <div ref={stageRef} className={`pixel-interior ${save.settings.reducedMotion ? 'pixel-interior--static' : ''}`}
+    data-interior-visual={spatial ? '3d' : '2d'} aria-label="Interior explorável de Terran">
+    <canvas ref={canvasRef} width={width} height={height} role="img" tabIndex={0}
       className="pixel-interior__canvas" onPointerDown={pointerWalk}
-      aria-label={`Interior pixelado de ${getRoomName(locationId)}; caminhe, aproxime-se dos NPCs e pressione E`} />
-    {activeRoutes.length > 0 && <svg className="pixel-interior__quest-paths" viewBox="0 0 384 256"
+      aria-label={`Interior pixelado de ${getRoomName(locationId)}${spatial ? ' em 3D isométrico' : ''}. Caminhe, aproxime-se dos NPCs e pressione E`} />
+    {activeRoutes.length > 0 && <svg className="pixel-interior__quest-paths" viewBox={`0 0 ${width} ${height}`}
       preserveAspectRatio="none" role="img" aria-label={showingTracked ? 'Caminho pontilhado da missão no interior' : 'Caminhos dourados de Rosetta dentro da casa'}
       data-route-mode={showingTracked ? 'tracked' : 'rosetta'} data-reduced-motion={save.settings.reducedMotion}>
-      {getInteriorQuestPaths(locationId, playerRef.current, residents, activeRoutes).map((route) =>
+      {getInteriorQuestPaths(locationId, playerRef.current, residents, activeRoutes, routeProjection).map((route) =>
         <path key={route.id} ref={(element) => { if (element) routeElementsRef.current.set(route.id, element); else routeElementsRef.current.delete(route.id) }}
           d={route.d} data-quest-ids={route.questIds.join(' ')} data-route-tone={route.tone}
           data-target-kind={route.targetKind} data-route-opacity={route.opacity}
@@ -253,7 +282,8 @@ export function PixelInteriorCanvas({
           data-interaction-glow={resident.marker && resident.markerPhase === 'turn-in' ? 'turn-in' : resident.marker && resident.markerPhase === 'available' ? 'available' : undefined}
           title={resident.presence.label}
           aria-label={`Falar com ${resident.presence.label} dentro do local`}
-          style={{ left: resident.position.x / 384 * 100 + '%', top: (resident.position.y - CITY_NPC_SIZE / 2) / 256 * 100 + '%', width: `${CITY_NPC_SIZE / 384 * 100}%`, height: `${CITY_NPC_SIZE / 256 * 100}%` }}
+          style={{ ...anchor(resident.position, CITY_NPC_SIZE / 2 / pitchCos, CITY_NPC_SIZE / 2),
+            width: `${spriteSize / width * 100}%`, height: `${spriteSize / height * 100}%` }}
           onClick={() => walkTo({ x: resident.position.x, y: resident.position.y + 10 }, resident.presence.id)}>
           <NpcNameplate presence={resident.presence} marker={resident.marker} markerPhase={resident.markerPhase} />
         </button>)}
@@ -263,14 +293,14 @@ export function PixelInteriorCanvas({
         disabled={!enabled} data-quest-object={item.questId}
         data-interaction-glow={item.questId && ['active','available','offered','ready_to_turn_in'].includes(save.quests[item.questId]?.status ?? 'locked') ? 'quest' : item.behavior === 'archive' ? 'inspect' : undefined}
         aria-label={`Interagir com ${item.name}`} title={item.description}
-        style={{ left: item.point.x / 384 * 100 + '%', top: (item.point.y - 9) / 256 * 100 + '%' }}
+        style={anchor(item.point, interiorPropHeight(item) * 0.76, 9)}
         onClick={() => walkTo(item.point, item.id)}>
         <span aria-hidden="true">✦</span>
         {item.behavior === 'quest' && <small className="pixel-interior__furniture-caption">{item.name}</small>}
       </button>)}
       <button type="button" disabled={!enabled || isClanCastleInteriorId(locationId)}
         className="pixel-interior__service" data-interaction-glow="service"
-        style={{ left: `${plan.service.x / 384 * 100}%`, top: `${plan.service.y / 256 * 100}%` }}
+        style={anchor(plan.service, locationId === PLAYER_HOME_INTERIOR_ID ? 13 : 0)}
         aria-label={locationId === PLAYER_HOME_INTERIOR_ID ? 'Cama · descansar e recuperar' : 'Abrir serviços do local'}
         onClick={() => {
           // A cama é um objeto do mundo: clicar nela aproxima o personagem
@@ -284,7 +314,7 @@ export function PixelInteriorCanvas({
       </button>
       <button type="button" disabled={!enabled}
         className="pixel-interior__exit"
-        style={{ left: `${plan.exit.x / 384 * 100}%`, top: `${plan.exit.y / 256 * 100}%` }}
+        style={anchor(spatial ? { x: plan.exit.x, y: plan.exit.y + 24 } : plan.exit)}
         aria-label={isClanCastleInteriorId(locationId) ? 'Voltar pelo portal ao Salão dos Clãs' : 'Sair do interior para as ruas de Terran'}
         onClick={() => { exitRef.current() }}>
         {isClanCastleInteriorId(locationId) ? '↧ Voltar ao Salão' : '↧ Sair para Terran'}

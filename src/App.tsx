@@ -6,7 +6,6 @@ import { NotificationToast } from './ui/components/NotificationToast'
 import { LoadingScreen } from './ui/screens/LoadingScreen'
 import { LoginScreen } from './ui/screens/LoginScreen'
 
-const IsometricPreviewScreen = lazy(() => import('./ui/screens/IsometricPreviewScreen').then((module) => ({ default: module.IsometricPreviewScreen })))
 const BoundItemScreen = lazy(() => import('./ui/screens/BoundItemScreen').then((module) => ({ default: module.BoundItemScreen })))
 const ArsenalScreen = lazy(() => import('./ui/screens/ArsenalScreen').then((module) => ({ default: module.ArsenalScreen })))
 const CharacterAccessScreen = lazy(() => import('./ui/screens/CharacterAccessScreen').then((module) => ({ default: module.CharacterAccessScreen })))
@@ -74,7 +73,6 @@ export default function App() {
           <Route path="/character/access" element={<GameBoot allowCharacterAccess><CharacterAccessScreen /></GameBoot>} />
           <Route path="/character/create" element={<GameBoot><CharacterCreationScreen /></GameBoot>} />
           <Route path="/new-game" element={<GameBoot><PrologueScreen /></GameBoot>} />
-          <Route path="/visual-v06" element={<GameBoot><IsometricPreviewScreen /></GameBoot>} />
           <Route path="/play" element={<GameBoot><UnifiedWorldScreen /></GameBoot>} />
           <Route path="/portal-hub" element={<GameBoot><PortalHubScreen /></GameBoot>} />
           <Route path="/terran" element={<GameBoot><Navigate to="/play" replace /></GameBoot>} />

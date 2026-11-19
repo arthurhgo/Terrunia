@@ -1,6 +1,6 @@
 import { Archive, BedDouble, ScrollText, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { content } from '../../content/catalog'
 import type { TerranLocationDefinition } from '../../content/types'
 import { type TerranLocationId } from '../../content/terran'
@@ -21,7 +21,6 @@ import { AssetImage } from '../components/AssetImage'
 import { GameShell } from '../components/GameShell'
 import { CutsceneOverlay } from '../terran/CutsceneOverlay'
 import { PixelCityCanvas } from '../terran/PixelCityCanvas'
-import { IsometricCityCanvas, IsometricInteriorCanvas } from '../terran/IsometricPlayableWorld'
 import { getVisualEquipment } from '../characters/equipmentVisuals'
 import { PixelInteriorCanvas } from '../terran/PixelInteriorCanvas'
 import { QuestObjectPuzzle } from '../terran/QuestObjectPuzzle'
@@ -52,7 +51,6 @@ import { Modal } from '../components/Modal'
 import { getReadyDeliveryQuestRoute, getRosettaQuestRoutes, getTrackedQuestRoute } from '../../domain/terran/rosettaGuide'
 
 import './gameplayV057.css'
-import './terranV06Access.css'
 
 type Drawer = 'gear' | 'location' | 'market' | 'home' | 'homeRecords' | 'chest' | 'records' | 'forge' | null
 type Presence = TerranLocationDefinition['npcPresences'][number]
@@ -100,7 +98,6 @@ function LocationDrawer({ save, location, onTalk, onVisit, unified = false }: {
 export function TerranScene({ unified = false }: { unified?: boolean }) {
   const navigate = useNavigate()
   const routerLocation = useLocation()
-  const isoMode = new URLSearchParams(routerLocation.search).get('view') === 'iso'
   const save = useGameStore((state) => state.save)
   const travel = useGameStore((state) => state.travelInTerran)
   const recordCutsceneViewed = useGameStore((state) => state.recordCutsceneViewed)
@@ -345,35 +342,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
             <TerranQuickJournal save={save} />
           </aside>
           <section className="terran-game__stage" aria-label="Cenário contínuo de Terran">
-            <Link className="terran-v06-access" to={isoMode ? "/play" : "/play?view=iso"} aria-label={isoMode ? "Voltar à visão clássica de Terran" : "Ativar cena isométrica jogável de Terran"}>{isoMode ? "Visão clássica" : "Jogar em 3D · v0.6"}</Link>
-            <Link className="terran-v06-lab" to="/visual-v06" aria-label="Abrir laboratório isométrico de Terran">Prévia 3D</Link>
-            
-            {isoMode ? (interiorId ? <IsometricInteriorCanvas key={interiorId} save={save}
-                locationId={interiorId} enabled={gameEnabled}
-                onTalk={(presence) => {
-                  if (interiorId && isClanCastleInteriorId(interiorId)) {
-                    const vendor = castleMerchantByPresenceId[presence.id]
-                    if (vendor && vendor.castleId === interiorId) {
-                      setCastleMerchantId(vendor.id)
-                      setDrawer('gear')
-                    }
-                  } else if (interiorId !== PLAYER_HOME_INTERIOR_ID) talk(presence, interiorId)
-                }}
-                onServices={() => {
-                  if (interiorId === PLAYER_HOME_INTERIOR_ID) {
-                    const bed = roomFurniture[PLAYER_HOME_INTERIOR_ID].find((furniture) => furniture.id === 'home_bed')
-                    if (bed) inspectFurniture(bed)
-                  } else openRoomServices(interiorId)
-                }}
-                onFurniture={inspectFurniture} onExit={exitInterior} />
-              : <IsometricCityCanvas key="isometric-city" save={save} enabled={gameEnabled} actors={cityCast}
-                  spawnPoint={streetSpawn} currentLocationId={save.world.currentLocationId} onEnterHome={enterHome} onEnter={openLocation}
-                  onTalk={(id, presence) => talk(presence, id)}
-                  onInspectLandmark={(landmark) => {
-                    useGameStore.getState().inspectCityLandmark(landmark.id)
-                    setCityLandmark(landmark)
-                  }} />) : (
-              interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
+            {interiorId ? <PixelInteriorCanvas key={interiorId} save={save} locationId={interiorId} enabled={gameEnabled}
                 questRoutes={getRosettaQuestRoutes(save, content)} showQuestRoutes={rosettaPathsPinned}
                 showTrackedQuestRoute={Boolean(trackedRoute)} trackedQuestRoute={trackedRoute}
                 onTalk={(presence) => {
@@ -404,7 +373,7 @@ export function TerranScene({ unified = false }: { unified?: boolean }) {
                   landmarkFlags={save.world.worldFlags} onInspectLandmark={(landmark) => {
                     useGameStore.getState().inspectCityLandmark(landmark.id)
                     setCityLandmark(landmark)
-                  }} />)}
+                  }} />}
             {cityLandmark && <CityLandmarkDialog landmark={cityLandmark} save={save} onClose={() => setCityLandmark(null)} />}
             <Modal open={baseDoorPrompt} title="Porta da Base do Terrírian" eyebrow="MISSÃO · ABRIR A BASE"
               className="terran-base-key-modal" onClose={() => setBaseDoorPrompt(false)}

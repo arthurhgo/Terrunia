@@ -46,4 +46,20 @@ describe('dado lançado diretamente na arena', () => {
     expect(screen.getByText('9 de dano')).toBeInTheDocument()
     expect(screen.getByRole('status', { name: /Lançamento visual de d8/ })).toHaveClass('is-settled')
   })
+
+  it('monta o poliedro do bônus e aguarda novamente quando muda a rolagem', () => {
+    vi.useFakeTimers()
+    const { rerender } = render(<BattleDicePlatform roll={roll} reducedMotion={false} />)
+    act(() => { vi.advanceTimersByTime(1700) })
+    expect(screen.getByRole('img', { name: 'Dado d8, face 5' })).toHaveAttribute('data-die-shape', 'octaedro')
+    const next = { ...roll, id: 'next', sides: 10 as const, face: 2, weaponBonusRoll: { sides: 12 as const, face: 6 },
+      defenseRoll: { sides: 6 as const, face: 5, action: 'Contragolpe', success: true, counter: { sides: 4 as const, face: 2 } } }
+    rerender(<BattleDicePlatform roll={next} reducedMotion={false} />)
+    expect(screen.queryByText('d10: 2')).not.toBeInTheDocument()
+    act(() => { vi.advanceTimersByTime(1700) })
+    expect(screen.getByRole('img', { name: 'Dado d10, face 2' })).toHaveAttribute('data-die-shape', 'trapezoedro-pentagonal')
+    expect(screen.getByText('Arma d12: 6')).toBeInTheDocument()
+    expect(screen.getByText('Contragolpe d6: 5 · Sucesso')).toBeInTheDocument()
+    expect(screen.getByText('Dano do contragolpe d4: 2')).toBeInTheDocument()
+  })
 })

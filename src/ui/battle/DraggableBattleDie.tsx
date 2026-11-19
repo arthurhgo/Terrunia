@@ -1,6 +1,6 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import type { AttributeDie } from '../../domain/game/types'
-import { DieIcon } from '../components/DieIcon'
+import { BattleDie3D } from './BattleDie3D'
 
 // A vertical gesture must travel far enough to avoid accidental rolls on touch devices.
 export const DIE_THROW_DISTANCE_PX = 46
@@ -65,7 +65,7 @@ export function DraggableBattleDie({ sides, onThrow, disabled = false, ariaLabel
     onClick={(event) => event.preventDefault()}>
     <span className="battle-die-drag__arrow" aria-hidden="true">↑</span>
     <span className="battle-die-drag__visual" style={{ transform: `translateY(-${dragDistance}px)` }}>
-      <DieIcon sides={sides} ariaLabel={`Dado d${sides} pronto para arremessar`} />
+      <BattleDie3D sides={sides} ariaLabel={`Dado d${sides} pronto para arremessar`} />
     </span>
     <span className="battle-die-drag__label">{dragDistance >= DIE_THROW_DISTANCE_PX
       ? 'SOLTE PARA ROLAR' : dragging ? 'PUXE MAIS PARA CIMA' : 'ARRASTE PARA CIMA ↑'}</span>

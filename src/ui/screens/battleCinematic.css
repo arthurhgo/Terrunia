@@ -79,7 +79,7 @@
 }
 .battle-dice-platform--in-arena .battle-dice-platform__die { position:relative; z-index:3; }
 .battle-dice-platform--in-arena .battle-dice-platform__die .die-icon {
-  width:clamp(58px,8vw,88px); height:clamp(58px,8vw,88px);
+  width:clamp(64px,9vw,104px); height:clamp(64px,9vw,104px);
   filter:drop-shadow(0 10px 12px #000) drop-shadow(0 0 16px #ffd58e70);
 }
 .battle-dice-platform--in-arena .battle-dice-platform__shadow {
@@ -96,19 +96,18 @@
 .battle-dice-platform--in-arena.is-rolling .battle-dice-platform__die {
   animation:combat-die-from-actions 1.55s cubic-bezier(.2,.72,.22,1) both;
 }
-.battle-dice-platform--in-arena.is-rolling .die-icon__number { opacity:0; }
 .battle-dice-platform--in-arena.is-settled .battle-dice-platform__die {
-  transform:translateY(5px) rotate(8deg); animation:none;
+  transform:translateY(5px); animation:none;
 }
 .battle-dice-platform--in-arena .battle-dice-platform__rune {display:none;}
 @keyframes combat-veil{from{opacity:0}to{opacity:1}}
 @keyframes combat-die-from-actions {
-  0%{transform:translateY(160px) rotate(-480deg) scale(.7);opacity:.3}
-  37%{transform:translateY(-43px) rotate(140deg) scale(1.15);opacity:1}
-  61%{transform:translateY(19px) rotate(305deg) scale(.96)}
-  78%{transform:translateY(-17px) rotate(385deg) scale(.94)}
-  92%{transform:translateY(8px) rotate(440deg) scale(1)}
-  100%{transform:translateY(5px) rotate(448deg) scale(1)}
+  0%{transform:translateY(160px) scale(.7);opacity:.3}
+  37%{transform:translateY(-43px) scale(1.15);opacity:1}
+  61%{transform:translateY(19px) scale(.96)}
+  78%{transform:translateY(-17px) scale(.94)}
+  92%{transform:translateY(8px) scale(1)}
+  100%{transform:translateY(5px) scale(1)}
 }
 /* Player picks action then physically throws the die from this action bar. */
 .pixel-battle--dice-awaiting .pixel-battle__commands,

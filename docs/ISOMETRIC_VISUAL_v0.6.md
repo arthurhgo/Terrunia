@@ -1,55 +1,24 @@
-# Terrúnia v0.6 — implementação visual isométrica (VISUAL_DRAFT)
+# Terrúnia v0.6 — versão isométrica publicada
 
-## Estado atual
+A apresentação de referência é a versão 2 de Terrúnia — Teste 3D, commit de origem `2648a8e950b836d1c75d032561e70ecf0f5dac90`. A decisão do criador de 2026-11-19 substitui a experiência 2D e o modo CSS experimental da PR #85 pela gameplay desse teste em `/play`.
 
-A v0.6 possui dois níveis de visualização experimental:
+## Conteúdo integrado
 
-1. **Modo integrado jogável**: /play?view=iso. Reutiliza TerranScene (quests, NPC, casa, serviços, progressão e save), exibe IsometricCityCanvas/IsometricInteriorCanvas e oferece câmera inclinada na arena real de BattleScene.
-2. **Laboratório isolado**: /visual-v06. Mantido para comparar volumes e inspecionar dados sem acionar callbacks de gameplay.
+- Cidade do Gaussian Splash Studio: `public/assets/terran/cidade-de-terran.psf`, 184.626 pontos, 3.692.560 bytes, servida pelo próprio jogo.
+- Projeção isométrica ortográfica, câmera de seguimento, profundidade e oclusão dos atores. O PSF é rasterizado uma vez em buffers de cor e profundidade; o desenho usa Canvas, como na versão de referência.
+- Interiores isométricos derivados das plantas e móveis existentes, com NPCs, cama, baú, serviços e saídas.
+- Dados de combate d4, d6, d8, d10 e d12 com geometria própria; faces de ataque, bônus, defesa e contra-ataque fornecidas pelo motor.
+- Controles, colisões, pathfinding, Diário, diálogos, lojas, progressão e autenticação do jogo existente.
+- Campos opcionais de rolagens no schema do save, mantendo a leitura de saves históricos.
 
-A opção na própria cena de Terran alterna «Jogar em 3D · v0.6» / «Visão clássica». A query string é apenas preferência temporária de visualização; não migra nem altera GameSave.
+## Acesso
 
-## Implementado na PR #85
+`/play` abre a cidade 3D por padrão, inclusive em sessões que usaram preferências antigas. Não há alternância para 2D. A cidade mostra um estado de carregamento e permite recarregar se o arquivo não for carregado; não desenha a cidade antiga como fallback. Os interiores usam a mesma apresentação isométrica.
 
-- Cidade isométrica com oito localizações oficiais (Praça do Portal e sete instituições) e Base do Terrírian.
-- Navegação WASD, setas, interação E e rota por clique. Colisões e caminhos importados de cityNavigation.ts e interiorLayout.ts.
-- Entrada nos edifícios somente por aproximação; a transição chama openLocation original.
-- NPCs obtidos de getCityCast(save) e getInteriorResidents(save, id), com marcadores, retratos e diálogos reais por callbacks da TerranScene.
-- Interiores gerados dos ROOM_PLANS e roomFurniture, preservando interação com cama, baú, serviços, missões, objetos e portais de Clã quando autorizados no save.
-- Sprite do personagem e itens compostos por EquippedCharacter, conectado ao assetRegistry com fallback existente.
-- Arena em /play?view=iso continua sendo BattleScene, preservando fases, efeitos, rolagens e motor de domínio; ângulo de câmera é experimental.
-- HUD, Diário, modais, loot e relações com NPC continuam sendo componentes existentes de TerranScene.
-- Testes Playwright de prévia e fluxo de cidade isométrica → interior → cidade → visão clássica.
+A rota de laboratório `/visual-v06` e os componentes CSS experimentais foram retirados do fluxo publicado. Os arquivos de domínio e a documentação histórica permanecem preservados. A exploração externa e a arena mantêm o comportamento visual da versão de referência; esta publicação não cria novos mapas para esses lugares.
 
-## Arquitetura
+## Canon e limites
 
-IsometricPlayableWorld.tsx é apresentação: recebe save, IDs, pontos, atores e callbacks de interação. Movimento 2D e pathfinding usam as mesmas coordenadas oficiais do modo clássico. O componente não chama ações de gameStore para conceder recompensas e não escreve save diretamente. Os callbacks de TerranScene são a fonte de autoridade para NPCs, lojas, portas, missões e objetos.
+A decisão trata da apresentação visual. Não altera custos, recompensas, Clã, Classe, sete Graus ou regras dos cinco Vínculos. Formas, iluminação, proporções e coordenadas continuam `VISUAL_DRAFT`. O mapa é um asset substituível pelo registro central; a lógica não depende da imagem.
 
-Nenhuma regra nova de combate, clãs, classes, essência, equipamento ou save foi introduzida.
-
-## Limitações e OWNER_DECISION
-
-**Não é Gaussian Splat, glTF, Three.js ou WebGL.** A geometria é placeholder CSS 3D com sprites do registro real. O termo "3D" no botão indica perspectiva experimental, não um renderer 3D final.
-
-- OWNER_DECISION: pipeline de asset 3D definitivo (.splat, .ply, glTF ou mistura); tamanho de texturas, resolução de splats, LOD e orçamento de GPU.
-- Os desenhos, alturas, luzes e materiais ainda são VISUAL_DRAFT, não canon arquitetônico.
-- A cidade inteira é exibida em maquete isométrica; câmera de perseguição, iluminação volumétrica e efeitos de oclusão reais ainda não estão implementados.
-- As cenas da cidade e interiores são jogáveis com os callbacks existentes, mas o sistema de splats e a exploração de Astravél/dungeons ainda estão pendentes.
-- Objetos de cena sem sprite disponível exibem fallback, sem interferir em colisões nem regras.
-- Caminhos visuais de Rosetta e trilhas de quests têm a implementação completa somente no renderizador 2D; para o modo isométrico, o Diário funcional permanece acessível.
-
-## Próximas etapas para v0.6 final
-
-1. Introduzir um renderAdapter de cena que possa trocar CSS placeholder por WebGL e Gaussian Splat opcional, sem dependência do domínio.
-2. Importar assets de Gaussian Splash Studio via assetRegistry, incluindo fallback 2D.
-3. Implementar câmera isométrica de seguimento e picking consistente de NPCs, portas e objetos em WebGL.
-4. Aplicar a renderização na exploração, nas dungeons e no combate mantendo as ações do motor atual.
-5. Testar performance, navegação, turnos, loot, visibilidade, acessibilidade e saves, desktop e mobile.
-
-## Release gates
-
-npm run check, Playwright E2E e deployment Vercel no mesmo SHA. A versão estável da main só deve ser promovida após checks aprovados; manter esta PR como draft enquanto a substituição definitiva de renderer e a aceitação visual estiverem pendentes.
-
-## Canon
-
-Personagem-Nexo inicial sem Clã e Classe; os cinco Vínculos são permanentes; o Portal só acessa instâncias; sem alterar Essência, missão, combate ou regras de progressão. Em conflito, prevalecem AGENTS.md e TERRUNIA_GAME_APP_MASTER_SPEC_v0.4.md.
+A flag `VITE_TERRAN_3D_REVIEW` não é necessária para habilitar a cidade 3D na Vercel. As configurações Firebase existentes continuam sendo usadas.

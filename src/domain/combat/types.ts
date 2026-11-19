@@ -62,6 +62,7 @@ export type Combatant = {
 }
 
 export type CombatDie = 4 | 6 | 8 | 10 | 12
+export type CombatDieFace = { sides: CombatDie; face: number }
 export type CombatRoll = {
   actorId: string
   /** Exact affected combatant for staged hit and defeat VFX. */
@@ -72,7 +73,8 @@ export type CombatRoll = {
   /** Authoritative motor result, only for damage dice; undefined in historical saves. */
   critical?: boolean
   /** v0.5.7: the actual face determines damage; all fields are motor-produced. */
-  weaponBonusRoll?: { sides: CombatDie; face: number }
+  weaponBonusRoll?: CombatDieFace
+  defenseRoll?: CombatDieFace & { action: string; success: boolean; counter?: CombatDieFace }
   damageBreakdown?: {
     baseAttack: number
     skillBonus: number

@@ -1,0 +1,13 @@
+.battle-die-3d { display: block; overflow: visible; flex: 0 0 auto; }
+.battle-die-3d__number {
+  font-family: var(--display);
+  font-weight: 900;
+  fill: #fff2ce;
+  stroke: #281b25;
+  stroke-width: 1.9px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+.battle-dice-platform__extra-roll, .pixel-battle__skill-dice { display: inline-flex; align-items: center; gap: 4px; }
+.battle-dice-platform__extra-roll .battle-die-3d { width: 24px; height: 24px; }
+.pixel-battle__skill-dice .battle-die-3d { width: 12px; height: 12px; }

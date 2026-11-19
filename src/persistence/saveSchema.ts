@@ -321,6 +321,10 @@ const battleSchema = z.object({
       action: z.string().min(1),
       critical: z.boolean().optional(),
       weaponBonusRoll: z.object({ sides: attributeDieSchema, face: positiveInteger }).optional(),
+      defenseRoll: z.object({
+        sides: attributeDieSchema, face: positiveInteger, action: z.string().min(1), success: z.boolean(),
+        counter: z.object({ sides: attributeDieSchema, face: positiveInteger }).optional(),
+      }).optional(),
       damageBreakdown: z.object({
         baseAttack: z.number().finite(),
         skillBonus: z.number().finite(),
