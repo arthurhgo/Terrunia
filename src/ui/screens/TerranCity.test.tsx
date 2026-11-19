@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { content } from '../../content/catalog'
@@ -8,6 +8,16 @@ import { useGameStore } from '../../state/gameStore'
 import { TerranLocationScreen } from './TerranLocationScreen'
 import { InventoryScreen } from './InventoryScreen'
 import { TerranScreen } from './TerranScreen'
+
+vi.mock('../terran/terranSplatScene', () => ({
+  loadTerranSplatScene: async () => ({ cameraAt: () => ({ x: 0, y: 0 }), draw: () => {} }),
+}))
+
+const renderReady = async (ui: Parameters<typeof render>[0]) => {
+  const result = render(ui)
+  await act(async () => {})
+  return result
+}
 
 const createPlayableSave = () => {
   const save = createNewSave(
@@ -58,7 +68,7 @@ afterEach(() => {
 })
 
 describe('interfaces de Terran', () => {
-  it('mostra a rota rastreada no painel fixo e alterna dourado/azul ao trocar a missão', () => {
+  it('mostra a rota rastreada no painel fixo e alterna dourado/azul ao trocar a missão', async () => {
     loadSave()
     const save = useGameStore.getState().save!
     save.quests.vs_astravel_first_contact.status = 'active'
@@ -66,7 +76,7 @@ describe('interfaces de Terran', () => {
     save.quests.side_street_arlen.status = 'active'
     save.eventLog.push('CutsceneViewed:astravel_call')
     useGameStore.setState({ save })
-    const { container } = render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    const { container } = await renderReady(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     const dock = screen.getByRole('complementary', { name: 'Diário de missões' })
     expect(within(dock).getByRole('region', { name: 'Missões fixas' })).toBeInTheDocument()
     const visible = screen.getByRole('img', { name: 'Caminho pontilhado da missão rastreada' })
@@ -88,14 +98,14 @@ describe('interfaces de Terran', () => {
     expect(dock).toBeInTheDocument()
   })
 
-  it('mantém a rota de missão e o marcador ! ao entrar na casa e exibe o título dos NPCs', () => {
+  it('mantém a rota de missão e o marcador ! ao entrar na casa e exibe o título dos NPCs', async () => {
     loadSave('location_terran_eldamar_house')
     const save = useGameStore.getState().save!
     save.quests.vs_astravel_first_contact.status = 'active'
     save.quests.vs_astravel_first_contact.tracked = true
     save.eventLog.push('CutsceneViewed:astravel_call')
     useGameStore.setState({ save })
-    const { container } = render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    const { container } = await renderReady(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     const rosetta = screen.getByRole('button', { name: 'Conversar com Rosetta' })
     expect(rosetta.querySelector('.npc-nameplate__subtitle')).toHaveTextContent('Guardiã do Portal')
     expect(screen.getByRole('img', { name: 'Caminho pontilhado da missão rastreada' })).toBeInTheDocument()
@@ -110,13 +120,13 @@ describe('interfaces de Terran', () => {
     expect(container.querySelector('.pixel-interior__quest-paths')).not.toBeNull()
   })
 
-  it('mostra rota verde de entrega dentro das casas até o NPC da missão', () => {
+  it('mostra rota verde de entrega dentro das casas até o NPC da missão', async () => {
     loadSave('location_terran_daeryn_house')
     const save = useGameStore.getState().save!
     save.quests.side_npc_daeryn.status = 'ready_to_turn_in'
     save.quests.side_npc_daeryn.tracked = true
     useGameStore.setState({ save })
-    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    await renderReady(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Daeryn' }))
     const route = screen.getByRole('img', { name: 'Caminho pontilhado da missão no interior' })
     expect(route.querySelector('path')).toHaveAttribute('data-route-tone', 'green')
@@ -124,9 +134,9 @@ describe('interfaces de Terran', () => {
     expect(route.querySelector('path')).toHaveAttribute('data-target-kind', 'npc')
   })
 
-  it('mostra os nomes dos NPCs nas ruas e interiores sem ocultar os marcadores', () => {
+  it('mostra os nomes dos NPCs nas ruas e interiores sem ocultar os marcadores', async () => {
     loadSave('location_terran_eldamar_house')
-    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    await renderReady(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
 
     const rosetta = screen.getByRole('button', { name: 'Conversar com Rosetta' })
     expect(rosetta.querySelector('.npc-nameplate')).toHaveTextContent('Rosetta')
@@ -142,12 +152,12 @@ describe('interfaces de Terran', () => {
     expect(eldamar).toHaveAttribute('title', 'Eldamar')
   })
 
-  it('mostra o alojamento pixelado e o balcão de Sylwen sem sair da cidade', () => {
+  it('mostra o alojamento pixelado e o balcão de Sylwen sem sair da cidade', async () => {
     loadSave('location_terran_daeryn_house')
     const save = useGameStore.getState().save!
     save.wallet.gold = 40
     useGameStore.setState({ save })
-    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    await renderReady(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     expect(screen.queryByRole('button', { name: 'Abrir Base' })).not.toBeInTheDocument()
     expect(screen.getByRole('complementary', { name: 'Status permanente do personagem' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Daeryn' }))
@@ -160,9 +170,9 @@ describe('interfaces de Terran', () => {
     expect(screen.getByRole('img', { name: /Interior pixelado de Casa de Daeryn/ })).toBeInTheDocument()
   })
 
-  it('mantém diário à esquerda e mochila recolhível no painel direito de Personagem', () => {
+  it('mantém diário à esquerda e mochila recolhível no painel direito de Personagem', async () => {
     loadSave()
-    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    await renderReady(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     const dock = screen.getByRole('complementary', { name: 'Diário de missões' })
     const missions = within(dock).getByRole('region', { name: 'Missões fixas' })
     expect(dock.children).toHaveLength(1)
@@ -179,7 +189,7 @@ describe('interfaces de Terran', () => {
     expect(backpack.querySelectorAll('.inventory-slot')).toHaveLength(0)
   })
 
-  it('pagina a mochila do personagem e preserva itens de saves legados com mais de doze pilhas', () => {
+  it('pagina a mochila do personagem e preserva itens de saves legados com mais de doze pilhas', async () => {
     loadSave()
     const save = useGameStore.getState().save!
     save.inventory = Array.from({ length: 14 }, (_, i) => ({
@@ -187,7 +197,7 @@ describe('interfaces de Terran', () => {
       rarity: 'uncommon' as const, locked: false, favorite: false, acquiredAt: save.updatedAt,
     }))
     useGameStore.setState({ save })
-    const { container } = render(<MemoryRouter><TerranScreen /></MemoryRouter>)
+    const { container } = await renderReady(<MemoryRouter><TerranScreen /></MemoryRouter>)
     const hud = screen.getByRole('complementary', { name: 'Status permanente do personagem' })
     fireEvent.click(within(hud).getByRole('button', { name: /MOCHILA/i }))
     const backpack = hud.querySelector('#terran-backpack-panel')!
@@ -199,9 +209,9 @@ describe('interfaces de Terran', () => {
     expect(within(backpack as HTMLElement).getByRole('button', { name: 'Próxima página da mochila' })).toBeDisabled()
   })
 
-  it('mantém a biblioteca visual exclusivamente nos Registros de Eldamar', () => {
+  it('mantém a biblioteca visual exclusivamente nos Registros de Eldamar', async () => {
     loadSave()
-    render(<MemoryRouter><InventoryScreen /></MemoryRouter>)
+    await renderReady(<MemoryRouter><InventoryScreen /></MemoryRouter>)
     expect(screen.getByRole('heading', { name: 'Inventário' })).toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Seções de Inventário' })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Status do personagem' })).not.toBeInTheDocument()
@@ -212,7 +222,7 @@ describe('interfaces de Terran', () => {
 
   it('reflete o save real no painel direito sem atribuir status inventados', async () => {
     loadSave()
-    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    await renderReady(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     const hud = screen.getByRole('complementary', { name: 'Status permanente do personagem' })
     expect(hud.querySelector('.terran-character-hud__resource-bars')).toBeInTheDocument()
     expect(hud.querySelector('.terran-character-hud__attributes')).not.toBeInTheDocument()
@@ -246,56 +256,56 @@ describe('interfaces de Terran', () => {
     })
   })
 
-  it('entra na Casa de Eldamar, mostra o NPC no interior e retorna pela porta', () => {
+  it('entra na Casa de Eldamar, mostra o NPC no interior e retorna pela porta', async () => {
     loadSave('location_terran_eldamar_house')
-    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    await renderReady(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Casa de Eldamar' }))
     expect(screen.getByRole('img', { name: /Interior pixelado de Casa de Eldamar/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Falar com Eldamar dentro do local' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Interagir com Estante dos Registros' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Sair do interior para as ruas de Terran' }))
-    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran em 3D/ })).toBeInTheDocument()
   })
 
-  it('exibe a cutscene de chegada sobre a mesma cidade e permite encerrá-la', () => {
+  it('exibe a cutscene de chegada sobre a mesma cidade e permite encerrá-la', async () => {
     loadSave('terran', true)
-    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    await renderReady(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     expect(screen.getByRole('dialog', { name: /TERRAN · O PRIMEIRO PASSO/ })).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran em 3D/ })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Pular cena' }))
     expect(screen.queryByRole('dialog', { name: /TERRAN · O PRIMEIRO PASSO/ })).not.toBeInTheDocument()
   })
 
-  it('apresenta o juramento apenas após entrar no Clã, sem trocar a cena', () => {
+  it('apresenta o juramento apenas após entrar no Clã, sem trocar a cena', async () => {
     loadSave()
     const save = useGameStore.getState().save!
     save.character.clan.clanId = 'dunavar'
     useGameStore.setState({ save })
-    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    await renderReady(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     expect(screen.getByRole('dialog', { name: /TERRAN · O JURAMENTO/ })).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran em 3D/ })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Pular cena' }))
     expect(screen.queryByRole('dialog', { name: /TERRAN · O JURAMENTO/ })).not.toBeInTheDocument()
-    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran em 3D/ })).toBeInTheDocument()
   })
 
-  it('abre as atividades do Portal sem desmontar a cena de Terran nem entrar automaticamente', () => {
+  it('abre as atividades do Portal sem desmontar a cena de Terran nem entrar automaticamente', async () => {
     loadSave()
-    render(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
+    await renderReady(<MemoryRouter initialEntries={['/terran']}><TerranScreen /></MemoryRouter>)
     fireEvent.click(screen.getByRole('button', { name: 'Ir para Praça do Portal' }))
     expect(screen.getByRole('region', { name: 'Atividades da Praça do Portal' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Jornadas e desafios' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Caçadas do Portal' })).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: /Terran vista superior 3\/4/ })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Terran em 3D/ })).toBeInTheDocument()
     expect(useGameStore.getState().save?.battle).toBeNull()
   })
 
 
   for (const locationId of TERRAN_LOCATION_IDS) {
     const location = content.terranLocations[locationId]
-    it(`renderiza a interface de ${location.name}`, () => {
+    it(`renderiza a interface de ${location.name}`, async () => {
       loadSave(locationId)
-      render(
+      await renderReady(
         <MemoryRouter initialEntries={[`/terran/${locationId}`]}>
           <Routes>
             <Route path="/terran/:locationId" element={<TerranLocationScreen />} />

@@ -72,7 +72,7 @@ describe('grade pixel art v0.1', () => {
       expect(bytes.readUInt32BE(20), entry.id).toBe(dimensions)
       expect(bytes[25]).toBe(6) // RGBA
     }
-  })
+  }, 20_000) // Thousands of native PNGs are read from disk, including on Windows.
 
   it('cobre cada joia, essência, monstro e NPC existente com arte própria', () => {
     for (const gem of gemComponentDefinitions) {
