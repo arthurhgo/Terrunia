@@ -15,6 +15,7 @@ export function LoginScreen() {
   const loginGoogle = useAuthStore((state) => state.loginGoogle)
   const continueAsGuest = useAuthStore((state) => state.continueAsGuest)
   const recent = readCosmeticAvatar()
+  const localReview = import.meta.env.VITE_TERRAN_3D_REVIEW === 'true' && !isFirebaseConfigured
 
   if (status === 'loading') return <LoadingScreen label="Reconhecendo sua assinatura…" />
   if (status === 'signedIn' && user) return <Navigate to="/" replace />
@@ -26,7 +27,7 @@ export function LoginScreen() {
         <div className="login-card__seal">
           <img src="/assets/ui/terrunia-mark.svg" alt="" />
         </div>
-        <p className="eyebrow">RPG DE PROGRESSÃO PERSISTENTE</p>
+        <p className="eyebrow">RPG DE PROGRESSÃO PERSISTENTE · V0.6</p>
         <h1>Terrúnia</h1>
         <p className="login-card__subtitle">Resquícios das Ruínas</p>
         <div className="login-card__character-preview" aria-label="Prévia cosmética do último Terrírian usado neste dispositivo">
@@ -45,15 +46,15 @@ export function LoginScreen() {
         </div>
 
         <div className="login-card__actions">
-          <GameButton
+          {!localReview && <GameButton
             variant="primary"
             full
             onClick={() => void loginGoogle()}
             disabled={!isFirebaseConfigured}
           >
             <LogIn size={18} /> Entrar com Google
-          </GameButton>
-          {!isFirebaseConfigured && (
+          </GameButton>}
+          {!isFirebaseConfigured && !localReview && (
             <p className="field-hint">Configure o Firebase em <code>.env.local</code> para habilitar o login Google.</p>
           )}
           {canUseDevelopmentGuest && (

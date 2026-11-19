@@ -1,15 +1,13 @@
-import { getPresencePortrait } from '../../content/npcVisuals'
-import { drawActorImage, getWorldSprite } from './worldSprites'
-import { drawEquipmentLayer } from '../characters/equipmentCanvas'
 import type { VisualItem } from '../characters/equipmentVisuals'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS, type TerranLocationId } from '../../content/terran'
 import type { CityActor } from './cityCast'
 import type { MovingCityActor } from './cityLife'
-import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, WORLD_ACTOR_SCALE, type ActorFacing } from './pixelActorArt'
+import type { ActorFacing } from './pixelActorArt'
+import { drawTerranNpc, drawTerranPlayer } from './terranActors'
 import { PLAYER_HOME_CENTER, PLAYER_HOME_DOOR } from './roomContent'
 import { terranLandmarks, type TerranLandmark } from '../../content/terranExploration'
-import { CITY_WIDTH, CITY_HEIGHT, CITY_BUILDING_SCALE, CITY_NPC_SIZE, getCityCamera, getCityPoint, getCityDoor, type WorldPoint } from './cityWorld'
+import { CITY_WIDTH, CITY_HEIGHT, CITY_BUILDING_SCALE, getCityCamera, getCityPoint, getCityDoor, type WorldPoint } from './cityWorld'
 
 export { CITY_WIDTH, CITY_HEIGHT, getCityPoint, getCityDoor, type WorldPoint } from './cityWorld'
 
@@ -202,33 +200,12 @@ export const drawPixelCity = (
     ctx.fillStyle = '#789068'; ctx.fillRect(x, y, 2, 3)
     ctx.fillStyle = i % 2 ? '#b39d70' : '#957a9e'; ctx.fillRect(x - 1, y - 2, 4, 2)
   }
-  const stride = walking ? Math.floor(frame / 8) % 3 : 0
-  const renderPlayer = () => {
-    drawPlayerAura(ctx, player.x, player.y, frame)
-    ctx.fillStyle = '#162728'; ctx.fillRect(Math.round(player.x - 5), Math.round(player.y - 2), 10, 3)
-    drawEquipmentLayer(ctx, equipped, 'back', facing, player.x, player.y)
-    if (!drawActorImage(ctx, playerSprite, player.x, player.y, facing, stride, CITY_NPC_SIZE)) {
-      drawPixelActor(ctx, player.x, player.y, facing, stride, ACTOR_PALETTES[playerPalette] ?? ACTOR_PALETTES.terririan, WORLD_ACTOR_SCALE)
-    }
-    drawEquipmentLayer(ctx, equipped, 'front', facing, player.x, player.y)
-  }
   const layers = [
     ...TERRAN_LOCATION_IDS.map((id) => ({ depth: getCityPoint(id).y + 30, draw: () => drawBuilding(ctx, id, frame) })),
     { depth: PLAYER_HOME_CENTER.y + 30, draw: () => drawPlayerHome(ctx, homeUnlocked) },
     ...terranLandmarks.map((landmark) => ({ depth: landmark.point.y + landmark.bottom, draw: () => drawLandmark(ctx, landmark, frame) })),
-    { depth: player.y, draw: renderPlayer },
-    ...cityCast.map((actor) => ({ depth: actor.point.y, draw: () => {
-    ctx.fillStyle = '#1a282b'; ctx.fillRect(actor.point.x - 5, actor.point.y - 2, 10, 3)
-    const palette = ACTOR_PALETTES[actor.palette] ?? ACTOR_PALETTES.knowledge
-    const variantPalette = actor.variant === 0 ? palette : actor.variant === 1
-      ? { ...palette, hair: '#c7b594', accent: '#a5c3b0' }
-      : { ...palette, hair: '#5a434d', skin: '#c08e7c', accent: '#d3a0bd' }
-    const movingActor = actor as MovingCityActor
-    if (!drawActorImage(ctx, getWorldSprite(getPresencePortrait(actor.presence)), actor.point.x, actor.point.y,
-      movingActor.facing ?? 'down', movingActor.moving ? Math.floor(frame / 8) % 3 : 0, CITY_NPC_SIZE)) {
-      drawPixelActor(ctx, actor.point.x, actor.point.y, movingActor.facing ?? 'down', 0, variantPalette, 1)
-    }
-    } })),
+    { depth: player.y, draw: () => drawTerranPlayer(ctx, player, playerSprite, frame, walking, facing, playerPalette, equipped) },
+    ...cityCast.map((actor) => ({ depth: actor.point.y, draw: () => drawTerranNpc(ctx, actor, actor.point, frame) })),
   ]
   layers.sort((a, b) => a.depth - b.depth).forEach((layer) => layer.draw())
   ctx.restore()

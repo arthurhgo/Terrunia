@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { content } from '../../content/catalog'
 import { TERRAN_LOCATION_IDS } from '../../content/terran'
@@ -6,20 +6,27 @@ import { PLAYER_HOME_DOOR } from './roomContent'
 import { getCityDoor } from './cityWorld'
 import { PixelCityCanvas } from './PixelCityCanvas'
 
+vi.mock('./terranSplatScene', () => ({
+  loadTerranSplatScene: async () => ({ cameraAt: () => ({ x: 0, y: 0 }), draw: () => {} }),
+}))
+
 beforeAll(() => vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null))
 afterAll(() => vi.restoreAllMocks())
 afterEach(cleanup)
 
-const renderDoor = (spawnPoint: { x: number; y: number }, onEnter: (id: (typeof TERRAN_LOCATION_IDS)[number]) => void, onEnterHome: () => void, homeUnlocked = false) =>
-  render(<PixelCityCanvas portraitAssetId="character.terririan.default" reducedMotion
+const renderDoor = async (spawnPoint: { x: number; y: number }, onEnter: (id: (typeof TERRAN_LOCATION_IDS)[number]) => void, onEnterHome: () => void, homeUnlocked = false) => {
+  const result = render(<PixelCityCanvas portraitAssetId="character.terririan.default" reducedMotion
     currentLocationId="location_terran_portal_plaza" enabled objectiveId={null}
     actors={[]} homeUnlocked={homeUnlocked} spawnPoint={spawnPoint}
     onEnterHome={onEnterHome} onEnter={onEnter} onTalk={() => {}}
     onInspectLandmark={() => {}} landmarkFlags={[]} />)
+  await act(async () => {})
+  return result
+}
 
 describe('Portas clicáveis das casas de Terran', () => {
-  it('cria exatamente um botão de porta em cada uma das sete instituições', () => {
-    const { container } = renderDoor(PLAYER_HOME_DOOR, vi.fn(), vi.fn())
+  it('cria exatamente um botão de porta em cada uma das sete instituições', async () => {
+    const { container } = await renderDoor(PLAYER_HOME_DOOR, vi.fn(), vi.fn())
     const doors = TERRAN_LOCATION_IDS.filter((id) => id !== 'location_terran_portal_plaza')
     expect(container.querySelectorAll('.pixel-city__door[data-city-door]')).toHaveLength(doors.length + 1)
     for (const id of doors) {
@@ -30,10 +37,10 @@ describe('Portas clicáveis das casas de Terran', () => {
       .toHaveClass('is-locked')
   })
 
-  it('ao clicar em cada porta, aciona a entrada correspondente a partir de seu limiar', () => {
+  it('ao clicar em cada porta, aciona a entrada correspondente a partir de seu limiar', async () => {
     for (const id of TERRAN_LOCATION_IDS.filter((value) => value !== 'location_terran_portal_plaza')) {
       const onEnter = vi.fn()
-      renderDoor(getCityDoor(id), onEnter, vi.fn())
+      await renderDoor(getCityDoor(id), onEnter, vi.fn())
       fireEvent.click(screen.getByRole('button', { name: `Abrir porta de ${content.terranLocations[id].name}` }))
       expect(onEnter).toHaveBeenCalledTimes(1)
       expect(onEnter).toHaveBeenCalledWith(id)
@@ -41,9 +48,9 @@ describe('Portas clicáveis das casas de Terran', () => {
     }
   })
 
-  it('mantém a porta da Base interativa mesmo trancada, sem desbloquear por conta própria', () => {
+  it('mantém a porta da Base interativa mesmo trancada, sem desbloquear por conta própria', async () => {
     const onEnterHome = vi.fn()
-    const { rerender } = renderDoor(PLAYER_HOME_DOOR, vi.fn(), onEnterHome)
+    const { rerender } = await renderDoor(PLAYER_HOME_DOOR, vi.fn(), onEnterHome)
     const door = screen.getByRole('button', { name: 'Interagir com porta da Base do Terrírian' })
     expect(door).toBeEnabled()
     expect(door).toHaveAttribute('title', 'Base do Terrírian · Porta trancada')

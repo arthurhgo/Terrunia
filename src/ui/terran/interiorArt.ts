@@ -11,7 +11,7 @@ import type { WorldPoint } from './pixelCityArt'
 import { ACTOR_PALETTES, drawPixelActor, drawPlayerAura, type ActorFacing } from './pixelActorArt'
 
 /** Seven distinctive interiors, rendered from one geometry and furniture registry. VISUAL_DRAFT. */
-const palettes = {
+export const interiorPalettes = {
   forge: { wall: '#382f30', floor: '#665348', light: '#8e7160', trim: '#c9915b', glow: '#f6ac65' },
   slate: { wall: '#25344b', floor: '#555d69', light: '#778399', trim: '#bfa77c', glow: '#87b5db' },
   moss: { wall: '#293d34', floor: '#566857', light: '#879677', trim: '#c1a879', glow: '#83dbb0' },
@@ -40,7 +40,7 @@ export function drawTerranInterior(
   clanPortalOpen = false,
 ) {
   const plan = getRoomPlan(locationId)
-  const theme = palettes[plan.tile]
+  const theme = interiorPalettes[plan.tile]
   const { floor, obstacles } = plan
   ctx.imageSmoothingEnabled = false
 

@@ -4,6 +4,7 @@ import { Clock3 } from 'lucide-react'
 import type { CombatSkillDefinition } from '../../content/types'
 import type { previewCombatSkill } from '../../domain/combat/skillPreview'
 import { AssetImage } from '../components/AssetImage'
+import { BattleDie3D } from './BattleDie3D'
 
 type Preview = ReturnType<typeof previewCombatSkill>
 type Props = {
@@ -26,6 +27,7 @@ export function SkillCard({ skill, preview, remaining, unavailable, onInspect, o
     : '—'
   const dieLabel = preview.reaction ? `d${preview.reaction.sides}${preview.reaction.shieldBonus ? '+1' : ''}${preview.reaction.moduleBonus?`+${preview.reaction.moduleBonus}`:''}`
     : preview.die ? `d${preview.die}${preview.weaponBonusDie ? `+d${preview.weaponBonusDie}` : ''}` : '—'
+  const previewDie = preview.reaction?.sides ?? preview.die
   return <button type="button"
     className={['pixel-battle__skill-card', remaining > 0 ? 'is-cooling' : 'is-ready',
       unavailable ? 'is-unavailable' : ''].join(' ')}
@@ -53,7 +55,9 @@ export function SkillCard({ skill, preview, remaining, unavailable, onInspect, o
     </span>
     <span className="pixel-battle__skill-name">{skill.name}</span>
     <span className="pixel-battle__skill-cost">{skill.mpCost} MP</span>
-    <span className="pixel-battle__skill-stats"><span>🎲 {dieLabel}</span><span>✦ {minMax}</span></span>
+    <span className="pixel-battle__skill-stats"><span className="pixel-battle__skill-dice">
+      {previewDie && <span aria-hidden="true"><BattleDie3D sides={previewDie} compact /></span>}{dieLabel}
+    </span><span>✦ {minMax}</span></span>
     {unavailable && <span className="pixel-battle__skill-reason">{remaining > 0 ? 'EM RECARGA' : unavailable}</span>}
   </button>
 }

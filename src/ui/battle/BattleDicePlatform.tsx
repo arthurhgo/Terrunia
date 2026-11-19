@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { AttributeDie } from '../../domain/game/types'
 import type { CharacterAppearance } from '../../domain/character/appearance'
-import { DieIcon } from '../components/DieIcon'
+import type { CombatDieFace, CombatRoll } from '../../domain/combat/types'
+import { BattleDie3D } from './BattleDie3D'
 import { AssetImage } from '../components/AssetImage'
 import { CharacterPortrait } from '../characters/CharacterSprite'
 import { BATTLE_PRESENTATION } from './presentationTiming'
@@ -18,10 +19,18 @@ export type BattleDiceEvent = {
   actorSide?: 'player' | 'enemy'
   kind?: 'initiative' | 'damage'
   initiativeTotal?: number
-  weaponBonusRoll?: { sides: AttributeDie; face: number }
+  weaponBonusRoll?: CombatDieFace
+  defenseRoll?: CombatRoll['defenseRoll']
   /** True only when the combat engine resolved a natural-maximum damage roll. */
   critical?: boolean
   absorbed?: { shield:number;armor:number;arcane:number;affinity:number }
+}
+
+function SupportingDie({ roll, label, outcome = '' }: { roll: CombatDieFace; label: string; outcome?: string }) {
+  return <small className="battle-dice-platform__extra-roll">
+    <span aria-hidden="true"><BattleDie3D sides={roll.sides} face={roll.face} tone="weapon" compact /></span>
+    <span>{label} d{roll.sides}: {roll.face}{outcome ? ` · ${outcome}` : ''}</span>
+  </small>
 }
 
 /** Full-arena VFX, not a dialog. Die visibly travels from actions into the world.
@@ -36,18 +45,17 @@ export function BattleDicePlatform({ roll, reducedMotion, awaitingClick = false,
   playerPortraitAssetId?: string
   enemyPortraitAssetId?: string
 }) {
-  const [settled, setSettled] = useState(reducedMotion && !awaitingClick)
+  const [settledId, setSettledId] = useState<string | null>(null)
+  const rollId = roll?.id
   useEffect(() => {
-    if (!roll) return
-    if (awaitingClick) { setSettled(false); return }
-    const begin = window.setTimeout(() => setSettled(reducedMotion), 0)
-    if (reducedMotion) return () => window.clearTimeout(begin)
-    const timer = window.setTimeout(() => setSettled(true), BATTLE_PRESENTATION.dieSpinMs)
-    return () => { window.clearTimeout(begin); window.clearTimeout(timer) }
-  }, [roll, reducedMotion, awaitingClick])
+    if (!rollId || awaitingClick || reducedMotion) return
+    const timer = window.setTimeout(() => setSettledId(rollId), BATTLE_PRESENTATION.dieSpinMs)
+    return () => window.clearTimeout(timer)
+  }, [rollId, reducedMotion, awaitingClick])
 
   if (!roll) return null
   const initiative = roll.kind === 'initiative'
+  const settled = !awaitingClick && (reducedMotion || settledId === roll.id)
   return <div className={`battle-dice-platform battle-dice-platform--in-arena
       ${awaitingClick ? 'is-awaiting-click' : settled ? 'is-settled' : 'is-rolling'}
       ${roll.actorSide === 'enemy' ? 'is-enemy-roll' : 'is-player-roll'}
@@ -66,11 +74,15 @@ export function BattleDicePlatform({ roll, reducedMotion, awaitingClick = false,
     {!awaitingClick && <div className="battle-dice-platform__stage">
       <span className="battle-dice-platform__shadow" aria-hidden="true" />
       <div className="battle-dice-platform__die" key={roll.id}>
-        <DieIcon sides={roll.sides} face={settled ? roll.face : undefined} />
+        <BattleDie3D sides={roll.sides} face={settled ? roll.face : undefined} rollTo={roll.face}
+          rolling={!settled} tone={roll.actorSide === 'enemy' ? 'enemy' : 'player'} />
       </div>
       {settled && <div className="battle-dice-platform__result">
         <strong>{initiative ? `Iniciativa ${roll.initiativeTotal ?? roll.face}` : `d${roll.sides}: ${roll.face}`}</strong>
-        {!initiative && roll.weaponBonusRoll && <small>Arma d{roll.weaponBonusRoll.sides}: {roll.weaponBonusRoll.face}</small>}
+        {!initiative && roll.weaponBonusRoll && <SupportingDie roll={roll.weaponBonusRoll} label="Arma" />}
+        {!initiative && roll.defenseRoll && <SupportingDie roll={roll.defenseRoll} label={roll.defenseRoll.action}
+          outcome={roll.defenseRoll.success ? 'Sucesso' : 'Falha'} />}
+        {!initiative && roll.defenseRoll?.counter && <SupportingDie roll={roll.defenseRoll.counter} label="Dano do contragolpe" />}
         {!initiative && roll.critical && <span className="battle-dice-platform__critical">ACERTO CRÍTICO!</span>}
         {!initiative && <small>{roll.damage>0 ? `${roll.damage} de dano` : roll.absorbed && (roll.absorbed.shield+roll.absorbed.armor+roll.absorbed.arcane)>0 ? 'BLOQUEADO / ABSORVIDO' : '0 de dano'}</small>}
         {!initiative && roll.absorbed && <small>ESC {roll.absorbed.shield} · ARM {roll.absorbed.armor} · ARC {roll.absorbed.arcane}{roll.absorbed.affinity ? ` · Afinidade ${roll.absorbed.affinity>0?'+':''}${roll.absorbed.affinity}` : ''}</small>}

@@ -11,15 +11,22 @@ import type { TerranNpcPresence } from '../../content/types'
 import { findCityPath, isCityWalkable } from './cityNavigation'
 import type { CityActor } from './cityCast'
 import { getNpcPatrol, type MovingCityActor } from './cityLife'
-import { CITY_HEIGHT, CITY_WIDTH, drawPixelCity, getCityDoor, getCityPoint, type WorldPoint } from './pixelCityArt'
+import { CITY_HEIGHT, CITY_WIDTH, getCityDoor, getCityPoint, type WorldPoint } from './pixelCityArt'
 import type { ActorFacing } from './pixelActorArt'
 import { PLAYER_HOME_DOOR, PLAYER_HOME_CENTER } from './roomContent'
 import { CITY_NPC_SIZE, getCityCamera, getCityDistrict, cityScreenToWorld, getLandmarkApproach } from './cityWorld'
 import { terranLandmarks, cityLandmarkFlag, type TerranLandmark } from '../../content/terranExploration'
 import type { RosettaQuestRoute, TrackedQuestRoute } from '../../domain/terran/rosettaGuide'
+import { pitchCos, projectTerran, terranScreenToGround, terranViewportCorners } from './terranProjection'
+import type { loadTerranSplatScene } from './terranSplatScene'
 import './questTrackingPaths.css'
 
 type Direction = ActorFacing
+type SplatScene = Awaited<ReturnType<typeof loadTerranSplatScene>>
+type VisualStatus = 'loading' | '3d' | 'unavailable'
+
+const linePath = (points: readonly WorldPoint[]) => points.map(({ x, y }, index) => `${index ? 'L' : 'M'} ${x} ${y}`).join(' ')
+
 type Destination = {
   path: WorldPoint[]
   site: TerranLocationId | null
@@ -99,9 +106,12 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
   const trackingModeRef = useRef(showTrackedQuestRoute); trackingModeRef.current = showingTracked
   const routesRef = useRef(visibleRoutes); routesRef.current = visibleRoutes
   const routePathsRef = useRef(new Map<string, SVGPathElement>())
-  const routeCacheRef = useRef(new Map<string, { key: string; d: string }>())
+  const routeCacheRef = useRef(new Map<string, { key: string; points: WorldPoint[]; d: string }>())
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
+  const [visualStatus, setVisualStatus] = useState<VisualStatus>('loading')
+  const splatSceneRef = useRef<SplatScene | null>(null)
+  const spatial = visualStatus === '3d'
   const viewport = useWorldViewport(stageRef, CITY_WIDTH, CITY_HEIGHT)
   const viewportRef = useRef(viewport)
   viewportRef.current = viewport
@@ -113,6 +123,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
   const worldRef = useRef<HTMLDivElement>(null)
   const mapPlayerRef = useRef<SVGCircleElement>(null)
   const mapViewRef = useRef<SVGRectElement>(null)
+  const mapFootprintRef = useRef<SVGPolygonElement>(null)
   const districtRef = useRef<HTMLSpanElement>(null)
   const siteButtonsRef = useRef(new Map<string, HTMLButtonElement>())
   const doorButtonsRef = useRef(new Map<string, HTMLButtonElement>())
@@ -129,7 +140,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
   const npcButtonsRef = useRef(new Map<string, HTMLButtonElement>())
   const enterRef = useRef(onEnter)
   const talkRef = useRef(onTalk)
-  enabledRef.current = enabled
+  enabledRef.current = enabled && spatial
   reducedMotionRef.current = reducedMotion
   homeUnlockedRef.current = homeUnlocked
   homeEnterRef.current = onEnterHome
@@ -142,6 +153,17 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
   useEffect(() => {
     if (!enabled) { keysRef.current.clear(); destinationRef.current = null }
   }, [enabled])
+
+  useEffect(() => {
+    let active = true
+    setVisualStatus('loading')
+    void import('./terranSplatScene').then(({ loadTerranSplatScene }) => loadTerranSplatScene()).then((scene) => {
+      if (!active) return
+      splatSceneRef.current = scene
+      setVisualStatus('3d')
+    }).catch(() => { if (active) setVisualStatus('unavailable') })
+    return () => { active = false; splatSceneRef.current = null }
+  }, [])
 
   const arrive = (destination: Destination) => {
     const actor = destination.actorId && liveActorsRef.current.find((candidate) => candidate.id === destination.actorId)
@@ -214,22 +236,6 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
         return enabledRef.current ? live : { ...live, moving: false }
       })
       liveActorsRef.current = liveCast
-      if (routesVisibleRef.current) {
-        const source = trackingModeRef.current ? playerRef.current
-          : liveCast.find((actor) => actor.presence.npcId === 'npc_rosetta')?.point
-        if (source) for (const route of routesRef.current) {
-          const target = route.player ? playerRef.current : liveCast.find((actor) => route.npcId && actor.presence.npcId === route.npcId)?.point
-            ?? getCityDoor(TERRAN_LOCATION_IDS.find((id) => id === route.locationId) ?? 'location_terran_portal_plaza')
-          const key = [source.x, source.y, target.x, target.y].map((value) => Math.round(value / 4)).join(':')
-          let cached = routeCacheRef.current.get(route.id)
-          if (!cached || cached.key !== key) {
-            const path = findCityPath(source, target)
-            cached = { key, d: `M ${source.x} ${source.y} ${path.map((point) => `L ${point.x} ${point.y}`).join(' ')}` }
-            routeCacheRef.current.set(route.id, cached)
-          }
-          for (const prefix of ['world:', 'map:']) routePathsRef.current.get(prefix + route.id)?.setAttribute('d', cached.d)
-        }
-      }
       let walking = false
       if (enabledRef.current) {
         let dx = Number(keysRef.current.has('right')) - Number(keysRef.current.has('left'))
@@ -275,50 +281,76 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
           else if (destinationRef.current) destinationRef.current = null
         }
       }
-      const camera = getCityCamera(playerRef.current, viewportRef.current)
+      const view = viewportRef.current
+      const scene = splatSceneRef.current
+      const camera = scene ? scene.cameraAt(playerRef.current, view) : getCityCamera(playerRef.current, view)
       cameraRef.current = camera
-      if (worldRef.current) worldRef.current.style.transform = `translate(${-camera.x / CITY_WIDTH * 100}%, ${-camera.y / CITY_HEIGHT * 100}%)`
-      const inView = (point: WorldPoint) => point.x >= camera.x - 25 && point.x <= camera.x + viewportRef.current.width + 25
-        && point.y >= camera.y - 10 && point.y <= camera.y + viewportRef.current.height + 30
+      if (worldRef.current) worldRef.current.style.transform = scene ? 'none' : `translate(${-camera.x / CITY_WIDTH * 100}%, ${-camera.y / CITY_HEIGHT * 100}%)`
+      const onScreen = (point: WorldPoint, lift = 0) => {
+        const projected = scene ? projectTerran(point, lift) : point
+        return { x: projected.x - camera.x, y: projected.y - camera.y }
+      }
+      const placeMarker = (button: HTMLButtonElement | undefined, point: WorldPoint, flatLift: number, spatialLift: number) => {
+        if (!button) return
+        const screen = onScreen(point, spatialLift)
+        button.style.left = scene ? `${screen.x / view.width * 100}%` : `${point.x / CITY_WIDTH * 100}%`
+        button.style.top = scene ? `${screen.y / view.height * 100}%` : `${(point.y - flatLift) / CITY_HEIGHT * 100}%`
+        button.hidden = screen.x < -25 || screen.x > view.width + 25 || screen.y < -10 || screen.y > view.height + 30
+      }
       for (const actor of liveCast) {
         const button = npcButtonsRef.current.get(actor.id)
         if (!button) continue
-        button.style.left = `${actor.point.x / CITY_WIDTH * 100}%`
-        button.style.top = `${(actor.point.y - CITY_NPC_SIZE / 2) / CITY_HEIGHT * 100}%`
-        button.hidden = !inView(actor.point)
+        placeMarker(button, actor.point, CITY_NPC_SIZE / 2, CITY_NPC_SIZE / 2 / pitchCos)
       }
       for (const id of TERRAN_LOCATION_IDS) {
-        const button = siteButtonsRef.current.get(id)
-        if (button) button.hidden = !inView(getCityPoint(id))
-        const doorButton = doorButtonsRef.current.get(id)
-        if (doorButton) doorButton.hidden = !inView(getCityDoor(id))
+        placeMarker(siteButtonsRef.current.get(id), getCityPoint(id), 45, id === 'location_terran_portal_plaza' ? 91 : 74)
+        placeMarker(doorButtonsRef.current.get(id), getCityDoor(id), 21, 13)
       }
-      const homeButton = siteButtonsRef.current.get('home')
-      if (homeButton) homeButton.hidden = !inView(PLAYER_HOME_CENTER)
-      const homeDoorButton = doorButtonsRef.current.get('home')
-      if (homeDoorButton) homeDoorButton.hidden = !inView(PLAYER_HOME_DOOR)
+      placeMarker(siteButtonsRef.current.get('home'), PLAYER_HOME_CENTER, 45, 69)
+      placeMarker(doorButtonsRef.current.get('home'), PLAYER_HOME_DOOR, 21, 13)
       for (const landmark of terranLandmarks) {
-        const button = landmarkButtonsRef.current.get(landmark.id)
-        if (button) button.hidden = !inView(landmark.point)
+        placeMarker(landmarkButtonsRef.current.get(landmark.id), landmark.point, landmark.top + 8, landmark.top * 1.65)
+      }
+      if (routesVisibleRef.current) {
+        const source = trackingModeRef.current ? playerRef.current
+          : liveCast.find((actor) => actor.presence.npcId === 'npc_rosetta')?.point
+        if (source) for (const route of routesRef.current) {
+          const target = route.player ? playerRef.current : liveCast.find((actor) => route.npcId && actor.presence.npcId === route.npcId)?.point
+            ?? getCityDoor(TERRAN_LOCATION_IDS.find((id) => id === route.locationId) ?? 'location_terran_portal_plaza')
+          const key = [source.x, source.y, target.x, target.y].map((value) => Math.round(value / 4)).join(':')
+          let cached = routeCacheRef.current.get(route.id)
+          if (!cached || cached.key !== key) {
+            const points = [source, ...findCityPath(source, target)]
+            cached = { key, points, d: linePath(points) }
+            routeCacheRef.current.set(route.id, cached)
+          }
+          routePathsRef.current.get('map:' + route.id)?.setAttribute('d', cached.d)
+          routePathsRef.current.get('world:' + route.id)?.setAttribute('d',
+            scene ? linePath(cached.points.map((point) => onScreen(point, 1))) : cached.d)
+        }
       }
       mapPlayerRef.current?.setAttribute('cx', String(playerRef.current.x))
       mapPlayerRef.current?.setAttribute('cy', String(playerRef.current.y))
       mapViewRef.current?.setAttribute('x', String(camera.x))
       mapViewRef.current?.setAttribute('y', String(camera.y))
-      mapViewRef.current?.setAttribute('width', String(viewportRef.current.width))
-      mapViewRef.current?.setAttribute('height', String(viewportRef.current.height))
+      mapViewRef.current?.setAttribute('width', String(view.width))
+      mapViewRef.current?.setAttribute('height', String(view.height))
+      if (scene) mapFootprintRef.current?.setAttribute('points',
+        terranViewportCorners(camera, view).map(({ x, y }) => `${x},${y}`).join(' '))
       if (districtRef.current) districtRef.current.textContent = getCityDistrict(playerRef.current)
       if (canvas) {
         canvas.dataset.cameraX = String(camera.x); canvas.dataset.cameraY = String(camera.y)
         canvas.dataset.playerX = String(Math.round(playerRef.current.x)); canvas.dataset.playerY = String(Math.round(playerRef.current.y))
       }
-      drawPixelCity(ctx, playerRef.current, sheet, reducedMotionRef.current ? 0 : frame, walking && !reducedMotionRef.current, facingRef.current,
-        portraitAssetId.includes('sigil') ? 'sigil' : 'terririan', liveCast, homeUnlockedRef.current, camera, equipmentRef.current)
+      const animation = reducedMotionRef.current ? 0 : frame
+      const moving = walking && !reducedMotionRef.current
+      const palette = portraitAssetId.includes('sigil') ? 'sigil' : 'terririan'
       const goal = destinationRef.current?.goal
-      if (goal) {
-        ctx.fillStyle = '#edc87e'
-        ctx.fillRect(goal.x - camera.x - 4, goal.y - camera.y, 9, 1)
-        ctx.fillRect(goal.x - camera.x, goal.y - camera.y - 4, 1, 9)
+      if (scene) {
+        scene.draw(ctx, camera, playerRef.current, sheet, animation, moving, facingRef.current, palette, liveCast, equipmentRef.current, goal)
+      } else {
+        ctx.fillStyle = '#17272c'
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
       }
       raf = requestAnimationFrame(tick)
     }
@@ -335,10 +367,12 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
   }, [portraitAssetId, appearanceSource, equipmentKey])
 
   const pointerWalk = (event: PointerEvent<HTMLCanvasElement>) => {
-    if (!enabled) return
+    if (!enabled || !splatSceneRef.current) return
     const bounds = event.currentTarget.getBoundingClientRect()
     if (!bounds.width || !bounds.height) return
-    const point = cityScreenToWorld({ x: Math.round((event.clientX - bounds.left) / bounds.width * viewportRef.current.width), y: Math.round((event.clientY - bounds.top) / bounds.height * viewportRef.current.height) }, cameraRef.current)
+    const click = { x: Math.round((event.clientX - bounds.left) / bounds.width * viewportRef.current.width),
+      y: Math.round((event.clientY - bounds.top) / bounds.height * viewportRef.current.height) }
+    const point = splatSceneRef.current ? terranScreenToGround(click, cameraRef.current) : cityScreenToWorld(click, cameraRef.current)
     const actor = nearestNpc(point, liveActorsRef.current, 14)
     if (actor) { walkToActor(actor); return }
     const landmark = terranLandmarks.find((entry) => Math.hypot(point.x - entry.point.x, point.y - entry.point.y) < 26)
@@ -350,12 +384,19 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
   }
 
   return (
-    <div ref={stageRef} className="pixel-city" aria-label="Terran — mundo pixelado explorável">
+    <div ref={stageRef} className="pixel-city" data-city-visual={visualStatus} aria-busy={visualStatus === 'loading'} aria-label="Terran — mundo pixelado explorável">
       <canvas ref={canvasRef} width={viewport.width} height={viewport.height} onPointerDown={pointerWalk}
         className="pixel-city__canvas" role="img" tabIndex={0}
-        aria-label="Terran vista superior 3/4; caminhe por WASD, setas ou toque" />
-      <div ref={worldRef} className="pixel-city__sites pixel-city__world" style={{ width: `${CITY_WIDTH / viewport.width * 100}%`, height: `${CITY_HEIGHT / viewport.height * 100}%`, transform: `translate(${-cameraRef.current.x / CITY_WIDTH * 100}%, ${-cameraRef.current.y / CITY_HEIGHT * 100}%)` }}>
-        {routesVisible && <svg className="rosetta-quest-lines" viewBox={`0 0 ${CITY_WIDTH} ${CITY_HEIGHT}`} role="img"
+        aria-label="Terran em 3D; caminhe por WASD, setas ou toque" />
+      {!spatial && <div className="pixel-city__visual-switch" role="status">
+        <span>{visualStatus === 'loading' ? 'Carregando Terran 3D…' : 'Cena 3D indisponível. Recarregue para tentar novamente.'}</span>
+      </div>}
+      <div ref={worldRef} hidden={!spatial} className="pixel-city__sites pixel-city__world" style={{
+        width: spatial ? '100%' : `${CITY_WIDTH / viewport.width * 100}%`,
+        height: spatial ? '100%' : `${CITY_HEIGHT / viewport.height * 100}%`,
+        transform: spatial ? 'none' : `translate(${-cameraRef.current.x / CITY_WIDTH * 100}%, ${-cameraRef.current.y / CITY_HEIGHT * 100}%)`,
+      }}>
+        {routesVisible && <svg className="rosetta-quest-lines" viewBox={`0 0 ${spatial ? viewport.width : CITY_WIDTH} ${spatial ? viewport.height : CITY_HEIGHT}`} role="img"
           aria-label={showingTracked ? 'Caminho pontilhado da missão rastreada' : 'Caminhos dourados de Rosetta'}
           data-route-mode={showingTracked ? 'tracked' : 'rosetta'}
           data-route-tone={showingTracked ? trackedQuestRoute?.tone : 'white'} data-reduced-motion={reducedMotion}>
@@ -401,7 +442,7 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
         {actors.map((actor) => <button key={actor.id} type="button" className={`pixel-city__npc ${actor.marker === '?' ? 'pixel-city__npc--guide' : ''}`}
           data-interaction-glow={actor.marker && actor.markerPhase === 'turn-in' ? 'turn-in' : actor.marker && actor.markerPhase === 'available' || (actor.marker === '?' && guideHasOffers) ? 'available' : undefined}
           ref={(button) => { if (button) npcButtonsRef.current.set(actor.id, button); else npcButtonsRef.current.delete(actor.id) }}
-          style={{ left: `${actor.point.x / CITY_WIDTH * 100}%`, top: `${(actor.point.y - CITY_NPC_SIZE / 2) / CITY_HEIGHT * 100}%`, width: `${CITY_NPC_SIZE / CITY_WIDTH * 100}%`, height: `${CITY_NPC_SIZE / CITY_HEIGHT * 100}%` }}
+          style={{ left: `${actor.point.x / CITY_WIDTH * 100}%`, top: `${(actor.point.y - CITY_NPC_SIZE / 2) / CITY_HEIGHT * 100}%`, width: `${CITY_NPC_SIZE / (spatial ? viewport.width : CITY_WIDTH) * 100}%`, height: `${CITY_NPC_SIZE / (spatial ? viewport.height : CITY_HEIGHT) * 100}%` }}
           aria-label={`Conversar com ${actor.presence.label}`} title={actor.presence.label}
           onPointerEnter={() => { if (actor.presence.npcId === 'npc_rosetta') setRosettaHovered(true) }}
           onPointerLeave={() => { if (actor.presence.npcId === 'npc_rosetta') setRosettaHovered(false) }}
@@ -448,7 +489,8 @@ export function PixelCityCanvas({ portraitAssetId, appearance, equipment = [], g
             data-route-tone={showingTracked ? trackedQuestRoute?.tone : 'white'}>{visibleRoutes.map((route) => <path key={route.id}
             data-route-tone={route.tone ?? 'white'} data-route-opacity={route.opacity ?? 1}
             ref={(path) => { if (path) routePathsRef.current.set('map:' + route.id, path); else routePathsRef.current.delete('map:' + route.id) }} />)}</g>}
-          <rect ref={mapViewRef} x={cameraRef.current.x} y={cameraRef.current.y} width={viewport.width} height={viewport.height} fill="none" stroke="#e5d6ad" strokeWidth="5" pointerEvents="none" />
+          {spatial ? <polygon ref={mapFootprintRef} fill="none" stroke="#e5d6ad" strokeWidth="5" pointerEvents="none" />
+            : <rect ref={mapViewRef} x={cameraRef.current.x} y={cameraRef.current.y} width={viewport.width} height={viewport.height} fill="none" stroke="#e5d6ad" strokeWidth="5" pointerEvents="none" />}
           <circle ref={mapPlayerRef} cx={playerRef.current.x} cy={playerRef.current.y} r="11" fill="#ffe6a1" stroke="#17272d" strokeWidth="4" pointerEvents="none" />
         </svg>
         <small>! Missão · ◇ Sidequest · cinza: aceita</small>

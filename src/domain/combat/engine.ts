@@ -341,8 +341,10 @@ const applyCombatEffects = (
       target.alive = target.hp > 0
       target.defending = false
       delete target.activeDefense
+      let counter: { sides: CombatDie; face: number } | undefined
       if (success && applicable && mode === 'counter' && target.alive && actor.alive && !isProtectedBoss(state,actor)) {
         const replySides=target.attackDie??4,replyFace=rollCombatDie(state,replySides)
+        counter = { sides: replySides, face: replyFace }
         const retaliation = Math.min(actor.hp,Math.max(1,Math.floor(getEffectiveAttackPower(target,catalog)*0.25)+
           Math.floor(replyFace/2)))
         actor.hp = Math.max(0,actor.hp-retaliation)
@@ -357,7 +359,9 @@ const applyCombatEffects = (
       addLog(state,
         `${actor.name} causa ${damage} de dano em ${target.name}.${critNote} d${sides}=${face}${actor.weaponBonusDie ? ` + d${actor.weaponBonusDie} da arma=${bonusFace}` : ''}, ATQ ${breakdown.baseAttack} + skill ${breakdown.skillBonus} - DEF ${breakdown.mitigation} - guarda ${appliedGuardMitigation}.${guardNote}${layerNote}`,
         'damage', { actorId: actor.id, targetId: target.id, sides, face, action, critical: breakdown.critical, damageBreakdown: detailed,
-          ...(actor.weaponBonusDie ? { weaponBonusRoll: { sides: actor.weaponBonusDie, face: bonusFace } } : {}) },
+          ...(actor.weaponBonusDie ? { weaponBonusRoll: { sides: actor.weaponBonusDie, face: bonusFace } } : {}),
+          ...(applicable && stance ? { defenseRoll: { sides: defenseSides, face: defenseFace,
+            action: stance.name, success, counter } } : {}) },
       )
     }
     if (effect.type === 'restoreHp') {

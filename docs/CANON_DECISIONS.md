@@ -133,3 +133,8 @@ Balanceamento, nomes finais, lore dos novos monstros e arte final continuam `OWN
 ## v0.5.15 — Venda exclusiva e revestimentos
 
 A autorização do criador para implementar os catálogos não revoga o vínculo permanente da v0.4. Equipamento comercial de Arma, Escudo, Armadura, Colar e Pulseira é revestimento separado, com status e visual variáveis, sem substituir item-base, memória, Ressonância, componentes ou Skill Tree. Comprar Classe/Clã exige castelo e progressão reais. Materiais específicos de G2/G3 e ranks ainda são OWNER_DECISION; documentados em `docs/TERRUNIA_V0515_EQUIPMENT.md`.
+
+
+## 2026-11-19 — apresentação v0.6 do teste 3D na produção
+
+Decisão explícita do criador: publicar na Vercel a gameplay de `terrunia-teste-3d.arthurhgo.chatgpt.site/play`, com o mapa do Gaussian Splash Studio, substituindo a apresentação 2D e a prévia CSS anterior. O modo 3D passa a ser o padrão único da cidade e dos interiores. Esta decisão substitui as instruções anteriores de manter a v0.6 apenas como modo opt-in ou PR draft; não altera regras de progressão nem amplia o trabalho para novos mapas. Proveniência e detalhes em `ISOMETRIC_VISUAL_v0.6.md`.

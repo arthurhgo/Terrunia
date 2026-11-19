@@ -1,5 +1,5 @@
 import type { Unsubscribe, User } from 'firebase/auth'
-import { getFirebaseApp } from '../firebase/firebase'
+import { getFirebaseApp, isFirebaseConfigured } from '../firebase/firebase'
 import { ensureCloudUserProfile } from '../sync/cloudProfileRepository'
 
 export type AuthProfile = {
@@ -118,4 +118,5 @@ export const endDevelopmentGuestSession = () => {
 }
 
 export const canUseDevelopmentGuest =
-  import.meta.env.DEV && import.meta.env.VITE_ALLOW_DEV_GUEST !== 'false'
+  import.meta.env.VITE_ALLOW_DEV_GUEST !== 'false' &&
+  (import.meta.env.DEV || (import.meta.env.VITE_TERRAN_3D_REVIEW === 'true' && !isFirebaseConfigured))
